@@ -11,8 +11,8 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$PROJECT_DIR$/Program.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Form1.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sc-editor/Form1.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sc-editor/Compression.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -37,7 +37,25 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.C#" />
   </component>
-  <component name="RunManager" selected=".NET Launch Settings Profile.sc-editor: IIS Express">
+  <component name="RunManager" selected=".NET Project.sc-editor">
+    <configuration name="sc-editor" type="DotNetProject" factoryName=".NET Project" temporary="true">
+      <option name="EXE_PATH" value="$PROJECT_DIR$/sc-editor/bin/Debug/sc_editor.exe" />
+      <option name="PROGRAM_PARAMETERS" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/sc-editor/bin/Debug" />
+      <option name="PASS_PARENT_ENVS" value="1" />
+      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+      <option name="USE_MONO" value="0" />
+      <option name="RUNTIME_ARGUMENTS" value="" />
+      <option name="PROJECT_PATH" value="$PROJECT_DIR$/sc-editor/sc-editor.csproj" />
+      <option name="PROJECT_EXE_PATH_TRACKING" value="1" />
+      <option name="PROJECT_ARGUMENTS_TRACKING" value="1" />
+      <option name="PROJECT_WORKING_DIRECTORY_TRACKING" value="1" />
+      <option name="PROJECT_KIND" value="Console" />
+      <option name="PROJECT_TFM" value=".NETFramework,Version=v4.7.2" />
+      <method v="2">
+        <option name="Build" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="sc-editor: IIS Express" type="LaunchSettings" factoryName=".NET Launch Settings Profile">
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/sc-editor.csproj" />
       <option name="LAUNCH_PROFILE_TFM" value=".NETCoreApp,Version=v3.1" />
@@ -68,6 +86,11 @@
         <option name="Build" enabled="true" />
       </method>
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue=".NET Project.sc-editor" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -86,9 +109,33 @@
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
   </component>
-  <component name="UnityProjectConfiguration" hasMinimizedUI="null" />
+  <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
   <component name="UnityUnitTestConfiguration" currentTestLauncher="NUnit" />
   <component name="WindowStateProjectService">
+    <state x="414" y="84" key="#sc-editor:_IIS_Express" timestamp="1605362377425">
+      <screen x="0" y="0" width="1366" height="738" />
+    </state>
+    <state x="414" y="84" key="#sc-editor:_IIS_Express/0.0.1366.738@0.0.1366.738" timestamp="1605362377425" />
+    <state x="414" y="84" key="#sc-editor:_sc_editor" timestamp="1605362381103">
+      <screen x="0" y="0" width="1366" height="738" />
+    </state>
+    <state x="414" y="84" key="#sc-editor:_sc_editor/0.0.1366.738@0.0.1366.738" timestamp="1605362381103" />
+    <state width="1323" height="182" key="GridCell.Tab.0.bottom" timestamp="1605362388042">
+      <screen x="0" y="0" width="1366" height="738" />
+    </state>
+    <state width="1323" height="182" key="GridCell.Tab.0.bottom/0.0.1366.738@0.0.1366.738" timestamp="1605362388042" />
+    <state width="1323" height="182" key="GridCell.Tab.0.center" timestamp="1605362388042">
+      <screen x="0" y="0" width="1366" height="738" />
+    </state>
+    <state width="1323" height="182" key="GridCell.Tab.0.center/0.0.1366.738@0.0.1366.738" timestamp="1605362388042" />
+    <state width="1323" height="182" key="GridCell.Tab.0.left" timestamp="1605362388042">
+      <screen x="0" y="0" width="1366" height="738" />
+    </state>
+    <state width="1323" height="182" key="GridCell.Tab.0.left/0.0.1366.738@0.0.1366.738" timestamp="1605362388042" />
+    <state width="1323" height="182" key="GridCell.Tab.0.right" timestamp="1605362388042">
+      <screen x="0" y="0" width="1366" height="738" />
+    </state>
+    <state width="1323" height="182" key="GridCell.Tab.0.right/0.0.1366.738@0.0.1366.738" timestamp="1605362388042" />
     <state x="275" y="101" key="Rider.ProjectTemplateDialog.Size" timestamp="1604085240995">
       <screen x="0" y="0" width="1366" height="738" />
     </state>

@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sc-editor", "sc-editor.csproj", "{47E26650-5E98-4D39-A98A-2EE45E58B7E9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "sc-editor", "sc-editor/sc-editor.csproj", "{47E26650-5E98-4D39-A98A-2EE45E58B7E9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

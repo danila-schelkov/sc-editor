@@ -4,7 +4,7 @@
     <PropertyGroup>
         <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
         <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-        <ProjectGuid>{47E26650-5E98-4D39-A98A-2EE45E58B7E9}</ProjectGuid>
+        <ProjectGuid>{656E4BF5-F715-4992-B128-921BF798E81D}</ProjectGuid>
         <OutputType>WinExe</OutputType>
         <RootNamespace>sc_editor</RootNamespace>
         <AssemblyName>sc_editor</AssemblyName>
@@ -33,6 +33,10 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <ItemGroup>
+        <Reference Include="SevenZip, Version=19.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\packages\SevenZip.19.0.0\lib\net20\SevenZip.dll</HintPath>
+          <Private>True</Private>
+        </Reference>
         <Reference Include="System" />
         <Reference Include="System.Core" />
         <Reference Include="System.Xml.Linq" />
@@ -46,6 +50,7 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Compression.cs" />
         <Compile Include="Form1.cs">
             <SubType>Form</SubType>
         </Compile>
@@ -54,9 +59,6 @@
         </Compile>
         <Compile Include="Program.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
-        <EmbeddedResource Include="Form1.resx">
-          <DependentUpon>Form1.cs</DependentUpon>
-        </EmbeddedResource>
         <EmbeddedResource Include="Properties\Resources.resx">
             <Generator>ResXFileCodeGenerator</Generator>
             <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -66,6 +68,7 @@
             <AutoGen>True</AutoGen>
             <DependentUpon>Resources.resx</DependentUpon>
         </Compile>
+        <None Include="packages.config" />
         <None Include="Properties\Settings.settings">
             <Generator>SettingsSingleFileGenerator</Generator>
             <LastGenOutput>Settings.Designer.cs</LastGenOutput>
