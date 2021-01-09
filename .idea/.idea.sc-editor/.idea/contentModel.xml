@@ -2,23 +2,41 @@
 <project version="4">
   <component name="ContentModelStore">
     <e p="C:\Users\Admin\.Rider2019.3\system\extResources" t="IncludeRecursive" />
-    <e p="C:\Users\Admin\.Rider2019.3\system\resharper-host\local\Transient\ReSharperHost\v193\SolutionCaches\_sc-editor.-1427411292.00" t="ExcludeRecursive" />
-    <e p="C:\Users\Admin\RiderProjects\sc-editor" t="IncludeRecursive">
-      <e p="App.config" t="Include" />
-      <e p="bin" t="ExcludeRecursive" />
-      <e p="Form1.cs" t="Include" />
-      <e p="Form1.Designer.cs" t="Include" />
-      <e p="obj" t="ExcludeRecursive" />
+    <e p="C:\Users\Admin\.Rider2019.3\system\resharper-host\local\Transient\ReSharperHost\v193\SolutionCaches\_sc-editor.-2050722855.00" t="ExcludeRecursive" />
+    <e p="D:\User\RiderProjects\sc-editor" t="IncludeFlat">
+      <e p=".git\info\exclude" t="IncludeRecursive" />
       <e p="packages" t="ExcludeRecursive" />
-      <e p="Program.cs" t="Include" />
-      <e p="Properties" t="Include">
-        <e p="AssemblyInfo.cs" t="Include" />
-        <e p="Resources.Designer.cs" t="Include" />
-        <e p="Resources.resx" t="Include" />
-        <e p="Settings.Designer.cs" t="Include" />
-        <e p="Settings.settings" t="Include" />
+      <e p="sc-editor" t="IncludeRecursive">
+        <e p="App.config" t="Include" />
+        <e p="bin" t="ExcludeRecursive" />
+        <e p="Compression.cs" t="Include" />
+        <e p="Extensions.cs" t="Include" />
+        <e p="Form1.cs" t="Include" />
+        <e p="Form1.Designer.cs" t="Include" />
+        <e p="Form1.resx" t="Include" />
+        <e p="obj" t="ExcludeRecursive" />
+        <e p="OpenTK.dll.config" t="Include" />
+        <e p="packages.config" t="Include" />
+        <e p="Program.cs" t="Include" />
+        <e p="Properties" t="Include">
+          <e p="AssemblyInfo.cs" t="Include" />
+          <e p="Resources.Designer.cs" t="Include" />
+          <e p="Resources.resx" t="Include" />
+          <e p="Settings.Designer.cs" t="Include" />
+          <e p="Settings.settings" t="Include" />
+        </e>
+        <e p="sc-editor.csproj" t="IncludeRecursive" />
+        <e p="SupercellSWF" t="Include">
+          <e p="ColorTransform.cs" t="Include" />
+          <e p="Export.cs" t="Include" />
+          <e p="MovieClip.cs" t="Include" />
+          <e p="Shape.cs" t="Include" />
+          <e p="SupercellSWF.cs" t="Include" />
+          <e p="SWFObject.cs" t="Include" />
+          <e p="SWFTexture.cs" t="Include" />
+          <e p="TextField.cs" t="Include" />
+        </e>
       </e>
-      <e p="sc-editor.csproj" t="IncludeRecursive" />
       <e p="sc-editor.sln" t="IncludeFlat" />
     </e>
   </component>
