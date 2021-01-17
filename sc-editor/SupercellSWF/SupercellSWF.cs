@@ -69,7 +69,8 @@ namespace sc_editor.SupercellSWF
             
             var texturePath = $"{directory}\\{fileName}_tex.sc";
             LoadInternal(filePath, false);
-            LoadInternal(texturePath, true);
+            if (File.Exists(texturePath))
+                LoadInternal(texturePath, true);
         }
 
         private void LoadInternal(string filePath, bool isTexture)
@@ -138,11 +139,9 @@ namespace sc_editor.SupercellSWF
                     case 0:
                         return;
                     case 1:
-                    case 16:
-                    case 19: // Maybe load сaсhed textures
-                    case 24:
+                    case 28:
                         var texture = new SWFTexture(this);
-                        texture.Load(br, hasTexture);
+                        texture.Load(br, dataTag, hasTexture);
                         _textures.Add(texture);
                         continue;
                     case 2:

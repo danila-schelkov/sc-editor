@@ -63,7 +63,6 @@ namespace sc_editor.SupercellSWF
                     Debug.WriteLine("TAG_MOVIE_CLIP no longer supported");
                     break;
                 default:
-                {
                     var transformsCount = br.ReadInt32();
 
                     for (var i = 0; i < transformsCount; i++)
@@ -71,7 +70,6 @@ namespace sc_editor.SupercellSWF
                         _transforms.Add(br.ReadShortArray(3));
                     }
                     break;
-                }
             }
 
             var bindsCount = br.ReadShort();
@@ -142,9 +140,9 @@ namespace sc_editor.SupercellSWF
             }
         }
         
-        public override Bitmap Render()
+        public override Bitmap Render(Matrix matrix = null)
         {
-            var gp = new GraphicsPath();
+            gp = new GraphicsPath();
             
             var allowAddPolygons = Polygons.Count == 0;
             foreach (var child in GetChildren())
@@ -167,7 +165,7 @@ namespace sc_editor.SupercellSWF
             var gpHeight = roundedBounds.Height;
             gpHeight = gpHeight > 0 ? gpHeight : 1;
 
-            var _rendered = new Bitmap(gpWidth, gpHeight);
+            _rendered = new Bitmap(gpWidth, gpHeight);
 
             var chunkX = -roundedBounds.X;
             var chunkY = -roundedBounds.Y;
@@ -177,17 +175,18 @@ namespace sc_editor.SupercellSWF
                 // foreach (var transform in _transforms)
                 // {
                 //     var child = GetChildren()[transform[0]];
-                //     var bitmap = child.Render();
+                //     
+                //     if (child.GetDataTypeName() == "TextField") continue;
                 //     
                 //     // Why this doesn't work?
-                //     // var matrix = transform[1] == 65535 ? 
-                //     //     new Matrix(-1, 0, 0, 1, chunkX, chunkY) : 
-                //     //     SWF.GetMatrix(transform[1]);
-                //     // gp.Transform(matrix); // Понял, надо применять не на текущий, а на gp детей
+                //     // Понял, надо применять не на текущий, а на gp детей
+                //     var bitmap = child.Render(transform[1] == 65535 ? 
+                //         null : 
+                //         SWF.GetMatrix(transform[1]));
                 //     
                 //     gp.Transform(new Matrix(1, 0, 0, 1, chunkX, chunkY));  // Действует на полигоны
                 //     g.SetClip(gp);
-                //     // Я картинку подгружал очень много раз, каждый transform, так что надо вынести рисование картинки за этот цикл, пока что его отключу
+                //     g.DrawImage(bitmap, 0, 0); // Я картинку подгружал очень много раз, каждый transform, так что надо вынести рисование картинки за этот цикл, пока что его отключу
                 // }
 
                 foreach (var bitmap in GetChildren().Select(child => child.Render()))
@@ -224,8 +223,8 @@ namespace sc_editor.SupercellSWF
                     bindObject = shape;
                 else if (!(movieClip is null))
                     bindObject = movieClip;
-                else if (!(textField is null))
-                    bindObject = textField;
+                // else if (!(textField is null))
+                //     bindObject = textField;
 
                 if (bindObject is null) continue;
 

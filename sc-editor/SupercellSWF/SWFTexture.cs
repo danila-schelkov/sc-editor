@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 
@@ -12,12 +14,14 @@ namespace sc_editor.SupercellSWF
         private byte _pixelType;
         private Bitmap _bitmap;
 
+        private const int _chunkSize = 32;
+
         public SWFTexture(SupercellSWF swf) : base(swf)
         {
             Id = (ushort) SWF.GetTextures().Count;
         }
 
-        public void Load(BinaryReader br, bool hasTexture)
+        public void Load(BinaryReader br, byte tag, bool hasTexture)
         {
             _pixelType = br.ReadUnsignedChar();
             Debug.WriteLine($"Pixel Type: {_pixelType}");
@@ -27,12 +31,11 @@ namespace sc_editor.SupercellSWF
                 Height = br.ReadShort()
             };
             
-            if (!hasTexture)
-                return;
-            LoadTexture(br);
+            if (!hasTexture) return;
+            LoadTexture(br, tag);
         }
 
-        private void LoadTexture(BinaryReader br)
+        private void LoadTexture(BinaryReader br, byte tag)
         {
             _bitmap = new Bitmap(Size.Width, Size.Height, PixelFormat.Format32bppArgb);
             int alpha;
@@ -129,9 +132,99 @@ namespace sc_editor.SupercellSWF
                     Debug.WriteLine($"Unknown pixel type: {_pixelType}");
                     break;
             }
+
+            if (tag != 28) return;
+            
+            var originalBitmap = (Bitmap) _bitmap.Clone();
+            var pixelIndex = 0;
+
+            var chunkYCount = Size.Height / _chunkSize;
+            var chunkXCount = Size.Width / _chunkSize;
+            var chunkYRest = Size.Height % _chunkSize;
+            var chunkXRest = Size.Width % _chunkSize;
+
+            for (var chunkY = 0; chunkY < chunkYCount; chunkY++)
+            {
+                for (var chunkX = 0; chunkX < chunkXCount; chunkX++)
+                for (var y = 0; y < _chunkSize; y++)
+                for (var x = 0; x < _chunkSize; x++)
+                {
+                    _bitmap.SetPixel(
+                        x + chunkX * _chunkSize, 
+                        y + chunkY * _chunkSize, 
+                        originalBitmap.GetPixel(pixelIndex % Size.Width, pixelIndex / Size.Width)
+                    );
+                    pixelIndex++;
+                }
+                
+                for (var y = 0; y < _chunkSize; y++)
+                for (var restX = 0; restX < chunkXRest; restX++)
+                {
+                    _bitmap.SetPixel(
+                        restX + Size.Width - chunkXRest,
+                        y + chunkY * _chunkSize,
+                        originalBitmap.GetPixel(pixelIndex % Size.Width, pixelIndex / Size.Width)
+                    );
+                    pixelIndex++;
+                }
+            }
+
+            for (var chunkX = 0; chunkX < chunkXCount; chunkX++)
+            for (var restY = 0; restY < chunkYRest; restY++)
+            for (var x = 0; x < _chunkSize; x++)
+            {
+                _bitmap.SetPixel(
+                    x + chunkX * _chunkSize,
+                    restY + Size.Height - chunkYRest,
+                    originalBitmap.GetPixel(pixelIndex % Size.Width, pixelIndex / Size.Width)
+                );
+                pixelIndex++;
+            }
+            
+            for (var restY = 0; restY < chunkYRest; restY++)
+            for (var restX = 0; restX < chunkXRest; restX++)
+            {
+                _bitmap.SetPixel(
+                    restX + Size.Width - chunkXRest,
+                    restY + Size.Height - chunkYRest,
+                    originalBitmap.GetPixel(pixelIndex % Size.Width, pixelIndex / Size.Width)
+                );
+                pixelIndex++;
+            }
         }
 
-        public override Bitmap Render()
+        // public void Save()
+        // {
+        //     var pixels = new List<Color>();
+        //
+        //     var chunkYCount = Size.Height / _chunkSize;
+        //     var chunkXCount = Size.Width / _chunkSize;
+        //     var chunkYRest = Size.Height % _chunkSize;
+        //     var chunkXRest = Size.Width % _chunkSize;
+        //
+        //     for (var chunkY = 0; chunkY < chunkYCount; chunkY++)
+        //     {
+        //         for (var chunkX = 0; chunkX < chunkXCount; chunkX++)
+        //         for (var y = 0; y < _chunkSize; y++)
+        //         for (var x = 0; x < _chunkSize; x++) 
+        //             pixels.Add(_bitmap.GetPixel(x + chunkX * _chunkSize, y + chunkY * _chunkSize));
+        //         
+        //         for (var y = 0; y < _chunkSize; y++)
+        //         for (var restX = 0; restX < chunkXRest; restX++)
+        //             pixels.Add(_bitmap.GetPixel(restX + Size.Width - chunkXRest, y + chunkY * _chunkSize));
+        //     }
+        //
+        //     for (var chunkX = 0; chunkX < chunkXCount; chunkX++)
+        //     for (var restY = 0; restY < chunkYRest; restY++)
+        //     for (var x = 0; x < _chunkSize; x++) 
+        //         pixels.Add(_bitmap.GetPixel(x + chunkX * _chunkSize, restY + Size.Height - chunkYRest));
+        //     
+        //     for (var restY = 0; restY < chunkYRest; restY++)
+        //     for (var restX = 0; restX < chunkXRest; restX++)
+        //         pixels.Add(_bitmap.GetPixel(restX + Size.Width - chunkXRest, restY + Size.Height - chunkYRest));
+        // }
+
+        public override Bitmap Render(Matrix matrix = null)
         {
             return _bitmap;
         }

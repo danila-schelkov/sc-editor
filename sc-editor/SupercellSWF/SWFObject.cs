@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 
 namespace sc_editor.SupercellSWF
@@ -7,6 +8,7 @@ namespace sc_editor.SupercellSWF
     public abstract class SWFObject
     {
         public List<PointF[]> Polygons;
+        public GraphicsPath gp;
         protected SupercellSWF SWF;
         protected string Name;
         protected ushort Id;
@@ -55,7 +57,7 @@ namespace sc_editor.SupercellSWF
             return Id;
         }
 
-        public virtual Bitmap Render()
+        public virtual Bitmap Render(Matrix matrix = null)
         {
             return null;
         }

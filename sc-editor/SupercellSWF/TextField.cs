@@ -46,6 +46,7 @@ namespace sc_editor.SupercellSWF
                     // *(_BYTE *)(v3 + 29) |= 0x20u;
                     return;
             }
+            
             if (tag >= 33)
             {
                 br.ReadInt32();
@@ -64,6 +65,11 @@ namespace sc_editor.SupercellSWF
                     // *(_BYTE *)(v3 + 29) |= 0x40;
                 }
             }
+        }
+
+        public override string GetDataTypeName()
+        {
+            return "TextField";
         }
     }
 }

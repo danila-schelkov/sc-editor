@@ -55,7 +55,7 @@ namespace sc_editor.SupercellSWF
             return "Region";
         }
         
-        public override Bitmap Render()
+        public override Bitmap Render(Matrix matrix = null)
         {
             if (!(_rendered is null)) return _rendered;
             
@@ -70,7 +70,7 @@ namespace sc_editor.SupercellSWF
             //     Debug.WriteLine("u: " + uv.X + ", v: " + uv.Y);
             // }
 
-            var gp = new GraphicsPath();
+            gp = new GraphicsPath();
             gp.AddPolygon(_shapePoints.ToArray());
 
             var roundedBounds = Rectangle.Round(gp.GetBounds());
@@ -189,11 +189,11 @@ namespace sc_editor.SupercellSWF
             }
         }
         
-        public override Bitmap Render()
+        public override Bitmap Render(Matrix matrix = null)
         {
             if (!(_rendered is null)) return _rendered;
             
-            var gp = new GraphicsPath();
+            gp = new GraphicsPath();
 
             foreach (var polygon in GetChildren()
                 .Select(command => ((ShapeDrawBitmapCommand) command).SheetPoints.ToArray()))
@@ -220,8 +220,12 @@ namespace sc_editor.SupercellSWF
                 foreach (var command in GetChildren().Cast<ShapeDrawBitmapCommand>())
                 {
                     var bitmap = command.Render().ResizeBitmap(gpWidth, gpHeight);
-
-                    gp.Transform(new Matrix(1, 0, 0, 1, chunkX, chunkY));
+                    
+                    if (matrix == null)
+                    {
+                        matrix = new Matrix(1, 0, 0, 1, chunkX, chunkY);
+                    }
+                    gp.Transform(matrix);
                     g.SetClip(gp);
                     g.DrawImage(bitmap, 0, 0);
                 }
