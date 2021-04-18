@@ -189,51 +189,6 @@ namespace sc_editor.SupercellSWF
             }
         }
         
-        public override Bitmap Render(Matrix matrix = null)
-        {
-            if (!(_rendered is null)) return _rendered;
-            
-            gp = new GraphicsPath();
-
-            foreach (var polygon in GetChildren()
-                .Select(command => ((ShapeDrawBitmapCommand) command).SheetPoints.ToArray()))
-            {
-                gp.AddPolygon(polygon);
-                Polygons.Add(polygon);
-            }
-
-            var roundedBounds = Rectangle.Round(gp.GetBounds());
-
-            var gpWidth = roundedBounds.Width;
-            gpWidth = gpWidth > 0 ? gpWidth : 1;
-
-            var gpHeight = roundedBounds.Height;
-            gpHeight = gpHeight > 0 ? gpHeight : 1;
-
-            _rendered = new Bitmap(gpWidth, gpHeight);
-
-            var chunkX = -roundedBounds.X;
-            var chunkY = -roundedBounds.Y;
-
-            using (var g = Graphics.FromImage(_rendered))
-            {
-                foreach (var command in GetChildren().Cast<ShapeDrawBitmapCommand>())
-                {
-                    var bitmap = command.Render().ResizeBitmap(gpWidth, gpHeight);
-                    
-                    if (matrix == null)
-                    {
-                        matrix = new Matrix(1, 0, 0, 1, chunkX, chunkY);
-                    }
-                    gp.Transform(matrix);
-                    g.SetClip(gp);
-                    g.DrawImage(bitmap, 0, 0);
-                }
-            }
-
-            return _rendered;
-        }
-
         public override List<SWFObject> GetChildren()
         {
             return _commands;

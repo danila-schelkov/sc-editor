@@ -68,6 +68,8 @@
         </Compile>
         <Compile Include="Program.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="Render\Renderer.cs" />
+        <Compile Include="Render\Shader.cs" />
         <Compile Include="SupercellSWF\ColorTransform.cs" />
         <Compile Include="SupercellSWF\Export.cs" />
         <Compile Include="SupercellSWF\MovieClip.cs" />
@@ -102,6 +104,10 @@
     </ItemGroup>
     <ItemGroup>
         <None Include="App.config" />
+    </ItemGroup>
+    <ItemGroup>
+      <Content Include="bin\Debug\fragment.glsl" />
+      <Content Include="bin\Debug\vertex.glsl" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

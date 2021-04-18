@@ -2,13 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8d90b7b3-9e4b-4de2-8968-2f886a8bae7e" name="Default Changelist" comment=".">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.sc-editor/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.sc-editor/.idea/contentModel.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.sc-editor/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.sc-editor/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sc-editor/Form1.Designer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/sc-editor/Form1.Designer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sc-editor/Form1.cs" beforeDir="false" afterPath="$PROJECT_DIR$/sc-editor/Form1.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sc-editor/SupercellSWF/MovieClip.cs" beforeDir="false" afterPath="$PROJECT_DIR$/sc-editor/SupercellSWF/MovieClip.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sc-editor/SupercellSWF/SWFObject.cs" beforeDir="false" afterPath="$PROJECT_DIR$/sc-editor/SupercellSWF/SWFObject.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sc-editor/SupercellSWF/SWFTexture.cs" beforeDir="false" afterPath="$PROJECT_DIR$/sc-editor/SupercellSWF/SWFTexture.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/sc-editor/SupercellSWF/Shape.cs" beforeDir="false" afterPath="$PROJECT_DIR$/sc-editor/SupercellSWF/Shape.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sc-editor/SupercellSWF/SupercellSWF.cs" beforeDir="false" afterPath="$PROJECT_DIR$/sc-editor/SupercellSWF/SupercellSWF.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sc-editor/SupercellSWF/TextField.cs" beforeDir="false" afterPath="$PROJECT_DIR$/sc-editor/SupercellSWF/TextField.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sc-editor/sc-editor.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/sc-editor/sc-editor.csproj" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,18 +43,27 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/1E9166BF-CA65-4377-B09C-EA42D003812D/5e/da5a0f65/GraphicsPath.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/1E9166BF-CA65-4377-B09C-EA42D003812D/f6/91d3c239/Graphics.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/6764F93F-9A3E-4037-817C-5D176911BDEA/44/0975d1d4/Matrix4.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sc-editor/bin/Debug/vertex.glsl" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/sc-editor/Form1.Designer.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sc-editor/bin/Debug/fragment.glsl" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/sc-editor/Program.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/1E9166BF-CA65-4377-B09C-EA42D003812D/b1/e094920b/Bitmap.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/sc-editor/Form1.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/3B28F550-0D54-4E01-9E30-DCA09FAB36D7/5d/bf0a31d4/TreeNodeCollection.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sc-editor/OpenTK.dll.config" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/sc-editor/Compression.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sc-editor/packages.config" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sc-editor/Render/Shader.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sc-editor/Extensions.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/6764F93F-9A3E-4037-817C-5D176911BDEA/a9/fab20897/Matrix3x2.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/sc-editor/Render/Renderer.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/metadata/6764F93F-9A3E-4037-817C-5D176911BDEA/5c/045b3615/OpenTK.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/3B28F550-0D54-4E01-9E30-DCA09FAB36D7/5d/bf0a31d4/TreeNodeCollection.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/sc-editor/SupercellSWF/ColorTransform.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/sc-editor/SupercellSWF/SupercellSWF.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/sc-editor/SupercellSWF/MovieClip.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/220F2AAB-ED1D-4738-94A8-8B65AAF6C105/fa/c6550e5b/ThrowHelper.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/sc-editor/SupercellSWF/SWFTexture.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/sc-editor/Extensions.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/sc-editor/SupercellSWF/TextField.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/sc-editor/SupercellSWF/Export.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/sc-editor/SupercellSWF/Shape.cs" root0="FORCE_HIGHLIGHTING" />
@@ -71,14 +80,19 @@
         <option value="$PROJECT_DIR$/sc-editor/SupercellSWF/Matrix2x3.cs" />
         <option value="$PROJECT_DIR$/sc-editor/SupercellSWF/ColorTransform.cs" />
         <option value="$PROJECT_DIR$/sc-editor/SupercellSWF/Export.cs" />
-        <option value="$PROJECT_DIR$/sc-editor/Form1.cs" />
         <option value="$PROJECT_DIR$/sc-editor/SupercellSWF/SupercellSWF.cs" />
         <option value="$PROJECT_DIR$/sc-editor/Extensions.cs" />
         <option value="$PROJECT_DIR$/sc-editor/SupercellSWF/SWFObject.cs" />
-        <option value="$PROJECT_DIR$/sc-editor/SupercellSWF/Shape.cs" />
         <option value="$PROJECT_DIR$/sc-editor/SupercellSWF/SWFTexture.cs" />
         <option value="$PROJECT_DIR$/sc-editor/SupercellSWF/TextField.cs" />
         <option value="$PROJECT_DIR$/sc-editor/SupercellSWF/MovieClip.cs" />
+        <option value="$PROJECT_DIR$/sc-editor/SupercellSWF/Shape.cs" />
+        <option value="$PROJECT_DIR$/sc-editor/Form1.Designer.cs" />
+        <option value="$PROJECT_DIR$/sc-editor/Renderer.cs" />
+        <option value="$PROJECT_DIR$/sc-editor/Render/Shader.cs" />
+        <option value="$PROJECT_DIR$/sc-editor/bin/Debug/vertex.glsl" />
+        <option value="$PROJECT_DIR$/sc-editor/Render/Renderer.cs" />
+        <option value="$PROJECT_DIR$/sc-editor/Form1.cs" />
       </list>
     </option>
   </component>
@@ -95,6 +109,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="TWShift.3" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="add_unversioned_files" value="$PROJECT_DIR$/sc-editor/bin/Debug/vertex.glsl" />
     <property name="restartRequiresConfirmation" value="false" />
     <property name="settings.editor.selected.configurable" value="preferences.intentionPowerPack" />
   </component>
@@ -145,7 +160,13 @@
       <workItem from="1610201271703" duration="7428000" />
       <workItem from="1610211201690" duration="20159000" />
       <workItem from="1610822357098" duration="2022000" />
-      <workItem from="1610874866149" duration="11288000" />
+      <workItem from="1610874866149" duration="12253000" />
+      <workItem from="1611520341738" duration="525000" />
+      <workItem from="1612100674544" duration="2001000" />
+      <workItem from="1612107826223" duration="4840000" />
+      <workItem from="1613319831344" duration="2278000" />
+      <workItem from="1613397464724" duration="5205000" />
+      <workItem from="1613405612798" duration="10225000" />
     </task>
     <servers />
   </component>
@@ -183,90 +204,94 @@
       <screen x="0" y="0" width="1366" height="738" />
     </state>
     <state x="414" y="84" key="#sc-editor:_sc_editor/0.0.1366.738@0.0.1366.738" timestamp="1605362381103" />
+    <state x="547" y="315" key="Assembly removing confirmation dialog" timestamp="1610889527344">
+      <screen x="0" y="0" width="1366" height="738" />
+    </state>
+    <state x="547" y="315" key="Assembly removing confirmation dialog/0.0.1366.738@0.0.1366.738" timestamp="1610889527344" />
     <state width="492" height="466" key="DebuggerActiveHint" timestamp="1610214129992">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
     <state width="492" height="466" key="DebuggerActiveHint/0.0.1366.738@0.0.1366.738" timestamp="1610214129992" />
-    <state width="1323" height="182" key="GridCell.Tab.0.bottom" timestamp="1610889343839">
+    <state width="1323" height="227" key="GridCell.Tab.0.bottom" timestamp="1613416234455">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="182" key="GridCell.Tab.0.bottom/0.0.1366.738@0.0.1366.738" timestamp="1610889343839" />
-    <state width="1323" height="182" key="GridCell.Tab.0.center" timestamp="1610889343838">
+    <state width="1323" height="227" key="GridCell.Tab.0.bottom/0.0.1366.738@0.0.1366.738" timestamp="1613416234455" />
+    <state width="1323" height="227" key="GridCell.Tab.0.center" timestamp="1613416234455">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="182" key="GridCell.Tab.0.center/0.0.1366.738@0.0.1366.738" timestamp="1610889343838" />
-    <state width="1323" height="182" key="GridCell.Tab.0.left" timestamp="1610889343838">
+    <state width="1323" height="227" key="GridCell.Tab.0.center/0.0.1366.738@0.0.1366.738" timestamp="1613416234455" />
+    <state width="1323" height="227" key="GridCell.Tab.0.left" timestamp="1613416234455">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="182" key="GridCell.Tab.0.left/0.0.1366.738@0.0.1366.738" timestamp="1610889343838" />
-    <state width="1323" height="182" key="GridCell.Tab.0.right" timestamp="1610889343839">
+    <state width="1323" height="227" key="GridCell.Tab.0.left/0.0.1366.738@0.0.1366.738" timestamp="1613416234455" />
+    <state width="1323" height="227" key="GridCell.Tab.0.right" timestamp="1613416234455">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="182" key="GridCell.Tab.0.right/0.0.1366.738@0.0.1366.738" timestamp="1610889343839" />
-    <state width="1323" height="227" key="GridCell.Tab.1.bottom" timestamp="1610886990500">
+    <state width="1323" height="227" key="GridCell.Tab.0.right/0.0.1366.738@0.0.1366.738" timestamp="1613416234455" />
+    <state width="1323" height="227" key="GridCell.Tab.1.bottom" timestamp="1613416234456">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.1.bottom/0.0.1366.738@0.0.1366.738" timestamp="1610886990500" />
-    <state width="1323" height="227" key="GridCell.Tab.1.center" timestamp="1610886990500">
+    <state width="1323" height="227" key="GridCell.Tab.1.bottom/0.0.1366.738@0.0.1366.738" timestamp="1613416234456" />
+    <state width="1323" height="227" key="GridCell.Tab.1.center" timestamp="1613416234456">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.1.center/0.0.1366.738@0.0.1366.738" timestamp="1610886990500" />
-    <state width="1323" height="227" key="GridCell.Tab.1.left" timestamp="1610886990499">
+    <state width="1323" height="227" key="GridCell.Tab.1.center/0.0.1366.738@0.0.1366.738" timestamp="1613416234456" />
+    <state width="1323" height="227" key="GridCell.Tab.1.left" timestamp="1613416234456">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.1.left/0.0.1366.738@0.0.1366.738" timestamp="1610886990499" />
-    <state width="1323" height="227" key="GridCell.Tab.1.right" timestamp="1610886990500">
+    <state width="1323" height="227" key="GridCell.Tab.1.left/0.0.1366.738@0.0.1366.738" timestamp="1613416234456" />
+    <state width="1323" height="227" key="GridCell.Tab.1.right" timestamp="1613416234456">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.1.right/0.0.1366.738@0.0.1366.738" timestamp="1610886990500" />
-    <state width="1323" height="227" key="GridCell.Tab.2.bottom" timestamp="1610886990502">
+    <state width="1323" height="227" key="GridCell.Tab.1.right/0.0.1366.738@0.0.1366.738" timestamp="1613416234456" />
+    <state width="1323" height="227" key="GridCell.Tab.2.bottom" timestamp="1613416234457">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.2.bottom/0.0.1366.738@0.0.1366.738" timestamp="1610886990502" />
-    <state width="1323" height="227" key="GridCell.Tab.2.center" timestamp="1610886990501">
+    <state width="1323" height="227" key="GridCell.Tab.2.bottom/0.0.1366.738@0.0.1366.738" timestamp="1613416234457" />
+    <state width="1323" height="227" key="GridCell.Tab.2.center" timestamp="1613416234456">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.2.center/0.0.1366.738@0.0.1366.738" timestamp="1610886990501" />
-    <state width="1323" height="227" key="GridCell.Tab.2.left" timestamp="1610886990501">
+    <state width="1323" height="227" key="GridCell.Tab.2.center/0.0.1366.738@0.0.1366.738" timestamp="1613416234456" />
+    <state width="1323" height="227" key="GridCell.Tab.2.left" timestamp="1613416234456">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.2.left/0.0.1366.738@0.0.1366.738" timestamp="1610886990501" />
-    <state width="1323" height="227" key="GridCell.Tab.2.right" timestamp="1610886990501">
+    <state width="1323" height="227" key="GridCell.Tab.2.left/0.0.1366.738@0.0.1366.738" timestamp="1613416234456" />
+    <state width="1323" height="227" key="GridCell.Tab.2.right" timestamp="1613416234457">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.2.right/0.0.1366.738@0.0.1366.738" timestamp="1610886990501" />
-    <state width="1323" height="227" key="GridCell.Tab.3.bottom" timestamp="1610886990503">
+    <state width="1323" height="227" key="GridCell.Tab.2.right/0.0.1366.738@0.0.1366.738" timestamp="1613416234457" />
+    <state width="1323" height="227" key="GridCell.Tab.3.bottom" timestamp="1613416234457">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.3.bottom/0.0.1366.738@0.0.1366.738" timestamp="1610886990503" />
-    <state width="1323" height="227" key="GridCell.Tab.3.center" timestamp="1610886990502">
+    <state width="1323" height="227" key="GridCell.Tab.3.bottom/0.0.1366.738@0.0.1366.738" timestamp="1613416234457" />
+    <state width="1323" height="227" key="GridCell.Tab.3.center" timestamp="1613416234457">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.3.center/0.0.1366.738@0.0.1366.738" timestamp="1610886990502" />
-    <state width="1323" height="227" key="GridCell.Tab.3.left" timestamp="1610886990502">
+    <state width="1323" height="227" key="GridCell.Tab.3.center/0.0.1366.738@0.0.1366.738" timestamp="1613416234457" />
+    <state width="1323" height="227" key="GridCell.Tab.3.left" timestamp="1613416234457">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.3.left/0.0.1366.738@0.0.1366.738" timestamp="1610886990502" />
-    <state width="1323" height="227" key="GridCell.Tab.3.right" timestamp="1610886990503">
+    <state width="1323" height="227" key="GridCell.Tab.3.left/0.0.1366.738@0.0.1366.738" timestamp="1613416234457" />
+    <state width="1323" height="227" key="GridCell.Tab.3.right" timestamp="1613416234457">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.3.right/0.0.1366.738@0.0.1366.738" timestamp="1610886990503" />
-    <state width="1323" height="227" key="GridCell.Tab.4.bottom" timestamp="1610886990504">
+    <state width="1323" height="227" key="GridCell.Tab.3.right/0.0.1366.738@0.0.1366.738" timestamp="1613416234457" />
+    <state width="1323" height="227" key="GridCell.Tab.4.bottom" timestamp="1613416234458">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.4.bottom/0.0.1366.738@0.0.1366.738" timestamp="1610886990504" />
-    <state width="1323" height="227" key="GridCell.Tab.4.center" timestamp="1610886990504">
+    <state width="1323" height="227" key="GridCell.Tab.4.bottom/0.0.1366.738@0.0.1366.738" timestamp="1613416234458" />
+    <state width="1323" height="227" key="GridCell.Tab.4.center" timestamp="1613416234458">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.4.center/0.0.1366.738@0.0.1366.738" timestamp="1610886990504" />
-    <state width="1323" height="227" key="GridCell.Tab.4.left" timestamp="1610886990503">
+    <state width="1323" height="227" key="GridCell.Tab.4.center/0.0.1366.738@0.0.1366.738" timestamp="1613416234458" />
+    <state width="1323" height="227" key="GridCell.Tab.4.left" timestamp="1613416234458">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.4.left/0.0.1366.738@0.0.1366.738" timestamp="1610886990503" />
-    <state width="1323" height="227" key="GridCell.Tab.4.right" timestamp="1610886990504">
+    <state width="1323" height="227" key="GridCell.Tab.4.left/0.0.1366.738@0.0.1366.738" timestamp="1613416234458" />
+    <state width="1323" height="227" key="GridCell.Tab.4.right" timestamp="1613416234458">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
-    <state width="1323" height="227" key="GridCell.Tab.4.right/0.0.1366.738@0.0.1366.738" timestamp="1610886990504" />
+    <state width="1323" height="227" key="GridCell.Tab.4.right/0.0.1366.738@0.0.1366.738" timestamp="1613416234458" />
     <state x="275" y="101" key="Rider.ProjectTemplateDialog.Size" timestamp="1606657681808">
       <screen x="0" y="0" width="1366" height="738" />
     </state>
@@ -279,6 +304,10 @@
       <screen x="0" y="0" width="1366" height="738" />
     </state>
     <state x="184" y="11" key="SettingsEditor/0.0.1366.738@0.0.1366.738" timestamp="1609768181978" />
+    <state x="462" y="235" key="ToolboxManager" timestamp="1610889722853">
+      <screen x="0" y="0" width="1366" height="738" />
+    </state>
+    <state x="462" y="235" key="ToolboxManager/0.0.1366.738@0.0.1366.738" timestamp="1610889722853" />
     <state width="648" height="377" key="XDebugger.FullValuePopup" timestamp="1610202238022">
       <screen x="0" y="0" width="1366" height="738" />
     </state>

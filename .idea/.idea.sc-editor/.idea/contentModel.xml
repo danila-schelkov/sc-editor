@@ -8,7 +8,12 @@
       <e p="packages" t="ExcludeRecursive" />
       <e p="sc-editor" t="IncludeRecursive">
         <e p="App.config" t="Include" />
-        <e p="bin" t="ExcludeRecursive" />
+        <e p="bin" t="ExcludeRecursive">
+          <e p="Debug" t="Include">
+            <e p="fragment.glsl" t="Include" />
+            <e p="vertex.glsl" t="Include" />
+          </e>
+        </e>
         <e p="Compression.cs" t="Include" />
         <e p="Extensions.cs" t="Include" />
         <e p="Form1.cs" t="Include" />
@@ -24,6 +29,10 @@
           <e p="Resources.resx" t="Include" />
           <e p="Settings.Designer.cs" t="Include" />
           <e p="Settings.settings" t="Include" />
+        </e>
+        <e p="Render" t="Include">
+          <e p="Renderer.cs" t="Include" />
+          <e p="Shader.cs" t="Include" />
         </e>
         <e p="sc-editor.csproj" t="IncludeRecursive" />
         <e p="SupercellSWF" t="Include">

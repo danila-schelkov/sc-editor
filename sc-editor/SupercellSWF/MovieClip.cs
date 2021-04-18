@@ -139,66 +139,6 @@ namespace sc_editor.SupercellSWF
                 br.ReadChars(movieClipFrameLength);
             }
         }
-        
-        public override Bitmap Render(Matrix matrix = null)
-        {
-            gp = new GraphicsPath();
-            
-            var allowAddPolygons = Polygons.Count == 0;
-            foreach (var child in GetChildren())
-            {
-                child.Render();
-
-                foreach (var polygon in child.Polygons)
-                {
-                    gp.AddPolygon(polygon);
-                    if (allowAddPolygons)
-                        Polygons.Add(polygon);
-                }
-            }
-            
-            var roundedBounds = Rectangle.Round(gp.GetBounds());
-
-            var gpWidth = roundedBounds.Width;
-            gpWidth = gpWidth > 0 ? gpWidth : 1;
-
-            var gpHeight = roundedBounds.Height;
-            gpHeight = gpHeight > 0 ? gpHeight : 1;
-
-            _rendered = new Bitmap(gpWidth, gpHeight);
-
-            var chunkX = -roundedBounds.X;
-            var chunkY = -roundedBounds.Y;
-            
-            using (var g = Graphics.FromImage(_rendered))
-            {
-                // foreach (var transform in _transforms)
-                // {
-                //     var child = GetChildren()[transform[0]];
-                //     
-                //     if (child.GetDataTypeName() == "TextField") continue;
-                //     
-                //     // Why this doesn't work?
-                //     // Понял, надо применять не на текущий, а на gp детей
-                //     var bitmap = child.Render(transform[1] == 65535 ? 
-                //         null : 
-                //         SWF.GetMatrix(transform[1]));
-                //     
-                //     gp.Transform(new Matrix(1, 0, 0, 1, chunkX, chunkY));  // Действует на полигоны
-                //     g.SetClip(gp);
-                //     g.DrawImage(bitmap, 0, 0); // Я картинку подгружал очень много раз, каждый transform, так что надо вынести рисование картинки за этот цикл, пока что его отключу
-                // }
-
-                foreach (var bitmap in GetChildren().Select(child => child.Render()))
-                {
-                    gp.Transform(new Matrix(1, 0, 0, 1, chunkX, chunkY));  // Действует на полигоны
-                    g.SetClip(gp);
-                    g.DrawImage(bitmap, 0, 0); // действует только на картинку
-                }
-            }
-
-            return _rendered;
-        }
 
         public override List<SWFObject> GetChildren()
         {
