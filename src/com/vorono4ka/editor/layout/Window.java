@@ -27,7 +27,6 @@ public class Window {
         this.canvas = createCanvas();
 
         this.frame.getContentPane().add(this.canvas);
-        this.frame.pack();
         this.frame.setSize(frame.getContentPane().getPreferredSize());
     }
 
@@ -78,6 +77,7 @@ public class Window {
         open.addActionListener((e) -> {
             System.out.println("Open.");
             Main.editor.getRenderer().setDisplayObject(new Triangle());
+            this.canvas.display();
         });
 
         fileMenu.add(open);
