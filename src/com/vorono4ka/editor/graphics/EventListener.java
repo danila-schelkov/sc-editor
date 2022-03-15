@@ -11,10 +11,12 @@ public class EventListener implements GLEventListener {
 
     @Override
     public void init(GLAutoDrawable glAutoDrawable) {
-        this.renderer = Main.editor.getRenderer();
-        this.renderer.initialize(glAutoDrawable.getGL().getGL2());
+        GL2 gl = glAutoDrawable.getGL().getGL2();
 
-        this.renderer.getGl().glClearColor(.5f, .5f, .5f, 1);
+        gl.glClearColor(.5f, .5f, .5f, 1);
+
+        this.renderer = Main.editor.getRenderer();
+        this.renderer.initialize(gl);
     }
 
     @Override
