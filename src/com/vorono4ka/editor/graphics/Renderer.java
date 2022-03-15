@@ -1,6 +1,7 @@
 package com.vorono4ka.editor.graphics;
 
 import com.jogamp.opengl.GL2;
+import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.graphics.objects.DisplayObject;
 
 public class Renderer {
@@ -34,5 +35,17 @@ public class Renderer {
 
     public void setDisplayObject(DisplayObject displayObject) {
         this.displayObject = displayObject;
+    }
+
+    public int getWidth() {
+        return Main.editor.getWindow().getCanvas().getWidth();
+    }
+
+    public int getHeight() {
+        return Main.editor.getWindow().getCanvas().getHeight();
+    }
+
+    public float getAspectRatio() {
+        return getWidth() / (float) getHeight();
     }
 }

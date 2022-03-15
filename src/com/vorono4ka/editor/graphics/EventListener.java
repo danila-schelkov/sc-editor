@@ -33,8 +33,7 @@ public class EventListener implements GLEventListener {
     public void reshape(GLAutoDrawable glAutoDrawable, int i, int i1, int i2, int i3) {
         GL2 gl = glAutoDrawable.getGL().getGL2();
 
-        Window window = Main.editor.getWindow();
-        float unitsTall = Renderer.unitsWide / window.getAspectRatio();
+        float unitsTall = Renderer.unitsWide / this.renderer.getAspectRatio();
 
         gl.glMatrixMode(GL2.GL_PROJECTION);
         gl.glLoadIdentity();

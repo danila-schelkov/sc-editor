@@ -5,15 +5,24 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.graphics.EventListener;
+import com.vorono4ka.editor.graphics.objects.Square;
 import com.vorono4ka.editor.graphics.objects.Triangle;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class Window {
     private final JFrame frame;
     private GLCanvas canvas;
+    private JTable table;
 
     public Window(String name) {
         this.frame = new JFrame(name);
@@ -24,28 +33,54 @@ public class Window {
         JMenuBar menuBar = createJMenuBar();
         this.frame.setJMenuBar(menuBar);
 
+        this.table = createJTable();
+
+        JScrollPane tableScrollPane = new JScrollPane(this.table);
+        tableScrollPane.setPreferredSize(new Dimension(300, 0));
+
         this.canvas = createCanvas();
 
+        this.frame.getContentPane().add(tableScrollPane, BorderLayout.WEST);
         this.frame.getContentPane().add(this.canvas);
-        this.frame.setSize(frame.getContentPane().getPreferredSize());
+        this.frame.setSize(this.frame.getContentPane().getPreferredSize());
     }
 
     public void show() {
-        frame.setVisible(true);
+        this.frame.setVisible(true);
     }
 
-    public int getWidth() {
-        return this.frame.getWidth();
+    public JTable getTable() {
+        return table;
     }
 
-    public int getHeight() {
-        return this.frame.getHeight();
+    public GLCanvas getCanvas() {
+        return this.canvas;
     }
 
-    public float getAspectRatio() {
-        return getWidth() / (float) getHeight();
-    }
 
+    private JTable createJTable() {
+        DefaultTableModel tableModel = new DefaultTableModel();
+        tableModel.setColumnIdentifiers(new Object[] {"id", "name", "type"});
+
+        JTable table = new JTable(tableModel) {
+            public boolean isCellEditable(int row, int column){
+                return false;
+            }
+        };
+        table.getTableHeader().setReorderingAllowed(false);
+
+        table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.getSelectionModel().addListSelectionListener(new TableSelectionListener(table));
+
+        TableRowSorter<TableModel> sorter = new TableRowSorter<>(table.getModel());
+        table.setRowSorter(sorter);
+
+        List<RowSorter.SortKey> sortKeys = new ArrayList<>();
+        sortKeys.add(new RowSorter.SortKey(2, SortOrder.DESCENDING));
+        sorter.setSortKeys(sortKeys);
+
+        return table;
+    }
 
     private GLCanvas createCanvas() {
         final GLProfile profile = GLProfile.get(GLProfile.GL2);
@@ -76,14 +111,17 @@ public class Window {
         open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
         open.addActionListener((e) -> {
             System.out.println("Open.");
-            Main.editor.getRenderer().setDisplayObject(new Triangle());
-            this.canvas.display();
+
+            int rand = new Random().nextInt(2);
+            Main.editor.getScene().add(rand == 1 ? new Triangle() : new Square());
         });
 
         fileMenu.add(open);
 
         JMenuItem close = new JMenuItem("Close", KeyEvent.VK_C);
         close.addActionListener((e) -> {
+            clearTable();
+
             Main.editor.getRenderer().setDisplayObject(null);
             this.canvas.display();
         });
@@ -96,5 +134,12 @@ public class Window {
         exit.addActionListener((e) -> System.exit(0));
         fileMenu.add(exit);
         return fileMenu;
+    }
+
+    private void clearTable() {
+        DefaultTableModel model = (DefaultTableModel) this.table.getModel();
+        while (model.getRowCount() > 0) {
+            model.removeRow(0);
+        }
     }
 }
