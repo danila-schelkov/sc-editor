@@ -4,7 +4,6 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.layout.Window;
 
 public class EventListener implements GLEventListener {
     private Renderer renderer;

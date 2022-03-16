@@ -1,7 +1,7 @@
 package com.vorono4ka.editor.layout;
 
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.graphics.objects.DisplayObject;
+import com.vorono4ka.editor.world.objects.DisplayObject;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;

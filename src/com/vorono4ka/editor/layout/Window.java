@@ -5,10 +5,11 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.graphics.EventListener;
-import com.vorono4ka.editor.graphics.objects.Square;
-import com.vorono4ka.editor.graphics.objects.Triangle;
+import com.vorono4ka.editor.world.objects.Square;
+import com.vorono4ka.editor.world.objects.Triangle;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -110,7 +111,14 @@ public class Window {
         JMenuItem open = new JMenuItem("Open", KeyEvent.VK_O);
         open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
         open.addActionListener((e) -> {
-            System.out.println("Open.");
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc)", "sc"));
+
+            int result = fileChooser.showOpenDialog(this.frame);
+            if (result == JFileChooser.APPROVE_OPTION) {
+                Main.editor.openFile(fileChooser.getSelectedFile());
+            }
 
             int rand = new Random().nextInt(2);
             Main.editor.getScene().add(rand == 1 ? new Triangle() : new Square());

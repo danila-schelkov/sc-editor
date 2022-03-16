@@ -1,7 +1,7 @@
 package com.vorono4ka.editor.world;
 
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.graphics.objects.DisplayObject;
+import com.vorono4ka.editor.world.objects.DisplayObject;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

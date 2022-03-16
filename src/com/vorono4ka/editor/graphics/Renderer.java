@@ -2,7 +2,7 @@ package com.vorono4ka.editor.graphics;
 
 import com.jogamp.opengl.GL2;
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.graphics.objects.DisplayObject;
+import com.vorono4ka.editor.world.objects.DisplayObject;
 
 public class Renderer {
     public static final float unitsWide = 2;
