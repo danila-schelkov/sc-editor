@@ -2,12 +2,12 @@ package com.vorono4ka.editor.graphics;
 
 import com.jogamp.opengl.GL2;
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.world.objects.DisplayObject;
+import com.vorono4ka.editor.world.objects.GameObject;
 
 public class Renderer {
     public static final float unitsWide = 2;
 
-    private DisplayObject displayObject;
+    private GameObject gameObject;
 
     private boolean initialized;
     private GL2 gl;
@@ -25,16 +25,16 @@ public class Renderer {
 
         this.gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 
-        if (this.displayObject == null) return;
-        this.displayObject.render(this.gl);
+        if (this.gameObject == null) return;
+        this.gameObject.render(this.gl);
     }
 
     public GL2 getGl() {
         return gl;
     }
 
-    public void setDisplayObject(DisplayObject displayObject) {
-        this.displayObject = displayObject;
+    public void setDisplayObject(GameObject gameObject) {
+        this.gameObject = gameObject;
     }
 
     public int getWidth() {

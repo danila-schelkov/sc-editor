@@ -40,7 +40,10 @@ public class Decompressor {
                 stream.read(decoderProperties);
                 decoder.setDecoderProperties(decoderProperties);
 
-                int outSize = stream.readInt();
+                int outSize = 0;
+                for (int i = 0; i < 4; i++) {
+                    outSize |= (stream.read() & 0xFF) << (i * 8);
+                }
 
                 ByteArrayOutputStream outputArray = new ByteArrayOutputStream();
                 BufferedOutputStream outputStream = new BufferedOutputStream(outputArray);

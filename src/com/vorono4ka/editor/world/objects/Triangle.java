@@ -2,7 +2,7 @@ package com.vorono4ka.editor.world.objects;
 
 import com.jogamp.opengl.GL2;
 
-public class Triangle extends DisplayObject {
+public class Triangle extends GameObject {
     @Override
     public void render(GL2 gl) {
         gl.glBegin(GL2.GL_TRIANGLES);

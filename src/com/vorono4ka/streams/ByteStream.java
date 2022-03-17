@@ -1,6 +1,5 @@
 package com.vorono4ka.streams;
 
-import java.io.EOFException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
@@ -62,24 +61,24 @@ public class ByteStream {
     public void writeInt16(int value) {
         this.ensureCapacity(2);
 
-        this.write((byte) ((value & 0xFF00) >> 8));
         this.write((byte) ((value & 0x00FF)));
+        this.write((byte) ((value & 0xFF00) >> 8));
     }
 
     public void writeInt32(int value) {
         this.ensureCapacity(4);
 
-        this.write((byte) ((value & 0xFF000000) >> 24));
-        this.write((byte) ((value & 0x00FF0000) >> 16));
-        this.write((byte) ((value & 0x0000FF00) >> 8));
         this.write((byte) ((value & 0x000000FF)));
+        this.write((byte) ((value & 0x0000FF00) >> 8));
+        this.write((byte) ((value & 0x00FF0000) >> 16));
+        this.write((byte) ((value & 0xFF000000) >> 24));
     }
 
     public void writeInt64(long value) {
         this.ensureCapacity(8);
 
-        this.writeInt32((int) ((value & 0xFFFFFFFF00000000L) >> 32));
         this.writeInt32((int) ((value & 0x00000000FFFFFFFFL)));
+        this.writeInt32((int) ((value & 0xFFFFFFFF00000000L) >> 32));
     }
 
     public void writeBoolean(boolean value) {
@@ -103,19 +102,46 @@ public class ByteStream {
     }
 
     public int readInt16() {
-        return (this.readInt8() & 0xFF) << 8 |
-               (this.readInt8() & 0xFF);
+        return (this.readInt8() & 0xFF) |
+               (this.readInt8() & 0xFF) << 8;
     }
 
     public int readInt32() {
-        return (this.readInt8() & 0xFF) << 24 |
-               (this.readInt8() & 0xFF) << 16 |
+        return (this.readInt8() & 0xFF) |
                (this.readInt8() & 0xFF) << 8 |
-               (this.readInt8() & 0xFF);
+               (this.readInt8() & 0xFF) << 16 |
+               (this.readInt8() & 0xFF) << 24;
     }
 
     public boolean readBoolean() {
         return this.readInt8() == 1;
+    }
+
+    public int[] readByteArray(int count) {
+        int[] array = new int[count];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = this.readInt8();
+        }
+
+        return array;
+    }
+
+    public int[] readShortArray(int count) {
+        int[] array = new int[count];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = this.readInt16();
+        }
+
+        return array;
+    }
+
+    public int[] readIntArray(int count) {
+        int[] array = new int[count];
+        for (int i = 0; i < array.length; i++) {
+            array[i] = this.readInt32();
+        }
+
+        return array;
     }
 
 
@@ -134,5 +160,12 @@ public class ByteStream {
 
     public void setOffset(int offset) {
         this.offset = offset;
+    }
+
+    public String readAscii() {
+        int length = this.readInt8() & 0xff;
+        if (length == 255) return null;
+
+        return new String(this.read(length), StandardCharsets.UTF_8);
     }
 }

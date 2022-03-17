@@ -7,6 +7,8 @@ import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.graphics.EventListener;
 import com.vorono4ka.editor.world.objects.Square;
 import com.vorono4ka.editor.world.objects.Triangle;
+import com.vorono4ka.resources.ResourceManager;
+import com.vorono4ka.swf.SupercellSWF;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -116,12 +118,27 @@ public class Window {
             fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc)", "sc"));
 
             int result = fileChooser.showOpenDialog(this.frame);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                Main.editor.openFile(fileChooser.getSelectedFile());
+            if (result != JFileChooser.APPROVE_OPTION) return;
+
+            String path = fileChooser.getSelectedFile().getPath();
+            if (!ResourceManager.doesFileExist(path.substring(0, path.length() - 3) + SupercellSWF.TEXTURE_EXTENSION)) {
+                Object[] options = {"Yes", "Cancel"};
+                int warningResult = JOptionPane.showOptionDialog(
+                    this.frame,
+                    "There is no texture file (but it may have a different suffix specified in the file).\n" +
+                            "Do you want to open file anyway?",
+                    "Answer the question",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.WARNING_MESSAGE,
+                    null,
+                    options,
+                    options[0]
+                );
+
+                if (warningResult != 0) return;
             }
 
-            int rand = new Random().nextInt(2);
-            Main.editor.getScene().add(rand == 1 ? new Triangle() : new Square());
+            Main.editor.openFile(path);
         });
 
         fileMenu.add(open);

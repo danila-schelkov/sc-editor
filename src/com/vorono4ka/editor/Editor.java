@@ -1,14 +1,16 @@
 package com.vorono4ka.editor;
 
-import com.vorono4ka.compression.Decompressor;
-import com.vorono4ka.compression.exceptions.UnknownFileMagicException;
-import com.vorono4ka.compression.exceptions.UnknownFileVersionException;
 import com.vorono4ka.editor.graphics.Renderer;
 import com.vorono4ka.editor.layout.Window;
 import com.vorono4ka.editor.world.Scene;
+import com.vorono4ka.editor.world.objects.Square;
+import com.vorono4ka.editor.world.objects.Triangle;
 import com.vorono4ka.swf.SupercellSWF;
+import com.vorono4ka.swf.exceptions.LoadingFaultException;
+import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
+import com.vorono4ka.swf.exceptions.TooManyObjectsException;
 
-import java.io.*;
+import java.util.Random;
 
 public class Editor {
     private final Renderer renderer;
@@ -23,27 +25,17 @@ public class Editor {
         this.scene = new Scene();
     }
 
-    public void openFile(File file) {
-        byte[] data;
-
+    public void openFile(String path) {
         try {
-            data = new FileInputStream(file).readAllBytes();
-        } catch (IOException e) {
+            this.swf = new SupercellSWF();
+            this.swf.load(path);
+        } catch (TooManyObjectsException | NegativeTagLengthException | LoadingFaultException e) {
             e.printStackTrace();
             return;
         }
 
-        byte[] decompressedData;
-
-        try {
-            decompressedData = Decompressor.decompress(data);
-        } catch (UnknownFileMagicException | UnknownFileVersionException | IOException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        this.swf = new SupercellSWF();
-        this.swf.load(decompressedData);
+        int rand = new Random().nextInt(2);
+        Main.editor.getScene().add(rand == 1 ? new Triangle() : new Square());
     }
 
     public Renderer getRenderer() {

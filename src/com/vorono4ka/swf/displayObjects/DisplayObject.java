@@ -1,4 +1,4 @@
-package com.vorono4ka.editor.world.objects;
+package com.vorono4ka.swf.displayObjects;
 
 import com.jogamp.opengl.GL2;
 
