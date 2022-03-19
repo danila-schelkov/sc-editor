@@ -5,8 +5,6 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.graphics.EventListener;
-import com.vorono4ka.editor.world.objects.Square;
-import com.vorono4ka.editor.world.objects.Triangle;
 import com.vorono4ka.resources.ResourceManager;
 import com.vorono4ka.swf.SupercellSWF;
 
@@ -20,7 +18,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class Window {
     private final JFrame frame;

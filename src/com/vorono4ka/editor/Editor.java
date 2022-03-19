@@ -9,6 +9,7 @@ import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
 import com.vorono4ka.swf.exceptions.TooManyObjectsException;
+import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 
 import java.util.Random;
 
@@ -28,8 +29,8 @@ public class Editor {
     public void openFile(String path) {
         try {
             this.swf = new SupercellSWF();
-            this.swf.load(path);
-        } catch (TooManyObjectsException | NegativeTagLengthException | LoadingFaultException e) {
+            this.swf.load(path, path.substring(path.lastIndexOf("\\") + 1));
+        } catch (LoadingFaultException | UnableToFindObjectException e) {
             e.printStackTrace();
             return;
         }

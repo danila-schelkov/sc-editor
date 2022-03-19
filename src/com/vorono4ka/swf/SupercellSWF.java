@@ -7,10 +7,7 @@ import com.vorono4ka.resources.ResourceManager;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.constants.Tags;
 import com.vorono4ka.swf.displayObjects.original.*;
-import com.vorono4ka.swf.exceptions.LoadingFaultException;
-import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
-import com.vorono4ka.swf.exceptions.TooManyObjectsException;
-import com.vorono4ka.swf.exceptions.UnsupportedTagException;
+import com.vorono4ka.swf.exceptions.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +31,10 @@ public class SupercellSWF {
     private int[] exportsIds;
     private String[] exportsNames;
 
+    private int[] shapesIds;
+    private int[] movieClipsIds;
+    private int[] textFieldsIds;
+
     private ShapeOriginal[] shapes;
     private MovieClipOriginal[] movieClips;
     private SWFTexture[] textures;
@@ -47,11 +48,15 @@ public class SupercellSWF {
     private boolean useHighresInsteadLowres;
     private String uncommonResolutionTexturePath;
 
+    private String filename;
+
     public SupercellSWF() {
         this.matrixBanks = new ArrayList<>();
     }
 
-    public boolean load(String path) throws TooManyObjectsException, NegativeTagLengthException, LoadingFaultException {
+    public boolean load(String path, String filename) throws TooManyObjectsException, NegativeTagLengthException, LoadingFaultException, UnableToFindObjectException {
+        this.filename = filename;
+
         if (this.loadInternal(path, false)) {
             if (!this.useExternalTexture) return true;
 
@@ -67,7 +72,7 @@ public class SupercellSWF {
         return false;
     }
 
-    private boolean loadInternal(String path, boolean isTextureFile) throws TooManyObjectsException, NegativeTagLengthException, LoadingFaultException {
+    private boolean loadInternal(String path, boolean isTextureFile) throws TooManyObjectsException, NegativeTagLengthException, LoadingFaultException, UnableToFindObjectException {
         byte[] data;
 
         File file = new File(path);
@@ -115,6 +120,10 @@ public class SupercellSWF {
             this.exportsNames[i] = this.stream.readAscii();
         }
 
+        this.shapesIds = new int[this.shapesCount];
+        this.movieClipsIds = new int[this.movieClipsCount];
+        this.textFieldsIds = new int[this.textFieldsCount];
+
         this.shapes = new ShapeOriginal[this.shapesCount];
         for (int i = 0; i < this.shapesCount; i++) {
             this.shapes[i] = new ShapeOriginal();
@@ -135,7 +144,18 @@ public class SupercellSWF {
             this.textFields[i] = new TextFieldOriginal();
         }
 
-        return this.loadTags(false, path);
+        if (this.loadTags(false, path)) {
+            if (this.exportsCount == 0) return true;
+
+            for (int i = 0; i < this.exportsCount; i++) {
+                String exportName = this.exportsNames[i];
+                MovieClipOriginal movieClip = this.getOriginalMovieClip(this.exportsIds[i], exportName);
+                movieClip.setName(exportName);
+            }
+
+            return true;
+        }
+        return false;
     }
 
     private boolean loadTags(boolean isTexture, String path) throws TooManyObjectsException, NegativeTagLengthException, LoadingFaultException {
@@ -165,7 +185,7 @@ public class SupercellSWF {
                 case EOF -> {
                     if (isTexture) {
                         if (loadedTextures != this.texturesCount) {
-                            throw new LoadingFaultException(String.format("Texture count in .sc and _tex.sc doesn't match: %s", "filename"));
+                            throw new LoadingFaultException(String.format("Texture count in .sc and _tex.sc doesn't match: %s", this.filename));
                         }
                     } else {
                         if (loadedMatrices != matrixBank.getMatricesCount() ||
@@ -191,7 +211,7 @@ public class SupercellSWF {
                     if (loadedShapes >= this.shapesCount) {
                         throw new TooManyObjectsException("Trying to load too many shapes from ");
                     }
-                    this.shapes[loadedShapes++].load(this, tag);
+                    this.shapesIds[loadedShapes] = this.shapes[loadedShapes++].load(this, tag);
 
                     this.stream.skip(length);
                 }
@@ -199,7 +219,7 @@ public class SupercellSWF {
                     if (loadedMovieClips >= this.movieClipsCount) {
                         throw new TooManyObjectsException("Trying to load too many MovieClips from ");
                     }
-                    this.movieClips[loadedMovieClips++].load(this, tag);
+                    this.movieClipsIds[loadedMovieClips] = this.movieClips[loadedMovieClips++].load(this, tag);
 
                     this.stream.skip(length);
                 }
@@ -207,7 +227,7 @@ public class SupercellSWF {
                     if (loadedTextFields >= this.textFieldsCount) {
                         throw new TooManyObjectsException("Trying to load too many TextFields from ");
                     }
-                    this.textFields[loadedTextFields++].load(this, tag);
+                    this.textFieldsIds[loadedTextFields] = this.textFields[loadedTextFields++].load(this, tag);
 
                     this.stream.skip(length);
                 }
@@ -272,7 +292,7 @@ public class SupercellSWF {
                 }
                 default -> {
                     try {
-                        throw new UnsupportedTagException(String.format("Encountered unknown tag %d, %s", tag, "filename"));
+                        throw new UnsupportedTagException(String.format("Encountered unknown tag %d, %s", tag, this.filename));
                     } catch (UnsupportedTagException exception) {
                         exception.printStackTrace();
                     }
@@ -283,6 +303,54 @@ public class SupercellSWF {
                 }
             }
         }
+    }
+
+    private MovieClipOriginal getOriginalMovieClip(int id, String name) throws UnableToFindObjectException {
+        for (int i = 0; i < this.movieClipsCount; i++) {
+            if (this.movieClipsIds[i] == id) {
+                return this.movieClips[i];
+            }
+        }
+        
+        String message = String.format("Unable to find some MovieClip id from %s", this.filename);
+        if (name != null) {
+            message += String.format(" needed by export name %s", name);
+        }
+
+        throw new UnableToFindObjectException(message);
+    }
+
+    private DisplayObjectOriginal getOriginalDisplayObject(int id, String name) throws UnableToFindObjectException {
+        for (int i = 0; i < this.shapesCount; i++) {
+            if (this.shapesIds[i] == id) {
+                return this.shapes[i];
+            }
+        }
+
+        for (int i = 0; i < this.movieClipsCount; i++) {
+            if (this.movieClipsIds[i] == id) {
+                return this.movieClips[i];
+            }
+        }
+
+        for (int i = 0; i < this.textFieldsCount; i++) {
+            if (this.textFieldsIds[i] == id) {
+                return this.textFields[i];
+            }
+        }
+
+        for (int i = 0; i < this.movieClipModifiersCount; i++) {
+            if (this.movieClipModifiers[i].getId() == id) {
+                return this.movieClipModifiers[i];
+            }
+        }
+
+        String message = String.format("Unable to find some DisplayObject id %d, %s", id, this.filename);
+        if (name != null) {
+            message += String.format(" needed by export name %s", name);
+        }
+
+        throw new UnableToFindObjectException(message);
     }
 
     public ByteStream getStream() {
