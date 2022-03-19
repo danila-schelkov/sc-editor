@@ -20,13 +20,13 @@ public class ColorTransform {
     }
 
     public void read(ByteStream stream) {
-        this.redAddition = stream.readInt8();
-        this.greenAddition = stream.readInt8();
-        this.blueAddition = stream.readInt8();
-        this.alpha = stream.readInt8();
-        this.redMultiplier = stream.readInt8();
-        this.greenMultiplier = stream.readInt8();
-        this.blueMultiplier = stream.readInt8();
+        this.redAddition = stream.readUnsignedChar();
+        this.greenAddition = stream.readUnsignedChar();
+        this.blueAddition = stream.readUnsignedChar();
+        this.alpha = stream.readUnsignedChar();
+        this.redMultiplier = stream.readUnsignedChar();
+        this.greenMultiplier = stream.readUnsignedChar();
+        this.blueMultiplier = stream.readUnsignedChar();
     }
 
     public void setMulColor(float red, float green, float blue) {

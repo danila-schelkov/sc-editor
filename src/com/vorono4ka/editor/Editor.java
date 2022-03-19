@@ -7,8 +7,6 @@ import com.vorono4ka.editor.world.objects.Square;
 import com.vorono4ka.editor.world.objects.Triangle;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
-import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
-import com.vorono4ka.swf.exceptions.TooManyObjectsException;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 
 import java.util.Random;

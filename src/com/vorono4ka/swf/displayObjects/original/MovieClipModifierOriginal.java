@@ -1,6 +1,5 @@
 package com.vorono4ka.swf.displayObjects.original;
 
-import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.SupercellSWF;
 
 public class MovieClipModifierOriginal extends DisplayObjectOriginal {
@@ -8,9 +7,7 @@ public class MovieClipModifierOriginal extends DisplayObjectOriginal {
 
     @Override
     public int load(SupercellSWF swf, int tag) {
-        ByteStream stream = swf.getStream();
-
-        this.id = stream.readInt16();
+        this.id = swf.readShort();
 
         return this.id;
     }

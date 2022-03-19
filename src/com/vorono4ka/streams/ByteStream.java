@@ -52,20 +52,20 @@ public class ByteStream {
         this.offset++;
     }
 
-    public void writeInt8(byte value) {
+    public void writeUnsignedChar(byte value) {
         this.ensureCapacity(1);
 
         this.write(value);
     }
 
-    public void writeInt16(int value) {
+    public void writeShort(int value) {
         this.ensureCapacity(2);
 
         this.write((byte) ((value & 0x00FF)));
         this.write((byte) ((value & 0xFF00) >> 8));
     }
 
-    public void writeInt32(int value) {
+    public void writeInt(int value) {
         this.ensureCapacity(4);
 
         this.write((byte) ((value & 0x000000FF)));
@@ -74,53 +74,46 @@ public class ByteStream {
         this.write((byte) ((value & 0xFF000000) >> 24));
     }
 
-    public void writeInt64(long value) {
-        this.ensureCapacity(8);
-
-        this.writeInt32((int) ((value & 0x00000000FFFFFFFFL)));
-        this.writeInt32((int) ((value & 0xFFFFFFFF00000000L) >> 32));
-    }
-
     public void writeBoolean(boolean value) {
-        this.writeInt8((byte) (value ? 1 : 0));
+        this.writeUnsignedChar((byte) (value ? 1 : 0));
     }
 
     public void writeString(String value) {
         if (value == null) {
-            this.writeInt32(-1);
+            this.writeInt(-1);
             return;
         }
 
         byte[] encodedString = value.getBytes(StandardCharsets.UTF_8);
-        this.writeInt32(encodedString.length);
+        this.writeInt(encodedString.length);
         this.write(encodedString);
     }
 
 
-    public byte readInt8() {
-        return this.buffer[this.offset++];
+    public int readUnsignedChar() {
+        return this.buffer[this.offset++] & 0xFF;
     }
 
-    public int readInt16() {
-        return (this.readInt8() & 0xFF) |
-               (this.readInt8() & 0xFF) << 8;
+    public int readShort() {
+        return this.readUnsignedChar() |
+               this.readUnsignedChar() << 8;
     }
 
-    public int readInt32() {
-        return (this.readInt8() & 0xFF) |
-               (this.readInt8() & 0xFF) << 8 |
-               (this.readInt8() & 0xFF) << 16 |
-               (this.readInt8() & 0xFF) << 24;
+    public int readInt() {
+        return this.readUnsignedChar() |
+               this.readUnsignedChar() << 8 |
+               this.readUnsignedChar() << 16 |
+               this.readUnsignedChar() << 24;
     }
 
     public boolean readBoolean() {
-        return this.readInt8() == 1;
+        return this.readUnsignedChar() == 1;
     }
 
     public int[] readByteArray(int count) {
         int[] array = new int[count];
         for (int i = 0; i < array.length; i++) {
-            array[i] = this.readInt8();
+            array[i] = this.readUnsignedChar();
         }
 
         return array;
@@ -129,7 +122,7 @@ public class ByteStream {
     public int[] readShortArray(int count) {
         int[] array = new int[count];
         for (int i = 0; i < array.length; i++) {
-            array[i] = this.readInt16();
+            array[i] = this.readShort();
         }
 
         return array;
@@ -138,7 +131,7 @@ public class ByteStream {
     public int[] readIntArray(int count) {
         int[] array = new int[count];
         for (int i = 0; i < array.length; i++) {
-            array[i] = this.readInt32();
+            array[i] = this.readInt();
         }
 
         return array;
@@ -160,12 +153,5 @@ public class ByteStream {
 
     public void setOffset(int offset) {
         this.offset = offset;
-    }
-
-    public String readAscii() {
-        int length = this.readInt8() & 0xff;
-        if (length == 255) return null;
-
-        return new String(this.read(length), StandardCharsets.UTF_8);
     }
 }

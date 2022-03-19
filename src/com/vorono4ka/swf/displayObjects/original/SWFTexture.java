@@ -7,4 +7,12 @@ public class SWFTexture extends DisplayObjectOriginal {
     public int load(SupercellSWF swf, int tag) {
         return 0;
     }
+
+    public int getHeight() {
+        return 1;
+    }
+
+    public int getWidth() {
+        return 1;
+    }
 }

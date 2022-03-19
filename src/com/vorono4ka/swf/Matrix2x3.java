@@ -1,7 +1,5 @@
 package com.vorono4ka.swf;
 
-import com.vorono4ka.streams.ByteStream;
-
 @SuppressWarnings("SuspiciousNameCombination")
 public class Matrix2x3 {
     private float scaleX;
@@ -16,22 +14,22 @@ public class Matrix2x3 {
         this.scaleY = 1.0f;
     }
 
-    public void read(ByteStream stream) {
-        this.scaleX = stream.readInt32() / 1024f;
-        this.skewX = stream.readInt32() / 1024f;
-        this.skewY = stream.readInt32() / 1024f;
-        this.scaleY = stream.readInt32() / 1024f;
-        this.x = stream.readInt32() / 20f;
-        this.y = stream.readInt32() / 20f;
+    public void read(SupercellSWF swf) {
+        this.scaleX = swf.readInt() / 1024f;
+        this.skewX = swf.readInt() / 1024f;
+        this.skewY = swf.readInt() / 1024f;
+        this.scaleY = swf.readInt() / 1024f;
+        this.x = swf.readTwip();
+        this.y = swf.readTwip();
     }
 
-    public void readPrecise(ByteStream stream) {
-        this.scaleX = stream.readInt32() / 65535f;
-        this.skewX = stream.readInt32() / 65535f;
-        this.skewY = stream.readInt32() / 65535f;
-        this.scaleY = stream.readInt32() / 65535f;
-        this.x = stream.readInt32() / 20f;
-        this.y = stream.readInt32() / 20f;
+    public void readPrecise(SupercellSWF swf) {
+        this.scaleX = swf.readInt() / 65535f;
+        this.skewX = swf.readInt() / 65535f;
+        this.skewY = swf.readInt() / 65535f;
+        this.scaleY = swf.readInt() / 65535f;
+        this.x = swf.readTwip();
+        this.y = swf.readTwip();
     }
 
     public void scaleMultiply(float scaleX, float scaleY) {

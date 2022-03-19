@@ -21,7 +21,7 @@ public class Scene {
         JTable table = Main.editor.getWindow().getTable();
         DefaultTableModel model = (DefaultTableModel) table.getModel();
         model.addRow(new Object[] {
-            gameObjectList.size() - 1,
+            this.gameObjectList.size() - 1,
             gameObject.getTypeName(),
             "[" + gameObject.getTypeName() + "]"
         });

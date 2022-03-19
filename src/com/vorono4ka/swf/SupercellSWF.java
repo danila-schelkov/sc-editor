@@ -12,6 +12,7 @@ import com.vorono4ka.swf.exceptions.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +55,7 @@ public class SupercellSWF {
         this.matrixBanks = new ArrayList<>();
     }
 
-    public boolean load(String path, String filename) throws TooManyObjectsException, NegativeTagLengthException, LoadingFaultException, UnableToFindObjectException {
+    public boolean load(String path, String filename) throws LoadingFaultException, UnableToFindObjectException {
         this.filename = filename;
 
         if (this.loadInternal(path, false)) {
@@ -72,7 +73,7 @@ public class SupercellSWF {
         return false;
     }
 
-    private boolean loadInternal(String path, boolean isTextureFile) throws TooManyObjectsException, NegativeTagLengthException, LoadingFaultException, UnableToFindObjectException {
+    private boolean loadInternal(String path, boolean isTextureFile) throws LoadingFaultException, UnableToFindObjectException {
         byte[] data;
 
         File file = new File(path);
@@ -99,25 +100,25 @@ public class SupercellSWF {
             return this.loadTags(true, path);
         }
 
-        this.shapesCount = this.stream.readInt16();
-        this.movieClipsCount = this.stream.readInt16();
-        this.texturesCount = this.stream.readInt16();
-        this.textFieldsCount = this.stream.readInt16();
-        int matricesCount = this.stream.readInt16();
-        int colorTransformsCount = this.stream.readInt16();
+        this.shapesCount = this.readShort();
+        this.movieClipsCount = this.readShort();
+        this.texturesCount = this.readShort();
+        this.textFieldsCount = this.readShort();
+        int matricesCount = this.readShort();
+        int colorTransformsCount = this.readShort();
 
         ScMatrixBank matrixBank = new ScMatrixBank();
         matrixBank.init(matricesCount, colorTransformsCount);
         this.matrixBanks.add(matrixBank);
 
-        this.stream.skip(5);
+        this.skip(5);
 
-        this.exportsCount = this.stream.readInt16();
-        this.exportsIds = this.stream.readShortArray(this.exportsCount);
+        this.exportsCount = this.readShort();
+        this.exportsIds = this.readShortArray(this.exportsCount);
 
         this.exportsNames = new String[this.exportsCount];
         for (int i = 0; i < this.exportsCount; i++) {
-            this.exportsNames[i] = this.stream.readAscii();
+            this.exportsNames[i] = this.readAscii();
         }
 
         this.shapesIds = new int[this.shapesCount];
@@ -158,7 +159,7 @@ public class SupercellSWF {
         return false;
     }
 
-    private boolean loadTags(boolean isTexture, String path) throws TooManyObjectsException, NegativeTagLengthException, LoadingFaultException {
+    private boolean loadTags(boolean isTexture, String path) throws LoadingFaultException {
         String highresSuffix = "_highres";
         String lowresSuffix = "_lowres";
 
@@ -174,11 +175,23 @@ public class SupercellSWF {
         int loadedMovieClipsModifiers = 0;
 
         while (true) {
-            int tag = this.stream.readInt8();
-            int length = this.stream.readInt32();
+            int tag = this.readUnsignedChar();
+            int length = this.readInt();
 
             if (length < 0) {
-                throw new NegativeTagLengthException("Negative tag length. Tag " + tag);
+                throw new NegativeTagLengthException(String.format("Negative tag length. Tag %d, %s", tag, this.filename));
+            }
+
+            if (tag > Tags.values().length) {
+                try {
+                    throw new UnsupportedTagException(String.format("Encountered unknown tag %d, %s", tag, this.filename));
+                } catch (UnsupportedTagException exception) {
+                    exception.printStackTrace();
+                }
+
+                if (length > 0) {
+                    this.skip(length);
+                }
             }
 
             switch (Tags.values()[tag]) {
@@ -205,15 +218,13 @@ public class SupercellSWF {
                     }
                     this.textures[loadedTextures++].load(this, tag);
 
-                    this.stream.skip(length);
+                    this.skip(length);
                 }
                 case SHAPE_2, SHAPE_18 -> {
                     if (loadedShapes >= this.shapesCount) {
                         throw new TooManyObjectsException("Trying to load too many shapes from ");
                     }
                     this.shapesIds[loadedShapes] = this.shapes[loadedShapes++].load(this, tag);
-
-                    this.stream.skip(length);
                 }
                 case MOVIE_CLIP_3, MOVIE_CLIP_10, MOVIE_CLIP_12, MOVIE_CLIP_14, MOVIE_CLIP_35 -> {
                     if (loadedMovieClips >= this.movieClipsCount) {
@@ -221,7 +232,7 @@ public class SupercellSWF {
                     }
                     this.movieClipsIds[loadedMovieClips] = this.movieClips[loadedMovieClips++].load(this, tag);
 
-                    this.stream.skip(length);
+                    this.skip(length);
                 }
                 case TEXT_FIELD_7, TEXT_FIELD_15, TEXT_FIELD_20, TEXT_FIELD_21, TEXT_FIELD_25, TEXT_FIELD_WITH_OUTLINE, TEXT_FIELD_43, TEXT_FIELD_44 -> {
                     if (loadedTextFields >= this.textFieldsCount) {
@@ -229,9 +240,9 @@ public class SupercellSWF {
                     }
                     this.textFieldsIds[loadedTextFields] = this.textFields[loadedTextFields++].load(this, tag);
 
-                    this.stream.skip(length);
+                    this.skip(length);
                 }
-                case MATRIX -> matrixBank.getMatrix(loadedMatrices++).read(this.stream);
+                case MATRIX -> matrixBank.getMatrix(loadedMatrices++).read(this);
                 case COLOR_TRANSFORM -> matrixBank.getColorTransforms(loadedColorTransforms++).read(this.stream);
                 case TAG_TIMELINE_INDEXES -> {
                     try {
@@ -240,8 +251,8 @@ public class SupercellSWF {
                         e.printStackTrace();
                     }
 
-                    int indexesLength = this.stream.readInt32();
-                    this.stream.skip(indexesLength);
+                    int indexesLength = this.readInt();
+                    this.skip(indexesLength);
                 }
                 case USE_LOWRES_TEXTURE -> this.useLowresTexture = true;
                 case USE_EXTERNAL_TEXTURE -> this.useExternalTexture = true;
@@ -264,12 +275,12 @@ public class SupercellSWF {
                     this.uncommonResolutionTexturePath = uncommonPath;
                 }
                 case EXTERNAL_FILES_SUFFIXES -> {
-                    highresSuffix = this.stream.readAscii();
-                    lowresSuffix = this.stream.readAscii();
+                    highresSuffix = this.readAscii();
+                    lowresSuffix = this.readAscii();
                 }
-                case MATRIX_PRECISE -> matrixBank.getMatrix(loadedMatrices++).readPrecise(this.stream);
+                case MATRIX_PRECISE -> matrixBank.getMatrix(loadedMatrices++).readPrecise(this);
                 case MOVIE_CLIP_MODIFIERS -> {
-                    this.movieClipModifiersCount = this.stream.readInt16();
+                    this.movieClipModifiersCount = this.readShort();
                     this.movieClipModifiers = new MovieClipModifierOriginal[this.movieClipModifiersCount];
 
                     for (int i = 0; i < this.movieClipModifiersCount; i++) {
@@ -280,8 +291,8 @@ public class SupercellSWF {
                     this.movieClipModifiers[loadedMovieClipsModifiers++].load(this, tag);
                 }
                 case EXTRA_MATRIX_BANK -> {
-                    int matricesCount = this.stream.readInt16();
-                    int colorTransformsCount = this.stream.readInt16();
+                    int matricesCount = this.readShort();
+                    int colorTransformsCount = this.readShort();
 
                     matrixBank = new ScMatrixBank();
                     matrixBank.init(matricesCount, colorTransformsCount);
@@ -298,7 +309,7 @@ public class SupercellSWF {
                     }
 
                     if (length > 0) {
-                        this.stream.skip(length);
+                        this.skip(length);
                     }
                 }
             }
@@ -353,7 +364,54 @@ public class SupercellSWF {
         throw new UnableToFindObjectException(message);
     }
 
-    public ByteStream getStream() {
-        return stream;
+    public SWFTexture getTexture(int textureId) {
+        return this.textures[textureId];
+    }
+
+    public String getFilename() {
+        return filename;
+    }
+
+    public int readUnsignedChar() {
+        return this.stream.readUnsignedChar();
+    }
+
+    public int readShort() {
+        return this.stream.readShort();
+    }
+
+    public int readInt() {
+        return this.stream.readInt();
+    }
+
+    public int readTwip() {
+        return this.stream.readInt() / 20;
+    }
+
+    public boolean readBoolean() {
+        return this.stream.readBoolean();
+    }
+
+    public int[] readByteArray(int count) {
+        return this.stream.readByteArray(count);
+    }
+
+    public int[] readShortArray(int count) {
+        return this.stream.readShortArray(count);
+    }
+
+    public int[] readIntArray(int count) {
+        return this.stream.readIntArray(count);
+    }
+
+    public String readAscii() {
+        int length = this.readUnsignedChar() & 0xff;
+        if (length == 255) return null;
+
+        return new String(this.stream.read(length), StandardCharsets.UTF_8);
+    }
+
+    public void skip(int count) {
+        this.stream.skip(count);
     }
 }
