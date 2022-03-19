@@ -5,7 +5,7 @@ import com.vorono4ka.compression.exceptions.UnknownFileMagicException;
 import com.vorono4ka.compression.exceptions.UnknownFileVersionException;
 import com.vorono4ka.resources.ResourceManager;
 import com.vorono4ka.streams.ByteStream;
-import com.vorono4ka.swf.constants.Tags;
+import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.displayObjects.original.*;
 import com.vorono4ka.swf.exceptions.*;
 
@@ -182,7 +182,7 @@ public class SupercellSWF {
                 throw new NegativeTagLengthException(String.format("Negative tag length. Tag %d, %s", tag, this.filename));
             }
 
-            if (tag > Tags.values().length) {
+            if (tag > Tag.values().length) {
                 try {
                     throw new UnsupportedTagException(String.format("Encountered unknown tag %d, %s", tag, this.filename));
                 } catch (UnsupportedTagException exception) {
@@ -194,7 +194,8 @@ public class SupercellSWF {
                 }
             }
 
-            switch (Tags.values()[tag]) {
+            Tag tagValue = Tag.values()[tag];
+            switch (tagValue) {
                 case EOF -> {
                     if (isTexture) {
                         if (loadedTextures != this.texturesCount) {
@@ -212,33 +213,29 @@ public class SupercellSWF {
 
                     return true;
                 }
-                case TEXTURE_1, TEXTURE_16, TEXTURE_19, TEXTURE_24, TEXTURE_27, TEXTURE_28, TEXTURE_29, TEXTURE_34 -> {
+                case TEXTURE, TEXTURE_2, TEXTURE_3, TEXTURE_4, TEXTURE_5, TEXTURE_6, TEXTURE_7, TEXTURE_8 -> {
                     if (loadedTextures >= this.texturesCount) {
                         throw new TooManyObjectsException("Trying to load too many textures from ");
                     }
-                    this.textures[loadedTextures++].load(this, tag);
-
-                    this.skip(length);
+                    this.textures[loadedTextures++].load(this, tag, isTexture);
                 }
-                case SHAPE_2, SHAPE_18 -> {
+                case SHAPE, SHAPE_2 -> {
                     if (loadedShapes >= this.shapesCount) {
                         throw new TooManyObjectsException("Trying to load too many shapes from ");
                     }
-                    this.shapesIds[loadedShapes] = this.shapes[loadedShapes++].load(this, tag);
+                    this.shapesIds[loadedShapes] = this.shapes[loadedShapes++].load(this, tagValue);
                 }
-                case MOVIE_CLIP_3, MOVIE_CLIP_10, MOVIE_CLIP_12, MOVIE_CLIP_14, MOVIE_CLIP_35 -> {
+                case MOVIE_CLIP, MOVIE_CLIP_2, MOVIE_CLIP_3, MOVIE_CLIP_4, MOVIE_CLIP_35 -> {
                     if (loadedMovieClips >= this.movieClipsCount) {
                         throw new TooManyObjectsException("Trying to load too many MovieClips from ");
                     }
-                    this.movieClipsIds[loadedMovieClips] = this.movieClips[loadedMovieClips++].load(this, tag);
-
-                    this.skip(length);
+                    this.movieClipsIds[loadedMovieClips] = this.movieClips[loadedMovieClips++].load(this, tagValue);
                 }
-                case TEXT_FIELD_7, TEXT_FIELD_15, TEXT_FIELD_20, TEXT_FIELD_21, TEXT_FIELD_25, TEXT_FIELD_WITH_OUTLINE, TEXT_FIELD_43, TEXT_FIELD_44 -> {
+                case TEXT_FIELD, TEXT_FIELD_2, TEXT_FIELD_3, TEXT_FIELD_4, TEXT_FIELD_5, TEXT_FIELD_6, TEXT_FIELD_7, TEXT_FIELD_8 -> {
                     if (loadedTextFields >= this.textFieldsCount) {
                         throw new TooManyObjectsException("Trying to load too many TextFields from ");
                     }
-                    this.textFieldsIds[loadedTextFields] = this.textFields[loadedTextFields++].load(this, tag);
+                    this.textFieldsIds[loadedTextFields] = this.textFields[loadedTextFields++].load(this, tagValue);
 
                     this.skip(length);
                 }
@@ -288,7 +285,7 @@ public class SupercellSWF {
                     }
                 }
                 case MODIFIER_STATE_2, MODIFIER_STATE_3, MODIFIER_STATE_4 -> {
-                    this.movieClipModifiers[loadedMovieClipsModifiers++].load(this, tag);
+                    this.movieClipModifiers[loadedMovieClipsModifiers++].load(this, tagValue);
                 }
                 case EXTRA_MATRIX_BANK -> {
                     int matricesCount = this.readShort();

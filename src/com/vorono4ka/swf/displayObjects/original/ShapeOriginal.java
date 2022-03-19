@@ -1,7 +1,7 @@
 package com.vorono4ka.swf.displayObjects.original;
 
 import com.vorono4ka.swf.SupercellSWF;
-import com.vorono4ka.swf.constants.Tags;
+import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
 import com.vorono4ka.swf.exceptions.UnsupportedTagException;
@@ -11,7 +11,7 @@ public class ShapeOriginal extends DisplayObjectOriginal {
     private ShapeDrawBitmapCommand[] commands;
 
     @Override
-    public int load(SupercellSWF swf, int tag) throws NegativeTagLengthException {
+    public int load(SupercellSWF swf, Tag tag) throws NegativeTagLengthException {
         int id = swf.readShort();
         this.commandsCount = swf.readShort();
 
@@ -21,7 +21,7 @@ public class ShapeOriginal extends DisplayObjectOriginal {
         }
 
         int pointsCount = 4 * this.commandsCount;
-        if (tag == 18) {
+        if (tag == Tag.SHAPE_2) {
             pointsCount = swf.readShort();
         }
 
@@ -35,12 +35,13 @@ public class ShapeOriginal extends DisplayObjectOriginal {
                 throw new NegativeTagLengthException(String.format("Negative tag length in Shape. Tag %d, %s", commandTag, swf.getFilename()));
             }
 
-            switch (Tags.values()[commandTag]) {
+            Tag tagValue = Tag.values()[commandTag];
+            switch (tagValue) {
                 case EOF -> {
                     return id;
                 }
-                case SHAPE_DRAW_BITMAP_COMMAND_4, SHAPE_DRAW_BITMAP_COMMAND_17, SHAPE_DRAW_BITMAP_COMMAND_22 -> {
-                    this.commands[loadedCommands++].load(swf, tag);
+                case SHAPE_DRAW_BITMAP_COMMAND, SHAPE_DRAW_BITMAP_COMMAND_2, SHAPE_DRAW_BITMAP_COMMAND_3 -> {
+                    this.commands[loadedCommands++].load(swf, tagValue);
                 }
                 case SHAPE_DRAW_COLOR_FILL_COMMAND -> {
                     try {

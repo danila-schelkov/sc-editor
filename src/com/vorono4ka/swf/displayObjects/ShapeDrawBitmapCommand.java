@@ -1,8 +1,8 @@
 package com.vorono4ka.swf.displayObjects;
 
 import com.vorono4ka.math.Point;
-import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.SupercellSWF;
+import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.displayObjects.original.SWFTexture;
 
 public class ShapeDrawBitmapCommand {
@@ -10,11 +10,11 @@ public class ShapeDrawBitmapCommand {
     private Point[] shapePoints;
     private Point[] sheetPoints;
 
-    public void load(SupercellSWF swf, int tag) {
+    public void load(SupercellSWF swf, Tag tag) {
         int textureId = swf.readUnsignedChar();
 
         this.vertexCount = 4;
-        if (tag != 4) {
+        if (tag != Tag.SHAPE_DRAW_BITMAP_COMMAND) {
             this.vertexCount = swf.readUnsignedChar();
         }
 
@@ -33,7 +33,7 @@ public class ShapeDrawBitmapCommand {
             int u = swf.readShort();
             int v = swf.readShort();
 
-            if (tag != 22) {
+            if (tag != Tag.SHAPE_DRAW_BITMAP_COMMAND_3) {
                 u /= 0xFFFF * texture.getWidth();  // width
                 v /= 0xFFFF * texture.getHeight();  // height
             }
