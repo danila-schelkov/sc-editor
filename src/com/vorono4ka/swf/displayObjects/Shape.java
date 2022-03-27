@@ -1,15 +1,21 @@
 package com.vorono4ka.swf.displayObjects;
 
-import com.jogamp.opengl.GL3;
+import com.vorono4ka.swf.ColorTransform;
+import com.vorono4ka.swf.Matrix2x3;
 
-public class Shape extends DisplayObject {
+public class Shape extends Sprite {
     @Override
-    public void render(GL3 gl) {
+    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a3, float a4) {
 
     }
 
     @Override
-    public String getTypeName() {
-        return null;
+    public void collisionRender(Matrix2x3 matrix, ColorTransform colorTransform, int a3, float a4) {
+
+    }
+
+    @Override
+    public boolean isShape() {
+        return true;
     }
 }

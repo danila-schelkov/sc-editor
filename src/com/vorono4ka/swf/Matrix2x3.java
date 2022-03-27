@@ -64,4 +64,17 @@ public class Matrix2x3 {
             this.scaleY = this.scaleX / v5;
         }
     }
+
+    public void setXY(float x, float y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    public void setY(float y) {
+        this.y = y;
+    }
 }

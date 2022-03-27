@@ -4,8 +4,11 @@ import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.MovieClipFrame;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
+import com.vorono4ka.swf.displayObjects.DisplayObject;
+import com.vorono4ka.swf.displayObjects.MovieClip;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
+import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.exceptions.UnsupportedTagException;
 
 import java.util.Arrays;
@@ -16,17 +19,17 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
     private int[] transforms;
     private MovieClipFrame[] frames;
 
-    private int bindsCount;
-    private int[] bindsIds;
-    private byte[] bindsBlends;
-    private String[] bindsNames;
+    private int childrenCount;
+    private int[] childrenIds;
+    private byte[] childrenBlends;
+    private String[] childrenNames;
 
     private Rect scalingGrid;
     private int matrixBankIndex;
 
-    private String name;
+    private String exportName;
+    private DisplayObjectOriginal[] children;
 
-    @Override
     public int load(SupercellSWF swf, Tag tag) throws LoadingFaultException {
         int id = swf.readShort();
         this.fps = swf.readUnsignedChar();
@@ -58,19 +61,19 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
             }
         }
 
-        this.bindsCount = swf.readShort();
-        this.bindsIds = swf.readShortArray(this.bindsCount);
+        this.childrenCount = swf.readShort();
+        this.childrenIds = swf.readShortArray(this.childrenCount);
 
         if (tag == Tag.MOVIE_CLIP_3 || tag == Tag.MOVIE_CLIP_35) {
-            this.bindsBlends = swf.readByteArray(this.bindsCount);
+            this.childrenBlends = swf.readByteArray(this.childrenCount);
         } else {
-            this.bindsBlends = new byte[this.bindsCount];
-            Arrays.fill(this.bindsBlends, (byte) 0);
+            this.childrenBlends = new byte[this.childrenCount];
+            Arrays.fill(this.childrenBlends, (byte) 0);
         }
 
-        this.bindsNames = new String[this.bindsCount];
-        for (int i = 0; i < this.bindsCount; i++) {
-            this.bindsNames[i] = swf.readAscii();
+        this.childrenNames = new String[this.childrenCount];
+        for (int i = 0; i < this.childrenCount; i++) {
+            this.childrenNames[i] = swf.readAscii();
         }
 
         int loadedCommands = 0;
@@ -120,11 +123,42 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
         }
     }
 
-    public String getName() {
-        return name;
+    public DisplayObject clone(SupercellSWF swf, Rect scalingGrid) throws UnableToFindObjectException {
+        if (this.children == null) {
+            this.children = new DisplayObjectOriginal[this.childrenCount];
+            for (int i = 0; i < this.childrenCount; i++) {
+                this.children[i] = swf.getOriginalDisplayObject(this.childrenIds[i], this.exportName);
+            }
+        }
+
+        MovieClip movieClip = new MovieClip();
+        movieClip.setMatrixBank(swf.getMatrixBank(this.matrixBankIndex));
+
+        DisplayObject[] childrenArray = new DisplayObject[this.childrenCount];
+        for (int i = 0; i < this.childrenCount; i++) {
+            DisplayObjectOriginal child = this.children[i];
+            DisplayObject displayObject = child.clone(swf, scalingGrid);
+
+            displayObject.setVisibleRecursive((this.childrenBlends[i] & 64) == 0);
+            displayObject.setInteractiveRecursive(true);
+
+            childrenArray[i] = displayObject;
+        }
+        movieClip.setTimelineChildren(childrenArray);
+        movieClip.setTimelineChildrenNames(this.childrenNames);
+        movieClip.setFrames(this.frames);
+        movieClip.setMsPerFrame(1.0f / this.fps);
+        movieClip.setExportName(this.exportName);
+        movieClip.setFrame(0);
+
+        return movieClip;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getExportName() {
+        return exportName;
+    }
+
+    public void setExportName(String exportName) {
+        this.exportName = exportName;
     }
 }

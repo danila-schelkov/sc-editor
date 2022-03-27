@@ -151,7 +151,7 @@ public class SupercellSWF {
             for (int i = 0; i < this.exportsCount; i++) {
                 String exportName = this.exportsNames[i];
                 MovieClipOriginal movieClip = this.getOriginalMovieClip(this.exportsIds[i], exportName);
-                movieClip.setName(exportName);
+                movieClip.setExportName(exportName);
             }
 
             return true;
@@ -237,7 +237,7 @@ public class SupercellSWF {
                     }
                     this.textFieldsIds[loadedTextFields] = this.textFields[loadedTextFields++].load(this, tagValue);
 
-                    this.skip(length);
+                    this.skip(length - 2);
                 }
                 case MATRIX -> matrixBank.getMatrix(loadedMatrices++).read(this);
                 case COLOR_TRANSFORM -> matrixBank.getColorTransforms(loadedColorTransforms++).read(this.stream);
@@ -313,7 +313,7 @@ public class SupercellSWF {
         }
     }
 
-    private MovieClipOriginal getOriginalMovieClip(int id, String name) throws UnableToFindObjectException {
+    public MovieClipOriginal getOriginalMovieClip(int id, String name) throws UnableToFindObjectException {
         for (int i = 0; i < this.movieClipsCount; i++) {
             if (this.movieClipsIds[i] == id) {
                 return this.movieClips[i];
@@ -328,7 +328,7 @@ public class SupercellSWF {
         throw new UnableToFindObjectException(message);
     }
 
-    private DisplayObjectOriginal getOriginalDisplayObject(int id, String name) throws UnableToFindObjectException {
+    public DisplayObjectOriginal getOriginalDisplayObject(int id, String name) throws UnableToFindObjectException {
         for (int i = 0; i < this.shapesCount; i++) {
             if (this.shapesIds[i] == id) {
                 return this.shapes[i];
@@ -359,6 +359,22 @@ public class SupercellSWF {
         }
 
         throw new UnableToFindObjectException(message);
+    }
+
+    public int getExportsCount() {
+        return exportsCount;
+    }
+
+    public int[] getExportsIds() {
+        return exportsIds;
+    }
+
+    public String[] getExportsNames() {
+        return exportsNames;
+    }
+
+    public ScMatrixBank getMatrixBank(int index) {
+        return this.matrixBanks.get(index);
     }
 
     public SWFTexture getTexture(int textureId) {

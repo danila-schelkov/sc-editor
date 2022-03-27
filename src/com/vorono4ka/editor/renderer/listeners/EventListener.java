@@ -34,11 +34,12 @@ public class EventListener implements GLEventListener {
     public void reshape(GLAutoDrawable glAutoDrawable, int x, int y, int width, int height) {
         GL3 gl = glAutoDrawable.getGL().getGL3();
 
-        float unitsTall = Renderer.unitsWide / this.renderer.getAspectRatio();
+        float aspectRatio = width / (float) height;
+        float unitsTall = Renderer.unitsWide / aspectRatio;
 
         gl.glViewport(x, y, width, height);
 
-        PMVMatrix matrix = new PMVMatrix();
+        PMVMatrix matrix = this.renderer.getPMVMatrix();
         matrix.glLoadIdentity();
         matrix.glOrthof(
             -Renderer.unitsWide / 2f,

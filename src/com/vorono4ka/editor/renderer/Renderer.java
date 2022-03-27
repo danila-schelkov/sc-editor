@@ -2,12 +2,17 @@ package com.vorono4ka.editor.renderer;
 
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.PMVMatrix;
-import com.vorono4ka.editor.Main;
 
 public class Renderer {
     public static final float unitsWide = 2;
 
+    private final PMVMatrix matrix;
+    private float scale;
+
     private Shader shader;
+    private int pmvMatrixUniform;
+    private int scaleUniform;
+
     private VAO vao;
     private VBO vbo;
     private EBO ebo;
@@ -15,12 +20,8 @@ public class Renderer {
     private GL3 gl;
     private boolean initialized;
 
-    private float scale;
-
-    private int pmvMatrixUniform;
-    private int scaleUniform;
-
     public Renderer() {
+        this.matrix = new PMVMatrix();
         this.scale = 1.0f;
     }
 
@@ -62,16 +63,20 @@ public class Renderer {
         gl.glClear(GL3.GL_COLOR_BUFFER_BIT);
         this.shader.use();
 
-        gl.glUniform1f(scaleUniform, this.scale);
+        gl.glUniform1f(this.scaleUniform, this.scale);
 
         this.vao.bind();
-        gl.glDrawElements(GL3.GL_LINE_LOOP, this.ebo.getIndicesCount(), GL3.GL_UNSIGNED_INT, 0);
+        gl.glDrawElements(GL3.GL_TRIANGLES, this.ebo.getIndicesCount(), GL3.GL_UNSIGNED_INT, 0);
         this.vao.unbind();
+    }
+
+    public PMVMatrix getPMVMatrix() {
+        return matrix;
     }
 
     public void setPMVMatrix(PMVMatrix matrix) {
         this.shader.use();
-        this.gl.glUniformMatrix4fv(pmvMatrixUniform, 1, false, matrix.glGetMatrixf());
+        this.gl.glUniformMatrix4fv(this.pmvMatrixUniform, 1, false, matrix.glGetMatrixf());
     }
 
     public float getScale() {
@@ -80,18 +85,6 @@ public class Renderer {
 
     public void setScale(float scale) {
         this.scale = scale;
-    }
-
-    public int getWidth() {
-        return Main.editor.getWindow().getCanvas().getWidth();
-    }
-
-    public int getHeight() {
-        return Main.editor.getWindow().getCanvas().getHeight();
-    }
-
-    public float getAspectRatio() {
-        return getWidth() / (float) getHeight();
     }
 
     public GL3 getGl() {
