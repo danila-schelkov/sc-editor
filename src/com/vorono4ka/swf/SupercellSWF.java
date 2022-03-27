@@ -159,7 +159,7 @@ public class SupercellSWF {
         return false;
     }
 
-    private boolean loadTags(boolean isTexture, String path) throws LoadingFaultException {
+    private boolean loadTags(boolean isTextureFile, String path) throws LoadingFaultException {
         String highresSuffix = "_highres";
         String lowresSuffix = "_lowres";
 
@@ -197,7 +197,7 @@ public class SupercellSWF {
             Tag tagValue = Tag.values()[tag];
             switch (tagValue) {
                 case EOF -> {
-                    if (isTexture) {
+                    if (isTextureFile) {
                         if (loadedTextures != this.texturesCount) {
                             throw new LoadingFaultException(String.format("Texture count in .sc and _tex.sc doesn't match: %s", this.filename));
                         }
@@ -217,7 +217,7 @@ public class SupercellSWF {
                     if (loadedTextures >= this.texturesCount) {
                         throw new TooManyObjectsException("Trying to load too many textures from ");
                     }
-                    this.textures[loadedTextures++].load(this, tag, isTexture);
+                    this.textures[loadedTextures++].load(this, tag, isTextureFile);
                 }
                 case SHAPE, SHAPE_2 -> {
                     if (loadedShapes >= this.shapesCount) {
@@ -389,7 +389,7 @@ public class SupercellSWF {
         return this.stream.readBoolean();
     }
 
-    public int[] readByteArray(int count) {
+    public byte[] readByteArray(int count) {
         return this.stream.readByteArray(count);
     }
 

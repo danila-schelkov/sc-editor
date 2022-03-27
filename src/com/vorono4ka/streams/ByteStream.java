@@ -110,10 +110,10 @@ public class ByteStream {
         return this.readUnsignedChar() == 1;
     }
 
-    public int[] readByteArray(int count) {
-        int[] array = new int[count];
+    public byte[] readByteArray(int count) {
+        byte[] array = new byte[count];
         for (int i = 0; i < array.length; i++) {
-            array[i] = this.readUnsignedChar();
+            array[i] = (byte) this.readUnsignedChar();
         }
 
         return array;

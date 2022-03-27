@@ -1,7 +1,7 @@
 package com.vorono4ka.swf;
 
 public class MovieClipFrame {
-    private String name;
+    private String name;  // "label"
 
     public int load(SupercellSWF swf) {
         int usedTransformsCount = swf.readShort();

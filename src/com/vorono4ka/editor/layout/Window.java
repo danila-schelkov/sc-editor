@@ -4,7 +4,9 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.graphics.EventListener;
+import com.vorono4ka.editor.renderer.listeners.EventListener;
+import com.vorono4ka.editor.renderer.listeners.MouseListener;
+import com.vorono4ka.editor.renderer.listeners.MouseWheelListener;
 import com.vorono4ka.resources.ResourceManager;
 import com.vorono4ka.swf.SupercellSWF;
 
@@ -42,6 +44,7 @@ public class Window {
 
         this.frame.getContentPane().add(tableScrollPane, BorderLayout.WEST);
         this.frame.getContentPane().add(this.canvas);
+        this.frame.setMinimumSize(new Dimension(1000, 640));
         this.frame.setSize(this.frame.getContentPane().getPreferredSize());
     }
 
@@ -83,11 +86,15 @@ public class Window {
     }
 
     private GLCanvas createCanvas() {
-        final GLProfile profile = GLProfile.get(GLProfile.GL2);
+        final GLProfile profile = GLProfile.get(GLProfile.GL3);
         GLCapabilities capabilities = new GLCapabilities(profile);
 
         GLCanvas glCanvas = new GLCanvas(capabilities);
         glCanvas.addGLEventListener(new EventListener());
+        glCanvas.addMouseWheelListener(new MouseWheelListener());
+        MouseListener mouseListener = new MouseListener();
+        glCanvas.addMouseListener(mouseListener);
+        glCanvas.addMouseMotionListener(mouseListener);
         glCanvas.setSize(1200, 800);
 
         return glCanvas;
@@ -144,7 +151,6 @@ public class Window {
         close.addActionListener((e) -> {
             clearTable();
 
-            Main.editor.getRenderer().setDisplayObject(null);
             this.canvas.display();
         });
 

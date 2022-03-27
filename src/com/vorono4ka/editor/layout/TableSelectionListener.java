@@ -1,7 +1,6 @@
 package com.vorono4ka.editor.layout;
 
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.world.objects.GameObject;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -22,9 +21,7 @@ public class TableSelectionListener implements ListSelectionListener {
         if (selectedRow == -1) return;
 
         int id = (int) this.table.getValueAt(selectedRow, 0);
-
-        GameObject gameObject = Main.editor.getScene().get(id);
-        Main.editor.getRenderer().setDisplayObject(gameObject);
-        Main.editor.getWindow().getCanvas().display();
+        System.out.println(id);
+        Main.editor.updateCanvas();
     }
 }

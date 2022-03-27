@@ -18,7 +18,7 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
 
     private int bindsCount;
     private int[] bindsIds;
-    private int[] bindsBlends;
+    private byte[] bindsBlends;
     private String[] bindsNames;
 
     private Rect scalingGrid;
@@ -64,8 +64,8 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
         if (tag == Tag.MOVIE_CLIP_3 || tag == Tag.MOVIE_CLIP_35) {
             this.bindsBlends = swf.readByteArray(this.bindsCount);
         } else {
-            this.bindsBlends = new int[this.bindsCount];
-            Arrays.fill(this.bindsBlends, 0);
+            this.bindsBlends = new byte[this.bindsCount];
+            Arrays.fill(this.bindsBlends, (byte) 0);
         }
 
         this.bindsNames = new String[this.bindsCount];
