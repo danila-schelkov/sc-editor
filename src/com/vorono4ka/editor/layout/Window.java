@@ -4,7 +4,10 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.graphics.EventListener;
+import com.vorono4ka.editor.renderer.listeners.EventListener;
+import com.vorono4ka.editor.renderer.listeners.MouseListener;
+import com.vorono4ka.editor.renderer.listeners.MouseMotionListener;
+import com.vorono4ka.editor.renderer.listeners.MouseWheelListener;
 import com.vorono4ka.resources.ResourceManager;
 import com.vorono4ka.swf.SupercellSWF;
 
@@ -42,6 +45,7 @@ public class Window {
 
         this.frame.getContentPane().add(tableScrollPane, BorderLayout.WEST);
         this.frame.getContentPane().add(this.canvas);
+        this.frame.setMinimumSize(new Dimension(1000, 640));
         this.frame.setSize(this.frame.getContentPane().getPreferredSize());
     }
 
@@ -83,11 +87,14 @@ public class Window {
     }
 
     private GLCanvas createCanvas() {
-        final GLProfile profile = GLProfile.get(GLProfile.GL2);
+        final GLProfile profile = GLProfile.get(GLProfile.GL3);
         GLCapabilities capabilities = new GLCapabilities(profile);
 
         GLCanvas glCanvas = new GLCanvas(capabilities);
         glCanvas.addGLEventListener(new EventListener());
+        glCanvas.addMouseListener(new MouseListener());
+        glCanvas.addMouseWheelListener(new MouseWheelListener());
+        glCanvas.addMouseMotionListener(new MouseMotionListener());
         glCanvas.setSize(1200, 800);
 
         return glCanvas;
@@ -117,6 +124,8 @@ public class Window {
             int result = fileChooser.showOpenDialog(this.frame);
             if (result != JFileChooser.APPROVE_OPTION) return;
 
+            Main.editor.closeFile();
+
             String path = fileChooser.getSelectedFile().getPath();
             if (!ResourceManager.doesFileExist(path.substring(0, path.length() - 3) + SupercellSWF.TEXTURE_EXTENSION)) {
                 Object[] options = {"Yes", "Cancel"};
@@ -141,12 +150,7 @@ public class Window {
         fileMenu.add(open);
 
         JMenuItem close = new JMenuItem("Close", KeyEvent.VK_C);
-        close.addActionListener((e) -> {
-            clearTable();
-
-            Main.editor.getRenderer().setDisplayObject(null);
-            this.canvas.display();
-        });
+        close.addActionListener((e) -> Main.editor.closeFile());
 
         fileMenu.add(close);
 
@@ -158,7 +162,7 @@ public class Window {
         return fileMenu;
     }
 
-    private void clearTable() {
+    public void clearTable() {
         DefaultTableModel model = (DefaultTableModel) this.table.getModel();
         while (model.getRowCount() > 0) {
             model.removeRow(0);

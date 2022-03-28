@@ -1,7 +1,10 @@
 package com.vorono4ka.editor.layout;
 
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.world.objects.GameObject;
+import com.vorono4ka.swf.SupercellSWF;
+import com.vorono4ka.swf.displayObjects.DisplayObject;
+import com.vorono4ka.swf.displayObjects.original.DisplayObjectOriginal;
+import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -22,9 +25,16 @@ public class TableSelectionListener implements ListSelectionListener {
         if (selectedRow == -1) return;
 
         int id = (int) this.table.getValueAt(selectedRow, 0);
+        String name = (String) this.table.getValueAt(selectedRow, 1);
 
-        GameObject gameObject = Main.editor.getScene().get(id);
-        Main.editor.getRenderer().setDisplayObject(gameObject);
-        Main.editor.getWindow().getCanvas().display();
+        SupercellSWF swf = Main.editor.getSwf();
+        try {
+            DisplayObjectOriginal displayObjectOriginal = swf.getOriginalDisplayObject(id, name);
+
+            DisplayObject displayObject = displayObjectOriginal.clone(swf, null);
+            Main.editor.updateCanvas();
+        } catch (UnableToFindObjectException ex) {
+            ex.printStackTrace();
+        }
     }
 }

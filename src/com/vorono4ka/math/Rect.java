@@ -1,10 +1,10 @@
 package com.vorono4ka.math;
 
 public class Rect {
-    private float left;
-    private float top;
-    private float right;
-    private float bottom;
+    private final float left;
+    private final float top;
+    private final float right;
+    private final float bottom;
 
     public Rect(float left, float top, float right, float bottom) {
         this.left = left;

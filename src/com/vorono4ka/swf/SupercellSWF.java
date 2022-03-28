@@ -151,7 +151,7 @@ public class SupercellSWF {
             for (int i = 0; i < this.exportsCount; i++) {
                 String exportName = this.exportsNames[i];
                 MovieClipOriginal movieClip = this.getOriginalMovieClip(this.exportsIds[i], exportName);
-                movieClip.setName(exportName);
+                movieClip.setExportName(exportName);
             }
 
             return true;
@@ -159,7 +159,7 @@ public class SupercellSWF {
         return false;
     }
 
-    private boolean loadTags(boolean isTexture, String path) throws LoadingFaultException {
+    private boolean loadTags(boolean isTextureFile, String path) throws LoadingFaultException {
         String highresSuffix = "_highres";
         String lowresSuffix = "_lowres";
 
@@ -197,7 +197,7 @@ public class SupercellSWF {
             Tag tagValue = Tag.values()[tag];
             switch (tagValue) {
                 case EOF -> {
-                    if (isTexture) {
+                    if (isTextureFile) {
                         if (loadedTextures != this.texturesCount) {
                             throw new LoadingFaultException(String.format("Texture count in .sc and _tex.sc doesn't match: %s", this.filename));
                         }
@@ -217,7 +217,7 @@ public class SupercellSWF {
                     if (loadedTextures >= this.texturesCount) {
                         throw new TooManyObjectsException("Trying to load too many textures from ");
                     }
-                    this.textures[loadedTextures++].load(this, tag, isTexture);
+                    this.textures[loadedTextures++].load(this, tag, isTextureFile);
                 }
                 case SHAPE, SHAPE_2 -> {
                     if (loadedShapes >= this.shapesCount) {
@@ -237,7 +237,7 @@ public class SupercellSWF {
                     }
                     this.textFieldsIds[loadedTextFields] = this.textFields[loadedTextFields++].load(this, tagValue);
 
-                    this.skip(length);
+                    this.skip(length - 2);
                 }
                 case MATRIX -> matrixBank.getMatrix(loadedMatrices++).read(this);
                 case COLOR_TRANSFORM -> matrixBank.getColorTransforms(loadedColorTransforms++).read(this.stream);
@@ -313,7 +313,7 @@ public class SupercellSWF {
         }
     }
 
-    private MovieClipOriginal getOriginalMovieClip(int id, String name) throws UnableToFindObjectException {
+    public MovieClipOriginal getOriginalMovieClip(int id, String name) throws UnableToFindObjectException {
         for (int i = 0; i < this.movieClipsCount; i++) {
             if (this.movieClipsIds[i] == id) {
                 return this.movieClips[i];
@@ -328,7 +328,7 @@ public class SupercellSWF {
         throw new UnableToFindObjectException(message);
     }
 
-    private DisplayObjectOriginal getOriginalDisplayObject(int id, String name) throws UnableToFindObjectException {
+    public DisplayObjectOriginal getOriginalDisplayObject(int id, String name) throws UnableToFindObjectException {
         for (int i = 0; i < this.shapesCount; i++) {
             if (this.shapesIds[i] == id) {
                 return this.shapes[i];
@@ -361,6 +361,22 @@ public class SupercellSWF {
         throw new UnableToFindObjectException(message);
     }
 
+    public int getExportsCount() {
+        return exportsCount;
+    }
+
+    public int[] getExportsIds() {
+        return exportsIds;
+    }
+
+    public String[] getExportsNames() {
+        return exportsNames;
+    }
+
+    public ScMatrixBank getMatrixBank(int index) {
+        return this.matrixBanks.get(index);
+    }
+
     public SWFTexture getTexture(int textureId) {
         return this.textures[textureId];
     }
@@ -389,7 +405,7 @@ public class SupercellSWF {
         return this.stream.readBoolean();
     }
 
-    public int[] readByteArray(int count) {
+    public byte[] readByteArray(int count) {
         return this.stream.readByteArray(count);
     }
 

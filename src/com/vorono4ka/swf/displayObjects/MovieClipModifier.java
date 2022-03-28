@@ -2,8 +2,15 @@ package com.vorono4ka.swf.displayObjects;
 
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
+import com.vorono4ka.swf.constants.Tag;
 
-public class TextField extends Sprite {
+public class MovieClipModifier extends DisplayObject {
+    private final Tag tag;
+
+    public MovieClipModifier(Tag tag) {
+        this.tag = tag;
+    }
+
     @Override
     public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a3, float a4) {
 
@@ -15,7 +22,7 @@ public class TextField extends Sprite {
     }
 
     @Override
-    public boolean isTextField() {
+    public boolean isMovieClipModifier() {
         return true;
     }
 }
