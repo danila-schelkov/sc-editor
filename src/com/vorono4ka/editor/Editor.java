@@ -1,13 +1,12 @@
 package com.vorono4ka.editor;
 
+import com.vorono4ka.editor.layout.Table;
 import com.vorono4ka.editor.layout.Window;
 import com.vorono4ka.editor.renderer.Renderer;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.original.MovieClipOriginal;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
-
-import javax.swing.table.DefaultTableModel;
 
 public class Editor {
     private final Renderer renderer;
@@ -29,7 +28,7 @@ public class Editor {
             return;
         }
 
-        DefaultTableModel model = (DefaultTableModel) this.window.getTable().getModel();
+        Table objectsTable = this.window.getObjectsTable();
 
         int[] exportsIds = this.swf.getExportsIds();
         String[] exportsNames = this.swf.getExportsNames();
@@ -39,8 +38,7 @@ public class Editor {
 
             try {
                 MovieClipOriginal movieClipOriginal = this.swf.getOriginalMovieClip(exportId, exportsName);
-
-                model.addRow(new Object[]{exportId, movieClipOriginal.getExportName(), "MovieClip"});
+                objectsTable.addRow(exportId, movieClipOriginal.getExportName(), "MovieClip");
             } catch (UnableToFindObjectException e) {
                 e.printStackTrace();
             }

@@ -37,6 +37,10 @@ public class MovieClip extends Sprite {
         }
     }
 
+    public String getExportName() {
+        return exportName;
+    }
+
     public void setExportName(String exportName) {
         this.exportName = exportName;
     }
@@ -45,12 +49,24 @@ public class MovieClip extends Sprite {
         this.msPerFrame = msPerFrame;
     }
 
+    public DisplayObject[] getTimelineChildren() {
+        return timelineChildren;
+    }
+
     public void setTimelineChildren(DisplayObject[] timelineChildren) {
         this.timelineChildren = timelineChildren;
     }
 
+    public String[] getTimelineChildrenNames() {
+        return timelineChildrenNames;
+    }
+
     public void setTimelineChildrenNames(String[] timelineChildrenNames) {
         this.timelineChildrenNames = timelineChildrenNames;
+    }
+
+    public MovieClipFrame[] getFrames() {
+        return frames;
     }
 
     public void setFrames(MovieClipFrame[] frames) {

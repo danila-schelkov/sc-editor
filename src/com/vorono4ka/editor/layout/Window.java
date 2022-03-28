@@ -4,6 +4,7 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.layout.listeners.TableSelectionListener;
 import com.vorono4ka.editor.renderer.listeners.EventListener;
 import com.vorono4ka.editor.renderer.listeners.MouseListener;
 import com.vorono4ka.editor.renderer.listeners.MouseMotionListener;
@@ -25,7 +26,8 @@ import java.util.List;
 public class Window {
     private final JFrame frame;
     private GLCanvas canvas;
-    private JTable table;
+    private Table objectsTable;
+    private JPanel infoBlock;
 
     public Window(String name) {
         this.frame = new JFrame(name);
@@ -36,15 +38,19 @@ public class Window {
         JMenuBar menuBar = createJMenuBar();
         this.frame.setJMenuBar(menuBar);
 
-        this.table = createJTable();
+        this.objectsTable = createObjectsTable();
 
-        JScrollPane tableScrollPane = new JScrollPane(this.table);
+        JScrollPane tableScrollPane = new JScrollPane(this.objectsTable);
         tableScrollPane.setPreferredSize(new Dimension(300, 0));
 
         this.canvas = createCanvas();
 
+        this.infoBlock = createInfoBlock();
+        this.infoBlock.setPreferredSize(new Dimension(300, 0));
+
         this.frame.getContentPane().add(tableScrollPane, BorderLayout.WEST);
         this.frame.getContentPane().add(this.canvas);
+        this.frame.getContentPane().add(this.infoBlock, BorderLayout.EAST);
         this.frame.setMinimumSize(new Dimension(1000, 640));
         this.frame.setSize(this.frame.getContentPane().getPreferredSize());
     }
@@ -53,8 +59,12 @@ public class Window {
         this.frame.setVisible(true);
     }
 
-    public JTable getTable() {
-        return table;
+    public Table getObjectsTable() {
+        return objectsTable;
+    }
+
+    public JPanel getInfoBlock() {
+        return infoBlock;
     }
 
     public GLCanvas getCanvas() {
@@ -62,19 +72,10 @@ public class Window {
     }
 
 
-    private JTable createJTable() {
-        DefaultTableModel tableModel = new DefaultTableModel();
-        tableModel.setColumnIdentifiers(new Object[] {"id", "name", "type"});
+    private Table createObjectsTable() {
+        Table table = new Table("id", "name", "type");
 
-        JTable table = new JTable(tableModel) {
-            public boolean isCellEditable(int row, int column){
-                return false;
-            }
-        };
-        table.getTableHeader().setReorderingAllowed(false);
-
-        table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getSelectionModel().addListSelectionListener(new TableSelectionListener(table));
+        table.addSelectionListener(new TableSelectionListener(table));
 
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(table.getModel());
         table.setRowSorter(sorter);
@@ -98,6 +99,26 @@ public class Window {
         glCanvas.setSize(1200, 800);
 
         return glCanvas;
+    }
+
+    private JPanel createInfoBlock() {
+        JPanel panel = new JPanel();
+
+//        panel.add(new JLabel("Children"));
+//
+//        Table timelineChildrenTable = new Table("#", "id", "name");
+//        JScrollPane tableScrollPane = new JScrollPane(timelineChildrenTable);
+//        tableScrollPane.setPreferredSize(new Dimension(300, infoBlock.getHeight()));
+//        panel.add(tableScrollPane);
+//
+//        panel.add(new JLabel("Frames"));
+//
+//        Table framesTable = new Table("#", "name");
+//        JScrollPane framesTableScrollPane = new JScrollPane(timelineChildrenTable);
+//        framesTableScrollPane.setPreferredSize(new Dimension(300, infoBlock.getHeight()));
+//        panel.add(framesTableScrollPane);
+
+        return panel;
     }
 
     private JMenuBar createJMenuBar() {
@@ -163,7 +184,7 @@ public class Window {
     }
 
     public void clearTable() {
-        DefaultTableModel model = (DefaultTableModel) this.table.getModel();
+        DefaultTableModel model = (DefaultTableModel) this.objectsTable.getModel();
         while (model.getRowCount() > 0) {
             model.removeRow(0);
         }
