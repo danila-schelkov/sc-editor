@@ -1,9 +1,11 @@
 package com.vorono4ka.editor;
 
-import com.vorono4ka.editor.layout.Table;
 import com.vorono4ka.editor.layout.Window;
+import com.vorono4ka.editor.layout.components.Table;
+import com.vorono4ka.editor.layout.components.blocks.EditorInfoPanel;
 import com.vorono4ka.editor.renderer.Renderer;
 import com.vorono4ka.swf.SupercellSWF;
+import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.original.MovieClipOriginal;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
@@ -13,6 +15,7 @@ public class Editor {
     private final Window window;
 
     private SupercellSWF swf;
+    private DisplayObject selectedObject;
 
     public Editor() {
         this.renderer = new Renderer();
@@ -45,18 +48,32 @@ public class Editor {
         }
     }
 
-    public SupercellSWF getSwf() {
-        return swf;
-    }
-
     public void closeFile() {
-        this.window.clearTable();
+        this.window.getObjectsTable().clear();
+
+        EditorInfoPanel infoBlock = this.window.getInfoBlock();
+        infoBlock.setPanel(null);
+
         this.updateCanvas();
+
+        this.selectedObject = null;
         this.swf = null;
     }
 
     public void updateCanvas() {
         this.window.getCanvas().display();
+    }
+
+    public DisplayObject getSelectedObject() {
+        return selectedObject;
+    }
+
+    public void setSelectedObject(DisplayObject selectedObject) {
+        this.selectedObject = selectedObject;
+    }
+
+    public SupercellSWF getSwf() {
+        return swf;
     }
 
     public Renderer getRenderer() {

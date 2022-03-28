@@ -1,4 +1,4 @@
-package com.vorono4ka.editor.layout;
+package com.vorono4ka.editor.layout.components;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -21,7 +21,7 @@ public class ProgressDialog extends JDialog {
         this.progressBar.setUI(new BeautyProgressBarUI());
         this.progressBar.setIndeterminate(true);
 
-        setLayout(new GridBagLayout());
+        this.setLayout(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.insets = new Insets(0, 0, 2, 0);
         constraints.anchor = GridBagConstraints.WEST;

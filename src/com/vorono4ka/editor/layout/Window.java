@@ -4,6 +4,8 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.layout.components.Table;
+import com.vorono4ka.editor.layout.components.blocks.EditorInfoPanel;
 import com.vorono4ka.editor.layout.listeners.TableSelectionListener;
 import com.vorono4ka.editor.renderer.listeners.EventListener;
 import com.vorono4ka.editor.renderer.listeners.MouseListener;
@@ -14,7 +16,6 @@ import com.vorono4ka.swf.SupercellSWF;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
@@ -27,7 +28,7 @@ public class Window {
     private final JFrame frame;
     private GLCanvas canvas;
     private Table objectsTable;
-    private JPanel infoBlock;
+    private EditorInfoPanel infoBlock;
 
     public Window(String name) {
         this.frame = new JFrame(name);
@@ -63,7 +64,7 @@ public class Window {
         return objectsTable;
     }
 
-    public JPanel getInfoBlock() {
+    public EditorInfoPanel getInfoBlock() {
         return infoBlock;
     }
 
@@ -73,7 +74,7 @@ public class Window {
 
 
     private Table createObjectsTable() {
-        Table table = new Table("id", "name", "type");
+        Table table = new Table("Id", "Name", "Type");
 
         table.addSelectionListener(new TableSelectionListener(table));
 
@@ -101,24 +102,8 @@ public class Window {
         return glCanvas;
     }
 
-    private JPanel createInfoBlock() {
-        JPanel panel = new JPanel();
-
-//        panel.add(new JLabel("Children"));
-//
-//        Table timelineChildrenTable = new Table("#", "id", "name");
-//        JScrollPane tableScrollPane = new JScrollPane(timelineChildrenTable);
-//        tableScrollPane.setPreferredSize(new Dimension(300, infoBlock.getHeight()));
-//        panel.add(tableScrollPane);
-//
-//        panel.add(new JLabel("Frames"));
-//
-//        Table framesTable = new Table("#", "name");
-//        JScrollPane framesTableScrollPane = new JScrollPane(timelineChildrenTable);
-//        framesTableScrollPane.setPreferredSize(new Dimension(300, infoBlock.getHeight()));
-//        panel.add(framesTableScrollPane);
-
-        return panel;
+    private EditorInfoPanel createInfoBlock() {
+        return new EditorInfoPanel();
     }
 
     private JMenuBar createJMenuBar() {
@@ -181,12 +166,5 @@ public class Window {
         exit.addActionListener((e) -> System.exit(0));
         fileMenu.add(exit);
         return fileMenu;
-    }
-
-    public void clearTable() {
-        DefaultTableModel model = (DefaultTableModel) this.objectsTable.getModel();
-        while (model.getRowCount() > 0) {
-            model.removeRow(0);
-        }
     }
 }

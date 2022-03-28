@@ -2,6 +2,7 @@ package com.vorono4ka.swf.displayObjects.original;
 
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.MovieClipFrame;
+import com.vorono4ka.swf.MovieClipFrameElement;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
@@ -16,7 +17,7 @@ import java.util.Arrays;
 public class MovieClipOriginal extends DisplayObjectOriginal {
     private int fps;
     private int framesCount;
-    private int[] transforms;
+    private int[] framesElements;
     private MovieClipFrame[] frames;
 
     private int childrenCount;
@@ -56,8 +57,8 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
                 }
             }
             default -> {
-                int transformsCount = swf.readInt();
-                this.transforms = swf.readShortArray(transformsCount * 3);
+                int elementsCount = swf.readInt();
+                this.framesElements = swf.readShortArray(elementsCount * 3);
             }
         }
 
@@ -77,6 +78,7 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
         }
 
         int loadedCommands = 0;
+        int usedElements = 0;
 
         while (true) {
             int commandTag = swf.readUnsignedChar();
@@ -98,7 +100,22 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
                         exception.printStackTrace();
                     }
                 }
-                case MOVIE_CLIP_FRAME_2 -> this.frames[loadedCommands++].load(swf);
+                case MOVIE_CLIP_FRAME_2 -> {
+                    MovieClipFrame frame = this.frames[loadedCommands++];
+                    int elementsCount = frame.load(swf);
+
+                    MovieClipFrameElement[] elements = new MovieClipFrameElement[elementsCount];
+                    for (int i = 0; i < elementsCount; i++) {
+                        elements[i] = new MovieClipFrameElement(
+                            this.framesElements[usedElements * 3],
+                            this.framesElements[usedElements * 3 + 1],
+                            this.framesElements[usedElements * 3 + 2]
+                        );
+
+                        usedElements++;
+                    }
+                    frame.setElements(elements);
+                }
                 case SCALING_GRID -> {
                     if (this.scalingGrid != null) {
                         throw new LoadingFaultException("multiple scaling grids");
