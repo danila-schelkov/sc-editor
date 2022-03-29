@@ -1,14 +1,14 @@
 package com.vorono4ka.swf.displayObjects;
 
+import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
-import com.vorono4ka.swf.constants.Tag;
 
-public class MovieClipModifier extends DisplayObject {
-    private final Tag tag;
+public class Shape9Slice extends Shape {
+    private final Rect scalingGrid;
 
-    public MovieClipModifier(Tag tag) {
-        this.tag = tag;
+    public Shape9Slice(Rect scalingGrid) {
+        this.scalingGrid = scalingGrid;
     }
 
     @Override
@@ -22,7 +22,7 @@ public class MovieClipModifier extends DisplayObject {
     }
 
     @Override
-    public boolean isMovieClipModifier() {
+    public boolean isShape() {
         return true;
     }
 }

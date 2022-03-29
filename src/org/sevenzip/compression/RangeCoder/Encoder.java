@@ -121,7 +121,7 @@ public class Encoder
 		}
 	}
 	
-	private static int[] ProbPrices = new int[kBitModelTotal >>> kNumMoveReducingBits];
+	private static final int[] ProbPrices = new int[kBitModelTotal >>> kNumMoveReducingBits];
 	
 	static
 	{

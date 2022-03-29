@@ -4,7 +4,7 @@ import com.jogamp.opengl.GL3;
 import com.vorono4ka.swf.SupercellSWF;
 
 public class SWFTexture {
-    private static int i = 0;
+    private static final int i = 0;
 
     private int width;
     private int height;

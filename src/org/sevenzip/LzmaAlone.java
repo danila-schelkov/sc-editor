@@ -195,10 +195,8 @@ public class LzmaAlone
 			java.io.BufferedInputStream inStream  = new java.io.BufferedInputStream(new java.io.FileInputStream(inFile));
 			java.io.BufferedOutputStream outStream = new java.io.BufferedOutputStream(new java.io.FileOutputStream(outFile));
 			
-			boolean eos = false;
-			if (params.Eos)
-				eos = true;
-			if (params.Command == CommandLine.kEncode)
+			boolean eos = params.Eos;
+            if (params.Command == CommandLine.kEncode)
 			{
 				org.sevenzip.compression.LZMA.Encoder encoder = new org.sevenzip.compression.LZMA.Encoder();
 				if (!encoder.SetAlgorithm(params.Algorithm))

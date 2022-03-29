@@ -154,7 +154,7 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
         DisplayObject[] childrenArray = new DisplayObject[this.childrenCount];
         for (int i = 0; i < this.childrenCount; i++) {
             DisplayObjectOriginal child = this.children[i];
-            DisplayObject displayObject = child.clone(swf, scalingGrid);
+            DisplayObject displayObject = child.clone(swf, this.scalingGrid);
 
             displayObject.setVisibleRecursive((this.childrenBlends[i] & 64) == 0);
             displayObject.setInteractiveRecursive(true);

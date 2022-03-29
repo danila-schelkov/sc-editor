@@ -26,7 +26,7 @@ public class SupercellSWF {
     private int textFieldsCount;
     private int movieClipModifiersCount;
 
-    private List<ScMatrixBank> matrixBanks;
+    private final List<ScMatrixBank> matrixBanks;
 
     private int exportsCount;
     private int[] exportsIds;

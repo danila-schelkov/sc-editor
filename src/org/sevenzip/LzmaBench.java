@@ -20,8 +20,8 @@ public class LzmaBench
 				((A1 = 36969 * (A1 & 0xffff) + (A1 >>> 16)) << 16) ^
 				((A2 = 18000 * (A2 & 0xffff) + (A2 >>> 16)));
 		}
-	};
-	
+	}
+
 	static class CBitRandomGenerator
 	{
 		CRandomGenerator RG = new CRandomGenerator();
@@ -45,13 +45,13 @@ public class LzmaBench
 			numBits -= NumBits;
 			result = (Value << numBits);
 			Value = RG.GetRnd();
-			result |= Value & (((int)1 << numBits) - 1);
+			result |= Value & ((1 << numBits) - 1);
 			Value >>>= numBits;
 			NumBits = 32 - numBits;
 			return result;
 		}
-	};
-	
+	}
+
 	static class CBenchRandomGenerator
 	{
 		CBitRandomGenerator RG = new CBitRandomGenerator();
@@ -72,7 +72,7 @@ public class LzmaBench
 		int GetLogRandBits(int numBits)
 		{
 			int len = RG.GetRnd(numBits);
-			return RG.GetRnd((int)len);
+			return RG.GetRnd(len);
 		}
 		int GetOffset()
 		{
@@ -80,8 +80,8 @@ public class LzmaBench
 				return GetLogRandBits(4);
 			return (GetLogRandBits(4) << 10) | RG.GetRnd(10);
 		}
-		int GetLen1() { return RG.GetRnd(1 + (int)RG.GetRnd(2)); }
-		int GetLen2() { return RG.GetRnd(2 + (int)RG.GetRnd(2)); }
+		int GetLen1() { return RG.GetRnd(1 + RG.GetRnd(2)); }
+		int GetLen2() { return RG.GetRnd(2 + RG.GetRnd(2)); }
 		public void Generate()
 		{
 			RG.Init();
@@ -108,8 +108,8 @@ public class LzmaBench
 				}
 			}
 		}
-	};
-	
+	}
+
 	static class CrcOutStream extends java.io.OutputStream
 	{
 		public CRC CRC = new CRC();
@@ -134,7 +134,7 @@ public class LzmaBench
 		{
 			CRC.UpdateByte(b);
 		}
-	};
+	}
 
 	static class MyOutputStream extends java.io.OutputStream
 	{
@@ -164,7 +164,7 @@ public class LzmaBench
 		{
 			return _pos;
 		}
-	};
+	}
 
 	static class MyInputStream extends java.io.InputStream
 	{
@@ -189,8 +189,8 @@ public class LzmaBench
 				return -1;
 			return _buffer[_pos++] & 0xFF;
 		}
-	};
-	
+	}
+
 	static class CProgressInfo implements ICodeProgress
 	{
 		public long ApprovedStart;
@@ -236,7 +236,7 @@ public class LzmaBench
 	{
 		long t = GetLogSize(dictionarySize) - (18 << kSubBits);
 		long numCommandsForOne = 1060 + ((t * t * 10) >> (2 * kSubBits));
-		long numCommands = (long)(size) * numCommandsForOne;
+		long numCommands = size * numCommandsForOne;
 		return MyMultDiv64(numCommands, elapsedTime);
 	}
 	
@@ -364,12 +364,12 @@ public class LzmaBench
 				long outSize = kBufferSize;
 				long startTime = System.currentTimeMillis();
 				if (!decoder.code(inputCompressedStream, crcOutStream, outSize))
-					throw (new Exception("Decoding Error"));;
+					throw (new Exception("Decoding Error"));
 				decodeTime = System.currentTimeMillis() - startTime;
 				if (crcOutStream.GetDigest() != crc.GetDigest())
 					throw (new Exception("CRC Error"));
 			}
-			long benchSize = kBufferSize - (long)progressInfo.InSize;
+			long benchSize = kBufferSize - progressInfo.InSize;
 			PrintResults(dictionarySize, encodeTime, benchSize, false, 0);
 			System.out.print("     ");
 			PrintResults(dictionarySize, decodeTime, kBufferSize, true, compressedSize);

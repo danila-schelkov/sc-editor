@@ -17,8 +17,8 @@ public class VAO {
 
     public void linkAttrib(VBO vbo, int layout, int size, int type, int stride, int offset) {
         vbo.bind();
+        this.gl.glEnableVertexAttribArray(layout);
         this.gl.glVertexAttribPointer(layout, size, type, false, stride, offset);
-        this.gl.glEnableVertexAttribArray(0);
         vbo.unbind();
     }
 

@@ -15,10 +15,10 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-public class TableSelectionListener implements ListSelectionListener {
+public class DisplayObjectSelectionListener implements ListSelectionListener {
     private final JTable table;
 
-    public TableSelectionListener(JTable table) {
+    public DisplayObjectSelectionListener(JTable table) {
         this.table = table;
     }
 

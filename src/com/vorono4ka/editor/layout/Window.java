@@ -6,7 +6,7 @@ import com.jogamp.opengl.awt.GLCanvas;
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.blocks.EditorInfoPanel;
-import com.vorono4ka.editor.layout.listeners.TableSelectionListener;
+import com.vorono4ka.editor.layout.listeners.DisplayObjectSelectionListener;
 import com.vorono4ka.editor.renderer.listeners.EventListener;
 import com.vorono4ka.editor.renderer.listeners.MouseListener;
 import com.vorono4ka.editor.renderer.listeners.MouseMotionListener;
@@ -76,7 +76,7 @@ public class Window {
     private Table createObjectsTable() {
         Table table = new Table("Id", "Name", "Type");
 
-        table.addSelectionListener(new TableSelectionListener(table));
+        table.addSelectionListener(new DisplayObjectSelectionListener(table));
 
         TableRowSorter<TableModel> sorter = new TableRowSorter<>(table.getModel());
         table.setRowSorter(sorter);

@@ -1,6 +1,9 @@
 package com.vorono4ka.swf.displayObjects;
 
+import com.vorono4ka.editor.renderer.Renderer;
 import com.vorono4ka.math.Point;
+import com.vorono4ka.swf.ColorTransform;
+import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.displayObjects.original.SWFTexture;
@@ -40,6 +43,14 @@ public class ShapeDrawBitmapCommand {
 
             this.sheetPoints[i] = new Point(u, v);
         }
+    }
+
+    public void render(Renderer renderer, Matrix2x3 matrix, ColorTransform colorTransform, int a3) {
+
+    }
+
+    public void collisionRender(Renderer renderer, Matrix2x3 matrix, ColorTransform colorTransform) {
+        this.render(renderer, matrix, colorTransform, 0);
     }
 
     public float getX(int pointIndex) {

@@ -5,6 +5,7 @@ import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.Shape;
+import com.vorono4ka.swf.displayObjects.Shape9Slice;
 import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
@@ -70,6 +71,14 @@ public class ShapeOriginal extends DisplayObjectOriginal {
 
     @Override
     public DisplayObject clone(SupercellSWF swf, Rect scalingGrid) throws UnableToFindObjectException {
-        return new Shape();
+        Shape shape;
+        if (scalingGrid != null) {
+            shape = new Shape9Slice(scalingGrid);
+        } else {
+            shape = new Shape();
+        }
+
+        shape.setCommands(this.commands);
+        return shape;
     }
 }
