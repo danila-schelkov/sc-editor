@@ -46,7 +46,48 @@ public class ShapeDrawBitmapCommand {
     }
 
     public void render(Renderer renderer, Matrix2x3 matrix, ColorTransform colorTransform, int a3) {
+        float left = 0,
+            top = 0,
+            right = 0,
+            bottom = 0;
 
+        float[] transformedPoints = new float[this.vertexCount * 2];
+        for (int i = 0; i < this.vertexCount; i++) {
+            Point point = this.shapePoints[i];
+
+            float x = (point.getX() * matrix.getScaleX()) + (point.getY() * matrix.getSkewY()) + matrix.getX();
+            float y = (point.getX() * matrix.getSkewX()) + (point.getY() * matrix.getScaleY()) + matrix.getY();
+
+            transformedPoints[i * 2] = x;
+            transformedPoints[i * 2 + 1] = x;
+
+            if (i == 0) {
+                left = x;
+                top = y;
+                right = x;
+                bottom = y;
+                continue;
+            }
+
+            if ( x >= left ) {
+                if ( x > right )
+                    right = x;
+            } else {
+                left = x;
+            }
+
+            if ( y >= top ) {
+                if ( y > bottom )
+                    bottom = y;
+            } else {
+                top = y;
+            }
+        }
+
+        System.out.printf("Bounds rect: %f %f %f %f, Size: (%f, %f)%n", left, top, right, bottom, right - left, bottom - top);
+        for (int i = 0; i < this.vertexCount; i++) {
+            System.out.printf("Point %d: (%f, %f)%n", i, transformedPoints[i * 2], transformedPoints[i * 2 + 1]);
+        }
     }
 
     public void collisionRender(Renderer renderer, Matrix2x3 matrix, ColorTransform colorTransform) {

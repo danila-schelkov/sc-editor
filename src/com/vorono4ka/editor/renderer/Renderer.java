@@ -76,7 +76,9 @@ public class Renderer {
         DisplayObject selectedObject = Main.editor.getSelectedObject();
         if (selectedObject == null) return;
 
-        selectedObject.render(new Matrix2x3(), new ColorTransform(), 0, 0);
+        Matrix2x3 matrix = new Matrix2x3();
+//        matrix.setScale(this.scale, this.scale);
+        selectedObject.render(matrix, new ColorTransform(), 0, 0);
 //        gl.glDrawArrays(GL3.GL_POINTS, 0, 4);
     }
 

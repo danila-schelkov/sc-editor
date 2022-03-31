@@ -77,8 +77,7 @@ public class Matrix2x3 {
 
     public void inverse() {
         float v5 = (this.scaleY * this.scaleX) - (this.skewY * this.skewX);
-        if ( v5 != 0.0 )
-        {
+        if ( v5 != 0.0f ) {
             this.x = ((this.y * this.skewY) - (this.x * this.scaleY)) / v5;
             this.y = ((this.x * this.skewX) - (this.y * this.scaleX)) / v5;
             this.scaleX = this.scaleY / v5;
@@ -99,6 +98,11 @@ public class Matrix2x3 {
 
     public void setY(float y) {
         this.y = y;
+    }
+
+    public void setScale(float x, float y) {
+        this.scaleX = x;
+        this.scaleY = y;
     }
 
     public float getX() {
