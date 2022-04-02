@@ -1,7 +1,7 @@
 package com.vorono4ka.editor.renderer.listeners;
 
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.renderer.Renderer;
+import com.vorono4ka.editor.renderer.Stage;
 
 import java.awt.event.MouseWheelEvent;
 
@@ -10,10 +10,9 @@ public class MouseWheelListener implements java.awt.event.MouseWheelListener {
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        Renderer renderer = Main.editor.getRenderer();
-
-        if (renderer.getScale() <= 0.5f && e.getWheelRotation() < 0) return;
-        renderer.setScale(renderer.getScale() + SENSITIVE * e.getWheelRotation());
+        float scale = Stage.INSTANCE.getScale();
+        if (scale <= 0.5f && e.getWheelRotation() < 0) return;
+        Stage.INSTANCE.setScale(scale + SENSITIVE * e.getWheelRotation());
         Main.editor.updateCanvas();
     }
 }

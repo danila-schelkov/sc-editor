@@ -3,7 +3,6 @@ package com.vorono4ka.editor;
 import com.vorono4ka.editor.layout.Window;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.blocks.EditorInfoPanel;
-import com.vorono4ka.editor.renderer.Renderer;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.original.MovieClipOriginal;
@@ -11,14 +10,12 @@ import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 
 public class Editor {
-    private final Renderer renderer;
     private final Window window;
 
     private SupercellSWF swf;
     private DisplayObject selectedObject;
 
     public Editor() {
-        this.renderer = new Renderer();
         this.window = new Window("SC Editor");
     }
 
@@ -54,10 +51,10 @@ public class Editor {
         EditorInfoPanel infoBlock = this.window.getInfoBlock();
         infoBlock.setPanel(null);
 
-        this.updateCanvas();
-
         this.selectedObject = null;
         this.swf = null;
+
+        this.updateCanvas();
     }
 
     public void updateCanvas() {
@@ -74,10 +71,6 @@ public class Editor {
 
     public SupercellSWF getSwf() {
         return swf;
-    }
-
-    public Renderer getRenderer() {
-        return renderer;
     }
 
     public Window getWindow() {

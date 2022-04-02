@@ -1,12 +1,12 @@
 package com.vorono4ka.swf;
 
 import com.jogamp.opengl.GL3;
-import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.swf.displayObjects.original.SWFTexture;
 
 public class GLImage {
     public static void createWithFormat(SWFTexture swfTexture, boolean a2, int a3) {
-        GL3 gl = Main.editor.getRenderer().getGl();
+        GL3 gl = Stage.INSTANCE.getGl();
 
         int[] ids = new int[1];
         gl.glGenTextures(1, ids, 0);

@@ -1,7 +1,6 @@
 package com.vorono4ka.swf.displayObjects;
 
-import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.renderer.Renderer;
+import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
 
@@ -33,9 +32,9 @@ public class Shape extends DisplayObject {
 
         int a3 = this.getRenderConfigBits() | v35;
 
-        Renderer renderer = Main.editor.getRenderer();
+        Stage stage = Stage.INSTANCE;
         for (ShapeDrawBitmapCommand command : this.commands) {
-            command.render(renderer, matrixApplied, colorTransformApplied, a3);
+            command.render(stage, matrixApplied, colorTransformApplied, a3);
         }
     }
 

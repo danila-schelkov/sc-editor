@@ -1,6 +1,6 @@
 package com.vorono4ka.swf.displayObjects;
 
-import com.vorono4ka.editor.renderer.Renderer;
+import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Point;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
@@ -45,7 +45,7 @@ public class ShapeDrawBitmapCommand {
         }
     }
 
-    public void render(Renderer renderer, Matrix2x3 matrix, ColorTransform colorTransform, int a3) {
+    public void render(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int a3) {
         float left = 0,
             top = 0,
             right = 0,
@@ -53,13 +53,11 @@ public class ShapeDrawBitmapCommand {
 
         float[] transformedPoints = new float[this.vertexCount * 2];
         for (int i = 0; i < this.vertexCount; i++) {
-            Point point = this.shapePoints[i];
-
-            float x = (point.getX() * matrix.getScaleX()) + (point.getY() * matrix.getSkewY()) + matrix.getX();
-            float y = (point.getX() * matrix.getSkewX()) + (point.getY() * matrix.getScaleY()) + matrix.getY();
+            float x = (this.getX(i) * matrix.getScaleX()) + (this.getY(i) * matrix.getSkewY()) + matrix.getX();
+            float y = (this.getX(i) * matrix.getSkewX()) + (this.getY(i) * matrix.getScaleY()) + matrix.getY();
 
             transformedPoints[i * 2] = x;
-            transformedPoints[i * 2 + 1] = x;
+            transformedPoints[i * 2 + 1] = y;
 
             if (i == 0) {
                 left = x;
@@ -84,14 +82,25 @@ public class ShapeDrawBitmapCommand {
             }
         }
 
-        System.out.printf("Bounds rect: %f %f %f %f, Size: (%f, %f)%n", left, top, right, bottom, right - left, bottom - top);
+//        System.out.printf("Bounds rect: %f %f %f %f, Size: (%f, %f)%n", left, top, right, bottom, right - left, bottom - top);
+
+        int trianglesCount = this.vertexCount - 2;
+        int[] indices = new int[trianglesCount * 3];
+        for (int i = 0; i < trianglesCount; i++) {
+            indices[i * 3] = 0;
+            indices[i * 3 + 1] = i + 1;
+            indices[i * 3 + 2] = i + 2;
+        }
+
+        stage.addTriangles(trianglesCount, indices);
+
         for (int i = 0; i < this.vertexCount; i++) {
-            System.out.printf("Point %d: (%f, %f)%n", i, transformedPoints[i * 2], transformedPoints[i * 2 + 1]);
+            stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], this.getU(i), this.getV(i));
         }
     }
 
-    public void collisionRender(Renderer renderer, Matrix2x3 matrix, ColorTransform colorTransform) {
-        this.render(renderer, matrix, colorTransform, 0);
+    public void collisionRender(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform) {
+        this.render(stage, matrix, colorTransform, 0);
     }
 
     public float getX(int pointIndex) {

@@ -45,10 +45,10 @@ public class DisplayObjectSelectionListener implements ListSelectionListener {
                 MovieClipInfoPanel movieClipInfoPanel = new MovieClipInfoPanel();
 
                 DisplayObject[] timelineChildren = movieClip.getTimelineChildren();
+                int[] timelineChildrenIds = movieClip.getTimelineChildrenIds();
                 String[] timelineChildrenNames = movieClip.getTimelineChildrenNames();
                 for (int i = 0; i < timelineChildren.length; i++) {
-//                    DisplayObject timelineChild = timelineChildren[i];
-                    movieClipInfoPanel.addTimelineChild(i, "", timelineChildrenNames[i]);
+                    movieClipInfoPanel.addTimelineChild(i, timelineChildrenIds[i], timelineChildrenNames[i]);
                 }
 
                 MovieClipFrame[] frames = movieClip.getFrames();

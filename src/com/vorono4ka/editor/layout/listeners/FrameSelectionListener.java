@@ -39,6 +39,9 @@ public class FrameSelectionListener implements ListSelectionListener {
         MovieClipInfoPanel panel = (MovieClipInfoPanel) infoBlock.getPanel();
         panel.clearFrameElements();
 
+        movieClip.setFrame(index);
+        Main.editor.updateCanvas();
+
         MovieClipFrameElement[] frameElements = movieClip.getFrames()[index].getElements();
         for (int i = 0; i < frameElements.length; i++) {
             MovieClipFrameElement frameElement = frameElements[i];

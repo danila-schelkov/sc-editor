@@ -32,8 +32,12 @@ public class Shader {
         return this.gl.glGetUniformLocation(this.id, uniform);
     }
 
-    public void use() {
+    public void bind() {
         this.gl.glUseProgram(this.id);
+    }
+
+    public void unbind() {
+        this.gl.glUseProgram(0);
     }
 
     public void delete() {

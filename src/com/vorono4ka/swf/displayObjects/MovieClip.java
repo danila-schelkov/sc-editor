@@ -7,6 +7,7 @@ public class MovieClip extends Sprite {
     private float frameTime;
     private float msPerFrame;
     private DisplayObject[] timelineChildren;
+    private int[] timelineChildrenIds;
     private String[] timelineChildrenNames;
     private MovieClipFrame[] frames;
     private ScMatrixBank matrixBank;
@@ -113,7 +114,7 @@ public class MovieClip extends Sprite {
         }
 
         while (this.getChildrenCount() > childIndex) {
-            this.removeChildAt(++childIndex);
+            this.removeChildAt(childIndex++);
         }
     }
 
@@ -140,6 +141,14 @@ public class MovieClip extends Sprite {
 
     public void setTimelineChildren(DisplayObject[] timelineChildren) {
         this.timelineChildren = timelineChildren;
+    }
+
+    public int[] getTimelineChildrenIds() {
+        return timelineChildrenIds;
+    }
+
+    public void setTimelineChildrenIds(int[] timelineChildrenIds) {
+        this.timelineChildrenIds = timelineChildrenIds;
     }
 
     public String[] getTimelineChildrenNames() {

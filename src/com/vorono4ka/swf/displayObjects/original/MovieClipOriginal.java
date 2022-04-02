@@ -162,6 +162,7 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
             childrenArray[i] = displayObject;
         }
         movieClip.setTimelineChildren(childrenArray);
+        movieClip.setTimelineChildrenIds(this.childrenIds);
         movieClip.setTimelineChildrenNames(this.childrenNames);
         movieClip.setFrames(this.frames);
         movieClip.setMsPerFrame(1.0f / this.fps);
