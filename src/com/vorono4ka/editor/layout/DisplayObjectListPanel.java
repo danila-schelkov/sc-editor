@@ -68,6 +68,7 @@ public class DisplayObjectListPanel extends JPanel {
 
     public void resetFilter() {
         this.sorter.setRowFilter(null);
+        this.textField.setText(null);
     }
 
     public Table getTable() {
