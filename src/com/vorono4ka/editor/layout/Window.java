@@ -82,7 +82,7 @@ public class Window {
         table.setRowSorter(sorter);
 
         List<RowSorter.SortKey> sortKeys = new ArrayList<>();
-        sortKeys.add(new RowSorter.SortKey(2, SortOrder.DESCENDING));
+        sortKeys.add(new RowSorter.SortKey(1, SortOrder.DESCENDING));
         sorter.setSortKeys(sortKeys);
 
         return table;
@@ -130,8 +130,6 @@ public class Window {
             int result = fileChooser.showOpenDialog(this.frame);
             if (result != JFileChooser.APPROVE_OPTION) return;
 
-            Main.editor.closeFile();
-
             String path = fileChooser.getSelectedFile().getPath();
             if (!ResourceManager.doesFileExist(path.substring(0, path.length() - 3) + SupercellSWF.TEXTURE_EXTENSION)) {
                 Object[] options = {"Yes", "Cancel"};
@@ -149,6 +147,8 @@ public class Window {
 
                 if (warningResult != 0) return;
             }
+
+            Main.editor.closeFile();
 
             Main.editor.openFile(path);
         });

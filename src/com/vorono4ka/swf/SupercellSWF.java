@@ -79,7 +79,9 @@ public class SupercellSWF {
         File file = new File(path);
 
         try {
-            data = new FileInputStream(file).readAllBytes();
+            FileInputStream fileInputStream = new FileInputStream(file);
+            data = fileInputStream.readAllBytes();
+            fileInputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -365,8 +367,16 @@ public class SupercellSWF {
         return exportsCount;
     }
 
-    public int[] getExportsIds() {
-        return exportsIds;
+    public int[] getShapesIds() {
+        return shapesIds;
+    }
+
+    public int[] getMovieClipsIds() {
+        return movieClipsIds;
+    }
+
+    public int[] getTextFieldsIds() {
+        return textFieldsIds;
     }
 
     public String[] getExportsNames() {

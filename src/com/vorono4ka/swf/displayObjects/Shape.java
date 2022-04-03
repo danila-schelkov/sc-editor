@@ -43,10 +43,6 @@ public class Shape extends DisplayObject {
 
     }
 
-    public ShapeDrawBitmapCommand[] getCommands() {
-        return commands;
-    }
-
     public void setCommands(ShapeDrawBitmapCommand[] commands) {
         this.commands = commands;
     }

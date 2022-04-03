@@ -113,8 +113,9 @@ public class MovieClip extends Sprite {
             this.addChildAt(child, childIndex++);
         }
 
-        while (this.getChildrenCount() > childIndex) {
-            this.removeChildAt(childIndex++);
+        int childrenCount = this.getChildrenCount();
+        while (childrenCount > childIndex) {
+            this.removeChildAt(--childrenCount);
         }
     }
 

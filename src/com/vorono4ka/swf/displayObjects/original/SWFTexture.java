@@ -1,6 +1,7 @@
 package com.vorono4ka.swf.displayObjects.original;
 
 import com.jogamp.opengl.GL3;
+import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.SupercellSWF;
 
 public class SWFTexture {
@@ -8,6 +9,7 @@ public class SWFTexture {
 
     private int width;
     private int height;
+    private int textureId;
 
     public void load(SupercellSWF swf, int tag, boolean hasTexture) {
         int pixelFormat = GL3.GL_RGBA;
@@ -46,6 +48,8 @@ public class SWFTexture {
 
         swf.skip(this.width * this.height * pixelBytes);
 
+        GLImage.createWithFormat(this, true, 1);
+
 //        GL3 gl = Main.editor.getRenderer().getGl();
 //        int mipmapLevel = 1;
 //        gl.glTexImage2D(
@@ -67,5 +71,13 @@ public class SWFTexture {
 
     public int getHeight() {
         return height;
+    }
+
+    public int getTextureId() {
+        return this.textureId;
+    }
+
+    public void setTextureId(int textureId) {
+        this.textureId = textureId;
     }
 }

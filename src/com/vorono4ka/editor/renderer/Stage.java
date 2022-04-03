@@ -60,6 +60,8 @@ public class Stage {
         gl.glUniformMatrix4fv(shader.getUniformLocation("pmv"), 1, false, matrix.glGetMatrixf());
         shader.unbind();
 
+        gl.glActiveTexture(GL3.GL_TEXTURE0);
+
         this.vertices = new float[0];
         this.indices = new int[0];
 

@@ -1,6 +1,7 @@
 package com.vorono4ka.editor.layout.components.blocks;
 
 import com.vorono4ka.editor.layout.components.Table;
+import com.vorono4ka.editor.layout.listeners.ChildrenListMouseListener;
 import com.vorono4ka.editor.layout.listeners.FrameSelectionListener;
 
 import javax.swing.*;
@@ -15,6 +16,7 @@ public class MovieClipInfoPanel extends JPanel {
         this.setLayout(new GridLayout(0, 1));
 
         this.timelineChildrenTable = new Table("#", "Id", "Name");
+        this.timelineChildrenTable.addMouseListener(new ChildrenListMouseListener(this.timelineChildrenTable));
         this.framesTable = new Table("#", "Name");
         this.framesTable.addSelectionListener(new FrameSelectionListener(this.framesTable));
         this.frameElementsTable = new Table("#", "Child #", "Matrix", "Color Transform");

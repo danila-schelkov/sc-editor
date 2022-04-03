@@ -32,9 +32,11 @@ public class DisplayObjectSelectionListener implements ListSelectionListener {
         int id = (int) this.table.getValueAt(selectedRow, 0);
         String name = (String) this.table.getValueAt(selectedRow, 1);
 
-        SupercellSWF swf = Main.editor.getSwf();
         Window window = Main.editor.getWindow();
         EditorInfoPanel infoBlock = window.getInfoBlock();
+        infoBlock.setPanel(null);
+
+        SupercellSWF swf = Main.editor.getSwf();
         try {
             DisplayObjectOriginal displayObjectOriginal = swf.getOriginalDisplayObject(id, name);
 

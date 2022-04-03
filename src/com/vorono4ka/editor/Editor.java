@@ -30,18 +30,24 @@ public class Editor {
 
         Table objectsTable = this.window.getObjectsTable();
 
-        int[] exportsIds = this.swf.getExportsIds();
-        String[] exportsNames = this.swf.getExportsNames();
-        for (int i = 0; i < this.swf.getExportsCount(); i++) {
-            int exportId = exportsIds[i];
-            String exportsName = exportsNames[i];
-
+        int[] movieClipsIds = this.swf.getMovieClipsIds();
+        for (int movieClipId : movieClipsIds) {
             try {
-                MovieClipOriginal movieClipOriginal = this.swf.getOriginalMovieClip(exportId, exportsName);
-                objectsTable.addRow(exportId, movieClipOriginal.getExportName(), "MovieClip");
+                MovieClipOriginal movieClipOriginal = this.swf.getOriginalMovieClip(movieClipId, null);
+                objectsTable.addRow(movieClipId, movieClipOriginal.getExportName(), "MovieClip");
             } catch (UnableToFindObjectException e) {
                 e.printStackTrace();
             }
+        }
+
+        int[] shapesIds = this.swf.getShapesIds();
+        for (int shapesId : shapesIds) {
+            objectsTable.addRow(shapesId, null, "Shape");
+        }
+
+        int[] textFieldsIds = this.swf.getTextFieldsIds();
+        for (int textFieldId : textFieldsIds) {
+            objectsTable.addRow(textFieldId, null, "TextField");
         }
     }
 
