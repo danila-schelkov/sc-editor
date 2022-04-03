@@ -42,5 +42,6 @@ public class ChildrenListMouseListener extends MouseAdapter {
         if (childRow == -1) return;
 
         objectsTable.setRowSelectionInterval(childRow, childRow);
+        objectsTable.scrollRectToVisible(objectsTable.getCellRect(childRow, 0, true));
     }
 }
