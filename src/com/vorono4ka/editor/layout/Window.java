@@ -6,7 +6,6 @@ import com.jogamp.opengl.awt.GLCanvas;
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.blocks.EditorInfoPanel;
-import com.vorono4ka.editor.layout.listeners.DisplayObjectSelectionListener;
 import com.vorono4ka.editor.renderer.listeners.EventListener;
 import com.vorono4ka.editor.renderer.listeners.MouseListener;
 import com.vorono4ka.editor.renderer.listeners.MouseMotionListener;
@@ -16,19 +15,15 @@ import com.vorono4ka.swf.SupercellSWF;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Window {
     private final JFrame frame;
     private GLCanvas canvas;
-    private Table objectsTable;
     private EditorInfoPanel infoBlock;
+    private DisplayObjectListPanel displayObjectPanel;
 
     public Window(String name) {
         this.frame = new JFrame(name);
@@ -36,20 +31,15 @@ public class Window {
     }
 
     public void create() {
-        JMenuBar menuBar = createJMenuBar();
-        this.frame.setJMenuBar(menuBar);
-
-        this.objectsTable = createObjectsTable();
-
-        JScrollPane tableScrollPane = new JScrollPane(this.objectsTable);
-        tableScrollPane.setPreferredSize(new Dimension(300, 0));
-
+        this.displayObjectPanel = new DisplayObjectListPanel();
+        this.displayObjectPanel.setPreferredSize(new Dimension(300, 0));
         this.canvas = createCanvas();
-
         this.infoBlock = createInfoBlock();
         this.infoBlock.setPreferredSize(new Dimension(300, 0));
 
-        this.frame.getContentPane().add(tableScrollPane, BorderLayout.WEST);
+        this.frame.setJMenuBar(createJMenuBar());
+
+        this.frame.getContentPane().add(this.displayObjectPanel, BorderLayout.WEST);
         this.frame.getContentPane().add(this.canvas);
         this.frame.getContentPane().add(this.infoBlock, BorderLayout.EAST);
         this.frame.setMinimumSize(new Dimension(1000, 640));
@@ -61,7 +51,7 @@ public class Window {
     }
 
     public Table getObjectsTable() {
-        return objectsTable;
+        return this.displayObjectPanel.getTable();
     }
 
     public EditorInfoPanel getInfoBlock() {
@@ -72,21 +62,6 @@ public class Window {
         return this.canvas;
     }
 
-
-    private Table createObjectsTable() {
-        Table table = new Table("Id", "Name", "Type");
-
-        table.addSelectionListener(new DisplayObjectSelectionListener(table));
-
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(table.getModel());
-        table.setRowSorter(sorter);
-
-        List<RowSorter.SortKey> sortKeys = new ArrayList<>();
-        sortKeys.add(new RowSorter.SortKey(1, SortOrder.DESCENDING));
-        sorter.setSortKeys(sortKeys);
-
-        return table;
-    }
 
     private GLCanvas createCanvas() {
         final GLProfile profile = GLProfile.get(GLProfile.GL3);
@@ -109,9 +84,8 @@ public class Window {
     private JMenuBar createJMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
-        JMenu fileMenu = createFileMenu();
-
-        menuBar.add(fileMenu);
+        menuBar.add(createFileMenu());
+        menuBar.add(createEditMenu());
 
         return menuBar;
     }
@@ -165,6 +139,19 @@ public class Window {
         JMenuItem exit = new JMenuItem("Exit");
         exit.addActionListener((e) -> System.exit(0));
         fileMenu.add(exit);
+        return fileMenu;
+    }
+
+    private JMenu createEditMenu() {
+        JMenu fileMenu = new JMenu("Edit");
+        fileMenu.setMnemonic(KeyEvent.VK_E);
+
+        JMenuItem find = new JMenuItem("Find", KeyEvent.VK_F);
+        find.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
+        find.addActionListener((e) -> this.displayObjectPanel.setFocusOnTextField());
+
+        fileMenu.add(find);
+
         return fileMenu;
     }
 }
