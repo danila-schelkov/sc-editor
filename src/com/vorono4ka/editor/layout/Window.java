@@ -50,6 +50,10 @@ public class Window {
         this.frame.setVisible(true);
     }
 
+    public DisplayObjectListPanel getDisplayObjectPanel() {
+        return displayObjectPanel;
+    }
+
     public Table getObjectsTable() {
         return this.displayObjectPanel.getTable();
     }

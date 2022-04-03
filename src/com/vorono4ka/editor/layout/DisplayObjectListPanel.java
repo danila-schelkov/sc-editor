@@ -59,11 +59,15 @@ public class DisplayObjectListPanel extends JPanel {
 
     private void find(String text) {
         if (text.trim().length() == 0) {
-            this.sorter.setRowFilter(null);
+            this.resetFilter();
             return;
         }
 
         this.sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+    }
+
+    public void resetFilter() {
+        this.sorter.setRowFilter(null);
     }
 
     public Table getTable() {
