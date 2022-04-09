@@ -1,10 +1,12 @@
 package com.vorono4ka.editor.layout;
 
+import com.formdev.flatlaf.FlatClientProperties;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.layout.components.LinkLabel;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.blocks.EditorInfoPanel;
 import com.vorono4ka.editor.renderer.listeners.EventListener;
@@ -19,19 +21,18 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.time.Year;
 
 public class Window {
-    private final JFrame frame;
+    private JFrame frame;
     private GLCanvas canvas;
     private EditorInfoPanel infoBlock;
     private DisplayObjectListPanel displayObjectPanel;
 
-    public Window(String name) {
+    public void initialize(String name) {
         this.frame = new JFrame(name);
         this.frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-    }
 
-    public void create() {
         this.displayObjectPanel = new DisplayObjectListPanel();
         this.displayObjectPanel.setPreferredSize(new Dimension(300, 0));
         this.canvas = createCanvas();
@@ -70,7 +71,7 @@ public class Window {
     }
 
 
-    private GLCanvas createCanvas() {
+    public GLCanvas createCanvas() {
         final GLProfile profile = GLProfile.get(GLProfile.GL3);
         GLCapabilities capabilities = new GLCapabilities(profile);
 
@@ -87,22 +88,24 @@ public class Window {
         return glCanvas;
     }
 
-    private EditorInfoPanel createInfoBlock() {
+    public EditorInfoPanel createInfoBlock() {
         return new EditorInfoPanel();
     }
 
-    private JMenuBar createJMenuBar() {
+    public JMenuBar createJMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
         menuBar.add(createFileMenu());
         menuBar.add(createEditMenu());
+        menuBar.add(createOptionsMenu());
+        menuBar.add(createHelpMenu());
 
         return menuBar;
     }
 
     private JMenu createFileMenu() {
-        JMenu fileMenu = new JMenu("File");
-        fileMenu.setMnemonic(KeyEvent.VK_F);
+        JMenu menu = new JMenu("File");
+        menu.setMnemonic(KeyEvent.VK_F);
 
         JMenuItem open = new JMenuItem("Open", KeyEvent.VK_O);
         open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
@@ -137,43 +140,73 @@ public class Window {
             Main.editor.openFile(path);
         });
 
-        fileMenu.add(open);
+        menu.add(open);
 
         JMenuItem close = new JMenuItem("Close", KeyEvent.VK_C);
         close.addActionListener((e) -> Main.editor.closeFile());
 
-        fileMenu.add(close);
+        menu.add(close);
 
-        fileMenu.addSeparator();
+        menu.addSeparator();
 
         JMenuItem exit = new JMenuItem("Exit");
         exit.addActionListener((e) -> System.exit(0));
-        fileMenu.add(exit);
-        return fileMenu;
+        menu.add(exit);
+        return menu;
     }
 
     private JMenu createEditMenu() {
-        JMenu fileMenu = new JMenu("Edit");
-        fileMenu.setMnemonic(KeyEvent.VK_E);
+        JMenu menu = new JMenu("Edit");
+        menu.setMnemonic(KeyEvent.VK_E);
 
         JMenuItem find = new JMenuItem("Find", KeyEvent.VK_F);
         find.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
         find.addActionListener((e) -> this.displayObjectPanel.setFocusOnTextField());
 
-        fileMenu.add(find);
+        menu.add(find);
 
         JMenuItem previous = new JMenuItem("Previous", KeyEvent.VK_P);
         previous.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
         previous.addActionListener((e) -> Main.editor.selectPrevious());
 
-        fileMenu.add(previous);
+        menu.add(previous);
 
         JMenuItem next = new JMenuItem("Next", KeyEvent.VK_N);
         next.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
         next.addActionListener((e) -> Main.editor.selectNext());
 
-        fileMenu.add(next);
+        menu.add(next);
 
-        return fileMenu;
+        return menu;
+    }
+
+    private JMenu createOptionsMenu() {
+        return new JMenu("Options");
+    }
+
+    private JMenu createHelpMenu() {
+        JMenu menu = new JMenu("Help");
+        menu.setMnemonic(KeyEvent.VK_H);
+
+        JMenuItem about = new JMenuItem("About", KeyEvent.VK_A);
+        about.addActionListener((e) -> {
+            JLabel titleLabel = new JLabel( "SC Editor");
+            titleLabel.putClientProperty(FlatClientProperties.STYLE_CLASS, "h1");
+
+            JOptionPane.showMessageDialog(
+                this.frame,
+                new Object[] {
+                    titleLabel,
+                    new LinkLabel("https://github.com/vorono4ka/sc-editor"),
+                    "Copyright 2022-" + Year.now() + " Vorono4ka"
+                },
+                "About",
+                JOptionPane.PLAIN_MESSAGE
+            );
+        });
+
+        menu.add(about);
+
+        return menu;
     }
 }

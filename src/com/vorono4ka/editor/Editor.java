@@ -24,7 +24,8 @@ public class Editor {
     private int selectedIndex;
 
     public Editor() {
-        this.window = new Window("SC Editor");
+        this.window = new Window();
+
         this.clonedObjects = new ArrayList<>();
         this.selectedIndex = -1;
     }

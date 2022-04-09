@@ -25,7 +25,8 @@ public class EditorInfoPanel extends JPanel {
         if (panel == null) {
             this.setBorder(BorderFactory.createTitledBorder("SC Editor"));
 
-            this.add(new LinkLabel("Github", "https://github.com/vorono4ka"));
+            this.add(new JLabel("Author:"));
+            this.add(new LinkLabel("https://github.com/vorono4ka"));
         } else {
             this.add(panel);
         }

@@ -11,13 +11,12 @@ public class Main {
     public static void main(String[] args) {
         Main.editor = new Editor();
 
-        SwingUtilities.invokeLater(() -> {
+        SwingUtilities.invokeLater( () -> {
             FlatLightLaf.setup();
 
             Window window = Main.editor.getWindow();
-            window.create();
-
+            window.initialize("SC Editor");
             window.show();
-        });
+        } );
     }
 }
