@@ -9,5 +9,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="JOGL" level="application" />
+    <orderEntry type="library" exported="" name="FlatLaf" level="application" />
   </component>
 </module>

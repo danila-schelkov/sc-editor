@@ -48,6 +48,8 @@ public class Window {
     }
 
     public void show() {
+        this.frame.pack();
+        this.frame.setLocationRelativeTo(null);
         this.frame.setVisible(true);
     }
 
@@ -159,6 +161,18 @@ public class Window {
         find.addActionListener((e) -> this.displayObjectPanel.setFocusOnTextField());
 
         fileMenu.add(find);
+
+        JMenuItem previous = new JMenuItem("Previous", KeyEvent.VK_P);
+        previous.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
+        previous.addActionListener((e) -> Main.editor.selectPrevious());
+
+        fileMenu.add(previous);
+
+        JMenuItem next = new JMenuItem("Next", KeyEvent.VK_N);
+        next.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
+        next.addActionListener((e) -> Main.editor.selectNext());
+
+        fileMenu.add(next);
 
         return fileMenu;
     }

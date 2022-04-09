@@ -1,9 +1,9 @@
 package com.vorono4ka.editor;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import com.vorono4ka.editor.layout.Window;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class Main {
     public static Editor editor;
@@ -12,15 +12,11 @@ public class Main {
         Main.editor = new Editor();
 
         SwingUtilities.invokeLater(() -> {
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                UIManager.put("MenuItem.margin", new Insets(0, -15, 0, 0));
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
-                e.printStackTrace();
-            }
+            FlatLightLaf.setup();
 
             Window window = Main.editor.getWindow();
             window.create();
+
             window.show();
         });
     }
