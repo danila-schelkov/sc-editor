@@ -87,7 +87,7 @@ public class Stage {
         this.vertices = new float[0];
         this.indices = new int[0];
 
-        selectedObject.render(matrix, new ColorTransform(), 0, 0);
+        selectedObject.render(matrix, new ColorTransform(), 0, 1 / 60f);
 
         this.shader.bind();
 

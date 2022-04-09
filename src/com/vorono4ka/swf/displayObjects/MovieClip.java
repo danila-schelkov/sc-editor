@@ -11,16 +11,17 @@ public class MovieClip extends Sprite {
     private String[] timelineChildrenNames;
     private MovieClipFrame[] frames;
     private ScMatrixBank matrixBank;
-    private final int currentFrame;
+    private int currentFrame;
     private int loopFrame;
 
     public MovieClip() {
         this.currentFrame = -1;
+        this.loopFrame = -1;
     }
 
     @Override
     public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float a5) {
-        if (a5 <= 0.0) {
+        if (a5 <= 0.0f) {
             super.render(matrix, colorTransform, a4, a5);
             return;
         }
@@ -63,11 +64,11 @@ public class MovieClip extends Sprite {
             this.setFrame(nextFrame % this.frames.length);
         }
 
-        if ( this.frameSkippingType == 2 ) {
+        if (this.frameSkippingType == 2) {
             this.interpolateFrames();
         }
 
-        if ( this.state <= 1 ) {
+        if (this.state <= 1) {
             this.frameTime += a5;
         }
 
@@ -86,6 +87,7 @@ public class MovieClip extends Sprite {
         }
 
         if (this.currentFrame == index) return;
+        this.currentFrame = index;
 
         MovieClipFrame frame = this.frames[index];
         int childIndex = 0;

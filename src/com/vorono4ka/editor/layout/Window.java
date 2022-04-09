@@ -3,6 +3,7 @@ package com.vorono4ka.editor.layout;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
+import com.jogamp.opengl.util.FPSAnimator;
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.blocks.EditorInfoPanel;
@@ -77,6 +78,9 @@ public class Window {
         glCanvas.addMouseWheelListener(new MouseWheelListener());
         glCanvas.addMouseMotionListener(new MouseMotionListener());
         glCanvas.setSize(1200, 800);
+
+        FPSAnimator animator = new FPSAnimator(glCanvas, 60);
+        animator.start();
 
         return glCanvas;
     }
