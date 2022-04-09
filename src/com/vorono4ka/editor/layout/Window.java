@@ -9,9 +9,9 @@ import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.layout.components.LinkLabel;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.blocks.EditorInfoPanel;
+import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.editor.renderer.listeners.EventListener;
 import com.vorono4ka.editor.renderer.listeners.MouseListener;
-import com.vorono4ka.editor.renderer.listeners.MouseMotionListener;
 import com.vorono4ka.editor.renderer.listeners.MouseWheelListener;
 import com.vorono4ka.resources.ResourceManager;
 import com.vorono4ka.swf.SupercellSWF;
@@ -77,9 +77,10 @@ public class Window {
 
         GLCanvas glCanvas = new GLCanvas(capabilities);
         glCanvas.addGLEventListener(new EventListener());
-        glCanvas.addMouseListener(new MouseListener());
+        MouseListener mouseListener = new MouseListener();
+        glCanvas.addMouseListener(mouseListener);
+        glCanvas.addMouseMotionListener(mouseListener);
         glCanvas.addMouseWheelListener(new MouseWheelListener());
-        glCanvas.addMouseMotionListener(new MouseMotionListener());
         glCanvas.setSize(1200, 800);
 
         FPSAnimator animator = new FPSAnimator(glCanvas, 60);
@@ -97,6 +98,7 @@ public class Window {
 
         menuBar.add(createFileMenu());
         menuBar.add(createEditMenu());
+        menuBar.add(createViewMenu());
         menuBar.add(createOptionsMenu());
         menuBar.add(createHelpMenu());
 
@@ -176,6 +178,28 @@ public class Window {
         next.addActionListener((e) -> Main.editor.selectNext());
 
         menu.add(next);
+
+        return menu;
+    }
+
+    private JMenu createViewMenu() {
+        JMenu menu = new JMenu("View");
+        menu.setMnemonic(KeyEvent.VK_V);
+
+        JMenuItem reset = new JMenuItem("Reset");
+        reset.addActionListener(e -> {
+            Stage stage = Stage.INSTANCE;
+
+            stage.setScaleStep(39);
+            stage.setScale(1);
+
+            stage.setOffset(0, 0);
+
+            stage.doInRenderThread(stage::updatePMVMatrix);
+            Main.editor.updateCanvas();
+        });
+
+        menu.add(reset);
 
         return menu;
     }

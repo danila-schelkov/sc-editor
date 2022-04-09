@@ -2,6 +2,7 @@ package com.vorono4ka.swf.displayObjects;
 
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Point;
+import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.SupercellSWF;
@@ -46,10 +47,7 @@ public class ShapeDrawBitmapCommand {
     }
 
     public void render(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int a3) {
-        float left = 0,
-            top = 0,
-            right = 0,
-            bottom = 0;
+        Rect bounds = new Rect();
 
         float[] transformedPoints = new float[this.vertexCount * 2];
         for (int i = 0; i < this.vertexCount; i++) {
@@ -60,29 +58,14 @@ public class ShapeDrawBitmapCommand {
             transformedPoints[i * 2 + 1] = y;
 
             if (i == 0) {
-                left = x;
-                top = y;
-                right = x;
-                bottom = y;
+                bounds = new Rect(x, y, x, y);
                 continue;
             }
 
-            if ( x >= left ) {
-                if ( x > right )
-                    right = x;
-            } else {
-                left = x;
-            }
-
-            if ( y >= top ) {
-                if ( y > bottom )
-                    bottom = y;
-            } else {
-                top = y;
-            }
+            bounds.addPoint(x, y);
         }
 
-//        System.out.printf("Bounds rect: %f %f %f %f, Size: (%f, %f)%n", left, top, right, bottom, right - left, bottom - top);
+//        System.out.printf("Bounds rect: %f %f %f %f, Size: (%f, %f)%n", bounds.getMinX(), bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY(), bounds.getWidth(), bounds.getHeight());
 
         int trianglesCount = this.vertexCount - 2;
         int[] indices = new int[trianglesCount * 3];

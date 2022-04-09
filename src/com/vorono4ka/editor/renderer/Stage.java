@@ -4,19 +4,28 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.vorono4ka.editor.Main;
+import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 
+import java.util.Iterator;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 public class Stage {
     public static Stage INSTANCE;
 
-    private float scale;
+    private final ConcurrentLinkedQueue<Runnable> tasks;
 
-    private Shader shader;
-
-    private GL3 gl;
     private boolean initialized;
+    private Shader shader;
+    private GL3 gl;
+
+    private Rect viewport;
+    private int scaleStep;
+    private float scale;
+    private float offsetX;
+    private float offsetY;
 
     private int pointsCount;
     private int vertexIndex;
@@ -24,8 +33,10 @@ public class Stage {
     private int[] indices;
 
     public Stage() {
+        this.tasks = new ConcurrentLinkedQueue<>();
+
+        this.scaleStep = 39;
         this.scale = 1.0f;
-        this.pointsCount = 0;
     }
 
     public static void createInstance() {
@@ -35,43 +46,33 @@ public class Stage {
     }
 
     public void init(GL3 gl, int x, int y, int width, int height) {
-        Shader shader = new Shader(gl, "vertex.glsl", "fragment.glsl");
+        this.shader = new Shader(gl, "vertex.glsl", "fragment.glsl");
+        this.gl = gl;
+
+        this.viewport = new Rect(-(width / 2f), -(height / 2f), width / 2f, height / 2f);
 
         gl.glViewport(x, y, width, height);
 
-        PMVMatrix matrix = new PMVMatrix();
-        matrix.glLoadIdentity();
-        matrix.glOrthof(
-            // left
-            -(width / 2f),
-            // right
-            width / 2f,
-            // bottom
-            height / 2f,
-            // top
-            -(height / 2f),
-            // near
-            -1,
-            // far
-            1
-        );
-
-        shader.bind();
-        gl.glUniformMatrix4fv(shader.getUniformLocation("pmv"), 1, false, matrix.glGetMatrixf());
-        shader.unbind();
+        this.updatePMVMatrix();
 
         gl.glActiveTexture(GL3.GL_TEXTURE0);
 
         this.vertices = new float[0];
         this.indices = new int[0];
 
-        this.gl = gl;
-        this.shader = shader;
         this.initialized = true;
     }
 
     public void render() {
         if (!this.initialized) return;
+
+        Iterator<Runnable> iterator = this.tasks.iterator();
+        while (iterator.hasNext()) {
+            Runnable task = iterator.next();
+            task.run();
+
+            iterator.remove();
+        }
 
         this.gl.glClearColor(.5f, .5f, .5f, 1);
         this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT);
@@ -79,15 +80,12 @@ public class Stage {
         DisplayObject selectedObject = Main.editor.getSelectedObject();
         if (selectedObject == null) return;
 
-        Matrix2x3 matrix = new Matrix2x3();
-        matrix.setScale(1 / this.scale, 1 / this.scale);
-
         this.pointsCount = 0;
         this.vertexIndex = 0;
         this.vertices = new float[0];
         this.indices = new int[0];
 
-        selectedObject.render(matrix, new ColorTransform(), 0, 1 / 60f);
+        selectedObject.render(new Matrix2x3(), new ColorTransform(), 0, 1 / 60f);
 
         this.shader.bind();
 
@@ -148,12 +146,53 @@ public class Stage {
         this.vertexIndex++;
     }
 
-    public float getScale() {
-        return scale;
+    public void updatePMVMatrix() {
+        PMVMatrix matrix = new PMVMatrix();
+        matrix.glLoadIdentity();
+        matrix.glOrthof(
+            // left
+            (this.viewport.getMinX() / this.scale + this.offsetX),
+            // right
+            (this.viewport.getMaxX() / this.scale + this.offsetX),
+            // bottom
+            (this.viewport.getMaxY() / this.scale + this.offsetY),
+            // top
+            (this.viewport.getMinY() / this.scale + this.offsetY),
+            // near
+            -1,
+            // far
+            1
+        );
+
+        this.shader.bind();
+        this.gl.glUniformMatrix4fv(this.shader.getUniformLocation("pmv"), 1, false, matrix.glGetMatrixf());
+        this.shader.unbind();
+    }
+
+    public void doInRenderThread(Runnable task) {
+        this.tasks.add(task);
+    }
+
+    public int getScaleStep() {
+        return scaleStep;
+    }
+
+    public void setScaleStep(int scaleStep) {
+        this.scaleStep = scaleStep;
     }
 
     public void setScale(float scale) {
         this.scale = scale;
+    }
+
+    public void addOffset(float x, float y) {
+        this.offsetX += x;
+        this.offsetY += y;
+    }
+
+    public void setOffset(float x, float y) {
+        this.offsetX = x;
+        this.offsetY = y;
     }
 
     public GL3 getGl() {

@@ -94,7 +94,7 @@ public class Editor {
     }
 
     private void selectObject(int objectIndex) {
-        if (objectIndex <= 0) return;
+        if (objectIndex < 0) return;
         if (objectIndex >= this.clonedObjects.size()) return;
 
         this.selectedIndex = objectIndex;
