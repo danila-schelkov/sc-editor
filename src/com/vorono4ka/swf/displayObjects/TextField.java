@@ -14,6 +14,10 @@ public class TextField extends Sprite {
 
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     @Override
     public boolean isTextField() {
         return true;

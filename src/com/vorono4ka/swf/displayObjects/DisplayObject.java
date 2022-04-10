@@ -4,12 +4,16 @@ import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
 
 public abstract class DisplayObject {
+    protected int id;
+
     private ColorTransform colorTransform;
     private Matrix2x3 matrix;
     private int renderConfigBits;
     private boolean isVisible;
 
     public DisplayObject() {
+        this.id = -1;
+
         this.colorTransform = new ColorTransform();
         this.matrix = new Matrix2x3();
         this.renderConfigBits = 0;
@@ -19,6 +23,12 @@ public abstract class DisplayObject {
     public abstract void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float a5);
 
     public abstract void collisionRender(Matrix2x3 matrix, ColorTransform colorTransform);
+
+
+    public int getId() {
+        return this.id;
+    }
+
 
     public void setVisibleRecursive(boolean visible) {
         this.isVisible = visible;

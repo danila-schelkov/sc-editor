@@ -5,7 +5,7 @@ import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.swf.displayObjects.original.SWFTexture;
 
 public class GLImage {
-    public static void createWithFormat(SWFTexture swfTexture, boolean clampToEdge, int filter) {
+    public static void createWithFormat(SWFTexture swfTexture, boolean clampToEdge, int filter, int width, int height, int pixelFormat, int pixelType) {
         GL3 gl = Stage.INSTANCE.getGl();
 
         int textureId = swfTexture.getTextureId();
@@ -19,7 +19,6 @@ public class GLImage {
         textureId = ids[0];
         swfTexture.setTextureId(textureId);
 
-//        System.out.println("Texture Id: " + textureId);
         gl.glBindTexture(GL3.GL_TEXTURE_2D, textureId);
 
         int magFilter;
@@ -52,6 +51,9 @@ public class GLImage {
         gl.glPixelStorei(GL3.GL_UNPACK_ALIGNMENT, 4);
 
         gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+
+        gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, pixelFormat, width, height, 0, pixelFormat, pixelType, null);
+        gl.glGenerateMipmap(GL3.GL_TEXTURE_2D);
         gl.glFlush();
     }
 }

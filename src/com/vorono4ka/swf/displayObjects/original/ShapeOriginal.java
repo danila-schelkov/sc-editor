@@ -12,11 +12,13 @@ import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.exceptions.UnsupportedTagException;
 
 public class ShapeOriginal extends DisplayObjectOriginal {
+    private int id;
+
     private int commandsCount;
     private ShapeDrawBitmapCommand[] commands;
 
     public int load(SupercellSWF swf, Tag tag) throws NegativeTagLengthException {
-        int id = swf.readShort();
+        this.id = swf.readShort();
         this.commandsCount = swf.readShort();
 
         this.commands = new ShapeDrawBitmapCommand[this.commandsCount];
@@ -42,7 +44,7 @@ public class ShapeOriginal extends DisplayObjectOriginal {
             Tag tagValue = Tag.values()[commandTag];
             switch (tagValue) {
                 case EOF -> {
-                    return id;
+                    return this.id;
                 }
                 case SHAPE_DRAW_BITMAP_COMMAND, SHAPE_DRAW_BITMAP_COMMAND_2, SHAPE_DRAW_BITMAP_COMMAND_3 -> {
                     this.commands[loadedCommands++].load(swf, tagValue);
@@ -78,6 +80,7 @@ public class ShapeOriginal extends DisplayObjectOriginal {
             shape = new Shape();
         }
 
+        shape.setId(this.id);
         shape.setCommands(this.commands);
         return shape;
     }

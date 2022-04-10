@@ -219,7 +219,7 @@ public class SupercellSWF {
                     if (loadedTextures >= this.texturesCount) {
                         throw new TooManyObjectsException("Trying to load too many textures from ");
                     }
-                    this.textures[loadedTextures++].load(this, tag, isTextureFile);
+                    this.textures[loadedTextures++].load(this, tagValue, isTextureFile);
                 }
                 case SHAPE, SHAPE_2 -> {
                     if (loadedShapes >= this.shapesCount) {

@@ -7,7 +7,6 @@ public class MovieClip extends Sprite {
     private float frameTime;
     private float msPerFrame;
     private DisplayObject[] timelineChildren;
-    private int[] timelineChildrenIds;
     private String[] timelineChildrenNames;
     private MovieClipFrame[] frames;
     private ScMatrixBank matrixBank;
@@ -126,6 +125,14 @@ public class MovieClip extends Sprite {
         System.out.println("Isn't implemented yet");
     }
 
+    private void setLoopFrame(int frame) {
+        this.loopFrame = frame;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getExportName() {
         return exportName;
     }
@@ -144,14 +151,6 @@ public class MovieClip extends Sprite {
 
     public void setTimelineChildren(DisplayObject[] timelineChildren) {
         this.timelineChildren = timelineChildren;
-    }
-
-    public int[] getTimelineChildrenIds() {
-        return timelineChildrenIds;
-    }
-
-    public void setTimelineChildrenIds(int[] timelineChildrenIds) {
-        this.timelineChildrenIds = timelineChildrenIds;
     }
 
     public String[] getTimelineChildrenNames() {

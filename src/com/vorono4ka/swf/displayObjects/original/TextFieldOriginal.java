@@ -9,11 +9,16 @@ import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 
 public class TextFieldOriginal extends DisplayObjectOriginal {
     public int load(SupercellSWF swf, Tag tag) {
-        return swf.readShort();
+        this.id = swf.readShort();
+
+        return id;
     }
 
     @Override
     public DisplayObject clone(SupercellSWF swf, Rect scalingGrid) throws UnableToFindObjectException {
-        return new TextField();
+        TextField textField = new TextField();
+        textField.setId(this.id);
+
+        return textField;
     }
 }

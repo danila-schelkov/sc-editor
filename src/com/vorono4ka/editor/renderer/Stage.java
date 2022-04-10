@@ -181,6 +181,10 @@ public class Stage {
         this.scaleStep = scaleStep;
     }
 
+    public float getScale() {
+        return scale;
+    }
+
     public void setScale(float scale) {
         this.scale = scale;
     }

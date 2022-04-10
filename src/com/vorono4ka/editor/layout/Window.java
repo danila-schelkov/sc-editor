@@ -29,8 +29,8 @@ public class Window {
     private EditorInfoPanel infoBlock;
     private DisplayObjectListPanel displayObjectPanel;
 
-    public void initialize(String name) {
-        this.frame = new JFrame(name);
+    public void initialize(String title) {
+        this.frame = new JFrame(title);
         this.frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         this.displayObjectPanel = new DisplayObjectListPanel();
@@ -54,6 +54,10 @@ public class Window {
         this.frame.setVisible(true);
     }
 
+    public void setTitle(String title) {
+        this.frame.setTitle(title);
+    }
+
     public DisplayObjectListPanel getDisplayObjectPanel() {
         return displayObjectPanel;
     }
@@ -71,7 +75,7 @@ public class Window {
     }
 
 
-    public GLCanvas createCanvas() {
+    private GLCanvas createCanvas() {
         final GLProfile profile = GLProfile.get(GLProfile.GL3);
         GLCapabilities capabilities = new GLCapabilities(profile);
 
@@ -89,11 +93,11 @@ public class Window {
         return glCanvas;
     }
 
-    public EditorInfoPanel createInfoBlock() {
+    private EditorInfoPanel createInfoBlock() {
         return new EditorInfoPanel();
     }
 
-    public JMenuBar createJMenuBar() {
+    private JMenuBar createJMenuBar() {
         JMenuBar menuBar = new JMenuBar();
 
         menuBar.add(createFileMenu());
@@ -214,7 +218,7 @@ public class Window {
 
         JMenuItem about = new JMenuItem("About", KeyEvent.VK_A);
         about.addActionListener((e) -> {
-            JLabel titleLabel = new JLabel( "SC Editor");
+            JLabel titleLabel = new JLabel(Main.TITLE);
             titleLabel.putClientProperty(FlatClientProperties.STYLE_CLASS, "h1");
 
             JOptionPane.showMessageDialog(

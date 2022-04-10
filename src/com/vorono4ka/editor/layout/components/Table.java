@@ -28,6 +28,21 @@ public class Table extends JTable {
         dataModel.addRow(rowData);
     }
 
+    public int indexOf(int value, int column) {
+        for (int i = 0; i < this.getRowCount(); i++) {
+            if (((int) this.getValueAt(i, column)) == value) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    public void select(int row) {
+        this.setRowSelectionInterval(row, row);
+        this.scrollRectToVisible(this.getCellRect(row, 0, true));
+    }
+
     public void addSelectionListener(ListSelectionListener listener) {
         this.selectionModel.addListSelectionListener(listener);
     }

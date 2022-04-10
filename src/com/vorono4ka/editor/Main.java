@@ -6,6 +6,7 @@ import com.vorono4ka.editor.layout.Window;
 import javax.swing.*;
 
 public class Main {
+    public static final String TITLE = "SC Editor";
     public static Editor editor;
 
     public static void main(String[] args) {
@@ -15,7 +16,7 @@ public class Main {
             FlatLightLaf.setup();
 
             Window window = Main.editor.getWindow();
-            window.initialize("SC Editor");
+            window.initialize(TITLE);
             window.show();
         } );
     }

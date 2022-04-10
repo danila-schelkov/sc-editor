@@ -21,12 +21,14 @@ public class Editor {
     private SupercellSWF swf;
 
     private final List<DisplayObject> clonedObjects;
+    private final List<Integer> clonedIds;
     private int selectedIndex;
 
     public Editor() {
         this.window = new Window();
 
         this.clonedObjects = new ArrayList<>();
+        this.clonedIds = new ArrayList<>();
         this.selectedIndex = -1;
     }
 
@@ -38,6 +40,8 @@ public class Editor {
             e.printStackTrace();
             return;
         }
+
+        this.window.setTitle(Main.TITLE + " - " + this.swf.getFilename());
 
         Table objectsTable = this.window.getObjectsTable();
 
@@ -65,6 +69,8 @@ public class Editor {
     public void closeFile() {
         this.window.getObjectsTable().clear();
 
+        this.window.setTitle(Main.TITLE);
+
         EditorInfoPanel infoBlock = this.window.getInfoBlock();
         infoBlock.setPanel(null);
 
@@ -86,7 +92,14 @@ public class Editor {
     }
 
     public void selectObject(DisplayObject displayObject) {
+//        int index = this.clonedIds.indexOf(displayObject.getId());
+//        if (index != -1) {
+//            this.selectObject(index);
+//            return;
+//        }
+
         if (!this.clonedObjects.contains(displayObject)) {
+            this.clonedIds.add(displayObject.getId());
             this.clonedObjects.add(displayObject);
         }
 
@@ -109,10 +122,9 @@ public class Editor {
             MovieClipInfoPanel movieClipInfoPanel = new MovieClipInfoPanel();
 
             DisplayObject[] timelineChildren = movieClip.getTimelineChildren();
-            int[] timelineChildrenIds = movieClip.getTimelineChildrenIds();
             String[] timelineChildrenNames = movieClip.getTimelineChildrenNames();
             for (int i = 0; i < timelineChildren.length; i++) {
-                movieClipInfoPanel.addTimelineChild(i, timelineChildrenIds[i], timelineChildrenNames[i]);
+                movieClipInfoPanel.addTimelineChild(i, timelineChildren[i].getId(), timelineChildrenNames[i]);
             }
 
             MovieClipFrame[] frames = movieClip.getFrames();

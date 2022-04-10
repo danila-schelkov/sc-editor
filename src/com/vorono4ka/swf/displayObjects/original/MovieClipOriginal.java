@@ -32,7 +32,7 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
     private DisplayObjectOriginal[] children;
 
     public int load(SupercellSWF swf, Tag tag) throws LoadingFaultException {
-        int id = swf.readShort();
+        this.id = swf.readShort();
         this.fps = swf.readUnsignedChar();
 
         this.framesCount = swf.readShort();
@@ -91,7 +91,7 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
             Tag tagValue = Tag.values()[commandTag];
             switch (tagValue) {
                 case EOF -> {
-                    return id;
+                    return this.id;
                 }
                 case MOVIE_CLIP_FRAME -> {
                     try {
@@ -149,6 +149,7 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
         }
 
         MovieClip movieClip = new MovieClip();
+        movieClip.setId(this.id);
         movieClip.setMatrixBank(swf.getMatrixBank(this.matrixBankIndex));
 
         DisplayObject[] childrenArray = new DisplayObject[this.childrenCount];
@@ -162,7 +163,6 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
             childrenArray[i] = displayObject;
         }
         movieClip.setTimelineChildren(childrenArray);
-        movieClip.setTimelineChildrenIds(this.childrenIds);
         movieClip.setTimelineChildrenNames(this.childrenNames);
         movieClip.setFrames(this.frames);
         movieClip.setMsPerFrame(1.0f / this.fps);

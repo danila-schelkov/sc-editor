@@ -32,16 +32,9 @@ public class ChildrenListMouseListener extends MouseAdapter {
         window.getDisplayObjectPanel().resetFilter();
         Table objectsTable = window.getObjectsTable();
 
-        int childRow = -1;
-        for (int i = 0; i < objectsTable.getRowCount(); i++) {
-            if (((int) objectsTable.getValueAt(i, 0)) == childId) {
-                childRow = i;
-            }
-        }
-
+        int childRow = objectsTable.indexOf(childId, 0);
         if (childRow == -1) return;
 
-        objectsTable.setRowSelectionInterval(childRow, childRow);
-        objectsTable.scrollRectToVisible(objectsTable.getCellRect(childRow, 0, true));
+        objectsTable.select(childRow);
     }
 }
