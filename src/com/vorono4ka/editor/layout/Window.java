@@ -19,8 +19,11 @@ public class Window {
     private JFrame frame;
     private MenuBar menubar;
     private GLCanvas canvas;
-    private EditorInfoPanel infoBlock;
+    private EditorInfoPanel infoPanel;
     private DisplayObjectListPanel displayObjectPanel;
+    private JPanel timelinePanel;
+    private JSplitPane timelineSplitPane;
+    private JSplitPane infoSplitPane;
 
     public void initialize(String title) {
         this.frame = new JFrame(title);
@@ -29,16 +32,25 @@ public class Window {
         this.displayObjectPanel = new DisplayObjectListPanel();
         this.displayObjectPanel.setPreferredSize(new Dimension(300, 0));
         this.canvas = createCanvas();
-        this.infoBlock = createInfoBlock();
-        this.infoBlock.setPreferredSize(new Dimension(300, 0));
+        this.infoPanel = new EditorInfoPanel();
+        this.infoPanel.setMinimumSize(new Dimension(300, 0));
+
+        this.timelinePanel = new JPanel();
+        this.timelinePanel.setBorder(BorderFactory.createTitledBorder("Timeline"));
+        this.timelinePanel.setMinimumSize(new Dimension(0, 300));
+        this.timelinePanel.setVisible(false);
+
+        this.timelineSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, this.canvas, this.timelinePanel);
+        this.timelineSplitPane.setMinimumSize(this.canvas.getMinimumSize());
+        this.infoSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, this.timelineSplitPane, this.infoPanel);
+        this.infoSplitPane.setDividerLocation(this.canvas.getMinimumSize().width);
 
         this.menubar = new MenuBar(this);
         this.frame.setJMenuBar(this.menubar);
 
         this.frame.getContentPane().add(this.displayObjectPanel, BorderLayout.WEST);
-        this.frame.getContentPane().add(this.canvas);
-        this.frame.getContentPane().add(this.infoBlock, BorderLayout.EAST);
-        this.frame.setMinimumSize(new Dimension(1000, 640));
+        this.frame.getContentPane().add(this.infoSplitPane);
+        this.frame.setMinimumSize(new Dimension(1300, 640));
         this.frame.setSize(this.frame.getContentPane().getPreferredSize());
     }
 
@@ -50,6 +62,25 @@ public class Window {
 
     public void setTitle(String title) {
         this.frame.setTitle(title);
+    }
+
+
+    private GLCanvas createCanvas() {
+        final GLProfile profile = GLProfile.get(GLProfile.GL3);
+        GLCapabilities capabilities = new GLCapabilities(profile);
+
+        GLCanvas glCanvas = new GLCanvas(capabilities);
+        glCanvas.addGLEventListener(new EventListener());
+        MouseListener mouseListener = new MouseListener();
+        glCanvas.addMouseListener(mouseListener);
+        glCanvas.addMouseMotionListener(mouseListener);
+        glCanvas.addMouseWheelListener(new MouseWheelListener());
+        glCanvas.setMinimumSize(new Dimension(684, 595));
+
+        FPSAnimator animator = new FPSAnimator(glCanvas, 60);
+        animator.start();
+
+        return glCanvas;
     }
 
 
@@ -65,8 +96,20 @@ public class Window {
         return this.canvas;
     }
 
-    public EditorInfoPanel getInfoBlock() {
-        return this.infoBlock;
+    public JPanel getTimelinePanel() {
+        return this.timelinePanel;
+    }
+
+    public JSplitPane getTimelineSplitPane() {
+        return timelineSplitPane;
+    }
+
+    public JSplitPane getInfoSplitPane() {
+        return infoSplitPane;
+    }
+
+    public EditorInfoPanel getInfoPanel() {
+        return this.infoPanel;
     }
 
     public Table getObjectsTable() {
@@ -75,28 +118,5 @@ public class Window {
 
     public DisplayObjectListPanel getDisplayObjectPanel() {
         return this.displayObjectPanel;
-    }
-
-
-    private GLCanvas createCanvas() {
-        final GLProfile profile = GLProfile.get(GLProfile.GL3);
-        GLCapabilities capabilities = new GLCapabilities(profile);
-
-        GLCanvas glCanvas = new GLCanvas(capabilities);
-        glCanvas.addGLEventListener(new EventListener());
-        MouseListener mouseListener = new MouseListener();
-        glCanvas.addMouseListener(mouseListener);
-        glCanvas.addMouseMotionListener(mouseListener);
-        glCanvas.addMouseWheelListener(new MouseWheelListener());
-        glCanvas.setSize(1200, 800);
-
-        FPSAnimator animator = new FPSAnimator(glCanvas, 60);
-        animator.start();
-
-        return glCanvas;
-    }
-
-    private EditorInfoPanel createInfoBlock() {
-        return new EditorInfoPanel();
     }
 }

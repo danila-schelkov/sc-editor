@@ -31,6 +31,10 @@ public class EditorInfoPanel extends JPanel {
             this.add(panel);
         }
 
+        this.update();
+    }
+
+    public void update() {
         this.revalidate();
         this.updateUI();
     }

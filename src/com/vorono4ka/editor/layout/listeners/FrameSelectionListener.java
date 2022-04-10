@@ -34,7 +34,7 @@ public class FrameSelectionListener implements ListSelectionListener {
         MovieClip movieClip = (MovieClip) selectedObject;
 
         Window window = Main.editor.getWindow();
-        EditorInfoPanel infoBlock = window.getInfoBlock();
+        EditorInfoPanel infoBlock = window.getInfoPanel();
 
         MovieClipInfoPanel panel = (MovieClipInfoPanel) infoBlock.getPanel();
         panel.clearFrameElements();

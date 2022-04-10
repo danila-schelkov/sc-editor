@@ -74,7 +74,7 @@ public class Editor {
         this.window.getObjectsTable().clear();
         this.window.setTitle(Main.TITLE);
 
-        EditorInfoPanel infoBlock = this.window.getInfoBlock();
+        EditorInfoPanel infoBlock = this.window.getInfoPanel();
         infoBlock.setPanel(null);
 
         this.clonedObjects.clear();
@@ -120,7 +120,7 @@ public class Editor {
 
         this.selectedIndex = objectIndex;
 
-        EditorInfoPanel infoBlock = this.window.getInfoBlock();
+        EditorInfoPanel infoBlock = this.window.getInfoPanel();
         infoBlock.setPanel(null);
 
         DisplayObject displayObject = this.clonedObjects.get(objectIndex);
