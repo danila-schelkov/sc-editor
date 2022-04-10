@@ -19,9 +19,9 @@ public class MovieClip extends Sprite {
     }
 
     @Override
-    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float a5) {
-        if (a5 <= 0.0f) {
-            super.render(matrix, colorTransform, a4, a5);
+    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
+        if (deltaTime <= 0.0f) {
+            super.render(matrix, colorTransform, a4, deltaTime);
             return;
         }
 
@@ -68,10 +68,10 @@ public class MovieClip extends Sprite {
         }
 
         if (this.state <= 1) {
-            this.frameTime += a5;
+            this.frameTime += deltaTime;
         }
 
-        super.render(matrix, colorTransform, a4, a5);
+        super.render(matrix, colorTransform, a4, deltaTime);
     }
 
     @Override
@@ -125,13 +125,18 @@ public class MovieClip extends Sprite {
         System.out.println("Isn't implemented yet");
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getCurrentFrame() {
+        return currentFrame;
+    }
+
     private void setLoopFrame(int frame) {
         this.loopFrame = frame;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
 
     public String getExportName() {
         return exportName;

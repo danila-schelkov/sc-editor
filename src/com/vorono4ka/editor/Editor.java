@@ -1,9 +1,13 @@
 package com.vorono4ka.editor;
 
+import com.jogamp.opengl.GLAnimatorControl;
+import com.jogamp.opengl.awt.GLCanvas;
+import com.jogamp.opengl.util.FPSAnimator;
 import com.vorono4ka.editor.layout.Window;
 import com.vorono4ka.editor.layout.components.Table;
-import com.vorono4ka.editor.layout.components.blocks.EditorInfoPanel;
-import com.vorono4ka.editor.layout.components.blocks.MovieClipInfoPanel;
+import com.vorono4ka.editor.layout.menubar.menus.EditMenu;
+import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
+import com.vorono4ka.editor.layout.panels.info.MovieClipInfoPanel;
 import com.vorono4ka.swf.MovieClipFrame;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
@@ -68,7 +72,6 @@ public class Editor {
 
     public void closeFile() {
         this.window.getObjectsTable().clear();
-
         this.window.setTitle(Main.TITLE);
 
         EditorInfoPanel infoBlock = this.window.getInfoBlock();
@@ -83,7 +86,12 @@ public class Editor {
     }
 
     public void updateCanvas() {
-        this.window.getCanvas().display();
+        GLCanvas canvas = this.window.getCanvas();
+
+        GLAnimatorControl animator = canvas.getAnimator();
+        if (animator != null && animator.isAnimating()) return;
+
+        canvas.display();
     }
 
     public DisplayObject getSelectedObject() {
@@ -134,7 +142,15 @@ public class Editor {
             }
 
             infoBlock.setPanel(movieClipInfoPanel);
+
+            movieClipInfoPanel.getFramesTable().select(movieClip.getCurrentFrame());
         }
+
+        EditMenu editMenu = this.window.getMenubar().getEditMenu();
+        editMenu.checkPreviousAvailable();
+        editMenu.checkNextAvailable();
+
+        this.updateCanvas();
     }
 
     public void selectPrevious() {
@@ -159,5 +175,9 @@ public class Editor {
 
     public Window getWindow() {
         return window;
+    }
+
+    public FPSAnimator getAnimator() {
+        return (FPSAnimator) this.window.getCanvas().getAnimator();
     }
 }

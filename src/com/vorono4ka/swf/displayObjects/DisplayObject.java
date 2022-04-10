@@ -20,7 +20,7 @@ public abstract class DisplayObject {
         this.isVisible = true;
     }
 
-    public abstract void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float a5);
+    public abstract void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime);
 
     public abstract void collisionRender(Matrix2x3 matrix, ColorTransform colorTransform);
 

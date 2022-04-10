@@ -12,7 +12,7 @@ public class Shape9Slice extends Shape {
     }
 
     @Override
-    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float a5) {
+    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
 
     }
 

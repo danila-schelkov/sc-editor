@@ -18,7 +18,7 @@ public abstract class Sprite extends DisplayObject {
     }
 
     @Override
-    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float a5) {
+    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
         Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
         matrixApplied.apply(matrix);
 
@@ -42,7 +42,7 @@ public abstract class Sprite extends DisplayObject {
 
         int spriteRenderConfigBits = (this.getRenderConfigBits() & 0x3FF) | v45;
         for (DisplayObject displayObject : this.children) {
-            displayObject.render(matrixApplied, colorTransformApplied, spriteRenderConfigBits, a5);
+            displayObject.render(matrixApplied, colorTransformApplied, spriteRenderConfigBits, deltaTime);
         }
     }
 

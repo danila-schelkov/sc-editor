@@ -1,4 +1,4 @@
-package com.vorono4ka.editor.layout.components.blocks;
+package com.vorono4ka.editor.layout.panels.info;
 
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.listeners.ChildrenListMouseListener;
@@ -32,6 +32,10 @@ public class MovieClipInfoPanel extends JPanel {
 
     public void addFrame(Object... rowData) {
         this.framesTable.addRow(rowData);
+    }
+
+    public Table getFramesTable() {
+        return this.framesTable;
     }
 
     public void addFrameElement(Object... rowData) {

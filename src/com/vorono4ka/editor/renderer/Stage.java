@@ -2,6 +2,7 @@ package com.vorono4ka.editor.renderer;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;
+import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.math.Rect;
@@ -85,7 +86,14 @@ public class Stage {
         this.vertices = new float[0];
         this.indices = new int[0];
 
-        selectedObject.render(new Matrix2x3(), new ColorTransform(), 0, 1 / 60f);
+        float deltaTime = 0;
+
+        FPSAnimator animator = Main.editor.getAnimator();
+        if (animator != null && animator.isAnimating()) {
+            deltaTime = 1f / animator.getFPS();
+        }
+
+        selectedObject.render(new Matrix2x3(), new ColorTransform(), 0, deltaTime);
 
         this.shader.bind();
 

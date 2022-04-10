@@ -1,4 +1,4 @@
-package com.vorono4ka.editor.layout.components.blocks;
+package com.vorono4ka.editor.layout.panels.info;
 
 import com.vorono4ka.editor.layout.components.LinkLabel;
 
