@@ -1,8 +1,6 @@
 package com.vorono4ka.editor.layout.listeners;
 
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.layout.Window;
-import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
 import com.vorono4ka.editor.layout.panels.info.MovieClipInfoPanel;
 import com.vorono4ka.swf.MovieClipFrameElement;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
@@ -33,12 +31,10 @@ public class FrameSelectionListener implements ListSelectionListener {
 
         MovieClip movieClip = (MovieClip) selectedObject;
 
-        Window window = Main.editor.getWindow();
-        EditorInfoPanel infoBlock = window.getInfoPanel();
-
-        MovieClipInfoPanel panel = (MovieClipInfoPanel) infoBlock.getPanel();
+        MovieClipInfoPanel panel = (MovieClipInfoPanel) Main.editor.getWindow().getInfoPanel().getPanel();
         panel.clearFrameElements();
 
+//        movieClip.setLoopFrame(index);
         movieClip.setFrame(index);
         Main.editor.updateCanvas();
 

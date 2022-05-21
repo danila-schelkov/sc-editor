@@ -4,7 +4,6 @@ import com.jogamp.opengl.GL3;
 
 public class VAO {
     private final GL3 gl;
-
     private final int id;
 
     public VAO(GL3 gl) {

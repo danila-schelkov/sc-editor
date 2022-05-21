@@ -12,16 +12,12 @@ public class ResourceManager {
 
     public static String load(String filename) {
         ClassLoader classLoader = ResourceManager.class.getClassLoader();
-        InputStream resource = classLoader.getResourceAsStream(filename);
+        try (InputStream resource = classLoader.getResourceAsStream(filename)) {
+            if (resource == null) return null;
 
-        if (resource == null) return null;
-
-        try {
             return new String(resource.readAllBytes());
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-
-        return null;
     }
 }

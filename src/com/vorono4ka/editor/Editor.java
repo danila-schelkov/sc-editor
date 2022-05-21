@@ -8,14 +8,17 @@ import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.menubar.menus.EditMenu;
 import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
 import com.vorono4ka.editor.layout.panels.info.MovieClipInfoPanel;
+import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.swf.MovieClipFrame;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
 import com.vorono4ka.swf.displayObjects.original.MovieClipOriginal;
+import com.vorono4ka.swf.displayObjects.original.SWFTexture;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,14 +28,14 @@ public class Editor {
     private SupercellSWF swf;
 
     private final List<DisplayObject> clonedObjects;
-    private final List<Integer> clonedIds;
+    private final List<Integer> selectedIndices;  // history
     private int selectedIndex;
 
     public Editor() {
         this.window = new Window();
 
         this.clonedObjects = new ArrayList<>();
-        this.clonedIds = new ArrayList<>();
+        this.selectedIndices = new ArrayList<>();
         this.selectedIndex = -1;
     }
 
@@ -68,9 +71,16 @@ public class Editor {
         for (int textFieldId : textFieldsIds) {
             objectsTable.addRow(textFieldId, null, "TextField");
         }
+
+        Table texturesTable = this.window.getTexturesTable();
+        for (int i = 0; i < this.swf.getTexturesCount(); i++) {
+            SWFTexture texture = this.swf.getTexture(i);
+            texturesTable.addRow(i, texture.getWidth(), texture.getHeight(), texture.getPixelFormat());
+        }
     }
 
     public void closeFile() {
+        this.window.getTexturesTable().clear();
         this.window.getObjectsTable().clear();
         this.window.setTitle(Main.TITLE);
 
@@ -80,7 +90,22 @@ public class Editor {
         this.clonedObjects.clear();
         this.selectedIndex = -1;
 
-        this.swf = null;
+        EditMenu editMenu = this.window.getMenubar().getEditMenu();
+        editMenu.checkPreviousAvailable();
+        editMenu.checkNextAvailable();
+
+        if (this.swf != null) {
+            IntBuffer textureIds = IntBuffer.allocate(this.swf.getTexturesCount());
+            for (int i = 0; i < this.swf.getTexturesCount(); i++) {
+                SWFTexture texture = this.swf.getTexture(i);
+                textureIds.put(texture.getImage().getTextureId());
+            }
+
+            Stage.getInstance().doInRenderThread(() -> Stage.getInstance().getGl().glDeleteTextures(0, textureIds));
+            Stage.getInstance().clearBatches();
+
+            this.swf = null;
+        }
 
         this.updateCanvas();
     }
@@ -107,11 +132,12 @@ public class Editor {
 //        }
 
         if (!this.clonedObjects.contains(displayObject)) {
-            this.clonedIds.add(displayObject.getId());
             this.clonedObjects.add(displayObject);
         }
 
-        this.selectObject(this.clonedObjects.indexOf(displayObject));
+        int index = this.clonedObjects.indexOf(displayObject);
+        this.selectedIndices.add(index);
+        this.selectObject(index);
     }
 
     private void selectObject(int objectIndex) {
@@ -140,6 +166,11 @@ public class Editor {
                 MovieClipFrame frame = frames[i];
                 movieClipInfoPanel.addFrame(i, frame.getName());
             }
+
+            movieClipInfoPanel.setTextInfo(
+                "FPS: " + movieClip.getFps(),
+                String.format("Duration: %.2fs", movieClip.getDuration())
+            );
 
             infoBlock.setPanel(movieClipInfoPanel);
 

@@ -119,10 +119,10 @@ public class ByteStream {
         return array;
     }
 
-    public int[] readShortArray(int count) {
-        int[] array = new int[count];
+    public short[] readShortArray(int count) {
+        short[] array = new short[count];
         for (int i = 0; i < array.length; i++) {
-            array[i] = this.readShort();
+            array[i] = (short) this.readShort();
         }
 
         return array;

@@ -32,7 +32,7 @@ public class Shape extends DisplayObject {
 
         int a3 = this.getRenderConfigBits() | v35;
 
-        Stage stage = Stage.INSTANCE;
+        Stage stage = Stage.getInstance();
         for (ShapeDrawBitmapCommand command : this.commands) {
             command.render(stage, matrixApplied, colorTransformApplied, a3);
         }

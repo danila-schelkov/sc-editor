@@ -1,9 +1,12 @@
 #version 330 core
 
-out vec4 FragColor;
+uniform sampler2D TEX_SAMPLER;
 
 in vec2 texCoord;
 
+out vec4 color;
+
 void main() {
-    FragColor = vec4(texCoord, 0.0f, 1.0f);
+    color = texture(TEX_SAMPLER, texCoord);
+//    color = vec4(texCoord, 0, 1);
 }

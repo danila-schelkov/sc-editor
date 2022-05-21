@@ -46,7 +46,7 @@ public class MouseListener implements java.awt.event.MouseListener, java.awt.eve
         int modifiers = e.getModifiersEx();
         if ((modifiers & InputEvent.BUTTON2_DOWN_MASK) != InputEvent.BUTTON2_DOWN_MASK) return;
 
-        Stage stage = Stage.INSTANCE;
+        Stage stage = Stage.getInstance();
         float x = this.startX + this.previousX - e.getX();
         float y = this.startY + this.previousY - e.getY();
         stage.addOffset(x / stage.getScale(), y / stage.getScale());

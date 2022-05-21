@@ -14,8 +14,7 @@ public class EventListener implements GLEventListener {
 
         GLCanvas canvas = Main.editor.getWindow().getCanvas();
 
-        Stage.createInstance();
-        Stage.INSTANCE.init(gl, 0, 0, canvas.getWidth(), canvas.getHeight());
+        Stage.getInstance().init(gl, 0, 0, canvas.getWidth(), canvas.getHeight());
     }
 
     @Override
@@ -25,7 +24,7 @@ public class EventListener implements GLEventListener {
 
     @Override
     public void display(GLAutoDrawable glAutoDrawable) {
-        Stage.INSTANCE.render();
+        Stage.getInstance().render();
     }
 
     @Override
@@ -34,7 +33,7 @@ public class EventListener implements GLEventListener {
 
         gl.glViewport(x, y, width, height);
 
-        Stage.INSTANCE.unbindRender();
-        Stage.INSTANCE.init(gl, 0, 0, width, height);
+        Stage.getInstance().unbindRender();
+        Stage.getInstance().init(gl, 0, 0, width, height);
     }
 }

@@ -11,7 +11,7 @@ public class MouseWheelListener implements java.awt.event.MouseWheelListener {
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        Stage stage = Stage.INSTANCE;
+        Stage stage = Stage.getInstance();
 
         int step = stage.getScaleStep() - e.getWheelRotation() * SENSITIVE;
         if (step < 0) return;

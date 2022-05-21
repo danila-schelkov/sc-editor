@@ -32,6 +32,16 @@ public class Shader {
         return this.gl.glGetUniformLocation(this.id, uniform);
     }
 
+    public void setTexture(int id, String uniform, int slot) {
+        this.gl.glActiveTexture(GL3.GL_TEXTURE0 + slot);
+        this.gl.glBindTexture(GL3.GL_TEXTURE_2D, id);
+
+        int uniformLocation = this.getUniformLocation(uniform);
+        if (uniformLocation != -1) {
+            this.gl.glUniform1i(uniformLocation, slot);
+        }
+    }
+
     public void bind() {
         this.gl.glUseProgram(this.id);
     }

@@ -2,6 +2,7 @@ package com.vorono4ka.editor.layout.menubar.menus;
 
 import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.layout.Window;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -37,7 +38,9 @@ public class EditMenu extends JMenu {
     }
 
     private void find(ActionEvent actionEvent) {
-        Main.editor.getWindow().getDisplayObjectPanel().setFocusOnTextField();
+        Window window = Main.editor.getWindow();
+        window.getTabbedPane().setSelectedIndex(0);
+        window.getDisplayObjectPanel().setFocusOnTextField();
     }
 
     private void previous(ActionEvent e) {

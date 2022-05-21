@@ -5,6 +5,7 @@ import com.vorono4ka.swf.*;
 public class MovieClip extends Sprite {
     private String exportName;
     private float frameTime;
+    private int fps;
     private float msPerFrame;
     private DisplayObject[] timelineChildren;
     private String[] timelineChildrenNames;
@@ -133,7 +134,7 @@ public class MovieClip extends Sprite {
         return currentFrame;
     }
 
-    private void setLoopFrame(int frame) {
+    public void setLoopFrame(int frame) {
         this.loopFrame = frame;
     }
 
@@ -146,8 +147,21 @@ public class MovieClip extends Sprite {
         this.exportName = exportName;
     }
 
-    public void setMsPerFrame(float msPerFrame) {
-        this.msPerFrame = msPerFrame;
+    public int getFps() {
+        return fps;
+    }
+
+    public void setFPS(int fps) {
+        this.fps = fps;
+        this.msPerFrame = 1f / fps;
+    }
+
+    public float getMSPerFrame() {
+        return msPerFrame;
+    }
+
+    public float getDuration() {
+        return this.msPerFrame * this.frames.length;
     }
 
     public DisplayObject[] getTimelineChildren() {
@@ -168,6 +182,10 @@ public class MovieClip extends Sprite {
 
     public MovieClipFrame[] getFrames() {
         return frames;
+    }
+
+    public String getFrameLabel(int index) {
+        return frames[index].getName();
     }
 
     public void setFrames(MovieClipFrame[] frames) {

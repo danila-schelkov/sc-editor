@@ -29,7 +29,7 @@ public class SupercellSWF {
     private final List<ScMatrixBank> matrixBanks;
 
     private int exportsCount;
-    private int[] exportsIds;
+    private short[] exportsIds;
     private String[] exportsNames;
 
     private int[] shapesIds;
@@ -363,6 +363,26 @@ public class SupercellSWF {
         throw new UnableToFindObjectException(message);
     }
 
+    public int getShapesCount() {
+        return shapesCount;
+    }
+
+    public int getMovieClipsCount() {
+        return movieClipsCount;
+    }
+
+    public int getTexturesCount() {
+        return texturesCount;
+    }
+
+    public int getTextFieldsCount() {
+        return textFieldsCount;
+    }
+
+    public int getMovieClipModifiersCount() {
+        return movieClipModifiersCount;
+    }
+
     public int getExportsCount() {
         return exportsCount;
     }
@@ -419,7 +439,7 @@ public class SupercellSWF {
         return this.stream.readByteArray(count);
     }
 
-    public int[] readShortArray(int count) {
+    public short[] readShortArray(int count) {
         return this.stream.readShortArray(count);
     }
 

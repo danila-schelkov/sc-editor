@@ -4,6 +4,7 @@ import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Point;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
+import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
@@ -14,6 +15,8 @@ public class ShapeDrawBitmapCommand {
     private Point[] shapePoints;
     private Point[] sheetPoints;
 
+    private GLImage image;
+
     public void load(SupercellSWF swf, Tag tag) {
         int textureId = swf.readUnsignedChar();
 
@@ -23,6 +26,7 @@ public class ShapeDrawBitmapCommand {
         }
 
         SWFTexture texture = swf.getTexture(textureId);
+        this.image = texture.getImage();
 
         this.shapePoints = new Point[this.vertexCount];
         for (int i = 0; i < this.vertexCount; i++) {
@@ -46,7 +50,7 @@ public class ShapeDrawBitmapCommand {
         }
     }
 
-    public void render(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int a3) {
+    public void render(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits) {
         Rect bounds = new Rect();
 
         float[] transformedPoints = new float[this.vertexCount * 2];
@@ -75,10 +79,12 @@ public class ShapeDrawBitmapCommand {
             indices[i * 3 + 2] = i + 2;
         }
 
-        stage.addTriangles(trianglesCount, indices);
+        if (stage.startShape(bounds.getMinX(), bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY(), this.image, renderConfigBits)) {
+            stage.addTriangles(trianglesCount, indices);
 
-        for (int i = 0; i < this.vertexCount; i++) {
-            stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], this.getU(i), this.getV(i));
+            for (int i = 0; i < this.vertexCount; i++) {
+                stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], this.getU(i), this.getV(i));
+            }
         }
     }
 

@@ -36,8 +36,7 @@ public class Decompressor {
             case 1 -> {
                 Decoder decoder = new Decoder();
 
-                byte[] decoderProperties = new byte[5];
-                stream.read(decoderProperties);
+                byte[] decoderProperties = stream.readNBytes(5);
                 decoder.setDecoderProperties(decoderProperties);
 
                 int outSize = 0;
@@ -48,6 +47,7 @@ public class Decompressor {
                 ByteArrayOutputStream outputArray = new ByteArrayOutputStream();
                 BufferedOutputStream outputStream = new BufferedOutputStream(outputArray);
 
+                // TODO: fix decompression for supercell_id.sc
                 decoder.code(stream, outputStream, outSize);
                 decompressed = outputArray.toByteArray();
             }
