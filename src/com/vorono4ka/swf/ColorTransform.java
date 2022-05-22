@@ -4,19 +4,19 @@ import com.vorono4ka.math.MathHelper;
 import com.vorono4ka.streams.ByteStream;
 
 public class ColorTransform {
-    private float redAddition;
-    private float greenAddition;
-    private float blueAddition;
-    private float redMultiplier;
-    private float greenMultiplier;
-    private float blueMultiplier;
-    private float alpha;
+    private int redAddition;
+    private int greenAddition;
+    private int blueAddition;
+    private int redMultiplier;
+    private int greenMultiplier;
+    private int blueMultiplier;
+    private int alpha;
 
     public ColorTransform() {
-        this.redMultiplier = 255f;
-        this.greenMultiplier = 255f;
-        this.blueMultiplier = 255f;
-        this.alpha = 255f;
+        this.redMultiplier = 255;
+        this.greenMultiplier = 255;
+        this.blueMultiplier = 255;
+        this.alpha = 255;
     }
 
     public ColorTransform(ColorTransform colorTransform) {
@@ -44,52 +44,52 @@ public class ColorTransform {
         this.greenMultiplier *= colorTransform.greenMultiplier / 255f;
         this.blueMultiplier *= colorTransform.blueMultiplier / 255f;
         this.alpha *= colorTransform.alpha / 255f;
-        this.redAddition = Math.max(this.redAddition + colorTransform.redAddition, 255f);
-        this.greenAddition = Math.max(this.greenAddition + colorTransform.greenAddition, 255f);
-        this.blueAddition = Math.max(this.blueAddition + colorTransform.blueAddition, 255f);
+        this.redAddition = Math.max(this.redAddition + colorTransform.redAddition, 255);
+        this.greenAddition = Math.max(this.greenAddition + colorTransform.greenAddition, 255);
+        this.blueAddition = Math.max(this.blueAddition + colorTransform.blueAddition, 255);
     }
 
     public void setMulColor(float red, float green, float blue) {
-        this.redMultiplier = MathHelper.clamp(red, 0f, 1f) * 255f;
-        this.greenMultiplier = MathHelper.clamp(green, 0f, 1f) * 255f;
-        this.blueMultiplier = MathHelper.clamp(blue, 0f, 1f) * 255f;
+        this.redMultiplier = (int) (MathHelper.clamp(red, 0f, 1f) * 255);
+        this.greenMultiplier = (int) (MathHelper.clamp(green, 0f, 1f) * 255);
+        this.blueMultiplier = (int) (MathHelper.clamp(blue, 0f, 1f) * 255);
     }
 
     public void setAddColor(float red, float green, float blue) {
-        this.redAddition = MathHelper.clamp(red, 0f, 1f) * 255f;
-        this.greenAddition = MathHelper.clamp(green, 0f, 1f) * 255f;
-        this.blueAddition = MathHelper.clamp(blue, 0f, 1f) * 255f;
+        this.redAddition = (int) (MathHelper.clamp(red, 0f, 1f) * 255);
+        this.greenAddition = (int) (MathHelper.clamp(green, 0f, 1f) * 255);
+        this.blueAddition = (int) (MathHelper.clamp(blue, 0f, 1f) * 255);
     }
 
     public void setAlpha(float alpha) {
-        this.alpha = MathHelper.clamp(alpha, 0f, 1f);
+        this.alpha = (int) (MathHelper.clamp(alpha, 0f, 1f) * 255);
     }
 
-    public float getRedMultiplier() {
+    public int getRedMultiplier() {
         return redMultiplier;
     }
 
-    public float getGreenMultiplier() {
+    public int getGreenMultiplier() {
         return greenMultiplier;
     }
 
-    public float getBlueMultiplier() {
+    public int getBlueMultiplier() {
         return blueMultiplier;
     }
 
-    public float getRedAddition() {
+    public int getRedAddition() {
         return redAddition;
     }
 
-    public float getGreenAddition() {
+    public int getGreenAddition() {
         return greenAddition;
     }
 
-    public float getBlueAddition() {
+    public int getBlueAddition() {
         return blueAddition;
     }
 
-    public float getAlpha() {
+    public int getAlpha() {
         return alpha;
     }
 }

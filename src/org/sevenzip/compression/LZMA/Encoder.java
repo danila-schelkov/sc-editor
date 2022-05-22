@@ -831,7 +831,10 @@ public class Encoder {
 
 			if (newLen > numAvailableBytes) {
 				newLen = numAvailableBytes;
-				for (numDistancePairs = 0; newLen > _matchDistances[numDistancePairs]; numDistancePairs += 2) ;
+				numDistancePairs = 0;
+				while (newLen > _matchDistances[numDistancePairs]) {
+					numDistancePairs += 2;
+				}
 				_matchDistances[numDistancePairs] = newLen;
 				numDistancePairs += 2;
 			}
@@ -1090,7 +1093,6 @@ public class Encoder {
 		setOutStream(outStream);
 		init();
 
-		// if (!_fastMode)
 		{
 			fillDistancesPrices();
 			fillAlignPrices();
@@ -1175,11 +1177,7 @@ public class Encoder {
 	}
 
 
-	public boolean setAlgorithm(int algorithm) {
-		/*
-		_fastMode = (algorithm == 0);
-		_maxMode = (algorithm >= 2);
-		*/
+	public boolean setAlgorithm(int ignoredAlgorithm) {
 		return true;
 	}
 
@@ -1188,8 +1186,10 @@ public class Encoder {
 		if (dictionarySize < (1 << Base.kDicLogSizeMin) || dictionarySize > (1 << kDicLogSizeMaxCompress))
 			return true;
 		_dictionarySize = dictionarySize;
-		int dicLogSize;
-		for (dicLogSize = 0; dictionarySize > (1 << dicLogSize); dicLogSize++) ;
+		int dicLogSize = 0;
+		while (dictionarySize > (1 << dicLogSize)) {
+			dicLogSize++;
+		}
 		_distTableSize = dicLogSize * 2;
 		return false;
 	}
@@ -1214,11 +1214,12 @@ public class Encoder {
 	}
 
 	public boolean setLcLpPb(int lc, int lp, int pb) {
-		if (
-				lp < 0 || lp > Base.kNumLitPosStatesBitsEncodingMax ||
-				lc < 0 || lc > Base.kNumLitContextBitsMax ||
-				pb < 0 || pb > Base.kNumPosStatesBitsEncodingMax)
+		if (lp < 0 || lp > Base.kNumLitPosStatesBitsEncodingMax ||
+			lc < 0 || lc > Base.kNumLitContextBitsMax ||
+			pb < 0 || pb > Base.kNumPosStatesBitsEncodingMax) {
 			return false;
+		}
+
 		_numLiteralPosStateBits = lp;
 		_numLiteralContextBits = lc;
 		_posStateBits = pb;

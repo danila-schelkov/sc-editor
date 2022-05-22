@@ -3,11 +3,14 @@
 uniform sampler2D TEX_SAMPLER;
 
 in vec2 texCoord;
-
-out vec4 color;
+in vec4 colorMul;
+in vec3 colorAdd;
 
 void main()
 {
-    color = texture(TEX_SAMPLER, texCoord);
+    vec4 color = texture(TEX_SAMPLER, texCoord);
+    color *= colorMul;
+    color.rgb += colorAdd * color.a;
+    gl_FragColor = color;
 //    color = vec4(texCoord, 0, 1);
 }

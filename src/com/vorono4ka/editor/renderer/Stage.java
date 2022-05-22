@@ -9,7 +9,6 @@ import com.vorono4ka.resources.Assets;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.Matrix2x3;
-import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 
 import java.util.ArrayList;
