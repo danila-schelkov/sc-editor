@@ -46,10 +46,8 @@ public class Decompressor {
                 }
 
                 ByteArrayOutputStream outputArray = new ByteArrayOutputStream();
-                BufferedOutputStream outputStream = new BufferedOutputStream(outputArray);
 
-                // TODO: fix decompression for supercell_id.sc
-                decoder.code(stream, outputStream, outSize);
+                decoder.code(stream, outputArray, outSize);
                 decompressed = outputArray.toByteArray();
             }
             case 2, 3 -> {
@@ -70,31 +68,5 @@ public class Decompressor {
         }
 
         return decompressed;
-    }
-
-    public static void main(String[] args) {
-        byte[] data;
-
-        File file = new File("C:\\Users\\Admin\\Desktop\\supercell_id.sc");
-
-        try {
-            FileInputStream fileInputStream = new FileInputStream(file);
-            data = fileInputStream.readAllBytes();
-            fileInputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        byte[] decompressedData;
-
-        try {
-            decompressedData = Decompressor.decompress(data);
-        } catch (UnknownFileMagicException | UnknownFileVersionException | IOException e) {
-            e.printStackTrace();
-            return;
-        }
-
-        System.out.println(Arrays.toString(decompressedData));
     }
 }
