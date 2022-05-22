@@ -114,7 +114,7 @@ public class Batch {
         this.pointsCount += count + 2;
     }
 
-    public void addVertex(float x, float y, float u, float v) {
+    public void addVertex(float x, float y, float u, float v) {  // TODO: add colorMul, colorAdd args
         this.vertices[this.vertexIndex * VERTEX_SIZE] = x;
         this.vertices[this.vertexIndex * VERTEX_SIZE + 1] = y;
         this.vertices[this.vertexIndex * VERTEX_SIZE + 2] = u;

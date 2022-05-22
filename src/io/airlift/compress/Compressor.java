@@ -15,8 +15,7 @@ package io.airlift.compress;
 
 import java.nio.ByteBuffer;
 
-public interface Compressor
-{
+public interface Compressor {
     int maxCompressedLength(int uncompressedSize);
 
     /**

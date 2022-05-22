@@ -1,9 +1,9 @@
 package org.sevenzip.compression.RangeCoder;
 import java.io.IOException;
+import java.util.Arrays;
 
-public class Decoder
-{
-	static final int kTopMask = ~((1 << 24) - 1);
+public class Decoder {
+	static final int kTopMask = -(1 << 24);
 	
 	static final int kNumBitModelTotalBits = 11;
 	static final int kBitModelTotal = (1 << kNumBitModelTotalBits);
@@ -14,36 +14,30 @@ public class Decoder
 
 	java.io.InputStream Stream;
 	
-	public final void SetStream(java.io.InputStream stream)
-	{ 
+	public final void setStream(java.io.InputStream stream) { 
 		Stream = stream; 
 	}
 	
-	public final void ReleaseStream()
-	{ 
+	public final void releaseStream() { 
 		Stream = null; 
 	}
 	
-	public final void Init() throws IOException
-	{
+	public final void init() throws IOException {
 		Code = 0;
 		Range = -1;
 		for (int i = 0; i < 5; i++)
 			Code = (Code << 8) | Stream.read();
 	}
 	
-	public final int DecodeDirectBits(int numTotalBits) throws IOException
-	{
+	public final int decodeDirectBits(int numTotalBits) throws IOException {
 		int result = 0;
-		for (int i = numTotalBits; i != 0; i--)
-		{
+		for (int i = numTotalBits; i != 0; i--) {
 			Range >>>= 1;
 			int t = ((Code - Range) >>> 31);
 			Code -= Range & (t - 1);
 			result = (result << 1) | (1 - t);
 			
-			if ((Range & kTopMask) == 0)
-			{
+			if ((Range & kTopMask) == 0) {
 				Code = (Code << 8) | Stream.read();
 				Range <<= 8;
 			}
@@ -51,28 +45,23 @@ public class Decoder
 		return result;
 	}
 	
-	public int DecodeBit(short []probs, int index) throws IOException
-	{
+	public int decodeBit(short []probs, int index) throws IOException {
 		int prob = probs[index];
 		int newBound = (Range >>> kNumBitModelTotalBits) * prob;
-		if ((Code ^ 0x80000000) < (newBound ^ 0x80000000))
-		{
+		if ((Code ^ 0x80000000) < (newBound ^ 0x80000000)) {
 			Range = newBound;
 			probs[index] = (short)(prob + ((kBitModelTotal - prob) >>> kNumMoveBits));
-			if ((Range & kTopMask) == 0)
-			{
+			if ((Range & kTopMask) == 0) {
 				Code = (Code << 8) | Stream.read();
 				Range <<= 8;
 			}
 			return 0;
 		}
-		else
-		{
+		else {
 			Range -= newBound;
 			Code -= newBound;
 			probs[index] = (short)(prob - ((prob) >>> kNumMoveBits));
-			if ((Range & kTopMask) == 0)
-			{
+			if ((Range & kTopMask) == 0) {
 				Code = (Code << 8) | Stream.read();
 				Range <<= 8;
 			}
@@ -80,9 +69,7 @@ public class Decoder
 		}
 	}
 	
-	public static void InitBitModels(short []probs)
-	{
-		for (int i = 0; i < probs.length; i++)
-			probs[i] = (kBitModelTotal >>> 1);
+	public static void initBitModels(short[] probs) {
+		Arrays.fill(probs, (short) (kBitModelTotal >>> 1));
 	}
 }

@@ -145,22 +145,22 @@ public class SWFTexture {
             this.pixels = pixels;
         } else {
             short[] array = swf.readShortArray(width * height);
-            int[] iArray = new int[array.length];
-            for (int i = 0; i < array.length; i++) {
-                int luminance = (array[i] >> 8) & 0xFF;
-                int alpha = array[i] & 0xFF;
-                iArray[i] = (alpha << 8) | luminance;
-            }
             this.pixels = ShortBuffer.wrap(array);
 
-            BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_USHORT_GRAY);
-            bufferedImage.setRGB(0, 0, width, height, iArray, 0, width);
-
-            try {
-                ImageIO.write(bufferedImage, "PNG", new File("test.png"));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+//            int[] iArray = new int[array.length];
+//            for (int i = 0; i < array.length; i++) {
+//                int luminance = (array[i] >> 8) & 0xFF;
+//                int alpha = array[i] & 0xFF;
+//                iArray[i] = (alpha << 8) | luminance;
+//            }
+//            BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_USHORT_GRAY);
+//            bufferedImage.setRGB(0, 0, width, height, iArray, 0, width);
+//
+//            try {
+//                ImageIO.write(bufferedImage, "PNG", new File("test.png"));
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
         }
 
         Stage.getInstance().doInRenderThread(() -> GLImage.updateSubImage(this, this.pixels, 0, 0, width, height, pixelType, mipmapLevel));

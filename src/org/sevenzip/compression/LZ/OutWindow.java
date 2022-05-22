@@ -4,16 +4,14 @@ package org.sevenzip.compression.LZ;
 
 import java.io.IOException;
 
-public class OutWindow
-{
+public class OutWindow {
 	byte[] _buffer;
 	int _pos;
 	int _windowSize = 0;
 	int _streamPos;
 	java.io.OutputStream _stream;
 	
-	public void Create(int windowSize)
-	{
+	public void create(int windowSize) {
 		if (_buffer == null || _windowSize != windowSize)
 			_buffer = new byte[windowSize];
 		_windowSize = windowSize;
@@ -21,29 +19,24 @@ public class OutWindow
 		_streamPos = 0;
 	}
 	
-	public void SetStream(java.io.OutputStream stream) throws IOException
-	{
-		ReleaseStream();
+	public void setStream(java.io.OutputStream stream) throws IOException {
+		releaseStream();
 		_stream = stream;
 	}
 	
-	public void ReleaseStream() throws IOException
-	{
-		Flush();
+	public void releaseStream() throws IOException {
+		flush();
 		_stream = null;
 	}
 	
-	public void Init(boolean solid)
-	{
-		if (!solid)
-		{
+	public void init(boolean solid) {
+		if (!solid) {
 			_streamPos = 0;
 			_pos = 0;
 		}
 	}
 	
-	public void Flush() throws IOException
-	{
+	public void flush() throws IOException {
 		int size = _pos - _streamPos;
 		if (size == 0)
 			return;
@@ -53,30 +46,26 @@ public class OutWindow
 		_streamPos = _pos;
 	}
 	
-	public void CopyBlock(int distance, int len) throws IOException
-	{
+	public void copyBlock(int distance, int len) throws IOException {
 		int pos = _pos - distance - 1;
 		if (pos < 0)
 			pos += _windowSize;
-		for (; len != 0; len--)
-		{
+		for (; len != 0; len--) {
 			if (pos >= _windowSize)
 				pos = 0;
 			_buffer[_pos++] = _buffer[pos++];
 			if (_pos >= _windowSize)
-				Flush();
+				flush();
 		}
 	}
 	
-	public void PutByte(byte b) throws IOException
-	{
+	public void PutByte(byte b) throws IOException {
 		_buffer[_pos++] = b;
 		if (_pos >= _windowSize)
-			Flush();
+			flush();
 	}
 	
-	public byte GetByte(int distance)
-	{
+	public byte getByte(int distance) {
 		int pos = _pos - distance - 1;
 		if (pos < 0)
 			pos += _windowSize;

@@ -15,8 +15,7 @@ package io.airlift.compress;
 
 import java.nio.ByteBuffer;
 
-public interface Decompressor
-{
+public interface Decompressor {
     /**
      * @return number of bytes written to the output
      */
