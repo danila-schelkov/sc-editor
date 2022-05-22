@@ -1,0 +1,44 @@
+package com.vorono4ka.editor.layout.menubar.menus;
+
+import com.formdev.flatlaf.FlatClientProperties;
+import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.layout.components.LinkLabel;
+
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.time.Year;
+
+public class HelpMenu extends JMenu {
+    private final JFrame frame;
+
+    public HelpMenu(JFrame frame) {
+        super("Help");
+
+        this.frame = frame;
+
+        this.setMnemonic(KeyEvent.VK_H);
+
+        JMenuItem about = new JMenuItem("About", KeyEvent.VK_A);
+
+        about.addActionListener(this::openAboutPopup);
+
+        this.add(about);
+    }
+
+    private void openAboutPopup(ActionEvent e) {
+        JLabel titleLabel = new JLabel(Main.TITLE);
+        titleLabel.putClientProperty(FlatClientProperties.STYLE_CLASS, "h1");
+
+        JOptionPane.showMessageDialog(
+            this.frame,
+            new Object[]{
+                titleLabel,
+                new LinkLabel("https://github.com/vorono4ka/sc-editor"),
+                "Copyright 2022-" + Year.now() + " Vorono4ka"
+            },
+            "About",
+            JOptionPane.PLAIN_MESSAGE
+        );
+    }
+}

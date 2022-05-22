@@ -6,6 +6,7 @@ import io.airlift.compress.zstd.ZstdDecompressor;
 import org.sevenzip.compression.LZMA.Decoder;
 
 import java.io.*;
+import java.util.Arrays;
 
 public class Decompressor {
     public static final ZstdDecompressor ZSTD_DECOMPRESSOR;
@@ -36,8 +37,7 @@ public class Decompressor {
             case 1 -> {
                 Decoder decoder = new Decoder();
 
-                byte[] decoderProperties = new byte[5];
-                stream.read(decoderProperties);
+                byte[] decoderProperties = stream.readNBytes(5);
                 decoder.setDecoderProperties(decoderProperties);
 
                 int outSize = 0;
@@ -46,9 +46,8 @@ public class Decompressor {
                 }
 
                 ByteArrayOutputStream outputArray = new ByteArrayOutputStream();
-                BufferedOutputStream outputStream = new BufferedOutputStream(outputArray);
 
-                decoder.code(stream, outputStream, outSize);
+                decoder.code(stream, outputArray, outSize);
                 decompressed = outputArray.toByteArray();
             }
             case 2, 3 -> {

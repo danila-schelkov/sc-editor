@@ -6,5 +6,7 @@ import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 
 public abstract class DisplayObjectOriginal {
+    protected int id;
+
     public abstract DisplayObject clone(SupercellSWF swf, Rect scalingGrid) throws UnableToFindObjectException;
 }

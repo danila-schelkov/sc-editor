@@ -1,36 +1,30 @@
 package org.sevenzip.compression.RangeCoder;
 
-public class BitTreeDecoder
-{
-	short[] Models;
-	int NumBitLevels;
+public class BitTreeDecoder {
+	short[] models;
+	int numBitLevels;
 	
-	public BitTreeDecoder(int numBitLevels)
-	{
-		NumBitLevels = numBitLevels;
-		Models = new short[1 << numBitLevels];
+	public BitTreeDecoder(int numBitLevels) {
+		this.numBitLevels = numBitLevels;
+		models = new short[1 << numBitLevels];
 	}
 	
-	public void Init()
-	{
-		Decoder.InitBitModels(Models);
+	public void init() {
+		Decoder.initBitModels(models);
 	}
 	
-	public int Decode(Decoder rangeDecoder) throws java.io.IOException
-	{
+	public int decode(Decoder rangeDecoder) throws java.io.IOException {
 		int m = 1;
-		for (int bitIndex = NumBitLevels; bitIndex != 0; bitIndex--)
-			m = (m << 1) + rangeDecoder.DecodeBit(Models, m);
-		return m - (1 << NumBitLevels);
+		for (int bitIndex = numBitLevels; bitIndex != 0; bitIndex--)
+			m = (m << 1) + rangeDecoder.decodeBit(models, m);
+		return m - (1 << numBitLevels);
 	}
 	
-	public int ReverseDecode(Decoder rangeDecoder) throws java.io.IOException
-	{
+	public int reverseDecode(Decoder rangeDecoder) throws java.io.IOException {
 		int m = 1;
 		int symbol = 0;
-		for (int bitIndex = 0; bitIndex < NumBitLevels; bitIndex++)
-		{
-			int bit = rangeDecoder.DecodeBit(Models, m);
+		for (int bitIndex = 0; bitIndex < numBitLevels; bitIndex++) {
+			int bit = rangeDecoder.decodeBit(models, m);
 			m <<= 1;
 			m += bit;
 			symbol |= (bit << bitIndex);
@@ -38,14 +32,12 @@ public class BitTreeDecoder
 		return symbol;
 	}
 	
-	public static int ReverseDecode(short[] Models, int startIndex,
-			Decoder rangeDecoder, int NumBitLevels) throws java.io.IOException
-	{
+	public static int reverseDecode(short[] Models, int startIndex,
+									Decoder rangeDecoder, int NumBitLevels) throws java.io.IOException {
 		int m = 1;
 		int symbol = 0;
-		for (int bitIndex = 0; bitIndex < NumBitLevels; bitIndex++)
-		{
-			int bit = rangeDecoder.DecodeBit(Models, startIndex + m);
+		for (int bitIndex = 0; bitIndex < NumBitLevels; bitIndex++) {
+			int bit = rangeDecoder.decodeBit(Models, startIndex + m);
 			m <<= 1;
 			m += bit;
 			symbol |= (bit << bitIndex);

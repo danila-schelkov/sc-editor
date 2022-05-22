@@ -26,10 +26,10 @@ public class SupercellSWF {
     private int textFieldsCount;
     private int movieClipModifiersCount;
 
-    private List<ScMatrixBank> matrixBanks;
+    private final List<ScMatrixBank> matrixBanks;
 
     private int exportsCount;
-    private int[] exportsIds;
+    private short[] exportsIds;
     private String[] exportsNames;
 
     private int[] shapesIds;
@@ -79,7 +79,9 @@ public class SupercellSWF {
         File file = new File(path);
 
         try {
-            data = new FileInputStream(file).readAllBytes();
+            FileInputStream fileInputStream = new FileInputStream(file);
+            data = fileInputStream.readAllBytes();
+            fileInputStream.close();
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -217,7 +219,7 @@ public class SupercellSWF {
                     if (loadedTextures >= this.texturesCount) {
                         throw new TooManyObjectsException("Trying to load too many textures from ");
                     }
-                    this.textures[loadedTextures++].load(this, tag, isTextureFile);
+                    this.textures[loadedTextures++].load(this, tagValue, isTextureFile);
                 }
                 case SHAPE, SHAPE_2 -> {
                     if (loadedShapes >= this.shapesCount) {
@@ -361,12 +363,40 @@ public class SupercellSWF {
         throw new UnableToFindObjectException(message);
     }
 
+    public int getShapesCount() {
+        return shapesCount;
+    }
+
+    public int getMovieClipsCount() {
+        return movieClipsCount;
+    }
+
+    public int getTexturesCount() {
+        return texturesCount;
+    }
+
+    public int getTextFieldsCount() {
+        return textFieldsCount;
+    }
+
+    public int getMovieClipModifiersCount() {
+        return movieClipModifiersCount;
+    }
+
     public int getExportsCount() {
         return exportsCount;
     }
 
-    public int[] getExportsIds() {
-        return exportsIds;
+    public int[] getShapesIds() {
+        return shapesIds;
+    }
+
+    public int[] getMovieClipsIds() {
+        return movieClipsIds;
+    }
+
+    public int[] getTextFieldsIds() {
+        return textFieldsIds;
     }
 
     public String[] getExportsNames() {
@@ -409,7 +439,7 @@ public class SupercellSWF {
         return this.stream.readByteArray(count);
     }
 
-    public int[] readShortArray(int count) {
+    public short[] readShortArray(int count) {
         return this.stream.readShortArray(count);
     }
 

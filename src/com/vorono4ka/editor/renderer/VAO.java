@@ -4,7 +4,6 @@ import com.jogamp.opengl.GL3;
 
 public class VAO {
     private final GL3 gl;
-
     private final int id;
 
     public VAO(GL3 gl) {
@@ -17,8 +16,8 @@ public class VAO {
 
     public void linkAttrib(VBO vbo, int layout, int size, int type, int stride, int offset) {
         vbo.bind();
+        this.gl.glEnableVertexAttribArray(layout);
         this.gl.glVertexAttribPointer(layout, size, type, false, stride, offset);
-        this.gl.glEnableVertexAttribArray(0);
         vbo.unbind();
     }
 

@@ -6,20 +6,23 @@ import java.nio.IntBuffer;
 
 public class EBO {
     private final GL3 gl;
-
     private final int id;
-    private final int[] indices;
 
-    public EBO(GL3 gl, int[] indices) {
+    public EBO(GL3 gl, int[] indices, int usage) {
         this.gl = gl;
-        this.indices = indices;
 
         int[] EBOs = new int[1];
         this.gl.glGenBuffers(1, EBOs, 0);
         this.id = EBOs[0];
 
         this.bind();
-        this.gl.glBufferData(GL3.GL_ELEMENT_ARRAY_BUFFER, (long) indices.length * Integer.BYTES, IntBuffer.wrap(indices), GL3.GL_STATIC_DRAW);
+        this.gl.glBufferData(GL3.GL_ELEMENT_ARRAY_BUFFER, (long) indices.length * Integer.BYTES, IntBuffer.wrap(indices), usage);
+        this.unbind();
+    }
+
+    public void subData(int offset, int[] indices) {
+        this.bind();
+        this.gl.glBufferSubData(GL3.GL_ELEMENT_ARRAY_BUFFER, offset, (long) indices.length * Integer.BYTES, IntBuffer.wrap(indices));
         this.unbind();
     }
 
@@ -33,9 +36,5 @@ public class EBO {
 
     public void delete() {
         this.gl.glDeleteBuffers(1, new int[] {this.id}, 0);
-    }
-
-    public int getIndicesCount() {
-        return this.indices.length;
     }
 }

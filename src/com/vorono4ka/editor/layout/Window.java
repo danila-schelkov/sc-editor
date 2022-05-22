@@ -3,168 +3,120 @@ package com.vorono4ka.editor.layout;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
-import com.vorono4ka.editor.Main;
+import com.jogamp.opengl.util.FPSAnimator;
 import com.vorono4ka.editor.layout.components.Table;
-import com.vorono4ka.editor.layout.components.blocks.EditorInfoPanel;
-import com.vorono4ka.editor.layout.listeners.TableSelectionListener;
-import com.vorono4ka.editor.renderer.listeners.EventListener;
-import com.vorono4ka.editor.renderer.listeners.MouseListener;
-import com.vorono4ka.editor.renderer.listeners.MouseMotionListener;
-import com.vorono4ka.editor.renderer.listeners.MouseWheelListener;
-import com.vorono4ka.resources.ResourceManager;
-import com.vorono4ka.swf.SupercellSWF;
+import com.vorono4ka.editor.layout.menubar.MenuBar;
+import com.vorono4ka.editor.layout.panels.DisplayObjectListPanel;
+import com.vorono4ka.editor.layout.panels.TexturesPanel;
+import com.vorono4ka.editor.layout.panels.TimelinePanel;
+import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
 
 import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 import java.awt.*;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Window {
-    private final JFrame frame;
+    public static final Dimension CANVAS_SIZE = new Dimension(680, 640);
+    public static final Dimension SIDE_PANEL_SIZE = new Dimension(300, 0);
+    public static final Dimension MINIMUM_SIZE = new Dimension(CANVAS_SIZE);
+
+    private JFrame frame;
+    private MenuBar menubar;
     private GLCanvas canvas;
-    private Table objectsTable;
-    private EditorInfoPanel infoBlock;
+    private EditorInfoPanel infoPanel;
+    private TexturesPanel texturesPanel;
+    private DisplayObjectListPanel displayObjectPanel;
+    private TimelinePanel timelinePanel;
+    private JSplitPane timelineSplitPane;
+    private JTabbedPane tabbedPane;
 
-    public Window(String name) {
-        this.frame = new JFrame(name);
+    public void initialize(String title) {
+        this.frame = new JFrame(title);
+
+        this.menubar = new MenuBar(this);
+
+        final GLProfile profile = GLProfile.get(GLProfile.GL3);
+        GLCapabilities capabilities = new GLCapabilities(profile);
+
+        this.displayObjectPanel = new DisplayObjectListPanel();
+        this.texturesPanel = new TexturesPanel();
+        this.infoPanel = new EditorInfoPanel();
+        this.tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
+        this.canvas = new Canvas(capabilities);
+        this.timelinePanel = new TimelinePanel();
+        this.timelineSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, this.canvas, this.timelinePanel);
+
+        new FPSAnimator(this.canvas, 30);
+
+        MINIMUM_SIZE.width += SIDE_PANEL_SIZE.width;
+        this.tabbedPane.setPreferredSize(SIDE_PANEL_SIZE);
+        this.canvas.setPreferredSize(CANVAS_SIZE);
+        this.timelineSplitPane.setPreferredSize(CANVAS_SIZE);
+
+        this.timelinePanel.setVisible(false);
+
+        this.tabbedPane.add("Objects", this.displayObjectPanel);
+        this.tabbedPane.add("Info", this.infoPanel);
+        this.tabbedPane.add("Textures", this.texturesPanel);
+
         this.frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-    }
+        this.frame.setJMenuBar(this.menubar);
 
-    public void create() {
-        JMenuBar menuBar = createJMenuBar();
-        this.frame.setJMenuBar(menuBar);
-
-        this.objectsTable = createObjectsTable();
-
-        JScrollPane tableScrollPane = new JScrollPane(this.objectsTable);
-        tableScrollPane.setPreferredSize(new Dimension(300, 0));
-
-        this.canvas = createCanvas();
-
-        this.infoBlock = createInfoBlock();
-        this.infoBlock.setPreferredSize(new Dimension(300, 0));
-
-        this.frame.getContentPane().add(tableScrollPane, BorderLayout.WEST);
-        this.frame.getContentPane().add(this.canvas);
-        this.frame.getContentPane().add(this.infoBlock, BorderLayout.EAST);
-        this.frame.setMinimumSize(new Dimension(1000, 640));
+        this.frame.getContentPane().add(this.tabbedPane, BorderLayout.WEST);
+        this.frame.getContentPane().add(this.timelineSplitPane);
+        this.frame.setMinimumSize(MINIMUM_SIZE);
         this.frame.setSize(this.frame.getContentPane().getPreferredSize());
     }
 
     public void show() {
+        this.frame.pack();
+        this.frame.setLocationRelativeTo(null);
         this.frame.setVisible(true);
+
+        this.canvas.getAnimator().start();
     }
 
-    public Table getObjectsTable() {
-        return objectsTable;
+    public void setTitle(String title) {
+        this.frame.setTitle(title);
     }
 
-    public EditorInfoPanel getInfoBlock() {
-        return infoBlock;
+
+    public JFrame getFrame() {
+        return frame;
+    }
+
+    public MenuBar getMenubar() {
+        return menubar;
     }
 
     public GLCanvas getCanvas() {
         return this.canvas;
     }
 
-
-    private Table createObjectsTable() {
-        Table table = new Table("Id", "Name", "Type");
-
-        table.addSelectionListener(new TableSelectionListener(table));
-
-        TableRowSorter<TableModel> sorter = new TableRowSorter<>(table.getModel());
-        table.setRowSorter(sorter);
-
-        List<RowSorter.SortKey> sortKeys = new ArrayList<>();
-        sortKeys.add(new RowSorter.SortKey(2, SortOrder.DESCENDING));
-        sorter.setSortKeys(sortKeys);
-
-        return table;
+    public TimelinePanel getTimelinePanel() {
+        return this.timelinePanel;
     }
 
-    private GLCanvas createCanvas() {
-        final GLProfile profile = GLProfile.get(GLProfile.GL3);
-        GLCapabilities capabilities = new GLCapabilities(profile);
-
-        GLCanvas glCanvas = new GLCanvas(capabilities);
-        glCanvas.addGLEventListener(new EventListener());
-        glCanvas.addMouseListener(new MouseListener());
-        glCanvas.addMouseWheelListener(new MouseWheelListener());
-        glCanvas.addMouseMotionListener(new MouseMotionListener());
-        glCanvas.setSize(1200, 800);
-
-        return glCanvas;
+    public JSplitPane getTimelineSplitPane() {
+        return timelineSplitPane;
     }
 
-    private EditorInfoPanel createInfoBlock() {
-        return new EditorInfoPanel();
+    public JTabbedPane getTabbedPane() {
+        return tabbedPane;
     }
 
-    private JMenuBar createJMenuBar() {
-        JMenuBar menuBar = new JMenuBar();
-
-        JMenu fileMenu = createFileMenu();
-
-        menuBar.add(fileMenu);
-
-        return menuBar;
+    public EditorInfoPanel getInfoPanel() {
+        return this.infoPanel;
     }
 
-    private JMenu createFileMenu() {
-        JMenu fileMenu = new JMenu("File");
-        fileMenu.setMnemonic(KeyEvent.VK_F);
+    public Table getTexturesTable() {
+        return texturesPanel.getTable();
+    }
 
-        JMenuItem open = new JMenuItem("Open", KeyEvent.VK_O);
-        open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
-        open.addActionListener((e) -> {
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc)", "sc"));
+    public Table getObjectsTable() {
+        return this.displayObjectPanel.getTable();
+    }
 
-            int result = fileChooser.showOpenDialog(this.frame);
-            if (result != JFileChooser.APPROVE_OPTION) return;
-
-            Main.editor.closeFile();
-
-            String path = fileChooser.getSelectedFile().getPath();
-            if (!ResourceManager.doesFileExist(path.substring(0, path.length() - 3) + SupercellSWF.TEXTURE_EXTENSION)) {
-                Object[] options = {"Yes", "Cancel"};
-                int warningResult = JOptionPane.showOptionDialog(
-                    this.frame,
-                    "There is no texture file (but it may have a different suffix specified in the file).\n" +
-                            "Do you want to open file anyway?",
-                    "Answer the question",
-                    JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.WARNING_MESSAGE,
-                    null,
-                    options,
-                    options[0]
-                );
-
-                if (warningResult != 0) return;
-            }
-
-            Main.editor.openFile(path);
-        });
-
-        fileMenu.add(open);
-
-        JMenuItem close = new JMenuItem("Close", KeyEvent.VK_C);
-        close.addActionListener((e) -> Main.editor.closeFile());
-
-        fileMenu.add(close);
-
-        fileMenu.addSeparator();
-
-        JMenuItem exit = new JMenuItem("Exit");
-        exit.addActionListener((e) -> System.exit(0));
-        fileMenu.add(exit);
-        return fileMenu;
+    public DisplayObjectListPanel getDisplayObjectPanel() {
+        return this.displayObjectPanel;
     }
 }

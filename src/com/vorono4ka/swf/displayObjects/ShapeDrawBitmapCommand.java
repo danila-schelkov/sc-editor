@@ -1,6 +1,11 @@
 package com.vorono4ka.swf.displayObjects;
 
+import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Point;
+import com.vorono4ka.math.Rect;
+import com.vorono4ka.swf.ColorTransform;
+import com.vorono4ka.swf.GLImage;
+import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.displayObjects.original.SWFTexture;
@@ -9,6 +14,8 @@ public class ShapeDrawBitmapCommand {
     private int vertexCount;
     private Point[] shapePoints;
     private Point[] sheetPoints;
+
+    private GLImage image;
 
     public void load(SupercellSWF swf, Tag tag) {
         int textureId = swf.readUnsignedChar();
@@ -19,6 +26,7 @@ public class ShapeDrawBitmapCommand {
         }
 
         SWFTexture texture = swf.getTexture(textureId);
+        this.image = texture.getImage();
 
         this.shapePoints = new Point[this.vertexCount];
         for (int i = 0; i < this.vertexCount; i++) {
@@ -40,6 +48,50 @@ public class ShapeDrawBitmapCommand {
 
             this.sheetPoints[i] = new Point(u, v);
         }
+    }
+
+    public void render(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits) {
+        Rect bounds = new Rect();
+
+        float[] transformedPoints = new float[this.vertexCount * 2];
+        for (int i = 0; i < this.vertexCount; i++) {
+            float x = (this.getX(i) * matrix.getScaleX()) + (this.getY(i) * matrix.getSkewY()) + matrix.getX();
+            float y = (this.getX(i) * matrix.getSkewX()) + (this.getY(i) * matrix.getScaleY()) + matrix.getY();
+
+            transformedPoints[i * 2] = x;
+            transformedPoints[i * 2 + 1] = y;
+
+            if (i == 0) {
+                bounds = new Rect(x, y, x, y);
+                continue;
+            }
+
+            bounds.addPoint(x, y);
+        }
+
+//        System.out.printf("Bounds rect: %f %f %f %f, Size: (%f, %f)%n", bounds.getMinX(), bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY(), bounds.getWidth(), bounds.getHeight());
+
+        int trianglesCount = this.vertexCount - 2;
+        int[] indices = new int[trianglesCount * 3];
+        for (int i = 0; i < trianglesCount; i++) {
+            indices[i * 3] = 0;
+            indices[i * 3 + 1] = i + 1;
+            indices[i * 3 + 2] = i + 2;
+        }
+
+        if (stage.startShape(bounds.getMinX(), bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY(), this.image, renderConfigBits)) {
+            stage.addTriangles(trianglesCount, indices);
+            int colorMul = (colorTransform.getRedMultiplier() << 24) | (colorTransform.getGreenMultiplier() << 16) | (colorTransform.getBlueMultiplier() << 8) | colorTransform.getAlpha();
+            int colorAdd = (colorTransform.getRedAddition() << 16) | (colorTransform.getGreenAddition() << 8) | colorTransform.getBlueAddition();
+
+            for (int i = 0; i < this.vertexCount; i++) {
+                stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], this.getU(i), this.getV(i));
+            }
+        }
+    }
+
+    public void collisionRender(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform) {
+        this.render(stage, matrix, colorTransform, 0);
     }
 
     public float getX(int pointIndex) {

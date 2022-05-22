@@ -5,17 +5,20 @@ import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.Shape;
+import com.vorono4ka.swf.displayObjects.Shape9Slice;
 import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.exceptions.UnsupportedTagException;
 
 public class ShapeOriginal extends DisplayObjectOriginal {
+    private int id;
+
     private int commandsCount;
     private ShapeDrawBitmapCommand[] commands;
 
     public int load(SupercellSWF swf, Tag tag) throws NegativeTagLengthException {
-        int id = swf.readShort();
+        this.id = swf.readShort();
         this.commandsCount = swf.readShort();
 
         this.commands = new ShapeDrawBitmapCommand[this.commandsCount];
@@ -41,7 +44,7 @@ public class ShapeOriginal extends DisplayObjectOriginal {
             Tag tagValue = Tag.values()[commandTag];
             switch (tagValue) {
                 case EOF -> {
-                    return id;
+                    return this.id;
                 }
                 case SHAPE_DRAW_BITMAP_COMMAND, SHAPE_DRAW_BITMAP_COMMAND_2, SHAPE_DRAW_BITMAP_COMMAND_3 -> {
                     this.commands[loadedCommands++].load(swf, tagValue);
@@ -70,6 +73,15 @@ public class ShapeOriginal extends DisplayObjectOriginal {
 
     @Override
     public DisplayObject clone(SupercellSWF swf, Rect scalingGrid) throws UnableToFindObjectException {
-        return new Shape();
+        Shape shape;
+        if (scalingGrid != null) {
+            shape = new Shape9Slice(scalingGrid);
+        } else {
+            shape = new Shape();
+        }
+
+        shape.setId(this.id);
+        shape.setCommands(this.commands);
+        return shape;
     }
 }

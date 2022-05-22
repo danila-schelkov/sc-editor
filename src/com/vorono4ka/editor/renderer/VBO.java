@@ -6,10 +6,9 @@ import java.nio.FloatBuffer;
 
 public class VBO {
     private final GL3 gl;
-
     private final int id;
 
-    public VBO(GL3 gl, float[] vertices) {
+    public VBO(GL3 gl, float[] vertices, int usage) {
         this.gl = gl;
 
         int[] VBOs = new int[1];
@@ -17,7 +16,13 @@ public class VBO {
         this.id = VBOs[0];
 
         this.bind();
-        this.gl.glBufferData(GL3.GL_ARRAY_BUFFER, (long) vertices.length * Float.BYTES, FloatBuffer.wrap(vertices), GL3.GL_STATIC_DRAW);
+        this.gl.glBufferData(GL3.GL_ARRAY_BUFFER, (long) vertices.length * Float.BYTES, FloatBuffer.wrap(vertices), usage);
+        this.unbind();
+    }
+
+    public void subData(int offset, float[] vertices) {
+        this.bind();
+        this.gl.glBufferSubData(GL3.GL_ARRAY_BUFFER, offset, (long) vertices.length * Float.BYTES, FloatBuffer.wrap(vertices));
         this.unbind();
     }
 

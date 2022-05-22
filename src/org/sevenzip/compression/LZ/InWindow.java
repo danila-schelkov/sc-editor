@@ -4,8 +4,7 @@ package org.sevenzip.compression.LZ;
 
 import java.io.IOException;
 
-public class InWindow
-{
+public class InWindow {
 	public byte[] _bufferBase; // pointer to buffer with data
 	java.io.InputStream _stream;
 	int _posLimit;  // offset (from _buffer) of first byte when new block reading must be done
@@ -21,8 +20,7 @@ public class InWindow
 	int _keepSizeAfter;   // how many BYTEs must be kept buffer after _pos
 	public int _streamPos;   // offset (from _buffer) of first not read byte from Stream
 	
-	public void MoveBlock()
-	{
+	public void MoveBlock() {
 		int offset = _bufferOffset + _pos - _keepSizeBefore;
 		// we need one additional byte, since MovePos moves on 1 byte.
 		if (offset > 0)
@@ -36,18 +34,15 @@ public class InWindow
 		_bufferOffset -= offset;
 	}
 	
-	public void ReadBlock() throws IOException
-	{
+	public void ReadBlock() throws IOException {
 		if (_streamEndWasReached)
 			return;
-		while (true)
-		{
+		while (true) {
 			int size = (0 - _bufferOffset) + _blockSize - _streamPos;
 			if (size == 0)
 				return;
 			int numReadBytes = _stream.read(_bufferBase, _bufferOffset + _streamPos, size);
-			if (numReadBytes == -1)
-			{
+			if (numReadBytes == -1) {
 				_posLimit = _streamPos;
 				int pointerToPostion = _bufferOffset + _posLimit;
 				if (pointerToPostion > _pointerToLastSafePosition)
@@ -64,13 +59,11 @@ public class InWindow
 	
 	void Free() { _bufferBase = null; }
 	
-	public void Create(int keepSizeBefore, int keepSizeAfter, int keepSizeReserv)
-	{
+	public void Create(int keepSizeBefore, int keepSizeAfter, int keepSizeReserv) {
 		_keepSizeBefore = keepSizeBefore;
 		_keepSizeAfter = keepSizeAfter;
 		int blockSize = keepSizeBefore + keepSizeAfter + keepSizeReserv;
-		if (_bufferBase == null || _blockSize != blockSize)
-		{
+		if (_bufferBase == null || _blockSize != blockSize) {
 			Free();
 			_blockSize = blockSize;
 			_bufferBase = new byte[_blockSize];
@@ -78,11 +71,10 @@ public class InWindow
 		_pointerToLastSafePosition = _blockSize - keepSizeAfter;
 	}
 	
-	public void SetStream(java.io.InputStream stream) { _stream = stream; 	}
+	public void setStream(java.io.InputStream stream) { _stream = stream; 	}
 	public void ReleaseStream() { _stream = null; }
 
-	public void Init() throws IOException
-	{
+	public void init() throws IOException {
 		_bufferOffset = 0;
 		_pos = 0;
 		_streamPos = 0;
@@ -90,11 +82,9 @@ public class InWindow
 		ReadBlock();
 	}
 	
-	public void MovePos() throws IOException
-	{
+	public void MovePos() throws IOException {
 		_pos++;
-		if (_pos > _posLimit)
-		{
+		if (_pos > _posLimit) {
 			int pointerToPostion = _bufferOffset + _pos;
 			if (pointerToPostion > _pointerToLastSafePosition)
 				MoveBlock();
@@ -102,11 +92,10 @@ public class InWindow
 		}
 	}
 	
-	public byte GetIndexByte(int index)	{ return _bufferBase[_bufferOffset + _pos + index]; }
+	public byte getIndexByte(int index)	{ return _bufferBase[_bufferOffset + _pos + index]; }
 	
 	// index + limit have not to exceed _keepSizeAfter;
-	public int GetMatchLen(int index, int distance, int limit)
-	{
+	public int getMatchLen(int index, int distance, int limit) {
 		if (_streamEndWasReached)
 			if ((_pos + index) + limit > _streamPos)
 				limit = _streamPos - (_pos + index);
@@ -119,10 +108,9 @@ public class InWindow
 		return i;
 	}
 	
-	public int GetNumAvailableBytes()	{ return _streamPos - _pos; }
+	public int getNumAvailableBytes()	{ return _streamPos - _pos; }
 	
-	public void ReduceOffsets(int subValue)
-	{
+	public void ReduceOffsets(int subValue) {
 		_bufferOffset += subValue;
 		_posLimit -= subValue;
 		_pos -= subValue;

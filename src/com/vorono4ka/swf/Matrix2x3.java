@@ -14,6 +14,15 @@ public class Matrix2x3 {
         this.scaleY = 1.0f;
     }
 
+    public Matrix2x3(Matrix2x3 matrix) {
+        this.scaleX = matrix.scaleX;
+        this.skewX = matrix.skewX;
+        this.skewY = matrix.skewY;
+        this.scaleY = matrix.scaleY;
+        this.x = matrix.x;
+        this.y = matrix.y;
+    }
+
     public void read(SupercellSWF swf) {
         this.scaleX = swf.readInt() / 1024f;
         this.skewX = swf.readInt() / 1024f;
@@ -30,6 +39,20 @@ public class Matrix2x3 {
         this.scaleY = swf.readInt() / 65535f;
         this.x = swf.readTwip();
         this.y = swf.readTwip();
+    }
+
+    public void apply(Matrix2x3 matrix) {
+        float scaleX = (this.scaleX * matrix.scaleX) + (this.skewX * matrix.skewY);
+        float skewX = (this.scaleX * matrix.skewX) + (this.skewX * matrix.scaleY);
+        float scaleY = (this.scaleY * matrix.scaleY) + (this.skewY * matrix.skewX);
+        float skewY = (this.scaleY * matrix.skewY) + (this.skewY * matrix.scaleX);
+        this.scaleX = scaleX;
+        this.skewX = skewX;
+        this.scaleY = scaleY;
+        this.skewY = skewY;
+
+        this.x = (this.x * matrix.scaleX) + (this.y * matrix.skewY) + matrix.x;
+        this.y = (this.x * matrix.skewX) + (this.y * matrix.scaleY) + matrix.y;
     }
 
     public void scaleMultiply(float scaleX, float scaleY) {
@@ -54,8 +77,7 @@ public class Matrix2x3 {
 
     public void inverse() {
         float v5 = (this.scaleY * this.scaleX) - (this.skewY * this.skewX);
-        if ( v5 != 0.0 )
-        {
+        if ( v5 != 0.0f ) {
             this.x = ((this.y * this.skewY) - (this.x * this.scaleY)) / v5;
             this.y = ((this.x * this.skewX) - (this.y * this.scaleX)) / v5;
             this.scaleX = this.scaleY / v5;
@@ -76,5 +98,34 @@ public class Matrix2x3 {
 
     public void setY(float y) {
         this.y = y;
+    }
+
+    public void setScale(float x, float y) {
+        this.scaleX = x;
+        this.scaleY = y;
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public float getScaleX() {
+        return scaleX;
+    }
+
+    public float getScaleY() {
+        return scaleY;
+    }
+
+    public float getSkewX() {
+        return skewX;
+    }
+
+    public float getSkewY() {
+        return skewY;
     }
 }

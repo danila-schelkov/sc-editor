@@ -17,11 +17,11 @@ import java.util.Arrays;
 public class MovieClipOriginal extends DisplayObjectOriginal {
     private int fps;
     private int framesCount;
-    private int[] framesElements;
+    private short[] framesElements;
     private MovieClipFrame[] frames;
 
     private int childrenCount;
-    private int[] childrenIds;
+    private short[] childrenIds;
     private byte[] childrenBlends;
     private String[] childrenNames;
 
@@ -32,7 +32,7 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
     private DisplayObjectOriginal[] children;
 
     public int load(SupercellSWF swf, Tag tag) throws LoadingFaultException {
-        int id = swf.readShort();
+        this.id = swf.readShort();
         this.fps = swf.readUnsignedChar();
 
         this.framesCount = swf.readShort();
@@ -91,7 +91,7 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
             Tag tagValue = Tag.values()[commandTag];
             switch (tagValue) {
                 case EOF -> {
-                    return id;
+                    return this.id;
                 }
                 case MOVIE_CLIP_FRAME -> {
                     try {
@@ -107,9 +107,9 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
                     MovieClipFrameElement[] elements = new MovieClipFrameElement[elementsCount];
                     for (int i = 0; i < elementsCount; i++) {
                         elements[i] = new MovieClipFrameElement(
-                            this.framesElements[usedElements * 3],
-                            this.framesElements[usedElements * 3 + 1],
-                            this.framesElements[usedElements * 3 + 2]
+                            this.framesElements[usedElements * 3] & 0xFFFF,
+                            this.framesElements[usedElements * 3 + 1] & 0xFFFF,
+                            this.framesElements[usedElements * 3 + 2] & 0xFFFF
                         );
 
                         usedElements++;
@@ -149,12 +149,13 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
         }
 
         MovieClip movieClip = new MovieClip();
+        movieClip.setId(this.id);
         movieClip.setMatrixBank(swf.getMatrixBank(this.matrixBankIndex));
 
         DisplayObject[] childrenArray = new DisplayObject[this.childrenCount];
         for (int i = 0; i < this.childrenCount; i++) {
             DisplayObjectOriginal child = this.children[i];
-            DisplayObject displayObject = child.clone(swf, scalingGrid);
+            DisplayObject displayObject = child.clone(swf, this.scalingGrid);
 
             displayObject.setVisibleRecursive((this.childrenBlends[i] & 64) == 0);
             displayObject.setInteractiveRecursive(true);
@@ -164,7 +165,7 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
         movieClip.setTimelineChildren(childrenArray);
         movieClip.setTimelineChildrenNames(this.childrenNames);
         movieClip.setFrames(this.frames);
-        movieClip.setMsPerFrame(1.0f / this.fps);
+        movieClip.setFPS(this.fps);
         movieClip.setExportName(this.exportName);
         movieClip.setFrame(0);
 

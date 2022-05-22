@@ -5,13 +5,17 @@ import com.vorono4ka.swf.Matrix2x3;
 
 public class TextField extends Sprite {
     @Override
-    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a3, float a4) {
+    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
 
     }
 
     @Override
-    public void collisionRender(Matrix2x3 matrix, ColorTransform colorTransform, int a3, float a4) {
+    public void collisionRender(Matrix2x3 matrix, ColorTransform colorTransform) {
 
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     @Override
