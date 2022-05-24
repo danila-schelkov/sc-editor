@@ -5,8 +5,10 @@ import com.vorono4ka.compression.exceptions.UnknownFileVersionException;
 import io.airlift.compress.zstd.ZstdDecompressor;
 import org.sevenzip.compression.LZMA.Decoder;
 
-import java.io.*;
-import java.util.Arrays;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 public class Decompressor {
     public static final ZstdDecompressor ZSTD_DECOMPRESSOR;

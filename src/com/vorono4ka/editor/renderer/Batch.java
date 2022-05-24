@@ -9,11 +9,15 @@ import java.util.Arrays;
 public class Batch {
     private static final int POSITION_SIZE = 2;
     private static final int TEX_COORDS_SIZE = 2;
-    private static final int VERTEX_SIZE = POSITION_SIZE + TEX_COORDS_SIZE;
+    private static final int COLOR_MUL_SIZE = 4;
+    private static final int COLOR_ADD_SIZE = 3;
+    private static final int VERTEX_SIZE = POSITION_SIZE + TEX_COORDS_SIZE + COLOR_MUL_SIZE + COLOR_ADD_SIZE;
 
     private static final int POSITION_SIZE_BYTES = POSITION_SIZE * Float.BYTES;
     private static final int TEX_COORDS_SIZE_BYTES = TEX_COORDS_SIZE * Float.BYTES;
-    private static final int VERTEX_SIZE_BYTES = POSITION_SIZE_BYTES + TEX_COORDS_SIZE_BYTES;
+    private static final int COLOR_MUL_SIZE_BYTES = COLOR_MUL_SIZE * Float.BYTES;
+    private static final int COLOR_ADD_SIZE_BYTES = COLOR_ADD_SIZE * Float.BYTES;
+    private static final int VERTEX_SIZE_BYTES = POSITION_SIZE_BYTES + TEX_COORDS_SIZE_BYTES + COLOR_MUL_SIZE_BYTES + COLOR_ADD_SIZE_BYTES;
     public static final int SIZE = 512;
 
     private float[] vertices;
@@ -47,6 +51,8 @@ public class Batch {
         this.ebo.bind();
         this.vao.linkAttrib(this.vbo, 0, POSITION_SIZE, GL3.GL_FLOAT, VERTEX_SIZE_BYTES, 0);
         this.vao.linkAttrib(this.vbo, 1, TEX_COORDS_SIZE, GL3.GL_FLOAT, VERTEX_SIZE_BYTES, POSITION_SIZE_BYTES);
+        this.vao.linkAttrib(this.vbo, 2, COLOR_MUL_SIZE, GL3.GL_FLOAT, VERTEX_SIZE_BYTES, POSITION_SIZE_BYTES + TEX_COORDS_SIZE_BYTES);
+        this.vao.linkAttrib(this.vbo, 3, COLOR_ADD_SIZE, GL3.GL_FLOAT, VERTEX_SIZE_BYTES, POSITION_SIZE_BYTES + TEX_COORDS_SIZE_BYTES + COLOR_MUL_SIZE_BYTES);
         this.vao.unbind();
         this.ebo.unbind();
     }
@@ -114,11 +120,18 @@ public class Batch {
         this.pointsCount += count + 2;
     }
 
-    public void addVertex(float x, float y, float u, float v) {  // TODO: add colorMul, colorAdd args
+    public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float redAdd, float greenAdd, float blueAdd, float alpha) {  // TODO: add colorMul, colorAdd args
         this.vertices[this.vertexIndex * VERTEX_SIZE] = x;
         this.vertices[this.vertexIndex * VERTEX_SIZE + 1] = y;
         this.vertices[this.vertexIndex * VERTEX_SIZE + 2] = u;
         this.vertices[this.vertexIndex * VERTEX_SIZE + 3] = v;
+        this.vertices[this.vertexIndex * VERTEX_SIZE + 4] = redMul;
+        this.vertices[this.vertexIndex * VERTEX_SIZE + 5] = greenMul;
+        this.vertices[this.vertexIndex * VERTEX_SIZE + 6] = blueMul;
+        this.vertices[this.vertexIndex * VERTEX_SIZE + 7] = alpha;
+        this.vertices[this.vertexIndex * VERTEX_SIZE + 8] = redAdd;
+        this.vertices[this.vertexIndex * VERTEX_SIZE + 9] = greenAdd;
+        this.vertices[this.vertexIndex * VERTEX_SIZE + 10] = blueAdd;
 
         this.vertexIndex++;
     }

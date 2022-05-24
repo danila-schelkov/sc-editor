@@ -29,7 +29,7 @@ public class SpriteSheet extends DisplayObject {
             stage.addTriangles(2, INDICES);
 
             for (float[] vertex : this.vertices) {
-                stage.addVertex(vertex[0], vertex[1], vertex[2], vertex[3]);
+                stage.addVertex(vertex[0], vertex[1], vertex[2], vertex[3], 1, 1, 1, 0, 0, 0, 1);
             }
         }
     }

@@ -81,11 +81,29 @@ public class ShapeDrawBitmapCommand {
 
         if (stage.startShape(bounds.getMinX(), bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY(), this.image, renderConfigBits)) {
             stage.addTriangles(trianglesCount, indices);
-            int colorMul = (colorTransform.getRedMultiplier() << 24) | (colorTransform.getGreenMultiplier() << 16) | (colorTransform.getBlueMultiplier() << 8) | colorTransform.getAlpha();
-            int colorAdd = (colorTransform.getRedAddition() << 16) | (colorTransform.getGreenAddition() << 8) | colorTransform.getBlueAddition();
+
+            float redMultiplier = colorTransform.getRedMultiplier() / 255f;
+            float greenMultiplier = colorTransform.getGreenMultiplier() / 255f;
+            float blueMultiplier = colorTransform.getBlueMultiplier() / 255f;
+            float redAddition = colorTransform.getRedAddition() / 255f;
+            float greenAddition = colorTransform.getGreenAddition() / 255f;
+            float blueAddition = colorTransform.getBlueAddition() / 255f;
+            float alpha = colorTransform.getAlpha() / 255f;
 
             for (int i = 0; i < this.vertexCount; i++) {
-                stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], this.getU(i), this.getV(i));
+                stage.addVertex(
+                    transformedPoints[i * 2],
+                    transformedPoints[i * 2 + 1],
+                    this.getU(i),
+                    this.getV(i),
+                    redMultiplier,
+                    greenMultiplier,
+                    blueMultiplier,
+                    redAddition,
+                    greenAddition,
+                    blueAddition,
+                    alpha
+                );
             }
         }
     }

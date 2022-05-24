@@ -160,10 +160,10 @@ public class Stage {
         this.currentBatch.addTriangles(count, indices);
     }
 
-    public void addVertex(float x, float y, float u, float v) {
+    public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float redAdd, float greenAdd, float blueAdd, float alpha) {
         if (this.currentBatch == null) return;
 
-        this.currentBatch.addVertex(x, y, u, v);
+        this.currentBatch.addVertex(x, y, u, v, redMul, greenMul, blueMul, redAdd, greenAdd, blueAdd, alpha);
     }
 
     public void updatePMVMatrix() {

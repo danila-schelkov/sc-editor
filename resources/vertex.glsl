@@ -2,6 +2,8 @@
 
 layout (location = 0) in vec2 aPos;
 layout (location = 1) in vec2 aTexCoord;
+layout (location = 2) in vec4 aColorMul;
+layout (location = 3) in vec3 aColorAdd;
 
 uniform mat4 pmv;
 
@@ -13,6 +15,6 @@ void main()
 {
     gl_Position = pmv * vec4(aPos, 0.0f, 1.0f);
     texCoord = aTexCoord;
-    colorMul = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    colorAdd = vec3(0.0f, 0.0f, 0.0f);
+    colorMul = aColorMul;  // vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    colorAdd = aColorAdd;  // vec3(0.0f, 0.0f, 0.0f);
 }

@@ -44,9 +44,9 @@ public class ColorTransform {
         this.greenMultiplier *= colorTransform.greenMultiplier / 255f;
         this.blueMultiplier *= colorTransform.blueMultiplier / 255f;
         this.alpha *= colorTransform.alpha / 255f;
-        this.redAddition = Math.max(this.redAddition + colorTransform.redAddition, 255);
-        this.greenAddition = Math.max(this.greenAddition + colorTransform.greenAddition, 255);
-        this.blueAddition = Math.max(this.blueAddition + colorTransform.blueAddition, 255);
+        this.redAddition = Math.min(this.redAddition + colorTransform.redAddition, 255);
+        this.greenAddition = Math.min(this.greenAddition + colorTransform.greenAddition, 255);
+        this.blueAddition = Math.min(this.blueAddition + colorTransform.blueAddition, 255);
     }
 
     public void setMulColor(float red, float green, float blue) {

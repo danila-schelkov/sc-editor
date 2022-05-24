@@ -25,17 +25,17 @@ public abstract class Sprite extends DisplayObject {
         ColorTransform colorTransformApplied = new ColorTransform(this.getColorTransform());
         colorTransformApplied.apply(colorTransform);
 
-        float redMultiplier = colorTransformApplied.getRedMultiplier();
-        float greenMultiplier = colorTransformApplied.getGreenMultiplier();
-        float blueMultiplier = colorTransformApplied.getBlueMultiplier();
-        float alpha = colorTransformApplied.getAlpha();
+        int redMultiplier = colorTransformApplied.getRedMultiplier();
+        int greenMultiplier = colorTransformApplied.getGreenMultiplier();
+        int blueMultiplier = colorTransformApplied.getBlueMultiplier();
+        int alpha = colorTransformApplied.getAlpha();
 
-        float redAddition = colorTransformApplied.getRedAddition();
-        float greenAddition = colorTransformApplied.getGreenAddition();
-        float blueAddition = colorTransformApplied.getBlueAddition();
+        int redAddition = colorTransformApplied.getRedAddition();
+        int greenAddition = colorTransformApplied.getGreenAddition();
+        int blueAddition = colorTransformApplied.getBlueAddition();
 
         int v45 = a4;
-        if (redMultiplier + greenMultiplier + blueMultiplier + alpha != 1020f)
+        if (redMultiplier + greenMultiplier + blueMultiplier + alpha != 1020)
             v45 = a4 | 1;
         if (redAddition + greenAddition + blueAddition > 0)
             v45 = a4 | 3;
