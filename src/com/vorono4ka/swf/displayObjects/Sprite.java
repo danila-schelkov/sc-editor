@@ -2,6 +2,7 @@ package com.vorono4ka.swf.displayObjects;
 
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
+import com.vorono4ka.swf.constants.MovieClipState;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,21 +10,22 @@ import java.util.List;
 public abstract class Sprite extends DisplayObject {
     protected List<DisplayObject> children;
     protected int frameSkippingType;
-    protected int state;
+    protected MovieClipState state;
     protected boolean isInteractive;
 
     public Sprite() {
         this.children = new ArrayList<>();
+        this.state = MovieClipState.PLAYING;
         this.isInteractive = false;
     }
 
     @Override
     public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
         Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
-        matrixApplied.apply(matrix);
+        matrixApplied.multiply(matrix);
 
         ColorTransform colorTransformApplied = new ColorTransform(this.getColorTransform());
-        colorTransformApplied.apply(colorTransform);
+        colorTransformApplied.multiply(colorTransform);
 
         int redMultiplier = colorTransformApplied.getRedMultiplier();
         int greenMultiplier = colorTransformApplied.getGreenMultiplier();

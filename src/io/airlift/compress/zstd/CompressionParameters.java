@@ -297,7 +297,7 @@ class CompressionParameters
 
         int row = DEFAULT_COMPRESSION_LEVEL;
 
-        if (compressionLevel != 0) { // TODO: figure out better way to indicate default compression level
+        if (compressionLevel != 0) {
             row = Math.min(Math.max(0, compressionLevel), MAX_COMPRESSION_LEVEL);
         }
 

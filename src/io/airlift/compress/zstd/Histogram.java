@@ -24,7 +24,6 @@ class Histogram
     {
     }
 
-    // TODO: count parallel heuristic for large inputs
     private static void count(Object inputBase, long inputAddress, int inputSize, int[] counts)
     {
         long input = inputAddress;

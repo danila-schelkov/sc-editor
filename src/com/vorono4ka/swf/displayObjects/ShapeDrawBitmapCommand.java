@@ -55,8 +55,8 @@ public class ShapeDrawBitmapCommand {
 
         float[] transformedPoints = new float[this.vertexCount * 2];
         for (int i = 0; i < this.vertexCount; i++) {
-            float x = (this.getX(i) * matrix.getScaleX()) + (this.getY(i) * matrix.getSkewY()) + matrix.getX();
-            float y = (this.getX(i) * matrix.getSkewX()) + (this.getY(i) * matrix.getScaleY()) + matrix.getY();
+            float x = matrix.applyX(this.getX(i), this.getY(i));
+            float y = matrix.applyY(this.getX(i), this.getY(i));
 
             transformedPoints[i * 2] = x;
             transformedPoints[i * 2 + 1] = y;
@@ -79,7 +79,7 @@ public class ShapeDrawBitmapCommand {
             indices[i * 3 + 2] = i + 2;
         }
 
-        if (stage.startShape(bounds.getMinX(), bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY(), this.image, renderConfigBits)) {
+        if (stage.startShape(bounds, this.image, renderConfigBits)) {
             stage.addTriangles(trianglesCount, indices);
 
             float redMultiplier = colorTransform.getRedMultiplier() / 255f;
@@ -106,6 +106,10 @@ public class ShapeDrawBitmapCommand {
                 );
             }
         }
+    }
+
+    public void render9Slice(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int a3, Rect movedGrid, Rect bounds, float scaledWidth, float scaledHeight) {
+
     }
 
     public void collisionRender(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform) {

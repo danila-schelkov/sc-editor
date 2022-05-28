@@ -1,18 +1,18 @@
 package com.vorono4ka.swf;
 
 public class MovieClipFrame {
-    private String name;  // "label"
+    private String label;  // "label"
     private MovieClipFrameElement[] elements;
 
     public int load(SupercellSWF swf) {
         int elementsCount = swf.readShort();
-        this.name = swf.readAscii();
+        this.label = swf.readAscii();
 
         return elementsCount;
     }
 
-    public String getName() {
-        return name;
+    public String getLabel() {
+        return label;
     }
 
     public MovieClipFrameElement[] getElements() {

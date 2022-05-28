@@ -85,7 +85,7 @@ public class Batch {
         this.ebo.delete();
     }
 
-    public boolean startShape(float left, float top, float right, float bottom, GLImage image, int renderConfigBits) {
+    public boolean startShape(GLImage image, int renderConfigBits) {
         if (image == null) return false;
 
         if (this.image == null) {
@@ -120,7 +120,7 @@ public class Batch {
         this.pointsCount += count + 2;
     }
 
-    public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float redAdd, float greenAdd, float blueAdd, float alpha) {  // TODO: add colorMul, colorAdd args
+    public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float redAdd, float greenAdd, float blueAdd, float alpha) {
         this.vertices[this.vertexIndex * VERTEX_SIZE] = x;
         this.vertices[this.vertexIndex * VERTEX_SIZE + 1] = y;
         this.vertices[this.vertexIndex * VERTEX_SIZE + 2] = u;

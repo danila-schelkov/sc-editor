@@ -53,17 +53,16 @@ class FseCompressionTable
     {
         int tableSize = 1 << tableLog;
 
-        byte[] table = new byte[tableSize]; // TODO: allocate in workspace
+        byte[] table = new byte[tableSize];
         int highThreshold = tableSize - 1;
 
-        // TODO: make sure FseCompressionTable has enough size
         log2Size = tableLog;
 
         // For explanations on how to distribute symbol values over the table:
         // http://fastcompression.blogspot.fr/2014/02/fse-distributing-symbol-values.html
 
         // symbol start positions
-        int[] cumulative = new int[MAX_SYMBOL + 2]; // TODO: allocate in workspace
+        int[] cumulative = new int[MAX_SYMBOL + 2];
         cumulative[0] = 0;
         for (int i = 1; i <= maxSymbol + 1; i++) {
             if (normalizedCounts[i - 1] == -1) {  // Low probability symbol

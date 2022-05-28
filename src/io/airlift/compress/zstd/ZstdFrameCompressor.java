@@ -150,7 +150,7 @@ class ZstdFrameCompressor
 
     private static int compressFrame(Object inputBase, long inputAddress, long inputLimit, Object outputBase, long outputAddress, long outputLimit, CompressionParameters parameters)
     {
-        int windowSize = 1 << parameters.getWindowLog(); // TODO: store window size in parameters directly?
+        int windowSize = 1 << parameters.getWindowLog();
         int blockSize = Math.min(MAX_BLOCK_SIZE, windowSize);
 
         int outputSize = (int) (outputLimit - outputAddress);
@@ -260,7 +260,6 @@ class ZstdFrameCompressor
             byte[] literals,
             int literalsSize)
     {
-        // TODO: move this to Strategy
         boolean bypassCompression = (parameters.getStrategy() == CompressionParameters.Strategy.FAST) && (parameters.getTargetLength() > 0);
         if (bypassCompression || literalsSize <= MINIMUM_LITERALS_SIZE) {
             return rawLiterals(outputBase, outputAddress, outputSize, literals, ARRAY_BYTE_BASE_OFFSET, literalsSize);
@@ -270,7 +269,7 @@ class ZstdFrameCompressor
 
         checkArgument(headerSize + 1 <= outputSize, "Output buffer too small");
 
-        int[] counts = new int[MAX_SYMBOL_COUNT]; // TODO: preallocate
+        int[] counts = new int[MAX_SYMBOL_COUNT];
         Histogram.count(literals, literalsSize, counts);
         int maxSymbol = Histogram.findMaxSymbol(counts, MAX_SYMBOL);
         int largestCount = Histogram.findLargestCount(counts, maxSymbol);
@@ -293,7 +292,6 @@ class ZstdFrameCompressor
         boolean canReuse = previousTable.isValid(counts, maxSymbol);
 
         // heuristic: use existing table for small inputs if valid
-        // TODO: move to Strategy
         boolean preferReuse = parameters.getStrategy().ordinal() < CompressionParameters.Strategy.LAZY.ordinal() && literalsSize <= 1024;
         if (preferReuse && canReuse) {
             table = previousTable;
@@ -349,24 +347,21 @@ class ZstdFrameCompressor
 
         // Build header
         switch (headerSize) {
-            case 3: { // 2 - 2 - 10 - 10
+            case 3 -> { // 2 - 2 - 10 - 10
                 int header = encodingType | ((singleStream ? 0 : 1) << 2) | (literalsSize << 4) | (totalSize << 14);
                 put24BitLittleEndian(outputBase, outputAddress, header);
-                break;
             }
-            case 4: { // 2 - 2 - 14 - 14
+            case 4 -> { // 2 - 2 - 14 - 14
                 int header = encodingType | (2 << 2) | (literalsSize << 4) | (totalSize << 18);
                 UNSAFE.putInt(outputBase, outputAddress, header);
-                break;
             }
-            case 5: { // 2 - 2 - 18 - 18
+            case 5 -> { // 2 - 2 - 18 - 18
                 int header = encodingType | (3 << 2) | (literalsSize << 4) | (totalSize << 22);
                 UNSAFE.putInt(outputBase, outputAddress, header);
                 UNSAFE.putByte(outputBase, outputAddress + SIZE_OF_INT, (byte) (totalSize >>> 10));
-                break;
             }
-            default:  // not possible : headerSize is {3,4,5}
-                throw new IllegalStateException();
+            default ->  // not possible : headerSize is {3,4,5}
+                    throw new IllegalStateException();
         }
 
         return headerSize + totalSize;
@@ -397,7 +392,6 @@ class ZstdFrameCompressor
 
     private static int calculateMinimumGain(int inputSize, CompressionParameters.Strategy strategy)
     {
-        // TODO: move this to Strategy to avoid hardcoding a specific strategy here
         int minLog = strategy == CompressionParameters.Strategy.BTULTRA ? 7 : 6;
         return (inputSize >>> minLog) + 2;
     }
@@ -428,7 +422,6 @@ class ZstdFrameCompressor
                 throw new AssertionError();
         }
 
-        // TODO: ensure this test is correct
         checkArgument(inputSize + 1 <= outputSize, "Output buffer too small");
 
         UNSAFE.copyMemory(inputBase, inputAddress, outputBase, outputAddress + headerSize, inputSize);

@@ -41,7 +41,7 @@ public class Matrix2x3 {
         this.y = swf.readTwip();
     }
 
-    public void apply(Matrix2x3 matrix) {
+    public void multiply(Matrix2x3 matrix) {
         float scaleX = (this.scaleX * matrix.scaleX) + (this.skewX * matrix.skewY);
         float skewX = (this.scaleX * matrix.skewX) + (this.skewX * matrix.scaleY);
         float scaleY = (this.scaleY * matrix.scaleY) + (this.skewY * matrix.skewX);
@@ -53,6 +53,14 @@ public class Matrix2x3 {
 
         this.x = (this.x * matrix.scaleX) + (this.y * matrix.skewY) + matrix.x;
         this.y = (this.x * matrix.skewX) + (this.y * matrix.scaleY) + matrix.y;
+    }
+
+    public float applyX(float x, float y) {
+        return x * this.scaleX + y * this.skewY + this.x;
+    }
+
+    public float applyY(float x, float y) {
+        return y * this.scaleY + x * this.skewX + this.y;
     }
 
     public void scaleMultiply(float scaleX, float scaleY) {
@@ -92,8 +100,16 @@ public class Matrix2x3 {
         this.y = y;
     }
 
+    public float getX() {
+        return x;
+    }
+
     public void setX(float x) {
         this.x = x;
+    }
+
+    public float getY() {
+        return y;
     }
 
     public void setY(float y) {
@@ -103,29 +119,5 @@ public class Matrix2x3 {
     public void setScale(float x, float y) {
         this.scaleX = x;
         this.scaleY = y;
-    }
-
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
-    }
-
-    public float getScaleX() {
-        return scaleX;
-    }
-
-    public float getScaleY() {
-        return scaleY;
-    }
-
-    public float getSkewX() {
-        return skewX;
-    }
-
-    public float getSkewY() {
-        return skewY;
     }
 }

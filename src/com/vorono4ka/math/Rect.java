@@ -8,6 +8,13 @@ public class Rect {
 
     public Rect() {}
 
+    public Rect(Rect rect) {
+        this.left = rect.left;
+        this.top = rect.top;
+        this.right = rect.right;
+        this.bottom = rect.bottom;
+    }
+
     public Rect(float left, float top, float right, float bottom) {
         this.left = left;
         this.top = top;
@@ -54,19 +61,23 @@ public class Rect {
         return this.top + this.getHeight() / 2f;
     }
 
-    public float getMinX() {
+    // getMinX
+    public float getLeft() {
         return this.left;
     }
 
-    public float getMinY() {
+    // getMinY
+    public float getTop() {
         return this.top;
     }
 
-    public float getMaxX() {
+    // getMaxX
+    public float getRight() {
         return this.right;
     }
 
-    public float getMaxY() {
+    // getMaxY
+    public float getBottom() {
         return this.bottom;
     }
 }

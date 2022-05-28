@@ -84,7 +84,7 @@ final class Util
     public static int minTableLog(int inputSize, int maxSymbolValue)
     {
         if (inputSize <= 1) {
-            throw new IllegalArgumentException("Not supported. RLE should be used instead"); // TODO
+            throw new IllegalArgumentException("Not supported. RLE should be used instead");
         }
 
         int minBitsSrc = highestBit((inputSize - 1)) + 1;

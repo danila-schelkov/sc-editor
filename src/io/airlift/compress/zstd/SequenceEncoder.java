@@ -231,7 +231,7 @@ class SequenceEncoder
         FiniteStateEntropy.normalizeCounts(normalizedCounts, tableLog, counts, sequenceCount, maxSymbol);
         table.initialize(normalizedCounts, maxSymbol, tableLog);
 
-        return FiniteStateEntropy.writeNormalizedCounts(outputBase, output, (int) (outputLimit - output), normalizedCounts, maxSymbol, tableLog); // TODO: pass outputLimit directly
+        return FiniteStateEntropy.writeNormalizedCounts(outputBase, output, (int) (outputLimit - output), normalizedCounts, maxSymbol, tableLog);
     }
 
     private static int encodeSequences(
@@ -324,9 +324,9 @@ class SequenceEncoder
             return SEQUENCE_ENCODING_RLE;
         }
 
-        if (strategy.ordinal() < CompressionParameters.Strategy.LAZY.ordinal()) { // TODO: more robust check. Maybe encapsulate in strategy objects
+        if (strategy.ordinal() < CompressionParameters.Strategy.LAZY.ordinal()) {
             if (isDefaultTableAllowed) {
-                int factor = 10 - strategy.ordinal(); // TODO more robust. Move it to strategy
+                int factor = 10 - strategy.ordinal();
                 int baseLog = 3;
                 long minNumberOfSequences = ((1L << defaultNormalizedCountsLog) * factor) >> baseLog;  /* 28-36 for offset, 56-72 for lengths */
 
@@ -342,7 +342,6 @@ class SequenceEncoder
             }
         }
         else {
-            // TODO implement when other strategies are supported
             throw new UnsupportedOperationException("not yet implemented");
         }
 

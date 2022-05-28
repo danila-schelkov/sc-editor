@@ -39,7 +39,7 @@ public class ColorTransform {
         this.blueMultiplier = stream.readUnsignedChar();
     }
 
-    public void apply(ColorTransform colorTransform) {
+    public void multiply(ColorTransform colorTransform) {
         this.redMultiplier *= colorTransform.redMultiplier / 255f;
         this.greenMultiplier *= colorTransform.greenMultiplier / 255f;
         this.blueMultiplier *= colorTransform.blueMultiplier / 255f;

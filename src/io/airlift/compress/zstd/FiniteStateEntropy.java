@@ -272,7 +272,7 @@ class FiniteStateEntropy
 
         for (int symbol = 0; symbol <= maxSymbol; symbol++) {
             if (counts[symbol] == total) {
-                throw new IllegalArgumentException(); // TODO: should have been RLE-compressed by upper layers
+                throw new IllegalArgumentException();
             }
             if (counts[symbol] == 0) {
                 normalizedCounts[symbol] = 0;
@@ -302,7 +302,6 @@ class FiniteStateEntropy
 
         if (-stillToDistribute >= (normalizedCounts[largest] >>> 1)) {
             // corner case. Need another normalization method
-            // TODO size_t const errorCode = FSE_normalizeM2(normalizedCounter, tableLog, count, total, maxSymbolValue);
             normalizeCounts2(normalizedCounts, tableLog, counts, total, maxSymbol);
         }
         else {
@@ -381,7 +380,6 @@ class FiniteStateEntropy
             return 0;
         }
 
-        // TODO: simplify/document this code
         long vStepLog = 62 - tableLog;
         long mid = (1L << (vStepLog - 1)) - 1;
         long rStep = (((1L << vStepLog) * toDistribute) + mid) / total;   /* scale on remaining */
@@ -515,7 +513,7 @@ class FiniteStateEntropy
         UNSAFE.putShort(outputBase, output, (short) bitStream);
         output += (bitCount + 7) / 8;
 
-        checkArgument(symbol <= maxSymbol + 1, "Error"); // TODO
+        checkArgument(symbol <= maxSymbol + 1, "Error");
 
         return (int) (output - outputAddress);
     }

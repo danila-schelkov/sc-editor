@@ -178,8 +178,6 @@ class DoubleFastBlockCompressor
         return (int) (inputEnd - anchor);
     }
 
-    // TODO: same as LZ4RawCompressor.count
-
     /**
      * matchAddress must be < inputAddress
      */

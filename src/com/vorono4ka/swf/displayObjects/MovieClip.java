@@ -1,6 +1,7 @@
 package com.vorono4ka.swf.displayObjects;
 
 import com.vorono4ka.swf.*;
+import com.vorono4ka.swf.constants.MovieClipState;
 
 public class MovieClip extends Sprite {
     private String exportName;
@@ -31,16 +32,16 @@ public class MovieClip extends Sprite {
             this.frameTime -= (this.msPerFrame * framesPassed);
 
             int nextFrame;
-            if ( this.state == 1 ) {
-                if ( this.frameSkippingType != 0 ) {
+            if (this.state == MovieClipState.PLAYING_ANY_DIRECTION) {
+                if (this.frameSkippingType != 0) {
                     if ( this.loopFrame >= this.currentFrame ) {
                         nextFrame = this.currentFrame + framesPassed;
-                        if ( nextFrame > this.loopFrame ) {
+                        if (nextFrame > this.loopFrame) {
                             nextFrame = this.loopFrame;
                         }
                     } else {
                         nextFrame = this.currentFrame - framesPassed;
-                        if ( nextFrame < this.loopFrame ) {
+                        if (nextFrame < this.loopFrame) {
                             nextFrame = this.loopFrame;
                         }
                     }
@@ -53,7 +54,7 @@ public class MovieClip extends Sprite {
             } else {
                 if ( this.frameSkippingType != 0 ) {
                     nextFrame = this.currentFrame + framesPassed;
-                    if ( this.currentFrame < this.loopFrame && nextFrame > this.loopFrame ) {
+                    if (this.currentFrame < this.loopFrame && nextFrame > this.loopFrame) {
                         nextFrame = this.loopFrame;
                     }
                 } else {
@@ -68,7 +69,7 @@ public class MovieClip extends Sprite {
             this.interpolateFrames();
         }
 
-        if (this.state <= 1) {
+        if (this.state == MovieClipState.PLAYING || this.state == MovieClipState.PLAYING_ANY_DIRECTION) {
             this.frameTime += deltaTime;
         }
 
@@ -81,9 +82,8 @@ public class MovieClip extends Sprite {
     }
 
     public void setFrame(int index) {
-        if (this.loopFrame == index && this.state != 2) {
-            this.frameTime = 0.0f;
-            this.state = 2;
+        if (this.loopFrame == index) {
+            this.setState(MovieClipState.STOPPED);
         }
 
         if (this.currentFrame == index) return;
@@ -121,9 +121,122 @@ public class MovieClip extends Sprite {
         }
     }
 
+    public void setState(MovieClipState state) {
+        if (this.state == state) return;
+
+        this.state = state;
+        this.frameTime = 0;
+    }
+
     private void interpolateFrames() {
         System.out.println("MovieClip.interpolateFrames");
         System.out.println("Isn't implemented yet");
+    }
+
+    public void reset() {
+        this.loopFrame = -1;
+        this.setFrame(0);
+        this.setState(MovieClipState.PLAYING);
+
+        for (DisplayObject child : this.children) {
+            if (child.isMovieClip()) {
+                ((MovieClip) child).reset();
+            }
+        }
+    }
+
+    public void resetTimelinePositionRecursive() {
+        this.loopFrame = -1;
+        this.setFrame(0);
+        this.setState(MovieClipState.PLAYING);
+
+        for (DisplayObject child : this.timelineChildren) {
+            if (child.isMovieClip()) {
+                ((MovieClip) child).resetTimelinePositionRecursive();
+            }
+        }
+    }
+
+    public void gotoAbsoluteTimeRecursive(float time) {  // time in milliseconds
+        int passedFrames = (int) (time / this.msPerFrame);
+        int frameIndex = passedFrames % this.frames.length;
+        this.gotoAndPlayFrameIndex(frameIndex, -1);
+
+        for (DisplayObject child : this.timelineChildren) {
+            if (child.isMovieClip()) {
+                ((MovieClip) child).gotoAbsoluteTimeRecursive(time);
+            }
+        }
+    }
+
+    public void gotoAndStop(String frameLabel) {
+        int frameIndex = -1;
+
+        if (frameLabel != null) {
+            for (int i = 0; i < this.frames.length; i++) {
+                if (this.frames[i].getLabel().equals(frameLabel)) {
+                    frameIndex = i;
+                    break;
+                }
+            }
+        }
+
+        this.gotoAndStopFrameIndex(frameIndex);
+    }
+
+    public void gotoAndPlay(String frameLabel, String loopFrameLabel) {
+        int frameIndex = -1;
+        int loopFrameIndex = -1;
+
+        if (frameLabel != null) {
+            for (int i = 0; i < this.frames.length; i++) {
+                if (this.frames[i].getLabel().equals(frameLabel)) {
+                    frameIndex = i;
+                    break;
+                }
+            }
+        }
+
+        if (loopFrameLabel != null) {
+            for (int i = 0; i < this.frames.length; i++) {
+                if (this.frames[i].getLabel().equals(loopFrameLabel)) {
+                    loopFrameIndex = i;
+                    break;
+                }
+            }
+        }
+
+        this.gotoAndPlayFrameIndex(frameIndex, loopFrameIndex);
+    }
+
+    public void gotoAndStopFrameIndex(int frame) {
+        this.gotoAndPlayFrameIndex(frame, -1, MovieClipState.STOPPED);
+    }
+
+    public void gotoAndPlayFrameIndex(int frame, int loopFrame) {
+        this.gotoAndPlayFrameIndex(frame, loopFrame, MovieClipState.PLAYING);
+    }
+
+    public void gotoAndPlayToFrameIndexAnyDirection(int frame, int loopFrame) {
+        this.gotoAndPlayFrameIndex(frame, loopFrame, MovieClipState.PLAYING_ANY_DIRECTION);
+    }
+
+    public void playToFrameIndexAnyDirection(int loopFrame) {
+        this.gotoAndPlayFrameIndex(this.currentFrame, loopFrame, MovieClipState.PLAYING_ANY_DIRECTION);
+    }
+
+    public void gotoAndPlayFrameIndex(int frame, int loopFrame, MovieClipState state) {
+        this.loopFrame = loopFrame;
+        if (frame >= 0 && this.frames.length > frame) {
+            this.setFrame(frame);
+        }
+
+        if (frame == loopFrame) {
+            this.setState(MovieClipState.STOPPED);
+            return;
+        }
+
+        this.setState(state);
     }
 
     public void setId(int id) {
@@ -185,7 +298,7 @@ public class MovieClip extends Sprite {
     }
 
     public String getFrameLabel(int index) {
-        return frames[index].getName();
+        return frames[index].getLabel();
     }
 
     public void setFrames(MovieClipFrame[] frames) {

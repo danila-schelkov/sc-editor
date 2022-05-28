@@ -164,7 +164,7 @@ public class Editor {
             MovieClipFrame[] frames = movieClip.getFrames();
             for (int i = 0; i < frames.length; i++) {
                 MovieClipFrame frame = frames[i];
-                movieClipInfoPanel.addFrame(i, frame.getName());
+                movieClipInfoPanel.addFrame(i, frame.getLabel());
             }
 
             movieClipInfoPanel.setTextInfo(
@@ -181,6 +181,7 @@ public class Editor {
         editMenu.checkPreviousAvailable();
         editMenu.checkNextAvailable();
 
+        Stage.getInstance().clearBatches();
         this.updateCanvas();
     }
 

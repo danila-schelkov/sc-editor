@@ -27,6 +27,7 @@ public class Stage {
     private GL3 gl;
 
     private Rect viewport;
+    private Rect clipArea;
     private int scaleStep;
     private float scale;
     private float offsetX;
@@ -55,6 +56,7 @@ public class Stage {
         this.gl = gl;
 
         this.viewport = new Rect(-(width / 2f), -(height / 2f), width / 2f, height / 2f);
+        this.clipArea = new Rect(this.viewport);
 
         gl.glViewport(x, y, width, height);
 
@@ -132,7 +134,14 @@ public class Stage {
         this.batches.clear();
     }
 
-    public boolean startShape(float left, float top, float right, float bottom, GLImage image, int renderConfigBits) {
+    public boolean startShape(Rect rect, GLImage image, int renderConfigBits) {
+        if (rect.getLeft() > this.clipArea.getRight() ||
+            rect.getTop() > this.clipArea.getBottom() ||
+            rect.getRight() < this.clipArea.getLeft() ||
+            rect.getBottom() < this.clipArea.getTop()) {
+            return false;
+        }
+
         this.currentBatch = null;
         for (Batch batch : this.batches) {
             if (batch.getImage() == image) {
@@ -141,6 +150,14 @@ public class Stage {
             }
         }
 
+        // TODO: do z-indexes for shapes
+//        if (this.batches.size() > 0) {
+//            Batch lastBatch = this.batches.get(this.batches.size() - 1);
+//            if (lastBatch.getImage() == image) {
+//                this.currentBatch = lastBatch;
+//            }
+//        }
+
         if (this.currentBatch == null) {
             this.currentBatch = new Batch(image);
             this.currentBatch.init(this.gl);
@@ -148,7 +165,7 @@ public class Stage {
         }
 
         if (this.currentBatch != null) {
-            return this.currentBatch.startShape(left, top, right, bottom, image, renderConfigBits);
+            return this.currentBatch.startShape(image, renderConfigBits);
         }
 
         return false;
@@ -167,17 +184,20 @@ public class Stage {
     }
 
     public void updatePMVMatrix() {
+        this.clipArea = new Rect(
+            (this.viewport.getLeft() / this.scale + this.offsetX),
+            (this.viewport.getTop() / this.scale + this.offsetY),
+            (this.viewport.getRight() / this.scale + this.offsetX),
+            (this.viewport.getBottom() / this.scale + this.offsetY)
+        );
+
         PMVMatrix matrix = new PMVMatrix();
         matrix.glLoadIdentity();
         matrix.glOrthof(
-            // left
-            (this.viewport.getMinX() / this.scale + this.offsetX),
-            // right
-            (this.viewport.getMaxX() / this.scale + this.offsetX),
-            // bottom
-            (this.viewport.getMaxY() / this.scale + this.offsetY),
-            // top
-            (this.viewport.getMinY() / this.scale + this.offsetY),
+            this.clipArea.getLeft(),
+            this.clipArea.getRight(),
+            this.clipArea.getBottom(),
+            this.clipArea.getTop(),
             // near
             -1,
             // far

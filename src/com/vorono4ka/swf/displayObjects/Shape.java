@@ -1,6 +1,7 @@
 package com.vorono4ka.swf.displayObjects;
 
 import com.vorono4ka.editor.renderer.Stage;
+import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
 
@@ -10,10 +11,10 @@ public class Shape extends DisplayObject {
     @Override
     public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
         Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
-        matrixApplied.apply(matrix);
+        matrixApplied.multiply(matrix);
 
         ColorTransform colorTransformApplied = new ColorTransform(this.getColorTransform());
-        colorTransformApplied.apply(colorTransform);
+        colorTransformApplied.multiply(colorTransform);
 
         float redMultiplier = colorTransformApplied.getRedMultiplier();
         float greenMultiplier = colorTransformApplied.getGreenMultiplier();
@@ -30,11 +31,11 @@ public class Shape extends DisplayObject {
         if (redAddition + greenAddition + blueAddition > 0)
             v35 = a4 | 3;
 
-        int a3 = this.getRenderConfigBits() | v35;
+        int renderConfigBits = this.getRenderConfigBits() | v35;
 
         Stage stage = Stage.getInstance();
         for (ShapeDrawBitmapCommand command : this.commands) {
-            command.render(stage, matrixApplied, colorTransformApplied, a3);
+            command.render(stage, matrixApplied, colorTransformApplied, renderConfigBits);
         }
     }
 

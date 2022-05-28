@@ -83,7 +83,7 @@ class Huffman
         int totalWeight = 0;
         for (int i = 0; i < outputSize; i++) {
             ranks[weights[i]]++;
-            totalWeight += (1 << weights[i]) >> 1;   // TODO same as 1 << (weights[n] - 1)?
+            totalWeight += (1 << weights[i]) >> 1;
         }
         verify(totalWeight != 0, input, "Input is corrupted");
 
@@ -111,7 +111,7 @@ class Huffman
 
         for (int n = 0; n < numberOfSymbols; n++) {
             int weight = weights[n];
-            int length = (1 << weight) >> 1;  // TODO: 1 << (weight - 1) ??
+            int length = (1 << weight) >> 1;
 
             byte symbol = (byte) n;
             byte numberOfBits = (byte) (tableLog + 1 - weight);
