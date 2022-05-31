@@ -108,8 +108,78 @@ public class ShapeDrawBitmapCommand {
         }
     }
 
-    public void render9Slice(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int a3, Rect movedGrid, Rect bounds, float scaledWidth, float scaledHeight) {
+    public void render9Slice(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, Rect safeArea, Rect shapeBounds, float width, float height) {
+        Rect bounds = new Rect();
 
+        float[] transformedPoints = new float[this.vertexCount * 2];
+        for (int i = 0; i < this.vertexCount; i++) {
+            float x = this.getX(i);
+            if (x <= safeArea.getLeft()) {
+                x = Math.min(safeArea.getMidX(), shapeBounds.getLeft() + (x - shapeBounds.getLeft()) * width);
+            } else if (x >= safeArea.getRight()) {
+                x = Math.max(safeArea.getMidX(), shapeBounds.getRight() + (x - shapeBounds.getRight()) * width);
+            }
+
+            float y = this.getY(i);
+            if (y <= safeArea.getTop()) {
+                y = Math.min(safeArea.getMidY(), shapeBounds.getTop() + (y - shapeBounds.getTop()) * height);
+            } else if (y >= safeArea.getBottom()) {
+                y = Math.max(safeArea.getMidY(), shapeBounds.getBottom() + (y - shapeBounds.getBottom()) * height);
+            }
+
+            float appliedX = matrix.applyX(x, y);
+            float appliedY = matrix.applyY(x, y);
+
+            transformedPoints[i * 2] = appliedX;
+            transformedPoints[i * 2 + 1] = appliedY;
+
+            if (i == 0) {
+                bounds = new Rect(appliedX, appliedY, appliedX, appliedY);
+                continue;
+            }
+
+            bounds.addPoint(appliedX, appliedY);
+        }
+
+//        for (int i = 0; i < transformedPoints.length / 2; i++) {
+//            System.out.printf("%d: %f, %f%n", i, transformedPoints[i * 2], transformedPoints[i * 2 + 1]);
+//        }
+
+        int trianglesCount = this.vertexCount - 2;
+        int[] indices = new int[trianglesCount * 3];
+        for (int i = 0; i < trianglesCount; i++) {
+            indices[i * 3] = 0;
+            indices[i * 3 + 1] = i + 1;
+            indices[i * 3 + 2] = i + 2;
+        }
+
+        if (stage.startShape(bounds, this.image, renderConfigBits)) {
+            stage.addTriangles(trianglesCount, indices);
+
+            float redMultiplier = colorTransform.getRedMultiplier() / 255f;
+            float greenMultiplier = colorTransform.getGreenMultiplier() / 255f;
+            float blueMultiplier = colorTransform.getBlueMultiplier() / 255f;
+            float redAddition = colorTransform.getRedAddition() / 255f;
+            float greenAddition = colorTransform.getGreenAddition() / 255f;
+            float blueAddition = colorTransform.getBlueAddition() / 255f;
+            float alpha = colorTransform.getAlpha() / 255f;
+
+            for (int i = 0; i < this.vertexCount; i++) {
+                stage.addVertex(
+                    transformedPoints[i * 2],
+                    transformedPoints[i * 2 + 1],
+                    this.getU(i),
+                    this.getV(i),
+                    redMultiplier,
+                    greenMultiplier,
+                    blueMultiplier,
+                    redAddition,
+                    greenAddition,
+                    blueAddition,
+                    alpha
+                );
+            }
+        }
     }
 
     public void collisionRender(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform) {

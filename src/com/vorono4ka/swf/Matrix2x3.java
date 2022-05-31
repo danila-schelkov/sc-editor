@@ -95,6 +95,22 @@ public class Matrix2x3 {
         }
     }
 
+    public float getScaleX() {
+        return scaleX;
+    }
+
+    public float getScaleY() {
+        return scaleY;
+    }
+
+    public float getSkewX() {
+        return skewX;
+    }
+
+    public float getSkewY() {
+        return skewY;
+    }
+
     public void setXY(float x, float y) {
         this.x = x;
         this.y = y;

@@ -53,11 +53,11 @@ public class Rect {
         return this.bottom - this.top;
     }
 
-    private float getMidX() {
+    public float getMidX() {
         return this.left + this.getWidth() / 2f;
     }
 
-    private float getMidY() {
+    public float getMidY() {
         return this.top + this.getHeight() / 2f;
     }
 

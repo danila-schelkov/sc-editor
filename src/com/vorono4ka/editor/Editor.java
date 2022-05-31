@@ -163,8 +163,7 @@ public class Editor {
 
             MovieClipFrame[] frames = movieClip.getFrames();
             for (int i = 0; i < frames.length; i++) {
-                MovieClipFrame frame = frames[i];
-                movieClipInfoPanel.addFrame(i, frame.getLabel());
+                movieClipInfoPanel.addFrame(i, movieClip.getFrameLabel(i));
             }
 
             movieClipInfoPanel.setTextInfo(
@@ -186,15 +185,15 @@ public class Editor {
     }
 
     public void selectPrevious() {
-        this.selectObject(this.selectedIndex - 1);
+        this.selectObject(--this.selectedIndex);
     }
 
     public void selectNext() {
-        this.selectObject(this.selectedIndex + 1);
+        this.selectObject(++this.selectedIndex);
     }
 
     public int getClonedObjectCount() {
-        return clonedObjects.size();
+        return this.clonedObjects.size();
     }
 
     public int getSelectedIndex() {

@@ -50,8 +50,22 @@ public class Shape9Slice extends Shape {
         movedGrid.movePosition(-this.getMatrix().getX(), -this.getMatrix().getY());
 
         // scaled?
+        float widthSkewed = this.scalingGrid.getWidth() * matrixApplied.getSkewX();
+        float widthScaled = this.scalingGrid.getWidth() * matrixApplied.getScaleX();
+        float widthDistance = widthSkewed * widthSkewed + widthScaled * widthScaled;
+
+        float heightSkewed = this.scalingGrid.getHeight() * matrixApplied.getSkewY();
+        float heightScaled = this.scalingGrid.getHeight() * matrixApplied.getScaleY();
+        float heightDistance = heightSkewed * heightSkewed + heightScaled * heightScaled;
+
         float scaledWidth = 1.0f;
+        if (widthDistance != 0) {
+            scaledWidth = (float) (this.scalingGrid.getWidth() / Math.sqrt(widthDistance));
+        }
         float scaledHeight = 1.0f;
+        if (heightDistance != 0) {
+            scaledHeight = (float) (this.scalingGrid.getHeight() / Math.sqrt(heightDistance));
+        }
 
         Stage stage = Stage.getInstance();
         for (ShapeDrawBitmapCommand command : this.commands) {

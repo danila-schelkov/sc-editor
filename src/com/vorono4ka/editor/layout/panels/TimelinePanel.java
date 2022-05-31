@@ -98,6 +98,7 @@ public class TimelinePanel extends JPanel {
 
         if (value == 0) {
             movieClip.resetTimelinePositionRecursive();
+            Main.editor.updateCanvas();
             return;
         }
 
