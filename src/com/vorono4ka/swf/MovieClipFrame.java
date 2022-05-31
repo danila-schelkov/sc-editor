@@ -1,7 +1,7 @@
 package com.vorono4ka.swf;
 
 public class MovieClipFrame {
-    private String label;  // "label"
+    private String label;
     private MovieClipFrameElement[] elements;
 
     public int load(SupercellSWF swf) {

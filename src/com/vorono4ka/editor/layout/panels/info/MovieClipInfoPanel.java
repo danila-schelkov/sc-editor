@@ -17,11 +17,12 @@ public class MovieClipInfoPanel extends JPanel {
         this.setLayout(new GridLayout(0, 1));
 
         this.timelineChildrenTable = new Table("#", "Id", "Name");
-        this.timelineChildrenTable.addMouseListener(new ChildrenListMouseListener(this.timelineChildrenTable));
         this.framesTable = new Table("#", "Name");
-        this.framesTable.addSelectionListener(new FrameSelectionListener(this.framesTable));
         this.frameElementsTable = new Table("#", "Child #", "Matrix", "Color Transform");
         this.textInfoPanel = new JPanel();
+
+        this.timelineChildrenTable.addMouseListener(new ChildrenListMouseListener(this.timelineChildrenTable));
+        this.framesTable.addSelectionListener(new FrameSelectionListener(this.framesTable));
         this.textInfoPanel.setLayout(new BoxLayout(this.textInfoPanel, BoxLayout.Y_AXIS));
 
         this.add(new JScrollPane(this.timelineChildrenTable), "Children");
@@ -53,8 +54,12 @@ public class MovieClipInfoPanel extends JPanel {
     public void setTextInfo(String... lines) {
         this.textInfoPanel.removeAll();
         for (String line : lines) {
-            this.textInfoPanel.add(new JLabel(line));
+            this.addTextLine(line);
         }
+    }
+
+    public void addTextLine(String line) {
+        this.textInfoPanel.add(new JLabel(line));
     }
 
     public Component add(JComponent comp, String title) {
