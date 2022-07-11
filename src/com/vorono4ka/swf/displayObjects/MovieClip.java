@@ -21,10 +21,9 @@ public class MovieClip extends Sprite {
     }
 
     @Override
-    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
+    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
         if (deltaTime <= 0.0f) {
-            super.render(matrix, colorTransform, a4, deltaTime);
-            return;
+            return super.render(matrix, colorTransform, a4, deltaTime);
         }
 
         if (this.frameTime >= this.msPerFrame) {
@@ -34,7 +33,7 @@ public class MovieClip extends Sprite {
             int nextFrame;
             if (this.state == MovieClipState.PLAYING_ANY_DIRECTION) {
                 if (this.frameSkippingType != 0) {
-                    if ( this.loopFrame >= this.currentFrame ) {
+                    if (this.loopFrame >= this.currentFrame) {
                         nextFrame = this.currentFrame + framesPassed;
                         if (nextFrame > this.loopFrame) {
                             nextFrame = this.loopFrame;
@@ -47,12 +46,12 @@ public class MovieClip extends Sprite {
                     }
                 } else {
                     int framesSkipped = 1;
-                    if ( this.loopFrame < this.currentFrame )
+                    if (this.loopFrame < this.currentFrame)
                         framesSkipped = this.frames.length - 1;
                     nextFrame = this.currentFrame + framesSkipped;
                 }
             } else {
-                if ( this.frameSkippingType != 0 ) {
+                if (this.frameSkippingType != 0) {
                     nextFrame = this.currentFrame + framesPassed;
                     if (this.currentFrame < this.loopFrame && nextFrame > this.loopFrame) {
                         nextFrame = this.loopFrame;
@@ -73,12 +72,12 @@ public class MovieClip extends Sprite {
             this.frameTime += deltaTime;
         }
 
-        super.render(matrix, colorTransform, a4, deltaTime);
+        return super.render(matrix, colorTransform, a4, deltaTime);
     }
 
     @Override
-    public void collisionRender(Matrix2x3 matrix, ColorTransform colorTransform) {
-
+    public boolean collisionRender(Matrix2x3 matrix) {
+        return false;
     }
 
     public void setFrame(int index) {

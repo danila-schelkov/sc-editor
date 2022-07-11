@@ -13,7 +13,7 @@ public class Shape9Slice extends Shape {
     }
 
     @Override
-    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
+    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
         Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
         matrixApplied.multiply(matrix);
 
@@ -49,7 +49,6 @@ public class Shape9Slice extends Shape {
         // COERCE_FLOAT(LODWORD(this->shape.displayObject.matrix.x) ^ 0x80000000), COERCE_FLOAT(LODWORD(this->shape.displayObject.matrix.y) ^ 0x80000000) What does that mean?
         movedGrid.movePosition(-this.getMatrix().getX(), -this.getMatrix().getY());
 
-        // scaled?
         float widthSkewed = this.scalingGrid.getWidth() * matrixApplied.getSkewX();
         float widthScaled = this.scalingGrid.getWidth() * matrixApplied.getScaleX();
         float widthDistance = widthSkewed * widthSkewed + widthScaled * widthScaled;
@@ -67,15 +66,14 @@ public class Shape9Slice extends Shape {
             scaledHeight = (float) (this.scalingGrid.getHeight() / Math.sqrt(heightDistance));
         }
 
-        Stage stage = Stage.getInstance();
+        boolean result = false;
+
+        Stage stage = this.getStage();
         for (ShapeDrawBitmapCommand command : this.commands) {
-            command.render9Slice(stage, matrixApplied, colorTransformApplied, renderConfigBits, movedGrid, bounds, scaledWidth, scaledHeight);
+            result |= command.render9Slice(stage, matrixApplied, colorTransformApplied, renderConfigBits, movedGrid, bounds, scaledWidth, scaledHeight);
         }
-    }
 
-    @Override
-    public void collisionRender(Matrix2x3 matrix, ColorTransform colorTransform) {
-
+        return result;
     }
 
     @Override

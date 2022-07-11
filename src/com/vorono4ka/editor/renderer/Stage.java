@@ -10,6 +10,7 @@ import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
+import com.vorono4ka.swf.displayObjects.StageSprite;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Stage {
+    private static int STAGE_COUNT;
     private static Stage INSTANCE;
 
     private final ConcurrentLinkedQueue<Runnable> tasks;
@@ -24,6 +26,7 @@ public class Stage {
 
     private boolean initialized;
     private Shader shader;
+    private StageSprite stageSprite;
     private GL3 gl;
 
     private Rect viewport;
@@ -41,6 +44,10 @@ public class Stage {
 
         this.scaleStep = 39;
         this.scale = 1.0f;
+
+        this.stageSprite = new StageSprite(this);
+
+        Stage.STAGE_COUNT++;
     }
 
     public static Stage getInstance() {
@@ -49,6 +56,10 @@ public class Stage {
         }
 
         return INSTANCE;
+    }
+
+    public static int getStageCount() {
+        return STAGE_COUNT;
     }
 
     public void init(GL3 gl, int x, int y, int width, int height) {
@@ -83,8 +94,8 @@ public class Stage {
         this.gl.glClearColor(.5f, .5f, .5f, 1);
         this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT);
 
-        DisplayObject selectedObject = Main.editor.getSelectedObject();
-        if (selectedObject == null) return;
+//        DisplayObject selectedObject = Main.editor.getSelectedObject();
+//        if (selectedObject == null) return;
 
         float deltaTime = 0;
 
@@ -93,7 +104,7 @@ public class Stage {
             deltaTime = 1f / animator.getFPS();
         }
 
-        selectedObject.render(new Matrix2x3(), new ColorTransform(), 0, deltaTime);
+        this.stageSprite.render(new Matrix2x3(), new ColorTransform(), 0, deltaTime);
 
         this.shader.bind();
 
@@ -211,6 +222,18 @@ public class Stage {
 
     public void doInRenderThread(Runnable task) {
         this.tasks.add(task);
+    }
+
+    public void addChild(DisplayObject displayObject) {
+        this.stageSprite.addChild(displayObject);
+    }
+
+    public void removeChild(DisplayObject displayObject) {
+        this.stageSprite.removeChild(displayObject);
+    }
+
+    public void removeAllChildren() {
+        this.stageSprite.removeAllChildren();
     }
 
     public int getScaleStep() {

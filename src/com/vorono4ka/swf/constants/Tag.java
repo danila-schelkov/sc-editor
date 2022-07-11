@@ -22,7 +22,7 @@ public enum Tag {
     SHAPE_2,
     TEXTURE_3,
     TEXT_FIELD_3,
-    TEXT_FIELD_4,
+    TEXT_FIELD_4,  // if TextField tag >= TEXT_FIELD_4, it has an outline
     SHAPE_DRAW_BITMAP_COMMAND_3,
     USE_LOWRES_TEXTURE,
     TEXTURE_4,
@@ -34,7 +34,7 @@ public enum Tag {
     USE_UNCOMMON_RESOLUTION,
     SCALING_GRID,
     EXTERNAL_FILES_SUFFIXES,
-    TEXT_FIELD_6,  // if TextField tag > TEXT_FIELD_6, it has an outline
+    TEXT_FIELD_6,
     TEXTURE_8,
     MOVIE_CLIP_35,
     MATRIX_PRECISE,

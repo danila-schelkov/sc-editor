@@ -30,19 +30,23 @@ public class SpriteSheet extends DisplayObject {
     }
 
     @Override
-    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
-        Stage stage = Stage.getInstance();
+    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
+        Stage stage = this.getStage();
         if (stage.startShape(this.bounds, this.texture.getImage(), 0)) {
             stage.addTriangles(2, INDICES);
 
             for (float[] vertex : this.vertices) {
                 stage.addVertex(vertex[0], vertex[1], vertex[2], vertex[3], 1, 1, 1, 0, 0, 0, 1);
             }
+
+            return true;
         }
+
+        return false;
     }
 
     @Override
-    public void collisionRender(Matrix2x3 matrix, ColorTransform colorTransform) {
-
+    public boolean collisionRender(Matrix2x3 matrix) {
+        return false;
     }
 }

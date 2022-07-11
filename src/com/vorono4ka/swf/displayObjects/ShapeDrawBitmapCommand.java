@@ -50,7 +50,7 @@ public class ShapeDrawBitmapCommand {
         }
     }
 
-    public void render(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits) {
+    public boolean render(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits) {
         Rect bounds = new Rect();
 
         float[] transformedPoints = new float[this.vertexCount * 2];
@@ -105,10 +105,14 @@ public class ShapeDrawBitmapCommand {
                     alpha
                 );
             }
+
+            return true;
         }
+
+        return false;
     }
 
-    public void render9Slice(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, Rect safeArea, Rect shapeBounds, float width, float height) {
+    public boolean render9Slice(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, Rect safeArea, Rect shapeBounds, float width, float height) {
         Rect bounds = new Rect();
 
         float[] transformedPoints = new float[this.vertexCount * 2];
@@ -179,11 +183,15 @@ public class ShapeDrawBitmapCommand {
                     alpha
                 );
             }
+
+            return true;
         }
+
+        return false;
     }
 
-    public void collisionRender(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform) {
-        this.render(stage, matrix, colorTransform, 0);
+    public boolean collisionRender(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform) {
+        return this.render(stage, matrix, colorTransform, 0);
     }
 
     public float getX(int pointIndex) {

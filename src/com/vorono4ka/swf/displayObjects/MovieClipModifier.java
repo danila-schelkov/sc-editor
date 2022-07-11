@@ -12,13 +12,13 @@ public class MovieClipModifier extends DisplayObject {
     }
 
     @Override
-    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
-
+    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {  // TODO
+        return false;
     }
 
     @Override
-    public void collisionRender(Matrix2x3 matrix, ColorTransform colorTransform) {
-
+    public boolean collisionRender(Matrix2x3 matrix) {
+        return false;
     }
 
     @Override

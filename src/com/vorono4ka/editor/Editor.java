@@ -180,7 +180,10 @@ public class Editor {
         editMenu.checkPreviousAvailable();
         editMenu.checkNextAvailable();
 
-        Stage.getInstance().clearBatches();
+        Stage stage = Stage.getInstance();
+        stage.clearBatches();
+        stage.removeAllChildren();
+        stage.addChild(displayObject);
         this.updateCanvas();
     }
 

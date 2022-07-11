@@ -1,7 +1,6 @@
 package com.vorono4ka.swf.displayObjects;
 
 import com.vorono4ka.editor.renderer.Stage;
-import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
 
@@ -9,7 +8,7 @@ public class Shape extends DisplayObject {
     protected ShapeDrawBitmapCommand[] commands;
 
     @Override
-    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
+    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
         Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
         matrixApplied.multiply(matrix);
 
@@ -33,15 +32,32 @@ public class Shape extends DisplayObject {
 
         int renderConfigBits = this.getRenderConfigBits() | v35;
 
-        Stage stage = Stage.getInstance();
+        Stage stage = this.getStage();
+
+        boolean result = false;
         for (ShapeDrawBitmapCommand command : this.commands) {
-            command.render(stage, matrixApplied, colorTransformApplied, renderConfigBits);
+            result |= command.render(stage, matrixApplied, colorTransformApplied, renderConfigBits);
         }
+
+        return result;
     }
 
     @Override
-    public void collisionRender(Matrix2x3 matrix, ColorTransform colorTransform) {
+    public boolean collisionRender(Matrix2x3 matrix) {
+        Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
+        matrixApplied.multiply(matrix);
 
+        // TODO: accurateCollisionRender
+
+        Stage stage = this.getStage();
+
+        boolean result = false;
+
+        for (ShapeDrawBitmapCommand command : this.commands) {
+            result |= command.collisionRender(stage, matrixApplied, this.getColorTransform());
+        }
+
+        return result;
     }
 
     public void setId(int id) {
