@@ -4,12 +4,24 @@ import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
+import com.vorono4ka.swf.originalObjects.ShapeOriginal;
+
+import java.util.List;
 
 public class Shape9Slice extends Shape {
     private final Rect scalingGrid;
 
     public Shape9Slice(Rect scalingGrid) {
         this.scalingGrid = scalingGrid;
+    }
+
+    public static Shape9Slice createShape(ShapeOriginal original, Rect scalingGrid) {
+        Shape9Slice shape9Slice = new Shape9Slice(scalingGrid);
+
+        shape9Slice.id = original.getId();
+        shape9Slice.commands = List.of(original.getCommands());
+
+        return shape9Slice;
     }
 
     @Override
@@ -76,8 +88,7 @@ public class Shape9Slice extends Shape {
         return result;
     }
 
-    @Override
-    public boolean isShape() {
-        return true;
+    public Rect getScalingGrid() {
+        return scalingGrid;
     }
 }

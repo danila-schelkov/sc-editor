@@ -1,11 +1,11 @@
-package com.vorono4ka.editor.renderer.displayObjects;
+package com.vorono4ka.editor.displayObjects;
 
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.original.SWFTexture;
+import com.vorono4ka.swf.originalObjects.SWFTexture;
 
 public class SpriteSheet extends DisplayObject {
     private static final int[] INDICES = {0, 1, 2, 0, 2, 3};

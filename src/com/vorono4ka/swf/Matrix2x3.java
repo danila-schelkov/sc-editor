@@ -1,7 +1,14 @@
 package com.vorono4ka.swf;
 
+import com.vorono4ka.streams.ByteStream;
+import com.vorono4ka.swf.constants.Tag;
+import com.vorono4ka.swf.originalObjects.SavableObject;
+
 @SuppressWarnings("SuspiciousNameCombination")
-public class Matrix2x3 {
+public class Matrix2x3 implements SavableObject {
+    public static final float PRECISE_MULTIPLIER = 65535f;
+    public static final float DEFAULT_MULTIPLIER = 1024f;
+
     private float scaleX;
     private float scaleY;
     private float skewX;
@@ -23,22 +30,36 @@ public class Matrix2x3 {
         this.y = matrix.y;
     }
 
-    public void read(SupercellSWF swf) {
-        this.scaleX = swf.readInt() / 1024f;
-        this.skewX = swf.readInt() / 1024f;
-        this.skewY = swf.readInt() / 1024f;
-        this.scaleY = swf.readInt() / 1024f;
+    public void load(SupercellSWF swf, boolean isPrecise) {
+        float divider = isPrecise ? PRECISE_MULTIPLIER : DEFAULT_MULTIPLIER;
+
+        this.scaleX = swf.readInt() / divider;
+        this.skewX = swf.readInt() / divider;
+        this.skewY = swf.readInt() / divider;
+        this.scaleY = swf.readInt() / divider;
         this.x = swf.readTwip();
         this.y = swf.readTwip();
     }
 
-    public void readPrecise(SupercellSWF swf) {
-        this.scaleX = swf.readInt() / 65535f;
-        this.skewX = swf.readInt() / 65535f;
-        this.skewY = swf.readInt() / 65535f;
-        this.scaleY = swf.readInt() / 65535f;
-        this.x = swf.readTwip();
-        this.y = swf.readTwip();
+    @Override
+    public void save(ByteStream stream) {
+        float multiplier = isPrecise() ? PRECISE_MULTIPLIER : DEFAULT_MULTIPLIER;
+
+        stream.writeInt((int) (this.scaleX * multiplier));
+        stream.writeInt((int) (this.skewX * multiplier));
+        stream.writeInt((int) (this.skewY * multiplier));
+        stream.writeInt((int) (this.scaleY * multiplier));
+        stream.writeTwip(this.x);
+        stream.writeTwip(this.y);
+    }
+
+    @Override
+    public Tag getTag() {
+        return isPrecise() ? Tag.MATRIX_PRECISE : Tag.MATRIX;
+    }
+
+    private boolean isPrecise() {
+        return this.scaleX < 0.0009765f || this.scaleY < 0.0009765f || this.skewX < 0.0009765f || this.skewY < 0.0009765f;
     }
 
     public void multiply(Matrix2x3 matrix) {

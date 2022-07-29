@@ -23,16 +23,16 @@ public class Stage {
 
     private final ConcurrentLinkedQueue<Runnable> tasks;
     private final List<Batch> batches;
+    private final StageSprite stageSprite;
 
     private boolean initialized;
     private Shader shader;
-    private StageSprite stageSprite;
     private GL3 gl;
 
     private Rect viewport;
     private Rect clipArea;
     private int scaleStep;
-    private float scale;
+    private float pointSize;
     private float offsetX;
     private float offsetY;
 
@@ -43,7 +43,7 @@ public class Stage {
         this.batches = new ArrayList<>();
 
         this.scaleStep = 39;
-        this.scale = 1.0f;
+        this.pointSize = 1.0f;
 
         this.stageSprite = new StageSprite(this);
 
@@ -196,10 +196,10 @@ public class Stage {
 
     public void updatePMVMatrix() {
         this.clipArea = new Rect(
-            (this.viewport.getLeft() / this.scale + this.offsetX),
-            (this.viewport.getTop() / this.scale + this.offsetY),
-            (this.viewport.getRight() / this.scale + this.offsetX),
-            (this.viewport.getBottom() / this.scale + this.offsetY)
+            (this.viewport.getLeft() / this.pointSize + this.offsetX),
+            (this.viewport.getTop() / this.pointSize + this.offsetY),
+            (this.viewport.getRight() / this.pointSize + this.offsetX),
+            (this.viewport.getBottom() / this.pointSize + this.offsetY)
         );
 
         PMVMatrix matrix = new PMVMatrix();
@@ -236,6 +236,10 @@ public class Stage {
         this.stageSprite.removeAllChildren();
     }
 
+    public void setStencilRenderingState(int state) {
+
+    }
+
     public int getScaleStep() {
         return scaleStep;
     }
@@ -244,12 +248,15 @@ public class Stage {
         this.scaleStep = scaleStep;
     }
 
-    public float getScale() {
-        return scale;
+    public float getPointSize() {
+        return pointSize;
     }
 
-    public void setScale(float scale) {
-        this.scale = scale;
+    public void setPointSize(float pointSize) {
+        this.pointSize = pointSize;
+        if (pointSize == 0) {
+            this.viewport = null;
+        }
     }
 
     public void addOffset(float x, float y) {

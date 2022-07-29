@@ -3,21 +3,28 @@ package com.vorono4ka.swf.displayObjects;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Point;
 import com.vorono4ka.math.Rect;
+import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
-import com.vorono4ka.swf.displayObjects.original.SWFTexture;
+import com.vorono4ka.swf.originalObjects.SWFTexture;
 
 public class ShapeDrawBitmapCommand {
+    private Tag tag;
+
     private int vertexCount;
     private Point[] shapePoints;
     private Point[] sheetPoints;
 
     private GLImage image;
 
+    private SWFTexture texture;
+
     public void load(SupercellSWF swf, Tag tag) {
+        this.tag = tag;
+
         int textureId = swf.readUnsignedChar();
 
         this.vertexCount = 4;
@@ -25,28 +32,54 @@ public class ShapeDrawBitmapCommand {
             this.vertexCount = swf.readUnsignedChar();
         }
 
-        SWFTexture texture = swf.getTexture(textureId);
-        this.image = texture.getImage();
+        this.texture = swf.getTexture(textureId);
+        this.image = this.texture.getImage();
 
         this.shapePoints = new Point[this.vertexCount];
         for (int i = 0; i < this.vertexCount; i++) {
-            int x = swf.readTwip();
-            int y = swf.readTwip();
+            float x = swf.readTwip();
+            float y = swf.readTwip();
 
             this.shapePoints[i] = new Point(x, y);
         }
 
         this.sheetPoints = new Point[this.vertexCount];
         for (int i = 0; i < this.vertexCount; i++) {
-            int u = swf.readShort();
-            int v = swf.readShort();
+            float u = swf.readShort();
+            float v = swf.readShort();
 
             if (tag != Tag.SHAPE_DRAW_BITMAP_COMMAND_3) {
-                u /= 0xFFFF * texture.getWidth();  // width
-                v /= 0xFFFF * texture.getHeight();  // height
+                u /= 65535f * this.texture.getWidth();  // width
+                v /= 65535f * this.texture.getHeight();  // height
             }
 
             this.sheetPoints[i] = new Point(u, v);
+        }
+    }
+
+    public void save(ByteStream stream) {
+        stream.writeUnsignedChar(this.texture.getIndex());
+
+        if (this.tag != Tag.SHAPE_DRAW_BITMAP_COMMAND) {
+            stream.writeUnsignedChar(this.vertexCount);
+        }
+
+        for (Point point : this.shapePoints) {
+            stream.writeTwip((int) point.getX());
+            stream.writeTwip((int) point.getY());
+        }
+
+        for (Point point : this.sheetPoints) {
+            float u = point.getX();
+            float v = point.getY();
+
+            if (this.tag != Tag.SHAPE_DRAW_BITMAP_COMMAND_3) {
+                u *= 65535f / this.texture.getWidth();  // width
+                v *= 65535f / this.texture.getHeight();  // height
+            }
+
+            stream.writeShort((int) u);
+            stream.writeShort((int) v);
         }
     }
 
@@ -222,6 +255,22 @@ public class ShapeDrawBitmapCommand {
 
         point.setX(u * 65535f);
         point.setY(v * 65535f);
+    }
+
+    public SWFTexture getTexture() {
+        return texture;
+    }
+
+    public void setTexture(SWFTexture texture) {
+        this.texture = texture;
+    }
+
+    public Tag getTag() {
+        return tag;
+    }
+
+    public void setTag(Tag tag) {
+        this.tag = tag;
     }
 
     public int getVertexCount() {

@@ -1,7 +1,10 @@
 package com.vorono4ka.streams;
 
+import com.vorono4ka.swf.constants.Tag;
+
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.function.Consumer;
 
 public class ByteStream {
     public static final int DEFAULT_BUFFER_LENGTH = 512;
@@ -28,7 +31,9 @@ public class ByteStream {
     }
 
     public void write(byte[] data) {
-        this.buffer = ByteBuffer.allocate(this.buffer.length + data.length).put(this.buffer).put(data, this.offset, data.length).array();
+        this.ensureCapacity(data.length);
+
+        System.arraycopy(data, 0, this.buffer, this.offset, data.length);
         this.offset += data.length;
     }
 
@@ -48,14 +53,13 @@ public class ByteStream {
 
 
     private void write(byte value) {
-        this.buffer[this.offset] = value;
-        this.offset++;
+        this.buffer[this.offset++] = value;
     }
 
-    public void writeUnsignedChar(byte value) {
+    public void writeUnsignedChar(int value) {
         this.ensureCapacity(1);
 
-        this.write(value);
+        this.write((byte) value);
     }
 
     public void writeShort(int value) {
@@ -74,21 +78,35 @@ public class ByteStream {
         this.write((byte) ((value & 0xFF000000) >> 24));
     }
 
-    public void writeBoolean(boolean value) {
-        this.writeUnsignedChar((byte) (value ? 1 : 0));
+    public void writeTwip(float value) {
+        this.writeInt((int) (value * 20f));
     }
 
-    public void writeString(String value) {
-        if (value == null) {
-            this.writeInt(-1);
+    public void writeBoolean(boolean value) {
+        this.writeUnsignedChar(value ? 1 : 0);
+    }
+
+    public void writeAscii(String string) {
+        if (string == null) {
+            this.writeUnsignedChar(255);
             return;
         }
 
-        byte[] encodedString = value.getBytes(StandardCharsets.UTF_8);
-        this.writeInt(encodedString.length);
-        this.write(encodedString);
+        byte[] stringBytes = string.getBytes(StandardCharsets.UTF_8);
+        this.writeUnsignedChar(stringBytes.length);
+        this.write(stringBytes);
     }
 
+    public void writeBlock(Tag tag, Consumer<ByteStream> consumer) {
+        ByteStream blockStream = new ByteStream();
+        consumer.accept(blockStream);
+
+        byte[] blockData = blockStream.getBuffer();
+
+        this.writeUnsignedChar(tag.ordinal());
+        this.writeInt(blockData.length);
+        this.write(blockData);
+    }
 
     public int readUnsignedChar() {
         return this.buffer[this.offset++] & 0xFF;

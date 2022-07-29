@@ -49,7 +49,7 @@ public class MouseListener implements java.awt.event.MouseListener, java.awt.eve
         Stage stage = Stage.getInstance();
         float x = this.startX + this.previousX - e.getX();
         float y = this.startY + this.previousY - e.getY();
-        stage.addOffset(x / stage.getScale(), y / stage.getScale());
+        stage.addOffset(x / stage.getPointSize(), y / stage.getPointSize());
 
         stage.doInRenderThread(stage::updatePMVMatrix);
         Main.editor.updateCanvas();

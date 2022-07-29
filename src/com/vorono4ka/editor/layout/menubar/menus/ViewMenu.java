@@ -48,7 +48,7 @@ public class ViewMenu extends JMenu {
         Stage stage = Stage.getInstance();
 
         stage.setScaleStep(39);
-        stage.setScale(1);
+        stage.setPointSize(1);
 
         stage.setOffset(0, 0);
 

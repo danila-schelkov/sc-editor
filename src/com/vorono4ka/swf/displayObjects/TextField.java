@@ -6,7 +6,6 @@ import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
 
 public class TextField extends DisplayObject {
-
     private boolean isInteractive;
     private float cursorBlinkTime;
     private Rect bounds;
@@ -48,16 +47,16 @@ public class TextField extends DisplayObject {
         return this.shapeRender(this.getStage(), matrixApplied, this.getColorTransform(), 0, false);
     }
 
+    @Override
+    public boolean isTextField() {
+        return true;
+    }
+
     private boolean shapeRender(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, boolean noBounds) {
         return false;
     }
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    @Override
-    public boolean isTextField() {
-        return true;
     }
 }

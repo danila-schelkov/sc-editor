@@ -1,6 +1,7 @@
-package com.vorono4ka.swf.displayObjects.original;
+package com.vorono4ka.swf.originalObjects;
 
 import com.vorono4ka.math.Rect;
+import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
@@ -8,25 +9,23 @@ import com.vorono4ka.swf.displayObjects.Shape;
 import com.vorono4ka.swf.displayObjects.Shape9Slice;
 import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
-import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.exceptions.UnsupportedTagException;
 
 public class ShapeOriginal extends DisplayObjectOriginal {
-    private int id;
-
-    private int commandsCount;
     private ShapeDrawBitmapCommand[] commands;
 
     public int load(SupercellSWF swf, Tag tag) throws NegativeTagLengthException {
-        this.id = swf.readShort();
-        this.commandsCount = swf.readShort();
+        this.tag = tag;
 
-        this.commands = new ShapeDrawBitmapCommand[this.commandsCount];
-        for (int i = 0; i < this.commandsCount; i++) {
+        this.id = swf.readShort();
+        int commandsCount = swf.readShort();
+
+        this.commands = new ShapeDrawBitmapCommand[commandsCount];
+        for (int i = 0; i < this.commands.length; i++) {
             this.commands[i] = new ShapeDrawBitmapCommand();
         }
 
-        int pointsCount = 4 * this.commandsCount;
+        int pointsCount = 4 * this.commands.length;
         if (tag == Tag.SHAPE_2) {
             pointsCount = swf.readShort();
         }
@@ -72,16 +71,36 @@ public class ShapeOriginal extends DisplayObjectOriginal {
     }
 
     @Override
-    public DisplayObject clone(SupercellSWF swf, Rect scalingGrid) throws UnableToFindObjectException {
-        Shape shape;
-        if (scalingGrid != null) {
-            shape = new Shape9Slice(scalingGrid);
-        } else {
-            shape = new Shape();
+    public void save(ByteStream stream) {
+        stream.writeShort(this.id);
+        stream.writeShort(this.commands.length);
+
+        if (this.tag == Tag.SHAPE_2) {
+            int pointsCount = 0;
+            for (ShapeDrawBitmapCommand command : this.commands) {
+                pointsCount += command.getVertexCount();
+            }
+
+            stream.writeShort(pointsCount);
         }
 
-        shape.setId(this.id);
-        shape.setCommands(this.commands);
-        return shape;
+        for (ShapeDrawBitmapCommand command : this.commands) {
+            stream.writeBlock(command.getTag(), command::save);
+        }
+
+        stream.writeBlock(Tag.EOF, ignored -> {});
+    }
+
+    @Override
+    public DisplayObject clone(SupercellSWF swf, Rect scalingGrid) {
+        if (scalingGrid != null) {
+            return Shape9Slice.createShape(this, scalingGrid);
+        }
+
+        return Shape.createShape(this);
+    }
+
+    public ShapeDrawBitmapCommand[] getCommands() {
+        return this.commands;
     }
 }

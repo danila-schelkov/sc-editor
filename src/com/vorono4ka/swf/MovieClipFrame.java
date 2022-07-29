@@ -1,5 +1,7 @@
 package com.vorono4ka.swf;
 
+import com.vorono4ka.streams.ByteStream;
+
 public class MovieClipFrame {
     private String label;
     private MovieClipFrameElement[] elements;
@@ -9,6 +11,11 @@ public class MovieClipFrame {
         this.label = swf.readAscii();
 
         return elementsCount;
+    }
+
+    public void save(ByteStream stream) {
+        stream.writeShort(this.elements.length);
+        stream.writeAscii(this.label);
     }
 
     public String getLabel() {

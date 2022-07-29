@@ -8,13 +8,16 @@ import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.menubar.menus.EditMenu;
 import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
 import com.vorono4ka.editor.layout.panels.info.MovieClipInfoPanel;
+import com.vorono4ka.editor.layout.panels.info.ShapeInfoPanel;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.swf.MovieClipFrame;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
-import com.vorono4ka.swf.displayObjects.original.MovieClipOriginal;
-import com.vorono4ka.swf.displayObjects.original.SWFTexture;
+import com.vorono4ka.swf.displayObjects.Shape;
+import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
+import com.vorono4ka.swf.originalObjects.MovieClipOriginal;
+import com.vorono4ka.swf.originalObjects.SWFTexture;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 
@@ -28,7 +31,7 @@ public class Editor {
     private SupercellSWF swf;
 
     private final List<DisplayObject> clonedObjects;
-    private final List<Integer> selectedIndices;  // history
+    private final List<Integer> selectedIndices;
     private int selectedIndex;
 
     public Editor() {
@@ -79,6 +82,13 @@ public class Editor {
         }
     }
 
+    public void saveFile(String path) {
+        if (this.swf == null) return;
+
+        System.out.println("Editor.saveFile");
+        System.out.println(path);
+    }
+
     public void closeFile() {
         this.window.getTexturesTable().clear();
         this.window.getObjectsTable().clear();
@@ -88,6 +98,7 @@ public class Editor {
         infoBlock.setPanel(null);
 
         this.clonedObjects.clear();
+        this.selectedIndices.clear();
         this.selectedIndex = -1;
 
         EditMenu editMenu = this.window.getMenubar().getEditMenu();
@@ -101,8 +112,10 @@ public class Editor {
                 textureIds.put(texture.getImage().getTextureId());
             }
 
-            Stage.getInstance().doInRenderThread(() -> Stage.getInstance().getGl().glDeleteTextures(0, textureIds));
-            Stage.getInstance().clearBatches();
+            Stage stage = Stage.getInstance();
+            stage.doInRenderThread(() -> stage.getGl().glDeleteTextures(0, textureIds));
+            stage.clearBatches();
+            stage.removeAllChildren();
 
             this.swf = null;
         }
@@ -121,7 +134,7 @@ public class Editor {
 
     public DisplayObject getSelectedObject() {
         if (this.selectedIndex == -1) return null;
-        return this.clonedObjects.get(this.selectedIndex);
+        return this.clonedObjects.get(this.selectedIndices.get(this.selectedIndex));
     }
 
     public void selectObject(DisplayObject displayObject) {
@@ -136,8 +149,13 @@ public class Editor {
         }
 
         int index = this.clonedObjects.indexOf(displayObject);
-        this.selectedIndices.add(index);
-        this.selectObject(index);
+
+        if (this.selectedIndex != -1 && this.selectedIndex + 1 < this.selectedIndices.size()) {
+            this.selectedIndices.subList(this.selectedIndex + 1, this.selectedIndices.size()).clear();
+        }
+
+        this.selectedIndices.add(++this.selectedIndex, index);
+        this.selectObject(this.selectedIndex);
     }
 
     private void selectObject(int objectIndex) {
@@ -149,7 +167,7 @@ public class Editor {
         EditorInfoPanel infoBlock = this.window.getInfoPanel();
         infoBlock.setPanel(null);
 
-        DisplayObject displayObject = this.clonedObjects.get(objectIndex);
+        DisplayObject displayObject = this.clonedObjects.get(this.selectedIndices.get(objectIndex));
         if (displayObject.isMovieClip()) {
             MovieClip movieClip = (MovieClip) displayObject;
 
@@ -167,6 +185,7 @@ public class Editor {
             }
 
             movieClipInfoPanel.setTextInfo(
+                "Export name: " + movieClip.getExportName(),
                 "FPS: " + movieClip.getFps(),
                 String.format("Duration: %.2fs", movieClip.getDuration())
             );
@@ -174,6 +193,25 @@ public class Editor {
             infoBlock.setPanel(movieClipInfoPanel);
 
             movieClipInfoPanel.getFramesTable().select(movieClip.getCurrentFrame());
+        } else if (displayObject.isShape()) {
+            ShapeInfoPanel shapeInfoPanel = new ShapeInfoPanel();
+
+            Shape shape = (Shape) displayObject;
+
+            for (int i = 0; i < shape.getCommandCount(); i++) {
+                ShapeDrawBitmapCommand command = shape.getCommand(i);
+                shapeInfoPanel.addCommandInfo(i, command.getTexture().getIndex(), command.getTag());
+            }
+
+            infoBlock.setPanel(shapeInfoPanel);
+        }
+
+        Table objectsTable = this.window.getObjectsTable();
+        int row = objectsTable.indexOf(displayObject.getId(), 0);
+        if (row != -1) {
+            this.window.getDisplayObjectPanel().resetFilter();
+
+            objectsTable.select(row);
         }
 
         EditMenu editMenu = this.window.getMenubar().getEditMenu();
@@ -196,11 +234,15 @@ public class Editor {
     }
 
     public int getClonedObjectCount() {
-        return this.clonedObjects.size();
+        return this.selectedIndices.size();
     }
 
     public int getSelectedIndex() {
         return selectedIndex;
+    }
+
+    public int getSelectedObjectIndex() {
+        return this.selectedIndices.get(this.selectedIndex);
     }
 
     public SupercellSWF getSwf() {

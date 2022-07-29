@@ -7,8 +7,8 @@ import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 
-public class ContextMenu {
-    private final JPopupMenu popupMenu;
+public abstract class ContextMenu {
+    protected final JPopupMenu popupMenu;
 
     public ContextMenu(String label) {
         this.popupMenu = new JPopupMenu(label);
@@ -25,11 +25,18 @@ public class ContextMenu {
         return item;
     }
 
-    public void add(String label, ActionListener listener) {
+    public JMenuItem add(String label, ActionListener listener) {
         JMenuItem item = this.add(label);
 
-        if (listener == null) return;
-        item.addActionListener(listener);
+        if (listener != null) {
+            item.addActionListener(listener);
+        }
+
+        return item;
+    }
+
+    public void addSeparator() {
+        this.popupMenu.addSeparator();
     }
 
     public void linkTo(Component component) {
@@ -46,5 +53,9 @@ public class ContextMenu {
                 }
             }
         });
+    }
+
+    public JPopupMenu getPopupMenu() {
+        return popupMenu;
     }
 }

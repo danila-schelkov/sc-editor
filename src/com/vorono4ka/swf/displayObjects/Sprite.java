@@ -76,6 +76,11 @@ public abstract class Sprite extends DisplayObject {
         return result;
     }
 
+    @Override
+    public boolean isSprite() {
+        return true;
+    }
+
     public void setInteractiveRecursive(boolean interactive) {
         this.isInteractive = interactive;
 
@@ -90,11 +95,6 @@ public abstract class Sprite extends DisplayObject {
         for (DisplayObject child : this.children) {
             child.setVisibleRecursive(visible);
         }
-    }
-
-    @Override
-    public boolean isSprite() {
-        return true;
     }
 
     public void addChild(DisplayObject displayObject) {

@@ -1,5 +1,6 @@
 package com.vorono4ka.editor.layout.panels.info;
 
+import com.vorono4ka.editor.layout.components.FrameTableContextMenu;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.listeners.ChildrenListMouseListener;
 import com.vorono4ka.editor.layout.listeners.FrameSelectionListener;
@@ -21,6 +22,7 @@ public class MovieClipInfoPanel extends JPanel {
         this.frameElementsTable = new Table("#", "Child #", "Matrix", "Color Transform");
         this.textInfoPanel = new JPanel();
 
+        new FrameTableContextMenu(this.framesTable);
         this.timelineChildrenTable.addMouseListener(new ChildrenListMouseListener(this.timelineChildrenTable));
         this.framesTable.addSelectionListener(new FrameSelectionListener(this.framesTable));
         this.textInfoPanel.setLayout(new BoxLayout(this.textInfoPanel, BoxLayout.Y_AXIS));
