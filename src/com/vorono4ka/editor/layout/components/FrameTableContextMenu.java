@@ -39,6 +39,7 @@ public class FrameTableContextMenu extends ContextMenu {
         } else {
             movieClip.gotoAndPlayFrameIndex(frameIndex, -1);
         }
+        Main.editor.updateCanvas();
     }
 
     private void gotoAndStop(ActionEvent event) {
@@ -47,6 +48,7 @@ public class FrameTableContextMenu extends ContextMenu {
 
         int frameIndex = this.table.getSelectedRow();
         movieClip.gotoAndStopFrameIndex(frameIndex);
+        Main.editor.updateCanvas();
     }
 
     private MovieClip getMovieClip() {

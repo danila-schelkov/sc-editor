@@ -1,5 +1,6 @@
 package com.vorono4ka.swf.originalObjects;
 
+import com.vorono4ka.math.MathHelper;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.MovieClipFrame;
@@ -128,8 +129,10 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
 
                     float left = swf.readTwip();
                     float top = swf.readTwip();
-                    float right = swf.readTwip() + left;
-                    float bottom = swf.readTwip() + top;
+                    float width = swf.readTwip();
+                    float height = swf.readTwip();
+                    float right = MathHelper.round(left + width, 2);
+                    float bottom = MathHelper.round(top + height, 2);
 
                     this.scalingGrid = new Rect(left, top, right, bottom);
                 }

@@ -11,8 +11,8 @@ public class Matrix2x3 implements SavableObject {
 
     private float scaleX;
     private float scaleY;
-    private float skewX;
-    private float skewY;
+    private float shearX;
+    private float shearY;
     private float x;
     private float y;
 
@@ -23,8 +23,8 @@ public class Matrix2x3 implements SavableObject {
 
     public Matrix2x3(Matrix2x3 matrix) {
         this.scaleX = matrix.scaleX;
-        this.skewX = matrix.skewX;
-        this.skewY = matrix.skewY;
+        this.shearX = matrix.shearX;
+        this.shearY = matrix.shearY;
         this.scaleY = matrix.scaleY;
         this.x = matrix.x;
         this.y = matrix.y;
@@ -34,8 +34,8 @@ public class Matrix2x3 implements SavableObject {
         float divider = isPrecise ? PRECISE_MULTIPLIER : DEFAULT_MULTIPLIER;
 
         this.scaleX = swf.readInt() / divider;
-        this.skewX = swf.readInt() / divider;
-        this.skewY = swf.readInt() / divider;
+        this.shearX = swf.readInt() / divider;
+        this.shearY = swf.readInt() / divider;
         this.scaleY = swf.readInt() / divider;
         this.x = swf.readTwip();
         this.y = swf.readTwip();
@@ -46,8 +46,8 @@ public class Matrix2x3 implements SavableObject {
         float multiplier = isPrecise() ? PRECISE_MULTIPLIER : DEFAULT_MULTIPLIER;
 
         stream.writeInt((int) (this.scaleX * multiplier));
-        stream.writeInt((int) (this.skewX * multiplier));
-        stream.writeInt((int) (this.skewY * multiplier));
+        stream.writeInt((int) (this.shearX * multiplier));
+        stream.writeInt((int) (this.shearY * multiplier));
         stream.writeInt((int) (this.scaleY * multiplier));
         stream.writeTwip(this.x);
         stream.writeTwip(this.y);
@@ -59,36 +59,38 @@ public class Matrix2x3 implements SavableObject {
     }
 
     private boolean isPrecise() {
-        return this.scaleX < 0.0009765f || this.scaleY < 0.0009765f || this.skewX < 0.0009765f || this.skewY < 0.0009765f;
+        return this.scaleX < 0.0009765f || this.scaleY < 0.0009765f || this.shearX < 0.0009765f || this.shearY < 0.0009765f;
     }
 
     public void multiply(Matrix2x3 matrix) {
-        float scaleX = (this.scaleX * matrix.scaleX) + (this.skewX * matrix.skewY);
-        float skewX = (this.scaleX * matrix.skewX) + (this.skewX * matrix.scaleY);
-        float scaleY = (this.scaleY * matrix.scaleY) + (this.skewY * matrix.skewX);
-        float skewY = (this.scaleY * matrix.skewY) + (this.skewY * matrix.scaleX);
+        float scaleX = (this.scaleX * matrix.scaleX) + (this.shearX * matrix.shearY);
+        float shearX = (this.scaleX * matrix.shearX) + (this.shearX * matrix.scaleY);
+        float scaleY = (this.scaleY * matrix.scaleY) + (this.shearY * matrix.shearX);
+        float shearY = (this.scaleY * matrix.shearY) + (this.shearY * matrix.scaleX);
         this.scaleX = scaleX;
-        this.skewX = skewX;
+        this.shearX = shearX;
         this.scaleY = scaleY;
-        this.skewY = skewY;
+        this.shearY = shearY;
 
-        this.x = (this.x * matrix.scaleX) + (this.y * matrix.skewY) + matrix.x;
-        this.y = (this.x * matrix.skewX) + (this.y * matrix.scaleY) + matrix.y;
+        float x = matrix.applyX(this.x, this.y);
+        float y = matrix.applyY(this.x, this.y);
+        this.x = x;
+        this.y = y;
     }
 
     public float applyX(float x, float y) {
-        return x * this.scaleX + y * this.skewY + this.x;
+        return x * this.scaleX + y * this.shearY + this.x;
     }
 
     public float applyY(float x, float y) {
-        return y * this.scaleY + x * this.skewX + this.y;
+        return y * this.scaleY + x * this.shearX + this.y;
     }
 
     public void scaleMultiply(float scaleX, float scaleY) {
         this.scaleX *= scaleX;
         this.scaleY *= scaleY;
-        this.skewX *= scaleY;
-        this.skewY *= scaleX;
+        this.shearX *= scaleY;
+        this.shearY *= scaleX;
     }
 
     public void rotate(float angle, float scaleX, float scaleY) {
@@ -100,18 +102,18 @@ public class Matrix2x3 implements SavableObject {
         float cos = (float) Math.cos(angle);
         this.scaleX *= sin * scaleX;
         this.scaleY *= cos * scaleX;
-        this.skewX *= cos * scaleY;
-        this.skewY *= -(sin * scaleY);
+        this.shearX *= cos * scaleY;
+        this.shearY *= -(sin * scaleY);
     }
 
     public void inverse() {
-        float v5 = (this.scaleY * this.scaleX) - (this.skewY * this.skewX);
+        float v5 = (this.scaleY * this.scaleX) - (this.shearY * this.shearX);
         if ( v5 != 0.0f ) {
-            this.x = ((this.y * this.skewY) - (this.x * this.scaleY)) / v5;
-            this.y = ((this.x * this.skewX) - (this.y * this.scaleX)) / v5;
+            this.x = ((this.y * this.shearY) - (this.x * this.scaleY)) / v5;
+            this.y = ((this.x * this.shearX) - (this.y * this.scaleX)) / v5;
             this.scaleX = this.scaleY / v5;
-            this.skewX = -this.skewX / v5;
-            this.skewY = -this.skewY / v5;
+            this.shearX = -this.shearX / v5;
+            this.shearY = -this.shearY / v5;
             this.scaleY = this.scaleX / v5;
         }
     }
@@ -124,12 +126,12 @@ public class Matrix2x3 implements SavableObject {
         return scaleY;
     }
 
-    public float getSkewX() {
-        return skewX;
+    public float getShearX() {
+        return shearX;
     }
 
-    public float getSkewY() {
-        return skewY;
+    public float getShearY() {
+        return shearY;
     }
 
     public void setXY(float x, float y) {

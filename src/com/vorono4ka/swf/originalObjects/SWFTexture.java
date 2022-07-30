@@ -254,4 +254,9 @@ public class SWFTexture implements SavableObject {
     public void setTag(Tag tag) {
         this.tag = tag;
     }
+
+    @Override
+    public String toString() {
+        return "width=" + this.width + ", height=" + this.height;
+    }
 }

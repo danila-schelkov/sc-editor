@@ -138,12 +138,6 @@ public class Editor {
     }
 
     public void selectObject(DisplayObject displayObject) {
-//        int index = this.clonedIds.indexOf(displayObject.getId());
-//        if (index != -1) {
-//            this.selectObject(index);
-//            return;
-//        }
-
         if (!this.clonedObjects.contains(displayObject)) {
             this.clonedObjects.add(displayObject);
         }
@@ -206,14 +200,6 @@ public class Editor {
             infoBlock.setPanel(shapeInfoPanel);
         }
 
-        Table objectsTable = this.window.getObjectsTable();
-        int row = objectsTable.indexOf(displayObject.getId(), 0);
-        if (row != -1) {
-            this.window.getDisplayObjectPanel().resetFilter();
-
-            objectsTable.select(row);
-        }
-
         EditMenu editMenu = this.window.getMenubar().getEditMenu();
         editMenu.checkPreviousAvailable();
         editMenu.checkNextAvailable();
@@ -227,10 +213,24 @@ public class Editor {
 
     public void selectPrevious() {
         this.selectObject(--this.selectedIndex);
+        this.selectObjectInTable(this.getSelectedObject());
     }
 
     public void selectNext() {
         this.selectObject(++this.selectedIndex);
+        this.selectObjectInTable(this.getSelectedObject());
+    }
+
+    public void selectObjectInTable(DisplayObject displayObject) {
+        Table objectsTable = this.window.getObjectsTable();
+        int row = objectsTable.indexOf(displayObject.getId(), 0);
+        if (row == -1) {
+            this.window.getDisplayObjectPanel().resetFilter();
+
+            row = objectsTable.indexOf(displayObject.getId(), 0);
+        }
+
+        objectsTable.select(row);
     }
 
     public int getClonedObjectCount() {

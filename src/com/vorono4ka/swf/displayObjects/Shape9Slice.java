@@ -58,21 +58,21 @@ public class Shape9Slice extends Shape {
         }
 
         Rect movedGrid = new Rect(this.scalingGrid);
-        // COERCE_FLOAT(LODWORD(this->shape.displayObject.matrix.x) ^ 0x80000000), COERCE_FLOAT(LODWORD(this->shape.displayObject.matrix.y) ^ 0x80000000) What does that mean?
         movedGrid.movePosition(-this.getMatrix().getX(), -this.getMatrix().getY());
 
-        float widthSkewed = this.scalingGrid.getWidth() * matrixApplied.getSkewX();
+        float widthSheared = this.scalingGrid.getWidth() * matrixApplied.getShearX();
         float widthScaled = this.scalingGrid.getWidth() * matrixApplied.getScaleX();
-        float widthDistance = widthSkewed * widthSkewed + widthScaled * widthScaled;
+        float widthDistance = widthSheared * widthSheared + widthScaled * widthScaled;
 
-        float heightSkewed = this.scalingGrid.getHeight() * matrixApplied.getSkewY();
+        float heightSheared = this.scalingGrid.getHeight() * matrixApplied.getShearY();
         float heightScaled = this.scalingGrid.getHeight() * matrixApplied.getScaleY();
-        float heightDistance = heightSkewed * heightSkewed + heightScaled * heightScaled;
+        float heightDistance = heightSheared * heightSheared + heightScaled * heightScaled;
 
         float scaledWidth = 1.0f;
         if (widthDistance != 0) {
             scaledWidth = (float) (this.scalingGrid.getWidth() / Math.sqrt(widthDistance));
         }
+
         float scaledHeight = 1.0f;
         if (heightDistance != 0) {
             scaledHeight = (float) (this.scalingGrid.getHeight() / Math.sqrt(heightDistance));
