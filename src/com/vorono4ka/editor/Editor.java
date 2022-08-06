@@ -85,8 +85,7 @@ public class Editor {
     public void saveFile(String path) {
         if (this.swf == null) return;
 
-        System.out.println("Editor.saveFile");
-        System.out.println(path);
+        this.swf.save(path);
     }
 
     public void closeFile() {
@@ -239,10 +238,6 @@ public class Editor {
 
     public int getSelectedIndex() {
         return selectedIndex;
-    }
-
-    public int getSelectedObjectIndex() {
-        return this.selectedIndices.get(this.selectedIndex);
     }
 
     public SupercellSWF getSwf() {

@@ -1,5 +1,6 @@
 package com.vorono4ka.swf;
 
+import com.vorono4ka.compression.Compressor;
 import com.vorono4ka.compression.Decompressor;
 import com.vorono4ka.compression.exceptions.UnknownFileMagicException;
 import com.vorono4ka.compression.exceptions.UnknownFileVersionException;
@@ -11,6 +12,7 @@ import com.vorono4ka.swf.exceptions.*;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -30,7 +32,6 @@ public class SupercellSWF {
     private final List<String> fontsNames;
     private final List<ScMatrixBank> matrixBanks;
 
-    private int exportsCount;
     private short[] exportsIds;
     private String[] exportsNames;
 
@@ -79,10 +80,8 @@ public class SupercellSWF {
 
         File file = new File(path);
 
-        try {
-            FileInputStream fileInputStream = new FileInputStream(file);
-            data = fileInputStream.readAllBytes();
-            fileInputStream.close();
+        try (FileInputStream fis = new FileInputStream(file)) {
+            data = fis.readAllBytes();
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -116,11 +115,11 @@ public class SupercellSWF {
 
         this.skip(5);
 
-        this.exportsCount = this.readShort();
-        this.exportsIds = this.readShortArray(this.exportsCount);
+        int exportsCount = this.readShort();
+        this.exportsIds = this.readShortArray(exportsCount);
 
-        this.exportsNames = new String[this.exportsCount];
-        for (int i = 0; i < this.exportsCount; i++) {
+        this.exportsNames = new String[exportsCount];
+        for (int i = 0; i < exportsCount; i++) {
             this.exportsNames[i] = this.readAscii();
         }
 
@@ -149,9 +148,7 @@ public class SupercellSWF {
         }
 
         if (this.loadTags(false, path)) {
-            if (this.exportsCount == 0) return true;
-
-            for (int i = 0; i < this.exportsCount; i++) {
+            for (int i = 0; i < exportsCount; i++) {
                 String exportName = this.exportsNames[i];
                 MovieClipOriginal movieClip = this.getOriginalMovieClip(this.exportsIds[i], exportName);
                 movieClip.setExportName(exportName);
@@ -313,26 +310,134 @@ public class SupercellSWF {
         }
     }
 
-    private void saveTags() {
+    public void save(String path) {
+        this.saveInternal(path, false);
+    }
+
+    private void saveInternal(String path, boolean isTextureFile) {
+        ByteStream stream = new ByteStream();
+
+        if (!isTextureFile) {
+            stream.writeShort(this.getShapesCount());
+            stream.writeShort(this.getMovieClipsCount());
+            stream.writeShort(this.getTexturesCount());
+            stream.writeShort(this.getTextFieldsCount());
+            stream.writeShort(this.matrixBanks.get(0).getMatricesCount());
+            stream.writeShort(this.matrixBanks.get(0).getColorTransformsCount());
+
+            stream.write(new byte[5]);  // unused
+
+            stream.writeShort(this.getExportsCount());
+            for (int i = 0; i < this.getExportsCount(); i++) {
+                stream.writeShort(this.exportsIds[i]);
+            }
+
+            for (int i = 0; i < this.getExportsCount(); i++) {
+                stream.writeAscii(this.exportsNames[i]);
+            }
+        }
+
+        this.saveTags(stream);
+
+        byte[] data = stream.getBuffer();
+
+        try {
+            data = Compressor.compress(data, 4);
+        } catch (IOException | UnknownFileVersionException e) {
+            throw new RuntimeException(e);
+        }
+
+        File file = new File(path);
+
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveTags(ByteStream stream) {
         List<SavableObject> savableObjects = this.getSavableObjects();
 
         for (SavableObject object : savableObjects) {
-            this.stream.writeBlock(object.getTag(), object::save);
+            stream.writeBlock(object.getTag(), object::save);
         }
 
-        this.stream.writeBlock(Tag.EOF, (ignored) -> {});
+        stream.writeBlock(Tag.EOF, (ignored) -> {});
     }
 
     private List<SavableObject> getSavableObjects() {
         ArrayList<SavableObject> objects = new ArrayList<>();
 
+        if (this.isHalfScalePossible()) {
+            objects.add(new SavableObject() {
+                @Override
+                public void save(ByteStream stream) {
+
+                }
+
+                @Override
+                public Tag getTag() {
+                    return Tag.HALF_SCALE_POSSIBLE;
+                }
+            });
+        }
+
+        if (this.useExternalTexture) {
+            objects.add(new SavableObject() {
+                @Override
+                public void save(ByteStream stream) {
+
+                }
+
+                @Override
+                public Tag getTag() {
+                    return Tag.USE_EXTERNAL_TEXTURE;
+                }
+            });
+        }
+
         objects.addAll(List.of(this.textures));
         objects.addAll(List.of(this.shapes));
-        objects.addAll(this.matrixBanks.get(0).getMatrices());
-        objects.addAll(this.matrixBanks.get(0).getColorTransforms());
+        for (int i = 0; i < this.matrixBanks.size(); i++) {
+            ScMatrixBank matrixBank = this.matrixBanks.get(i);
+
+            if (i != 0) {
+                objects.add(new SavableObject() {
+                    @Override
+                    public void save(ByteStream stream) {
+                        stream.writeShort(matrixBank.getMatricesCount());
+                        stream.writeShort(matrixBank.getColorTransformsCount());
+                    }
+
+                    @Override
+                    public Tag getTag() {
+                        return Tag.EXTRA_MATRIX_BANK;
+                    }
+                });
+            }
+
+            objects.addAll(matrixBank.getMatrices());
+            objects.addAll(matrixBank.getColorTransforms());
+        }
         objects.addAll(List.of(this.textFields));
         objects.addAll(List.of(this.movieClips));
-        objects.addAll(List.of(this.movieClipModifiers));
+
+        if (this.getMovieClipModifiersCount() > 0) {
+            objects.add(new SavableObject() {
+                @Override
+                public void save(ByteStream stream) {
+                    stream.writeShort(getMovieClipModifiersCount());
+                }
+
+                @Override
+                public Tag getTag() {
+                    return Tag.MOVIE_CLIP_MODIFIERS;
+                }
+            });
+
+            objects.addAll(List.of(this.movieClipModifiers));
+        }
 
         return objects;
     }
@@ -386,27 +491,27 @@ public class SupercellSWF {
     }
 
     public int getShapesCount() {
-        return shapesCount;
+        return this.shapes.length;
     }
 
     public int getMovieClipsCount() {
-        return movieClipsCount;
+        return this.movieClips.length;
     }
 
     public int getTexturesCount() {
-        return texturesCount;
+        return this.textures.length;
     }
 
     public int getTextFieldsCount() {
-        return textFieldsCount;
+        return this.textFields.length;
     }
 
     public int getMovieClipModifiersCount() {
-        return movieClipModifiersCount;
+        return this.movieClipModifiers != null ? this.movieClipModifiers.length : 0;
     }
 
     public int getExportsCount() {
-        return exportsCount;
+        return this.exportsNames.length;
     }
 
     public int[] getShapesIds() {
@@ -419,10 +524,6 @@ public class SupercellSWF {
 
     public int[] getTextFieldsIds() {
         return textFieldsIds;
-    }
-
-    public String[] getExportsNames() {
-        return exportsNames;
     }
 
     public ScMatrixBank getMatrixBank(int index) {
@@ -489,5 +590,9 @@ public class SupercellSWF {
 
     public void skip(int count) {
         this.stream.skip(count);
+    }
+
+    public boolean isHalfScalePossible() {
+        return isHalfScalePossible;
     }
 }

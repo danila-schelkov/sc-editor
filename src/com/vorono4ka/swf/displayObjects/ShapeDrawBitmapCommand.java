@@ -65,8 +65,8 @@ public class ShapeDrawBitmapCommand {
         }
 
         for (Point point : this.shapePoints) {
-            stream.writeTwip((int) point.getX());
-            stream.writeTwip((int) point.getY());
+            stream.writeTwip(point.getX());
+            stream.writeTwip(point.getY());
         }
 
         for (Point point : this.sheetPoints) {
@@ -263,6 +263,7 @@ public class ShapeDrawBitmapCommand {
 
     public void setTexture(SWFTexture texture) {
         this.texture = texture;
+        this.image = texture.getImage();
     }
 
     public Tag getTag() {

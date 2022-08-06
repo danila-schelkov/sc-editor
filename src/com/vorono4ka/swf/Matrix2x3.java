@@ -59,7 +59,10 @@ public class Matrix2x3 implements SavableObject {
     }
 
     private boolean isPrecise() {
-        return this.scaleX < 0.0009765f || this.scaleY < 0.0009765f || this.shearX < 0.0009765f || this.shearY < 0.0009765f;
+        return (this.scaleX != 0 && Math.abs(this.scaleX) < 0.0009765f) ||
+                (this.scaleY != 0 && Math.abs(this.scaleY) < 0.0009765f) ||
+                (this.shearX != 0 && Math.abs(this.shearX) < 0.0009765f) ||
+                (this.shearY != 0 && Math.abs(this.shearY) < 0.0009765f);
     }
 
     public void multiply(Matrix2x3 matrix) {
