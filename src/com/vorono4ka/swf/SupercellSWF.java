@@ -7,8 +7,9 @@ import com.vorono4ka.compression.exceptions.UnknownFileVersionException;
 import com.vorono4ka.resources.ResourceManager;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.constants.Tag;
-import com.vorono4ka.swf.originalObjects.*;
 import com.vorono4ka.swf.exceptions.*;
+import com.vorono4ka.swf.originalObjects.*;
+import com.vorono4ka.utilities.Utilities;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,10 +17,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SupercellSWF {
     public static final String TEXTURE_EXTENSION = "_tex.sc";
+    public static final byte[] START_SECTION_BYTES = {'S', 'T', 'A', 'R', 'T'};
 
     private ByteStream stream;
 
@@ -82,6 +85,10 @@ public class SupercellSWF {
 
         try (FileInputStream fis = new FileInputStream(file)) {
             data = fis.readAllBytes();
+            int startSectionIndex = Utilities.indexOf(data, START_SECTION_BYTES);
+            if (startSectionIndex != -1) {
+                data = Arrays.copyOf(data, startSectionIndex);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             return false;

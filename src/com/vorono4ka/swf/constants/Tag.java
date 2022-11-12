@@ -39,9 +39,9 @@ public enum Tag {
     MOVIE_CLIP_35,
     MATRIX_PRECISE,
     MOVIE_CLIP_MODIFIERS,
-    MODIFIER_STATE_2,  // StencilRenderingState
-    MODIFIER_STATE_3,
-    MODIFIER_STATE_4,
+    MODIFIER_STATE_2,  // StencilRenderingState  // all next frame children are the mask
+    MODIFIER_STATE_3,  // all next frame children are masked
+    MODIFIER_STATE_4,  // mask cleaning
     MATRIX_BANK_INDEX,
     EXTRA_MATRIX_BANK,
     TEXT_FIELD_7,

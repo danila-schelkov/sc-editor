@@ -12,6 +12,7 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class DisplayObjectListPanel extends JPanel {
     private final TableRowSorter<TableModel> sorter;
@@ -65,7 +66,8 @@ public class DisplayObjectListPanel extends JPanel {
             return;
         }
 
-        this.sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+        // Sets case-insensitive filter
+        this.sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(text)));
     }
 
     public void resetFilter() {

@@ -53,14 +53,15 @@ public class Decompressor {
                 decompressed = outputArray.toByteArray();
             }
             case 2, 3 -> {
-                int decompressedSize = (int) ZstdDecompressor.getDecompressedSize(compressedData, 0, compressedData.length);
+                int offset = compressedData.length - stream.available();
+                int decompressedSize = (int) ZstdDecompressor.getDecompressedSize(compressedData, offset, compressedData.length - offset);
 
                 decompressed = new byte[decompressedSize];
 
                 ZSTD_DECOMPRESSOR.decompress(
                     compressedData,
-                    0,
-                    compressedData.length,
+                    offset,
+                    compressedData.length - offset,
                     decompressed,
                     0,
                     decompressed.length

@@ -223,19 +223,16 @@ public class MovieClip extends Sprite {
     }
 
     private int getFrameIndex(String frameLabel) {
-        int frameIndex = -1;
-
         if (frameLabel != null) {
             for (int i = 0; i < this.frames.length; i++) {
                 String label = this.frames[i].getLabel();
                 if (label != null && label.equals(frameLabel)) {
-                    frameIndex = i;
-                    break;
+                    return i;
                 }
             }
         }
 
-        return frameIndex;
+        return -1;
     }
 
     public void gotoAndStopFrameIndex(int frame) {

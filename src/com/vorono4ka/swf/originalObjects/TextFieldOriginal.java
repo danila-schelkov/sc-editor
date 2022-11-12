@@ -11,7 +11,7 @@ public class TextFieldOriginal extends DisplayObjectOriginal {
     private String fontName;
     private int color;
     private boolean useDeviceFont;  // styles | 1
-    private boolean isUppercase;  // styles | 2
+    private boolean isOutlineEnabled;  // styles | 2
     private boolean isBold;  // styles | 4
     private boolean isItalic;  // styles | 8
     private boolean isMultiline;  // styles | 16
@@ -51,7 +51,7 @@ public class TextFieldOriginal extends DisplayObjectOriginal {
         this.right = swf.readShort();
         this.bottom = swf.readShort();
 
-        this.isUppercase = swf.readBoolean();
+        this.isOutlineEnabled = swf.readBoolean();
 
         this.defaultText = swf.readAscii();
 
@@ -124,7 +124,7 @@ public class TextFieldOriginal extends DisplayObjectOriginal {
         stream.writeShort(this.right);
         stream.writeShort(this.bottom);
 
-        stream.writeBoolean(this.isUppercase);
+        stream.writeBoolean(this.isOutlineEnabled);
 
         stream.writeAscii(this.defaultText);
 

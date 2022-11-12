@@ -59,7 +59,7 @@ public class Compressor {
 
                 dos.write(outputArray.toByteArray());
             }
-            case 2, 3 -> {
+            case 2, 3 -> {  // TODO: fix
                 byte[] compressed = new byte[ZSTD_COMPRESSOR.maxCompressedLength(data.length)];
 
                 int compressedLength = ZSTD_COMPRESSOR.compress(

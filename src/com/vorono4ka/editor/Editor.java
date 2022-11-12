@@ -3,6 +3,7 @@ package com.vorono4ka.editor;
 import com.jogamp.opengl.GLAnimatorControl;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
+import com.vorono4ka.editor.displayObjects.SpriteSheet;
 import com.vorono4ka.editor.layout.Window;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.menubar.menus.EditMenu;
@@ -34,12 +35,16 @@ public class Editor {
     private final List<Integer> selectedIndices;
     private int selectedIndex;
 
+    private List<SpriteSheet> spriteSheets;
+
     public Editor() {
         this.window = new Window();
 
         this.clonedObjects = new ArrayList<>();
         this.selectedIndices = new ArrayList<>();
         this.selectedIndex = -1;
+
+        this.spriteSheets = new ArrayList<>();
     }
 
     public void openFile(String path) {
@@ -79,6 +84,7 @@ public class Editor {
         for (int i = 0; i < this.swf.getTexturesCount(); i++) {
             SWFTexture texture = this.swf.getTexture(i);
             texturesTable.addRow(i, texture.getWidth(), texture.getHeight(), texture.getPixelFormat());
+            this.spriteSheets.add(new SpriteSheet(texture));
         }
     }
 
@@ -153,7 +159,7 @@ public class Editor {
 
     private void selectObject(int objectIndex) {
         if (objectIndex < 0) return;
-        if (objectIndex >= this.clonedObjects.size()) return;
+        if (objectIndex >= this.selectedIndices.size()) return;
 
         this.selectedIndex = objectIndex;
 
@@ -169,7 +175,7 @@ public class Editor {
             DisplayObject[] timelineChildren = movieClip.getTimelineChildren();
             String[] timelineChildrenNames = movieClip.getTimelineChildrenNames();
             for (int i = 0; i < timelineChildren.length; i++) {
-                movieClipInfoPanel.addTimelineChild(i, timelineChildren[i].getId(), timelineChildrenNames[i]);
+                movieClipInfoPanel.addTimelineChild(String.format("%d (%s)", i, timelineChildren[i].getClass().getSimpleName()), timelineChildren[i].getId(), timelineChildrenNames[i]);
             }
 
             MovieClipFrame[] frames = movieClip.getFrames();
@@ -250,5 +256,9 @@ public class Editor {
 
     public FPSAnimator getAnimator() {
         return (FPSAnimator) this.window.getCanvas().getAnimator();
+    }
+
+    public SpriteSheet getSpriteSheet(int index) {
+        return this.spriteSheets.get(index);
     }
 }

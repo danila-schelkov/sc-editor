@@ -102,8 +102,6 @@ public class ShapeDrawBitmapCommand {
             bounds.addPoint(x, y);
         }
 
-//        System.out.printf("Bounds rect: %f %f %f %f, Size: (%f, %f)%n", bounds.getMinX(), bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY(), bounds.getWidth(), bounds.getHeight());
-
         int trianglesCount = this.vertexCount - 2;
         int[] indices = new int[trianglesCount * 3];
         for (int i = 0; i < trianglesCount; i++) {
@@ -177,10 +175,6 @@ public class ShapeDrawBitmapCommand {
 
             bounds.addPoint(appliedX, appliedY);
         }
-
-//        for (int i = 0; i < transformedPoints.length / 2; i++) {
-//            System.out.printf("%d: %f, %f%n", i, transformedPoints[i * 2], transformedPoints[i * 2 + 1]);
-//        }
 
         int trianglesCount = this.vertexCount - 2;
         int[] indices = new int[trianglesCount * 3];
