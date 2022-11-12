@@ -11,6 +11,8 @@ import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.originalObjects.SWFTexture;
 
+import java.util.Arrays;
+
 public class ShapeDrawBitmapCommand {
     private Tag tag;
 
@@ -19,8 +21,6 @@ public class ShapeDrawBitmapCommand {
     private Point[] sheetPoints;
 
     private GLImage image;
-
-    private SWFTexture texture;
 
     public void load(SupercellSWF swf, Tag tag) {
         this.tag = tag;
@@ -32,8 +32,7 @@ public class ShapeDrawBitmapCommand {
             this.vertexCount = swf.readUnsignedChar();
         }
 
-        this.texture = swf.getTexture(textureId);
-        this.image = this.texture.getImage();
+        this.image = swf.getTexture(textureId);
 
         this.shapePoints = new Point[this.vertexCount];
         for (int i = 0; i < this.vertexCount; i++) {
@@ -49,8 +48,8 @@ public class ShapeDrawBitmapCommand {
             float v = swf.readShort();
 
             if (tag != Tag.SHAPE_DRAW_BITMAP_COMMAND_3) {
-                u /= 65535f * this.texture.getWidth();  // width
-                v /= 65535f * this.texture.getHeight();  // height
+                u /= 65535f * this.image.getWidth();  // width
+                v /= 65535f * this.image.getHeight();  // height
             }
 
             this.sheetPoints[i] = new Point(u, v);
@@ -58,7 +57,7 @@ public class ShapeDrawBitmapCommand {
     }
 
     public void save(ByteStream stream) {
-        stream.writeUnsignedChar(this.texture.getIndex());
+        stream.writeUnsignedChar(((SWFTexture) this.image).getIndex());
 
         if (this.tag != Tag.SHAPE_DRAW_BITMAP_COMMAND) {
             stream.writeUnsignedChar(this.vertexCount);
@@ -74,8 +73,8 @@ public class ShapeDrawBitmapCommand {
             float v = point.getY();
 
             if (this.tag != Tag.SHAPE_DRAW_BITMAP_COMMAND_3) {
-                u *= 65535f / this.texture.getWidth();  // width
-                v *= 65535f / this.texture.getHeight();  // height
+                u *= 65535f / this.image.getWidth();  // width
+                v *= 65535f / this.image.getHeight();  // height
             }
 
             stream.writeShort((int) u);
@@ -221,6 +220,46 @@ public class ShapeDrawBitmapCommand {
         return this.render(stage, matrix, colorTransform, 0);
     }
 
+    public boolean renderUV(Stage stage, int renderConfigBits) {
+        Rect bounds = new Rect();
+
+        float[] transformedPoints = new float[this.vertexCount * 2];
+        for (int i = 0; i < this.vertexCount; i++) {
+            float x = this.getU(i) * this.image.getWidth() - this.image.getWidth() / 2f;
+            float y = this.getV(i) * this.image.getHeight() - this.image.getHeight() / 2f;
+
+            transformedPoints[i * 2] = x;
+            transformedPoints[i * 2 + 1] = y;
+
+            if (i == 0) {
+                bounds = new Rect(x, y, x, y);
+                continue;
+            }
+
+            bounds.addPoint(x, y);
+        }
+
+        int trianglesCount = this.vertexCount - 2;
+        int[] indices = new int[trianglesCount * 3];
+        for (int i = 0; i < trianglesCount; i++) {
+            indices[i * 3] = 0;
+            indices[i * 3 + 1] = i + 1;
+            indices[i * 3 + 2] = i + 2;
+        }
+
+        if (stage.startShape(bounds, stage.getGradientTexture(), renderConfigBits)) {
+            stage.addTriangles(trianglesCount, indices);
+
+            for (int i = 0; i < this.vertexCount; i++) {
+                stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], 1f, 0, 1, 0, 0, 1, 0, 0, 0.5f);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     public float getX(int pointIndex) {
         return this.shapePoints[pointIndex].getX();
     }
@@ -252,12 +291,7 @@ public class ShapeDrawBitmapCommand {
     }
 
     public SWFTexture getTexture() {
-        return texture;
-    }
-
-    public void setTexture(SWFTexture texture) {
-        this.texture = texture;
-        this.image = texture.getImage();
+        return (SWFTexture) image;
     }
 
     public Tag getTag() {
@@ -270,5 +304,19 @@ public class ShapeDrawBitmapCommand {
 
     public int getVertexCount() {
         return vertexCount;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) return true;
+
+        if (other instanceof ShapeDrawBitmapCommand) {
+            ShapeDrawBitmapCommand command = (ShapeDrawBitmapCommand) other;
+
+            return Arrays.equals(command.shapePoints, this.shapePoints) &&
+                    Arrays.equals(command.sheetPoints, this.sheetPoints);
+        }
+
+        return false;
     }
 }

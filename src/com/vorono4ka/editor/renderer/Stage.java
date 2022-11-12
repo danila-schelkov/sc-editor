@@ -11,7 +11,9 @@ import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.StageSprite;
+import com.vorono4ka.utilities.Utilities;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +39,7 @@ public class Stage {
     private float offsetY;
 
     private Batch currentBatch;
+    private GLImage gradientTexture;
 
     public Stage() {
         this.tasks = new ConcurrentLinkedQueue<>();
@@ -65,6 +68,12 @@ public class Stage {
     public void init(GL3 gl, int x, int y, int width, int height) {
         this.shader = Assets.getShader(gl, "vertex.glsl", "fragment.glsl");
         this.gl = gl;
+
+        BufferedImage imageBuffer = Assets.getImageBuffer("gradient_texture.png");
+        assert imageBuffer != null : "Gradient texture not found.";
+
+        this.gradientTexture = new GLImage();
+        GLImage.createWithFormat(this.gradientTexture, true, 1, 256, 2, Utilities.getPixelBuffer(imageBuffer), GL3.GL_LUMINANCE_ALPHA, GL3.GL_UNSIGNED_BYTE);
 
         this.viewport = new Rect(-(width / 2f), -(height / 2f), width / 2f, height / 2f);
         this.clipArea = new Rect(this.viewport);
@@ -271,5 +280,9 @@ public class Stage {
 
     public GL3 getGl() {
         return this.gl;
+    }
+
+    public GLImage getGradientTexture() {
+        return this.gradientTexture;
     }
 }

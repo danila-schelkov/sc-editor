@@ -11,14 +11,8 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
-public class SWFTexture implements SavableObject {
+public class SWFTexture extends GLImage implements SavableObject {
     public static final int TILE_SIZE = 32;
-
-    private final GLImage image;
-
-    private int width;
-    private int height;
-    private int pixelFormat;
 
     private Buffer pixels;
 
@@ -27,13 +21,11 @@ public class SWFTexture implements SavableObject {
     private Tag tag;
 
     public SWFTexture() {
-        this.image = new GLImage();
         this.index = -1;
     }
 
     public SWFTexture(Tag tag) {
         this.tag = tag;
-        this.image = new GLImage();
         this.index = -1;
     }
 
@@ -209,34 +201,6 @@ public class SWFTexture implements SavableObject {
 
     private int[] readTileAsInt(SupercellSWF swf, int width, int height) {
         return swf.readIntArray(width * height);
-    }
-
-    public GLImage getImage() {
-        return image;
-    }
-
-    public int getWidth() {
-        return width;
-    }
-
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
-    }
-
-    public int getPixelFormat() {
-        return this.pixelFormat;
-    }
-
-    public void setPixelFormat(int pixelFormat) {
-        this.pixelFormat = pixelFormat;
     }
 
     public int getIndex() {

@@ -7,6 +7,7 @@ import com.vorono4ka.compression.exceptions.UnknownFileVersionException;
 import com.vorono4ka.resources.ResourceManager;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.constants.Tag;
+import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.exceptions.*;
 import com.vorono4ka.swf.originalObjects.*;
 import com.vorono4ka.utilities.Utilities;
@@ -601,5 +602,21 @@ public class SupercellSWF {
 
     public boolean isHalfScalePossible() {
         return isHalfScalePossible;
+    }
+
+    public List<ShapeDrawBitmapCommand> getDrawBitmapsOfTexture(int textureIndex) {
+        List <ShapeDrawBitmapCommand> bitmapCommands = new ArrayList<>();
+
+        for (ShapeOriginal shape : this.shapes) {
+            for (ShapeDrawBitmapCommand command : shape.getCommands()) {
+                if (command.getTexture().getIndex() == textureIndex) {
+                    if (!bitmapCommands.contains(command)) {
+                        bitmapCommands.add(command);
+                    }
+                }
+            }
+        }
+
+        return bitmapCommands;
     }
 }

@@ -76,12 +76,7 @@ public class ShapeOriginal extends DisplayObjectOriginal {
         stream.writeShort(this.commands.length);
 
         if (this.tag == Tag.SHAPE_2) {
-            int pointsCount = 0;
-            for (ShapeDrawBitmapCommand command : this.commands) {
-                pointsCount += command.getVertexCount();
-            }
-
-            stream.writeShort(pointsCount);
+            stream.writeShort(getPointsCount());
         }
 
         for (ShapeDrawBitmapCommand command : this.commands) {
@@ -102,5 +97,14 @@ public class ShapeOriginal extends DisplayObjectOriginal {
 
     public ShapeDrawBitmapCommand[] getCommands() {
         return this.commands;
+    }
+
+    private int getPointsCount() {
+        int pointsCount = 0;
+        for (ShapeDrawBitmapCommand command : this.commands) {
+            pointsCount += command.getVertexCount();
+        }
+
+        return pointsCount;
     }
 }

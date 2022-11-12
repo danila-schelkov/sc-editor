@@ -36,6 +36,7 @@ public class Editor {
     private int selectedIndex;
 
     private List<SpriteSheet> spriteSheets;
+    private boolean shouldDisplayPolygons;
 
     public Editor() {
         this.window = new Window();
@@ -84,7 +85,10 @@ public class Editor {
         for (int i = 0; i < this.swf.getTexturesCount(); i++) {
             SWFTexture texture = this.swf.getTexture(i);
             texturesTable.addRow(i, texture.getWidth(), texture.getHeight(), texture.getPixelFormat());
-            this.spriteSheets.add(new SpriteSheet(texture));
+
+            SpriteSheet spriteSheet = new SpriteSheet(texture);
+            spriteSheet.setBitmaps(swf.getDrawBitmapsOfTexture(i));
+            this.spriteSheets.add(spriteSheet);
         }
     }
 
@@ -106,6 +110,8 @@ public class Editor {
         this.selectedIndices.clear();
         this.selectedIndex = -1;
 
+        this.spriteSheets.clear();
+
         EditMenu editMenu = this.window.getMenubar().getEditMenu();
         editMenu.checkPreviousAvailable();
         editMenu.checkNextAvailable();
@@ -114,7 +120,7 @@ public class Editor {
             IntBuffer textureIds = IntBuffer.allocate(this.swf.getTexturesCount());
             for (int i = 0; i < this.swf.getTexturesCount(); i++) {
                 SWFTexture texture = this.swf.getTexture(i);
-                textureIds.put(texture.getImage().getTextureId());
+                textureIds.put(texture.getTextureId());
             }
 
             Stage stage = Stage.getInstance();
@@ -260,5 +266,13 @@ public class Editor {
 
     public SpriteSheet getSpriteSheet(int index) {
         return this.spriteSheets.get(index);
+    }
+
+    public boolean shouldDisplayPolygons() {
+        return this.shouldDisplayPolygons;
+    }
+
+    public void setShouldDisplayPolygons(boolean shouldDisplayPolygons) {
+        this.shouldDisplayPolygons = shouldDisplayPolygons;
     }
 }
