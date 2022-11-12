@@ -23,5 +23,6 @@ public class OptionsMenu extends JMenu {
 
     private void togglePolygonRendering(ActionEvent event) {
         Main.editor.setShouldDisplayPolygons(this.renderPolygonsCheckBox.getState());
+        Main.editor.updateCanvas();
     }
 }
