@@ -1,6 +1,8 @@
-package com.vorono4ka.swf.displayObjects.original;
+package com.vorono4ka.swf.originalObjects;
 
+import com.vorono4ka.math.MathHelper;
 import com.vorono4ka.math.Rect;
+import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.MovieClipFrame;
 import com.vorono4ka.swf.MovieClipFrameElement;
 import com.vorono4ka.swf.SupercellSWF;
@@ -12,12 +14,14 @@ import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.exceptions.UnsupportedTagException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class MovieClipOriginal extends DisplayObjectOriginal {
     private int fps;
-    private int framesCount;
-    private short[] framesElements;
+    private short[] frameElements;
     private MovieClipFrame[] frames;
 
     private int childrenCount;
@@ -32,12 +36,14 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
     private DisplayObjectOriginal[] children;
 
     public int load(SupercellSWF swf, Tag tag) throws LoadingFaultException {
+        this.tag = tag;
+
         this.id = swf.readShort();
         this.fps = swf.readUnsignedChar();
 
-        this.framesCount = swf.readShort();
-        this.frames = new MovieClipFrame[this.framesCount];
-        for (int i = 0; i < this.framesCount; i++) {
+        int framesCount = swf.readShort();
+        this.frames = new MovieClipFrame[framesCount];
+        for (int i = 0; i < this.frames.length; i++) {
             this.frames[i] = new MovieClipFrame();
         }
 
@@ -58,7 +64,7 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
             }
             default -> {
                 int elementsCount = swf.readInt();
-                this.framesElements = swf.readShortArray(elementsCount * 3);
+                this.frameElements = swf.readShortArray(elementsCount * 3);
             }
         }
 
@@ -81,14 +87,14 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
         int usedElements = 0;
 
         while (true) {
-            int commandTag = swf.readUnsignedChar();
+            int frameTag = swf.readUnsignedChar();
             int length = swf.readInt();
 
             if (length < 0) {
-                throw new NegativeTagLengthException(String.format("Negative tag length in MovieClip. Tag %d, %s", commandTag, swf.getFilename()));
+                throw new NegativeTagLengthException(String.format("Negative tag length in MovieClip. Tag %d, %s", frameTag, swf.getFilename()));
             }
 
-            Tag tagValue = Tag.values()[commandTag];
+            Tag tagValue = Tag.values()[frameTag];
             switch (tagValue) {
                 case EOF -> {
                     return this.id;
@@ -107,9 +113,9 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
                     MovieClipFrameElement[] elements = new MovieClipFrameElement[elementsCount];
                     for (int i = 0; i < elementsCount; i++) {
                         elements[i] = new MovieClipFrameElement(
-                            this.framesElements[usedElements * 3] & 0xFFFF,
-                            this.framesElements[usedElements * 3 + 1] & 0xFFFF,
-                            this.framesElements[usedElements * 3 + 2] & 0xFFFF
+                            this.frameElements[usedElements * 3] & 0xFFFF,
+                            this.frameElements[usedElements * 3 + 1] & 0xFFFF,
+                            this.frameElements[usedElements * 3 + 2] & 0xFFFF
                         );
 
                         usedElements++;
@@ -123,15 +129,17 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
 
                     float left = swf.readTwip();
                     float top = swf.readTwip();
-                    float right = swf.readTwip() + left;
-                    float bottom = swf.readTwip() + top;
+                    float width = swf.readTwip();
+                    float height = swf.readTwip();
+                    float right = MathHelper.round(left + width, 2);
+                    float bottom = MathHelper.round(top + height, 2);
 
                     this.scalingGrid = new Rect(left, top, right, bottom);
                 }
                 case MATRIX_BANK_INDEX -> this.matrixBankIndex = swf.readUnsignedChar();
                 default -> {
                     try {
-                        throw new UnsupportedTagException(String.format("Unknown tag %d in MovieClip, %s", commandTag, swf.getFilename()));
+                        throw new UnsupportedTagException(String.format("Unknown tag %d in MovieClip, %s", frameTag, swf.getFilename()));
                     } catch (UnsupportedTagException exception) {
                         exception.printStackTrace();
                     }
@@ -140,36 +148,108 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
         }
     }
 
+    @Override
+    public void save(ByteStream stream) {
+        stream.writeShort(this.id);
+        stream.writeUnsignedChar(this.fps);
+
+        stream.writeShort(this.frames.length);
+
+        List<MovieClipFrameElement> frameElements = new ArrayList<>();
+        for (MovieClipFrame frame : this.frames) {
+            Collections.addAll(frameElements, frame.getElements());
+        }
+
+        stream.writeInt(frameElements.size());
+        for (MovieClipFrameElement element : frameElements) {
+            stream.writeShort(element.getChildIndex());
+            stream.writeShort(element.getMatrixIndex());
+            stream.writeShort(element.getColorTransformIndex());
+        }
+
+        stream.writeShort(this.childrenIds.length);
+        for (short id : this.childrenIds) {
+            stream.writeShort(id);
+        }
+
+//        stream.writeShort(this.children.length);
+//        for (DisplayObjectOriginal child : this.children) {
+//            stream.writeShort(child.getId());
+//        }
+
+        if (this.tag == Tag.MOVIE_CLIP_3 || this.tag == Tag.MOVIE_CLIP_35) {
+            for (byte blend : this.childrenBlends) {
+                stream.writeUnsignedChar(blend);
+            }
+        }
+
+        for (String name : this.childrenNames) {
+            stream.writeAscii(name);
+        }
+
+        for (MovieClipFrame frame : this.frames) {
+            stream.writeBlock(Tag.MOVIE_CLIP_FRAME_2, frame::save);
+        }
+
+        if (this.scalingGrid != null) {
+            stream.writeBlock(Tag.SCALING_GRID, blockStream -> {
+                blockStream.writeTwip(this.scalingGrid.getLeft());
+                blockStream.writeTwip(this.scalingGrid.getTop());
+                blockStream.writeTwip(this.scalingGrid.getWidth());
+                blockStream.writeTwip(this.scalingGrid.getHeight());
+            });
+        }
+
+        if (this.matrixBankIndex != 0) {
+            stream.writeBlock(Tag.MATRIX_BANK_INDEX, blockStream -> blockStream.writeUnsignedChar(this.matrixBankIndex));
+        }
+
+        stream.writeBlock(Tag.EOF, ignored -> {});
+    }
+
     public DisplayObject clone(SupercellSWF swf, Rect scalingGrid) throws UnableToFindObjectException {
+        return MovieClip.createMovieClip(this, swf, scalingGrid);
+    }
+
+    public void createTimelineChildren(SupercellSWF swf) throws UnableToFindObjectException {
         if (this.children == null) {
             this.children = new DisplayObjectOriginal[this.childrenCount];
             for (int i = 0; i < this.childrenCount; i++) {
                 this.children[i] = swf.getOriginalDisplayObject(this.childrenIds[i], this.exportName);
             }
         }
+    }
 
-        MovieClip movieClip = new MovieClip();
-        movieClip.setId(this.id);
-        movieClip.setMatrixBank(swf.getMatrixBank(this.matrixBankIndex));
+    public int getFps() {
+        return fps;
+    }
 
-        DisplayObject[] childrenArray = new DisplayObject[this.childrenCount];
-        for (int i = 0; i < this.childrenCount; i++) {
-            DisplayObjectOriginal child = this.children[i];
-            DisplayObject displayObject = child.clone(swf, this.scalingGrid);
+    public MovieClipFrame[] getFrames() {
+        return frames;
+    }
 
-            displayObject.setVisibleRecursive((this.childrenBlends[i] & 64) == 0);
-            displayObject.setInteractiveRecursive(true);
+    public int getChildrenCount() {
+        return childrenCount;
+    }
 
-            childrenArray[i] = displayObject;
-        }
-        movieClip.setTimelineChildren(childrenArray);
-        movieClip.setTimelineChildrenNames(this.childrenNames);
-        movieClip.setFrames(this.frames);
-        movieClip.setFPS(this.fps);
-        movieClip.setExportName(this.exportName);
-        movieClip.setFrame(0);
+    public byte[] getChildrenBlends() {
+        return childrenBlends;
+    }
 
-        return movieClip;
+    public String[] getChildrenNames() {
+        return childrenNames;
+    }
+
+    public Rect getScalingGrid() {
+        return scalingGrid;
+    }
+
+    public int getMatrixBankIndex() {
+        return matrixBankIndex;
+    }
+
+    public DisplayObjectOriginal[] getChildren() {
+        return children;
     }
 
     public String getExportName() {

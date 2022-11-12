@@ -8,9 +8,7 @@ in vec3 colorAdd;
 
 void main()
 {
-    vec4 color = texture(TEX_SAMPLER, texCoord);
-    color *= colorMul;
+    vec4 color = texture2D(TEX_SAMPLER, texCoord) * colorMul;
     color.rgb += colorAdd * color.a;
     gl_FragColor = color;
-//    color = vec4(texCoord, 0, 1);
 }

@@ -8,6 +8,7 @@ import com.vorono4ka.editor.renderer.Stage;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 
 public class ViewMenu extends JMenu {
     private final JCheckBoxMenuItem timelineToggle;
@@ -15,8 +16,10 @@ public class ViewMenu extends JMenu {
     public ViewMenu() {
         super("View");
 
+        setMnemonic(KeyEvent.VK_V);
+
         JMenuItem tools = new JMenu("Tools");
-        JMenuItem reset = new JMenuItem("Reset");
+        JMenuItem reset = new JMenuItem("Reset", KeyEvent.VK_R);
 
         this.timelineToggle = new JCheckBoxMenuItem("Timeline");
 
@@ -48,7 +51,7 @@ public class ViewMenu extends JMenu {
         Stage stage = Stage.getInstance();
 
         stage.setScaleStep(39);
-        stage.setScale(1);
+        stage.setPointSize(1);
 
         stage.setOffset(0, 0);
 

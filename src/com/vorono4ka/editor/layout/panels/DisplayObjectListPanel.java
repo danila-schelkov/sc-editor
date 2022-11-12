@@ -1,7 +1,8 @@
 package com.vorono4ka.editor.layout.panels;
 
+import com.vorono4ka.editor.layout.components.DisplayObjectContextMenu;
 import com.vorono4ka.editor.layout.components.Table;
-import com.vorono4ka.editor.layout.listeners.DisplayObjectSelectionListener;
+import com.vorono4ka.editor.layout.listeners.DisplayObjectListMouseListener;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -11,6 +12,7 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class DisplayObjectListPanel extends JPanel {
     private final TableRowSorter<TableModel> sorter;
@@ -22,7 +24,8 @@ public class DisplayObjectListPanel extends JPanel {
         this.table = new Table("Id", "Name", "Type");
         this.sorter = new TableRowSorter<>(this.table.getModel());
 
-        this.table.addSelectionListener(new DisplayObjectSelectionListener(this.table));
+        new DisplayObjectContextMenu(this.table);
+        this.table.addMouseListener(new DisplayObjectListMouseListener(this.table));
         this.table.setRowSorter(this.sorter);
 
         List<RowSorter.SortKey> sortKeys = new ArrayList<>();
@@ -63,7 +66,8 @@ public class DisplayObjectListPanel extends JPanel {
             return;
         }
 
-        this.sorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+        // Sets case-insensitive filter
+        this.sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(text)));
     }
 
     public void resetFilter() {

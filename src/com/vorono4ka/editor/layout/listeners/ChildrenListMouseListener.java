@@ -3,6 +3,10 @@ package com.vorono4ka.editor.layout.listeners;
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.layout.Window;
 import com.vorono4ka.editor.layout.components.Table;
+import com.vorono4ka.swf.SupercellSWF;
+import com.vorono4ka.swf.displayObjects.DisplayObject;
+import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
+import com.vorono4ka.swf.originalObjects.DisplayObjectOriginal;
 
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
@@ -26,15 +30,18 @@ public class ChildrenListMouseListener extends MouseAdapter {
         int clickCount = e.getClickCount();
         if (clickCount < 2) return;
 
-        int childId = (int) this.table.getValueAt(selectedRow, selectedColumn);
+        int id = (int) this.table.getValueAt(selectedRow, selectedColumn);
 
-        Window window = Main.editor.getWindow();
-        window.getDisplayObjectPanel().resetFilter();
-        Table objectsTable = window.getObjectsTable();
+        SupercellSWF swf = Main.editor.getSwf();
+        try {
+            DisplayObjectOriginal displayObjectOriginal = swf.getOriginalDisplayObject(id, null);
+            DisplayObject displayObject = displayObjectOriginal.clone(swf, null);
 
-        int childRow = objectsTable.indexOf(childId, 0);
-        if (childRow == -1) return;
-
-        objectsTable.select(childRow);
+            Main.editor.selectObject(displayObject);
+            Main.editor.selectObjectInTable(Main.editor.getSelectedObject());
+            Main.editor.updateCanvas();
+        } catch (UnableToFindObjectException exception) {
+            exception.printStackTrace();
+        }
     }
 }

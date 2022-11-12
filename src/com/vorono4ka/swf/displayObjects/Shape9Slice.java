@@ -4,6 +4,9 @@ import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
+import com.vorono4ka.swf.originalObjects.ShapeOriginal;
+
+import java.util.List;
 
 public class Shape9Slice extends Shape {
     private final Rect scalingGrid;
@@ -12,8 +15,17 @@ public class Shape9Slice extends Shape {
         this.scalingGrid = scalingGrid;
     }
 
+    public static Shape9Slice createShape(ShapeOriginal original, Rect scalingGrid) {
+        Shape9Slice shape9Slice = new Shape9Slice(scalingGrid);
+
+        shape9Slice.id = original.getId();
+        shape9Slice.commands = List.of(original.getCommands());
+
+        return shape9Slice;
+    }
+
     @Override
-    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
+    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
         Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
         matrixApplied.multiply(matrix);
 
@@ -46,26 +58,37 @@ public class Shape9Slice extends Shape {
         }
 
         Rect movedGrid = new Rect(this.scalingGrid);
-        // COERCE_FLOAT(LODWORD(this->shape.displayObject.matrix.x) ^ 0x80000000), COERCE_FLOAT(LODWORD(this->shape.displayObject.matrix.y) ^ 0x80000000) What does that mean?
         movedGrid.movePosition(-this.getMatrix().getX(), -this.getMatrix().getY());
 
-        // scaled?
+        float widthSheared = this.scalingGrid.getWidth() * matrixApplied.getShearX();
+        float widthScaled = this.scalingGrid.getWidth() * matrixApplied.getScaleX();
+        float widthDistance = widthSheared * widthSheared + widthScaled * widthScaled;
+
+        float heightSheared = this.scalingGrid.getHeight() * matrixApplied.getShearY();
+        float heightScaled = this.scalingGrid.getHeight() * matrixApplied.getScaleY();
+        float heightDistance = heightSheared * heightSheared + heightScaled * heightScaled;
+
         float scaledWidth = 1.0f;
-        float scaledHeight = 1.0f;
-
-        Stage stage = Stage.getInstance();
-        for (ShapeDrawBitmapCommand command : this.commands) {
-            command.render9Slice(stage, matrixApplied, colorTransformApplied, renderConfigBits, movedGrid, bounds, scaledWidth, scaledHeight);
+        if (widthDistance != 0) {
+            scaledWidth = (float) (this.scalingGrid.getWidth() / Math.sqrt(widthDistance));
         }
+
+        float scaledHeight = 1.0f;
+        if (heightDistance != 0) {
+            scaledHeight = (float) (this.scalingGrid.getHeight() / Math.sqrt(heightDistance));
+        }
+
+        boolean result = false;
+
+        Stage stage = this.getStage();
+        for (ShapeDrawBitmapCommand command : this.commands) {
+            result |= command.render9Slice(stage, matrixApplied, colorTransformApplied, renderConfigBits, movedGrid, bounds, scaledWidth, scaledHeight);
+        }
+
+        return result;
     }
 
-    @Override
-    public void collisionRender(Matrix2x3 matrix, ColorTransform colorTransform) {
-
-    }
-
-    @Override
-    public boolean isShape() {
-        return true;
+    public Rect getScalingGrid() {
+        return scalingGrid;
     }
 }

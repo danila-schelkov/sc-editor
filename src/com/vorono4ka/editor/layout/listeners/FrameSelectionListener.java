@@ -27,16 +27,12 @@ public class FrameSelectionListener implements ListSelectionListener {
         DisplayObject selectedObject = Main.editor.getSelectedObject();
         if (!selectedObject.isMovieClip()) return;
 
-        int index = (int) this.table.getValueAt(selectedRow, 0);
-
         MovieClip movieClip = (MovieClip) selectedObject;
 
         MovieClipInfoPanel panel = (MovieClipInfoPanel) Main.editor.getWindow().getInfoPanel().getPanel();
         panel.clearFrameElements();
 
-//        movieClip.setLoopFrame(index);
-        movieClip.setFrame(index);
-        Main.editor.updateCanvas();
+        int index = (int) this.table.getValueAt(selectedRow, 0);
 
         MovieClipFrameElement[] frameElements = movieClip.getFrames()[index].getElements();
         for (int i = 0; i < frameElements.length; i++) {

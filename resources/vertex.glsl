@@ -15,6 +15,6 @@ void main()
 {
     gl_Position = pmv * vec4(aPos, 0.0f, 1.0f);
     texCoord = aTexCoord;
-    colorMul = aColorMul;  // vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    colorAdd = aColorAdd;  // vec3(0.0f, 0.0f, 0.0f);
+    colorMul = aColorMul;
+    colorAdd = aColorAdd;
 }

@@ -3,14 +3,19 @@ package com.vorono4ka.swf.displayObjects;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Point;
 import com.vorono4ka.math.Rect;
+import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
-import com.vorono4ka.swf.displayObjects.original.SWFTexture;
+import com.vorono4ka.swf.originalObjects.SWFTexture;
+
+import java.util.Arrays;
 
 public class ShapeDrawBitmapCommand {
+    private Tag tag;
+
     private int vertexCount;
     private Point[] shapePoints;
     private Point[] sheetPoints;
@@ -18,6 +23,8 @@ public class ShapeDrawBitmapCommand {
     private GLImage image;
 
     public void load(SupercellSWF swf, Tag tag) {
+        this.tag = tag;
+
         int textureId = swf.readUnsignedChar();
 
         this.vertexCount = 4;
@@ -25,32 +32,57 @@ public class ShapeDrawBitmapCommand {
             this.vertexCount = swf.readUnsignedChar();
         }
 
-        SWFTexture texture = swf.getTexture(textureId);
-        this.image = texture.getImage();
+        this.image = swf.getTexture(textureId);
 
         this.shapePoints = new Point[this.vertexCount];
         for (int i = 0; i < this.vertexCount; i++) {
-            int x = swf.readTwip();
-            int y = swf.readTwip();
+            float x = swf.readTwip();
+            float y = swf.readTwip();
 
             this.shapePoints[i] = new Point(x, y);
         }
 
         this.sheetPoints = new Point[this.vertexCount];
         for (int i = 0; i < this.vertexCount; i++) {
-            int u = swf.readShort();
-            int v = swf.readShort();
+            float u = swf.readShort();
+            float v = swf.readShort();
 
             if (tag != Tag.SHAPE_DRAW_BITMAP_COMMAND_3) {
-                u /= 0xFFFF * texture.getWidth();  // width
-                v /= 0xFFFF * texture.getHeight();  // height
+                u /= 65535f * this.image.getWidth();  // width
+                v /= 65535f * this.image.getHeight();  // height
             }
 
             this.sheetPoints[i] = new Point(u, v);
         }
     }
 
-    public void render(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits) {
+    public void save(ByteStream stream) {
+        stream.writeUnsignedChar(((SWFTexture) this.image).getIndex());
+
+        if (this.tag != Tag.SHAPE_DRAW_BITMAP_COMMAND) {
+            stream.writeUnsignedChar(this.vertexCount);
+        }
+
+        for (Point point : this.shapePoints) {
+            stream.writeTwip(point.getX());
+            stream.writeTwip(point.getY());
+        }
+
+        for (Point point : this.sheetPoints) {
+            float u = point.getX();
+            float v = point.getY();
+
+            if (this.tag != Tag.SHAPE_DRAW_BITMAP_COMMAND_3) {
+                u *= 65535f / this.image.getWidth();  // width
+                v *= 65535f / this.image.getHeight();  // height
+            }
+
+            stream.writeShort((int) u);
+            stream.writeShort((int) v);
+        }
+    }
+
+    public boolean render(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits) {
         Rect bounds = new Rect();
 
         float[] transformedPoints = new float[this.vertexCount * 2];
@@ -68,8 +100,6 @@ public class ShapeDrawBitmapCommand {
 
             bounds.addPoint(x, y);
         }
-
-//        System.out.printf("Bounds rect: %f %f %f %f, Size: (%f, %f)%n", bounds.getMinX(), bounds.getMinY(), bounds.getMaxX(), bounds.getMaxY(), bounds.getWidth(), bounds.getHeight());
 
         int trianglesCount = this.vertexCount - 2;
         int[] indices = new int[trianglesCount * 3];
@@ -105,15 +135,129 @@ public class ShapeDrawBitmapCommand {
                     alpha
                 );
             }
+
+            return true;
         }
+
+        return false;
     }
 
-    public void render9Slice(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int a3, Rect movedGrid, Rect bounds, float scaledWidth, float scaledHeight) {
+    public boolean render9Slice(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, Rect safeArea, Rect shapeBounds, float width, float height) {
+        Rect bounds = new Rect();
 
+        float[] transformedPoints = new float[this.vertexCount * 2];
+        for (int i = 0; i < this.vertexCount; i++) {
+            float x = this.getX(i);
+            if (x <= safeArea.getLeft()) {
+                x = Math.min(safeArea.getMidX(), shapeBounds.getLeft() + (x - shapeBounds.getLeft()) * width);
+            } else if (x >= safeArea.getRight()) {
+                x = Math.max(safeArea.getMidX(), shapeBounds.getRight() + (x - shapeBounds.getRight()) * width);
+            }
+
+            float y = this.getY(i);
+            if (y <= safeArea.getTop()) {
+                y = Math.min(safeArea.getMidY(), shapeBounds.getTop() + (y - shapeBounds.getTop()) * height);
+            } else if (y >= safeArea.getBottom()) {
+                y = Math.max(safeArea.getMidY(), shapeBounds.getBottom() + (y - shapeBounds.getBottom()) * height);
+            }
+
+            float appliedX = matrix.applyX(x, y);
+            float appliedY = matrix.applyY(x, y);
+
+            transformedPoints[i * 2] = appliedX;
+            transformedPoints[i * 2 + 1] = appliedY;
+
+            if (i == 0) {
+                bounds = new Rect(appliedX, appliedY, appliedX, appliedY);
+                continue;
+            }
+
+            bounds.addPoint(appliedX, appliedY);
+        }
+
+        int trianglesCount = this.vertexCount - 2;
+        int[] indices = new int[trianglesCount * 3];
+        for (int i = 0; i < trianglesCount; i++) {
+            indices[i * 3] = 0;
+            indices[i * 3 + 1] = i + 1;
+            indices[i * 3 + 2] = i + 2;
+        }
+
+        if (stage.startShape(bounds, this.image, renderConfigBits)) {
+            stage.addTriangles(trianglesCount, indices);
+
+            float redMultiplier = colorTransform.getRedMultiplier() / 255f;
+            float greenMultiplier = colorTransform.getGreenMultiplier() / 255f;
+            float blueMultiplier = colorTransform.getBlueMultiplier() / 255f;
+            float redAddition = colorTransform.getRedAddition() / 255f;
+            float greenAddition = colorTransform.getGreenAddition() / 255f;
+            float blueAddition = colorTransform.getBlueAddition() / 255f;
+            float alpha = colorTransform.getAlpha() / 255f;
+
+            for (int i = 0; i < this.vertexCount; i++) {
+                stage.addVertex(
+                    transformedPoints[i * 2],
+                    transformedPoints[i * 2 + 1],
+                    this.getU(i),
+                    this.getV(i),
+                    redMultiplier,
+                    greenMultiplier,
+                    blueMultiplier,
+                    redAddition,
+                    greenAddition,
+                    blueAddition,
+                    alpha
+                );
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
-    public void collisionRender(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform) {
-        this.render(stage, matrix, colorTransform, 0);
+    public boolean collisionRender(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform) {
+        return this.render(stage, matrix, colorTransform, 0);
+    }
+
+    public boolean renderUV(Stage stage, int renderConfigBits) {
+        Rect bounds = new Rect();
+
+        float[] transformedPoints = new float[this.vertexCount * 2];
+        for (int i = 0; i < this.vertexCount; i++) {
+            float x = this.getU(i) * this.image.getWidth() - this.image.getWidth() / 2f;
+            float y = this.getV(i) * this.image.getHeight() - this.image.getHeight() / 2f;
+
+            transformedPoints[i * 2] = x;
+            transformedPoints[i * 2 + 1] = y;
+
+            if (i == 0) {
+                bounds = new Rect(x, y, x, y);
+                continue;
+            }
+
+            bounds.addPoint(x, y);
+        }
+
+        int trianglesCount = this.vertexCount - 2;
+        int[] indices = new int[trianglesCount * 3];
+        for (int i = 0; i < trianglesCount; i++) {
+            indices[i * 3] = 0;
+            indices[i * 3 + 1] = i + 1;
+            indices[i * 3 + 2] = i + 2;
+        }
+
+        if (stage.startShape(bounds, stage.getGradientTexture(), renderConfigBits)) {
+            stage.addTriangles(trianglesCount, indices);
+
+            for (int i = 0; i < this.vertexCount; i++) {
+                stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], 1f, 0, 1, 0, 0, 1, 0, 0, 0.5f);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public float getX(int pointIndex) {
@@ -146,7 +290,33 @@ public class ShapeDrawBitmapCommand {
         point.setY(v * 65535f);
     }
 
+    public SWFTexture getTexture() {
+        return (SWFTexture) image;
+    }
+
+    public Tag getTag() {
+        return tag;
+    }
+
+    public void setTag(Tag tag) {
+        this.tag = tag;
+    }
+
     public int getVertexCount() {
         return vertexCount;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == this) return true;
+
+        if (other instanceof ShapeDrawBitmapCommand) {
+            ShapeDrawBitmapCommand command = (ShapeDrawBitmapCommand) other;
+
+            return Arrays.equals(command.shapePoints, this.shapePoints) &&
+                    Arrays.equals(command.sheetPoints, this.sheetPoints);
+        }
+
+        return false;
     }
 }

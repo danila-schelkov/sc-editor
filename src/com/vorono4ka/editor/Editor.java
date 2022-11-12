@@ -3,18 +3,22 @@ package com.vorono4ka.editor;
 import com.jogamp.opengl.GLAnimatorControl;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
+import com.vorono4ka.editor.displayObjects.SpriteSheet;
 import com.vorono4ka.editor.layout.Window;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.menubar.menus.EditMenu;
 import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
 import com.vorono4ka.editor.layout.panels.info.MovieClipInfoPanel;
+import com.vorono4ka.editor.layout.panels.info.ShapeInfoPanel;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.swf.MovieClipFrame;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
-import com.vorono4ka.swf.displayObjects.original.MovieClipOriginal;
-import com.vorono4ka.swf.displayObjects.original.SWFTexture;
+import com.vorono4ka.swf.displayObjects.Shape;
+import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
+import com.vorono4ka.swf.originalObjects.MovieClipOriginal;
+import com.vorono4ka.swf.originalObjects.SWFTexture;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 
@@ -28,8 +32,11 @@ public class Editor {
     private SupercellSWF swf;
 
     private final List<DisplayObject> clonedObjects;
-    private final List<Integer> selectedIndices;  // history
+    private final List<Integer> selectedIndices;
     private int selectedIndex;
+
+    private List<SpriteSheet> spriteSheets;
+    private boolean shouldDisplayPolygons;
 
     public Editor() {
         this.window = new Window();
@@ -37,6 +44,8 @@ public class Editor {
         this.clonedObjects = new ArrayList<>();
         this.selectedIndices = new ArrayList<>();
         this.selectedIndex = -1;
+
+        this.spriteSheets = new ArrayList<>();
     }
 
     public void openFile(String path) {
@@ -76,7 +85,17 @@ public class Editor {
         for (int i = 0; i < this.swf.getTexturesCount(); i++) {
             SWFTexture texture = this.swf.getTexture(i);
             texturesTable.addRow(i, texture.getWidth(), texture.getHeight(), texture.getPixelFormat());
+
+            SpriteSheet spriteSheet = new SpriteSheet(texture);
+            spriteSheet.setBitmaps(swf.getDrawBitmapsOfTexture(i));
+            this.spriteSheets.add(spriteSheet);
         }
+    }
+
+    public void saveFile(String path) {
+        if (this.swf == null) return;
+
+        this.swf.save(path);
     }
 
     public void closeFile() {
@@ -88,7 +107,10 @@ public class Editor {
         infoBlock.setPanel(null);
 
         this.clonedObjects.clear();
+        this.selectedIndices.clear();
         this.selectedIndex = -1;
+
+        this.spriteSheets.clear();
 
         EditMenu editMenu = this.window.getMenubar().getEditMenu();
         editMenu.checkPreviousAvailable();
@@ -98,11 +120,13 @@ public class Editor {
             IntBuffer textureIds = IntBuffer.allocate(this.swf.getTexturesCount());
             for (int i = 0; i < this.swf.getTexturesCount(); i++) {
                 SWFTexture texture = this.swf.getTexture(i);
-                textureIds.put(texture.getImage().getTextureId());
+                textureIds.put(texture.getTextureId());
             }
 
-            Stage.getInstance().doInRenderThread(() -> Stage.getInstance().getGl().glDeleteTextures(0, textureIds));
-            Stage.getInstance().clearBatches();
+            Stage stage = Stage.getInstance();
+            stage.doInRenderThread(() -> stage.getGl().glDeleteTextures(0, textureIds));
+            stage.clearBatches();
+            stage.removeAllChildren();
 
             this.swf = null;
         }
@@ -121,35 +145,34 @@ public class Editor {
 
     public DisplayObject getSelectedObject() {
         if (this.selectedIndex == -1) return null;
-        return this.clonedObjects.get(this.selectedIndex);
+        return this.clonedObjects.get(this.selectedIndices.get(this.selectedIndex));
     }
 
     public void selectObject(DisplayObject displayObject) {
-//        int index = this.clonedIds.indexOf(displayObject.getId());
-//        if (index != -1) {
-//            this.selectObject(index);
-//            return;
-//        }
-
         if (!this.clonedObjects.contains(displayObject)) {
             this.clonedObjects.add(displayObject);
         }
 
         int index = this.clonedObjects.indexOf(displayObject);
-        this.selectedIndices.add(index);
-        this.selectObject(index);
+
+        if (this.selectedIndex != -1 && this.selectedIndex + 1 < this.selectedIndices.size()) {
+            this.selectedIndices.subList(this.selectedIndex + 1, this.selectedIndices.size()).clear();
+        }
+
+        this.selectedIndices.add(++this.selectedIndex, index);
+        this.selectObject(this.selectedIndex);
     }
 
     private void selectObject(int objectIndex) {
         if (objectIndex < 0) return;
-        if (objectIndex >= this.clonedObjects.size()) return;
+        if (objectIndex >= this.selectedIndices.size()) return;
 
         this.selectedIndex = objectIndex;
 
         EditorInfoPanel infoBlock = this.window.getInfoPanel();
         infoBlock.setPanel(null);
 
-        DisplayObject displayObject = this.clonedObjects.get(objectIndex);
+        DisplayObject displayObject = this.clonedObjects.get(this.selectedIndices.get(objectIndex));
         if (displayObject.isMovieClip()) {
             MovieClip movieClip = (MovieClip) displayObject;
 
@@ -158,16 +181,16 @@ public class Editor {
             DisplayObject[] timelineChildren = movieClip.getTimelineChildren();
             String[] timelineChildrenNames = movieClip.getTimelineChildrenNames();
             for (int i = 0; i < timelineChildren.length; i++) {
-                movieClipInfoPanel.addTimelineChild(i, timelineChildren[i].getId(), timelineChildrenNames[i]);
+                movieClipInfoPanel.addTimelineChild(String.format("%d (%s)", i, timelineChildren[i].getClass().getSimpleName()), timelineChildren[i].getId(), timelineChildrenNames[i]);
             }
 
             MovieClipFrame[] frames = movieClip.getFrames();
             for (int i = 0; i < frames.length; i++) {
-                MovieClipFrame frame = frames[i];
-                movieClipInfoPanel.addFrame(i, frame.getLabel());
+                movieClipInfoPanel.addFrame(i, movieClip.getFrameLabel(i));
             }
 
             movieClipInfoPanel.setTextInfo(
+                "Export name: " + movieClip.getExportName(),
                 "FPS: " + movieClip.getFps(),
                 String.format("Duration: %.2fs", movieClip.getDuration())
             );
@@ -175,26 +198,54 @@ public class Editor {
             infoBlock.setPanel(movieClipInfoPanel);
 
             movieClipInfoPanel.getFramesTable().select(movieClip.getCurrentFrame());
+        } else if (displayObject.isShape()) {
+            ShapeInfoPanel shapeInfoPanel = new ShapeInfoPanel();
+
+            Shape shape = (Shape) displayObject;
+
+            for (int i = 0; i < shape.getCommandCount(); i++) {
+                ShapeDrawBitmapCommand command = shape.getCommand(i);
+                shapeInfoPanel.addCommandInfo(i, command.getTexture().getIndex(), command.getTag());
+            }
+
+            infoBlock.setPanel(shapeInfoPanel);
         }
 
         EditMenu editMenu = this.window.getMenubar().getEditMenu();
         editMenu.checkPreviousAvailable();
         editMenu.checkNextAvailable();
 
-        Stage.getInstance().clearBatches();
+        Stage stage = Stage.getInstance();
+        stage.clearBatches();
+        stage.removeAllChildren();
+        stage.addChild(displayObject);
         this.updateCanvas();
     }
 
     public void selectPrevious() {
-        this.selectObject(this.selectedIndex - 1);
+        this.selectObject(--this.selectedIndex);
+        this.selectObjectInTable(this.getSelectedObject());
     }
 
     public void selectNext() {
-        this.selectObject(this.selectedIndex + 1);
+        this.selectObject(++this.selectedIndex);
+        this.selectObjectInTable(this.getSelectedObject());
+    }
+
+    public void selectObjectInTable(DisplayObject displayObject) {
+        Table objectsTable = this.window.getObjectsTable();
+        int row = objectsTable.indexOf(displayObject.getId(), 0);
+        if (row == -1) {
+            this.window.getDisplayObjectPanel().resetFilter();
+
+            row = objectsTable.indexOf(displayObject.getId(), 0);
+        }
+
+        objectsTable.select(row);
     }
 
     public int getClonedObjectCount() {
-        return clonedObjects.size();
+        return this.selectedIndices.size();
     }
 
     public int getSelectedIndex() {
@@ -211,5 +262,17 @@ public class Editor {
 
     public FPSAnimator getAnimator() {
         return (FPSAnimator) this.window.getCanvas().getAnimator();
+    }
+
+    public SpriteSheet getSpriteSheet(int index) {
+        return this.spriteSheets.get(index);
+    }
+
+    public boolean shouldDisplayPolygons() {
+        return this.shouldDisplayPolygons;
+    }
+
+    public void setShouldDisplayPolygons(boolean shouldDisplayPolygons) {
+        this.shouldDisplayPolygons = shouldDisplayPolygons;
     }
 }

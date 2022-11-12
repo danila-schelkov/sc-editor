@@ -29,7 +29,7 @@ class BlockCompressionState
     {
         this.baseAddress = baseAddress;
         hashTable = new int[1 << parameters.getHashLog()];
-        chainTable = new int[1 << parameters.getChainLog()]; // TODO: chain table not used by Strategy.FAST
+        chainTable = new int[1 << parameters.getChainLog()];
     }
 
     public void reset()

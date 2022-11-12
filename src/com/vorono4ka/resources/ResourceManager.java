@@ -10,7 +10,7 @@ public class ResourceManager {
         return Files.exists(Path.of(path));
     }
 
-    public static String load(String filename) {
+    public static String loadString(String filename) {
         ClassLoader classLoader = ResourceManager.class.getClassLoader();
         try (InputStream resource = classLoader.getResourceAsStream(filename)) {
             if (resource == null) return null;
@@ -19,5 +19,21 @@ public class ResourceManager {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static byte[] loadBytes(String filename) {
+        ClassLoader classLoader = ResourceManager.class.getClassLoader();
+        try (InputStream resource = classLoader.getResourceAsStream(filename)) {
+            if (resource == null) return null;
+
+            return resource.readAllBytes();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static InputStream loadStream(String filename) {
+        ClassLoader classLoader = ResourceManager.class.getClassLoader();
+        return classLoader.getResourceAsStream(filename);
     }
 }

@@ -2,8 +2,10 @@ package com.vorono4ka.swf;
 
 import com.vorono4ka.math.MathHelper;
 import com.vorono4ka.streams.ByteStream;
+import com.vorono4ka.swf.constants.Tag;
+import com.vorono4ka.swf.originalObjects.SavableObject;
 
-public class ColorTransform {
+public class ColorTransform implements SavableObject {
     private int redAddition;
     private int greenAddition;
     private int blueAddition;
@@ -37,6 +39,22 @@ public class ColorTransform {
         this.redMultiplier = stream.readUnsignedChar();
         this.greenMultiplier = stream.readUnsignedChar();
         this.blueMultiplier = stream.readUnsignedChar();
+    }
+
+    @Override
+    public void save(ByteStream stream) {
+        stream.writeUnsignedChar(this.redAddition);
+        stream.writeUnsignedChar(this.greenAddition);
+        stream.writeUnsignedChar(this.blueAddition);
+        stream.writeUnsignedChar(this.alpha);
+        stream.writeUnsignedChar(this.redMultiplier);
+        stream.writeUnsignedChar(this.greenMultiplier);
+        stream.writeUnsignedChar(this.blueMultiplier);
+    }
+
+    @Override
+    public Tag getTag() {
+        return Tag.COLOR_TRANSFORM;
     }
 
     public void multiply(ColorTransform colorTransform) {

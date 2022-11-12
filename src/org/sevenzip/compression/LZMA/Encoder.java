@@ -1112,9 +1112,6 @@ public class Encoder {
 		try {
 			setStreams(inStream, outStream);
 			while (true) {
-
-
-
 				codeOneBlock(processedInSize, processedOutSize, finished);
 				if (finished[0])
 					return;

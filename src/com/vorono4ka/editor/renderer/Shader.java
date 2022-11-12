@@ -12,11 +12,11 @@ public class Shader {
         this.gl = gl;
 
         int vertexShader = this.gl.glCreateShader(GL3.GL_VERTEX_SHADER);
-        this.gl.glShaderSource(vertexShader, 1, new String[] {ResourceManager.load(vertexFile)}, null);
+        this.gl.glShaderSource(vertexShader, 1, new String[] {ResourceManager.loadString(vertexFile)}, null);
         this.gl.glCompileShader(vertexShader);
 
         int fragmentShader = this.gl.glCreateShader(GL3.GL_FRAGMENT_SHADER);
-        this.gl.glShaderSource(fragmentShader, 1, new String[] {ResourceManager.load(fragmentFile)}, null);
+        this.gl.glShaderSource(fragmentShader, 1, new String[] {ResourceManager.loadString(fragmentFile)}, null);
         this.gl.glCompileShader(fragmentShader);
 
         this.id = this.gl.glCreateProgram();

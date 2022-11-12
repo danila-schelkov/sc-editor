@@ -1,37 +1,37 @@
-package com.vorono4ka.swf.displayObjects.original;
+package com.vorono4ka.swf.originalObjects;
 
 import com.jogamp.opengl.GL3;
-import com.vorono4ka.editor.renderer.Stage;
+import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import java.util.Arrays;
 
-public class SWFTexture {
+public class SWFTexture extends GLImage implements SavableObject {
     public static final int TILE_SIZE = 32;
-
-    private final GLImage image;
-
-    private int width;
-    private int height;
-    private int pixelFormat;
 
     private Buffer pixels;
 
+    private int index;
+
+    private Tag tag;
+
     public SWFTexture() {
-        this.image = new GLImage();
+        this.index = -1;
+    }
+
+    public SWFTexture(Tag tag) {
+        this.tag = tag;
+        this.index = -1;
     }
 
     public void load(SupercellSWF swf, Tag tag, boolean hasTexture) {
+        this.tag = tag;
+
         int pixelFormat = GL3.GL_RGBA;
         int pixelType = GL3.GL_UNSIGNED_BYTE;
         int pixelBytes = 4;
@@ -51,7 +51,7 @@ public class SWFTexture {
                 pixelFormat = GL3.GL_RGB;
                 pixelBytes = 2;
             }
-            case 6 -> {  // TODO: fix this format
+            case 6 -> {
                 pixelFormat = GL3.GL_LUMINANCE_ALPHA;
                 pixelBytes = 2;
             }
@@ -69,9 +69,16 @@ public class SWFTexture {
 
         int finalPixelFormat = pixelFormat;
         int finalPixelType = pixelType;
-        Stage.getInstance().doInRenderThread(() -> GLImage.createWithFormat(this, false, 0, this.width, this.height, finalPixelFormat, finalPixelType));
+        GLImage.createWithFormat(this, false, 0, this.width, this.height, null, finalPixelFormat, finalPixelType);
 
-        this.loadTexture(swf, this.width, this.height, 0, pixelBytes, pixelType, ((tag.ordinal() - 27) & 0xFF) < 3);
+        this.loadTexture(swf, this.width, this.height, 0, pixelBytes, pixelType, tag == Tag.TEXTURE_5 || tag == Tag.TEXTURE_6 || tag == Tag.TEXTURE_7);
+    }
+
+    @Override
+    public void save(ByteStream stream) {
+        stream.writeUnsignedChar(0);  // TODO: calculate type
+        stream.writeShort(this.width);
+        stream.writeShort(this.height);
     }
 
     private void loadTexture(SupercellSWF swf, int width, int height, int mipmapLevel, int pixelBytes, int pixelType, boolean separatedByTiles) {
@@ -113,7 +120,7 @@ public class SWFTexture {
             this.pixels = ByteBuffer.wrap(swf.readByteArray(width * height));
         }
 
-        Stage.getInstance().doInRenderThread(() -> GLImage.updateSubImage(this, this.pixels, 0, 0, width, height, pixelType, mipmapLevel));
+        GLImage.updateSubImage(this, this.pixels, 0, 0, width, height, pixelType, mipmapLevel);
     }
 
     private void loadTextureAsShort(SupercellSWF swf, int width, int height, int mipmapLevel, int pixelType, boolean separatedByTiles) {
@@ -144,26 +151,10 @@ public class SWFTexture {
 
             this.pixels = pixels;
         } else {
-            short[] array = swf.readShortArray(width * height);
-            this.pixels = ShortBuffer.wrap(array);
-
-//            int[] iArray = new int[array.length];
-//            for (int i = 0; i < array.length; i++) {
-//                int luminance = (array[i] >> 8) & 0xFF;
-//                int alpha = array[i] & 0xFF;
-//                iArray[i] = (alpha << 8) | luminance;
-//            }
-//            BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_USHORT_GRAY);
-//            bufferedImage.setRGB(0, 0, width, height, iArray, 0, width);
-//
-//            try {
-//                ImageIO.write(bufferedImage, "PNG", new File("test.png"));
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
+            this.pixels = ShortBuffer.wrap(swf.readShortArray(width * height));
         }
 
-        Stage.getInstance().doInRenderThread(() -> GLImage.updateSubImage(this, this.pixels, 0, 0, width, height, pixelType, mipmapLevel));
+        GLImage.updateSubImage(this, this.pixels, 0, 0, width, height, pixelType, mipmapLevel);
     }
 
     private void loadTextureAsInt(SupercellSWF swf, int width, int height, int mipmapLevel, int pixelType, boolean separatedByTiles) {
@@ -197,7 +188,7 @@ public class SWFTexture {
             this.pixels = IntBuffer.wrap(swf.readIntArray(width * height));
         }
 
-        Stage.getInstance().doInRenderThread(() -> GLImage.updateSubImage(this, this.pixels, 0, 0, width, height, pixelType, mipmapLevel));
+        GLImage.updateSubImage(this, this.pixels, 0, 0, width, height, pixelType, mipmapLevel);
     }
 
     private byte[] readTileAsChar(SupercellSWF swf, int width, int height) {
@@ -212,19 +203,24 @@ public class SWFTexture {
         return swf.readIntArray(width * height);
     }
 
-    public int getWidth() {
-        return width;
+    public int getIndex() {
+        return this.index;
     }
 
-    public int getHeight() {
-        return height;
+    public void setIndex(int index) {
+        this.index = index;
     }
 
-    public int getPixelFormat() {
-        return this.pixelFormat;
+    public Tag getTag() {
+        return tag;
     }
 
-    public GLImage getImage() {
-        return image;
+    public void setTag(Tag tag) {
+        this.tag = tag;
+    }
+
+    @Override
+    public String toString() {
+        return "width=" + this.width + ", height=" + this.height;
     }
 }

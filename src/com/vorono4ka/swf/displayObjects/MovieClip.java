@@ -1,7 +1,11 @@
 package com.vorono4ka.swf.displayObjects;
 
+import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.*;
 import com.vorono4ka.swf.constants.MovieClipState;
+import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
+import com.vorono4ka.swf.originalObjects.DisplayObjectOriginal;
+import com.vorono4ka.swf.originalObjects.MovieClipOriginal;
 
 public class MovieClip extends Sprite {
     private String exportName;
@@ -20,11 +24,38 @@ public class MovieClip extends Sprite {
         this.loopFrame = -1;
     }
 
+    public static MovieClip createMovieClip(MovieClipOriginal original, SupercellSWF swf, Rect scalingGrid) throws UnableToFindObjectException {
+        original.createTimelineChildren(swf);
+
+        MovieClip movieClip = new MovieClip();
+        movieClip.id = original.getId();
+        movieClip.matrixBank = swf.getMatrixBank(original.getMatrixBankIndex());
+
+        DisplayObjectOriginal[] children = original.getChildren();
+        DisplayObject[] childrenArray = new DisplayObject[original.getChildrenCount()];
+        for (int i = 0; i < childrenArray.length; i++) {
+            DisplayObjectOriginal child = children[i];
+            DisplayObject displayObject = child.clone(swf, original.getScalingGrid());
+
+            displayObject.setVisibleRecursive((original.getChildrenBlends()[i] & 64) == 0);
+            displayObject.setInteractiveRecursive(true);
+
+            childrenArray[i] = displayObject;
+        }
+        movieClip.timelineChildren = childrenArray;
+        movieClip.timelineChildrenNames = original.getChildrenNames();
+        movieClip.frames = original.getFrames();
+        movieClip.setFPS(original.getFps());
+        movieClip.exportName = original.getExportName();
+        movieClip.setFrame(0);
+
+        return movieClip;
+    }
+
     @Override
-    public void render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
+    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
         if (deltaTime <= 0.0f) {
-            super.render(matrix, colorTransform, a4, deltaTime);
-            return;
+            return super.render(matrix, colorTransform, a4, deltaTime);
         }
 
         if (this.frameTime >= this.msPerFrame) {
@@ -34,7 +65,7 @@ public class MovieClip extends Sprite {
             int nextFrame;
             if (this.state == MovieClipState.PLAYING_ANY_DIRECTION) {
                 if (this.frameSkippingType != 0) {
-                    if ( this.loopFrame >= this.currentFrame ) {
+                    if (this.loopFrame >= this.currentFrame) {
                         nextFrame = this.currentFrame + framesPassed;
                         if (nextFrame > this.loopFrame) {
                             nextFrame = this.loopFrame;
@@ -47,12 +78,12 @@ public class MovieClip extends Sprite {
                     }
                 } else {
                     int framesSkipped = 1;
-                    if ( this.loopFrame < this.currentFrame )
+                    if (this.loopFrame < this.currentFrame)
                         framesSkipped = this.frames.length - 1;
                     nextFrame = this.currentFrame + framesSkipped;
                 }
             } else {
-                if ( this.frameSkippingType != 0 ) {
+                if (this.frameSkippingType != 0) {
                     nextFrame = this.currentFrame + framesPassed;
                     if (this.currentFrame < this.loopFrame && nextFrame > this.loopFrame) {
                         nextFrame = this.loopFrame;
@@ -73,12 +104,17 @@ public class MovieClip extends Sprite {
             this.frameTime += deltaTime;
         }
 
-        super.render(matrix, colorTransform, a4, deltaTime);
+        return super.render(matrix, colorTransform, a4, deltaTime);
     }
 
     @Override
-    public void collisionRender(Matrix2x3 matrix, ColorTransform colorTransform) {
+    public boolean collisionRender(Matrix2x3 matrix) {
+        return false;
+    }
 
+    @Override
+    public boolean isMovieClip() {
+        return true;
     }
 
     public void setFrame(int index) {
@@ -170,43 +206,33 @@ public class MovieClip extends Sprite {
     }
 
     public void gotoAndStop(String frameLabel) {
-        int frameIndex = -1;
-
-        if (frameLabel != null) {
-            for (int i = 0; i < this.frames.length; i++) {
-                if (this.frames[i].getLabel().equals(frameLabel)) {
-                    frameIndex = i;
-                    break;
-                }
-            }
-        }
+        int frameIndex = getFrameIndex(frameLabel);
 
         this.gotoAndStopFrameIndex(frameIndex);
     }
 
+    public void gotoAndPlay(String frameLabel) {
+        this.gotoAndPlay(frameLabel, null);
+    }
+
     public void gotoAndPlay(String frameLabel, String loopFrameLabel) {
-        int frameIndex = -1;
-        int loopFrameIndex = -1;
-
-        if (frameLabel != null) {
-            for (int i = 0; i < this.frames.length; i++) {
-                if (this.frames[i].getLabel().equals(frameLabel)) {
-                    frameIndex = i;
-                    break;
-                }
-            }
-        }
-
-        if (loopFrameLabel != null) {
-            for (int i = 0; i < this.frames.length; i++) {
-                if (this.frames[i].getLabel().equals(loopFrameLabel)) {
-                    loopFrameIndex = i;
-                    break;
-                }
-            }
-        }
+        int frameIndex = getFrameIndex(frameLabel);
+        int loopFrameIndex = getFrameIndex(loopFrameLabel);
 
         this.gotoAndPlayFrameIndex(frameIndex, loopFrameIndex);
+    }
+
+    private int getFrameIndex(String frameLabel) {
+        if (frameLabel != null) {
+            for (int i = 0; i < this.frames.length; i++) {
+                String label = this.frames[i].getLabel();
+                if (label != null && label.equals(frameLabel)) {
+                    return i;
+                }
+            }
+        }
+
+        return -1;
     }
 
     public void gotoAndStopFrameIndex(int frame) {
@@ -239,25 +265,13 @@ public class MovieClip extends Sprite {
         this.setState(state);
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public int getCurrentFrame() {
         return currentFrame;
-    }
-
-    public void setLoopFrame(int frame) {
-        this.loopFrame = frame;
     }
 
 
     public String getExportName() {
         return exportName;
-    }
-
-    public void setExportName(String exportName) {
-        this.exportName = exportName;
     }
 
     public int getFps() {
@@ -281,16 +295,8 @@ public class MovieClip extends Sprite {
         return timelineChildren;
     }
 
-    public void setTimelineChildren(DisplayObject[] timelineChildren) {
-        this.timelineChildren = timelineChildren;
-    }
-
     public String[] getTimelineChildrenNames() {
         return timelineChildrenNames;
-    }
-
-    public void setTimelineChildrenNames(String[] timelineChildrenNames) {
-        this.timelineChildrenNames = timelineChildrenNames;
     }
 
     public MovieClipFrame[] getFrames() {
@@ -299,18 +305,5 @@ public class MovieClip extends Sprite {
 
     public String getFrameLabel(int index) {
         return frames[index].getLabel();
-    }
-
-    public void setFrames(MovieClipFrame[] frames) {
-        this.frames = frames;
-    }
-
-    public void setMatrixBank(ScMatrixBank matrixBank) {
-        this.matrixBank = matrixBank;
-    }
-
-    @Override
-    public boolean isMovieClip() {
-        return true;
     }
 }

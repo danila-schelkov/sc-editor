@@ -22,14 +22,23 @@ public class FileMenu extends JMenu {
 
         JMenuItem open = new JMenuItem("Open", KeyEvent.VK_O);
         open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
+
+        JMenuItem save = new JMenuItem("Save", KeyEvent.VK_O);
+        save.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
+
+        JMenuItem saveAs = new JMenuItem("Save as...", KeyEvent.VK_O);
+        saveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
         JMenuItem close = new JMenuItem("Close", KeyEvent.VK_C);
         JMenuItem exit = new JMenuItem("Exit");
 
         open.addActionListener(this::open);
+        save.addActionListener(this::save);
         close.addActionListener(FileMenu::close);
         exit.addActionListener(FileMenu::exit);
 
         this.add(open);
+        this.add(save);
+        this.add(saveAs);
         this.add(close);
 
         this.addSeparator();
@@ -65,6 +74,39 @@ public class FileMenu extends JMenu {
         close(null);
 
         Main.editor.openFile(path);
+    }
+
+    private void save(ActionEvent actionEvent) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc)", "sc"));
+
+        int result = fileChooser.showSaveDialog(this.frame);
+        if (result != JFileChooser.APPROVE_OPTION) return;
+
+        String path = fileChooser.getSelectedFile().getPath();
+        if (!path.endsWith(".sc")) {
+            path += ".sc";
+        }
+
+        if (ResourceManager.doesFileExist(path)) {
+            Object[] options = {"Yes", "Cancel"};
+            int warningResult = JOptionPane.showOptionDialog(
+                    this.frame,
+                    "There is already a file with that name.\n" +
+                            "Do you want to replace it?",
+                    "Answer the question",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.WARNING_MESSAGE,
+                    null,
+                    options,
+                    options[0]
+            );
+
+            if (warningResult != 0) return;
+        }
+
+        Main.editor.saveFile(path);
     }
 
     private static void close(ActionEvent e) {

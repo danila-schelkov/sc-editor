@@ -22,12 +22,12 @@ public class MouseWheelListener implements java.awt.event.MouseWheelListener {
         }
 
         if (scale > 1000f) {
-            stage.setScale(10);
+            stage.setPointSize(10);
             return;
         }
 
         stage.setScaleStep(step);
-        stage.setScale(scale / 100f);
+        stage.setPointSize(scale / 100f);
 
         stage.doInRenderThread(stage::updatePMVMatrix);
         Main.editor.updateCanvas();
