@@ -24,6 +24,10 @@ public class Window {
         this.frame.setVisible(true);
     }
 
+    public void close() {
+        this.frame.dispose();
+    }
+
     public void setTitle(String title) {
         this.frame.setTitle(title);
     }

@@ -30,6 +30,7 @@ import java.util.List;
 
 public class Editor {
     private final EditorWindow window;
+    private final List<UsagesWindow> usagesWindows;
 
     private final List<DisplayObject> clonedObjects;
     private final List<Integer> selectedIndices;
@@ -44,6 +45,7 @@ public class Editor {
 
     public Editor() {
         this.window = new EditorWindow();
+        this.usagesWindows = new ArrayList<>();
 
         this.clonedObjects = new ArrayList<>();
         this.selectedIndices = new ArrayList<>();
@@ -113,6 +115,12 @@ public class Editor {
         this.clonedObjects.clear();
         this.selectedIndices.clear();
         this.selectedIndex = -1;
+
+        for (UsagesWindow usagesWindow : this.usagesWindows) {
+            usagesWindow.close();
+        }
+
+        this.usagesWindows.clear();
 
         this.spriteSheets.clear();
 
@@ -256,6 +264,7 @@ public class Editor {
 
         UsagesWindow usagesWindow = new UsagesWindow();
         usagesWindow.initialize(title);
+        this.usagesWindows.add(usagesWindow);
 
         Table objectsTable = usagesWindow.getObjectsTable();
 
