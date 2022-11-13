@@ -1,8 +1,6 @@
 package com.vorono4ka.editor.layout.listeners;
 
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.layout.Window;
-import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;

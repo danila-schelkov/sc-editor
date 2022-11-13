@@ -236,6 +236,10 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
         return childrenBlends;
     }
 
+    public short[] getChildrenIds() {
+        return childrenIds;
+    }
+
     public String[] getChildrenNames() {
         return childrenNames;
     }

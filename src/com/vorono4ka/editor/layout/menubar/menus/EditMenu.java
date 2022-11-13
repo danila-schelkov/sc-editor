@@ -2,10 +2,8 @@ package com.vorono4ka.editor.layout.menubar.menus;
 
 import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.layout.Window;
-import com.vorono4ka.swf.SupercellSWF;
-import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
-import com.vorono4ka.swf.originalObjects.MovieClipOriginal;
+import com.vorono4ka.editor.layout.EditorWindow;
+import com.vorono4ka.editor.layout.components.Table;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -25,7 +23,8 @@ public class EditMenu extends JMenu {
         find.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
 
         JMenuItem findUsages = new JMenuItem("Find Usages");
-        find.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
+        findUsages.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_DOWN_MASK));
+
         this.previous = new JMenuItem("Previous", KeyEvent.VK_P);
         this.previous.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
         this.next = new JMenuItem("Next", KeyEvent.VK_N);
@@ -47,22 +46,20 @@ public class EditMenu extends JMenu {
     }
 
     private void find(ActionEvent actionEvent) {
-        Window window = Main.editor.getWindow();
+        EditorWindow window = Main.editor.getWindow();
         window.getTabbedPane().setSelectedIndex(0);
         window.getDisplayObjectPanel().setFocusOnTextField();
     }
 
     private void findUsages(ActionEvent event) {
-        SupercellSWF swf = Main.editor.getSwf();
-        int[] ids = swf.getMovieClipsIds();
-        try {
-            for (int i = 0; i < swf.getMovieClipsCount(); i++) {
-                MovieClipOriginal movieClipOriginal = swf.getOriginalMovieClip(ids[i], null);
-                // TODO
-            }
-        } catch (UnableToFindObjectException e) {
-            throw new RuntimeException(e);
-        }
+        Table objectsTable = Main.editor.getWindow().getObjectsTable();
+        int selectedRow = objectsTable.getSelectedRow();
+        if (selectedRow == -1) return;
+
+        int displayObjectId = (int) objectsTable.getValueAt(selectedRow, 0);
+        String displayObjectName = (String) objectsTable.getValueAt(selectedRow, 1);
+
+        Main.editor.findUsages(displayObjectId, displayObjectName);
     }
 
     private void previous(ActionEvent e) {

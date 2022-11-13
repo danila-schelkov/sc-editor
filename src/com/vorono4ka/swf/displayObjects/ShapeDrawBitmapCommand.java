@@ -102,12 +102,7 @@ public class ShapeDrawBitmapCommand {
         }
 
         int trianglesCount = this.vertexCount - 2;
-        int[] indices = new int[trianglesCount * 3];
-        for (int i = 0; i < trianglesCount; i++) {
-            indices[i * 3] = 0;
-            indices[i * 3 + 1] = i + 1;
-            indices[i * 3 + 2] = i + 2;
-        }
+        int[] indices = getIndices(trianglesCount);
 
         if (stage.startShape(bounds, this.image, renderConfigBits)) {
             stage.addTriangles(trianglesCount, indices);
@@ -176,12 +171,7 @@ public class ShapeDrawBitmapCommand {
         }
 
         int trianglesCount = this.vertexCount - 2;
-        int[] indices = new int[trianglesCount * 3];
-        for (int i = 0; i < trianglesCount; i++) {
-            indices[i * 3] = 0;
-            indices[i * 3 + 1] = i + 1;
-            indices[i * 3 + 2] = i + 2;
-        }
+        int[] indices = getIndices(trianglesCount);
 
         if (stage.startShape(bounds, this.image, renderConfigBits)) {
             stage.addTriangles(trianglesCount, indices);
@@ -240,12 +230,7 @@ public class ShapeDrawBitmapCommand {
         }
 
         int trianglesCount = this.vertexCount - 2;
-        int[] indices = new int[trianglesCount * 3];
-        for (int i = 0; i < trianglesCount; i++) {
-            indices[i * 3] = 0;
-            indices[i * 3 + 1] = i + 1;
-            indices[i * 3 + 2] = i + 2;
-        }
+        int[] indices = getIndices(trianglesCount);
 
         if (stage.startShape(bounds, stage.getGradientTexture(), renderConfigBits)) {
             stage.addTriangles(trianglesCount, indices);
@@ -318,5 +303,15 @@ public class ShapeDrawBitmapCommand {
         }
 
         return false;
+    }
+
+    private static int[] getIndices(int trianglesCount) {
+        int[] indices = new int[trianglesCount * 3];
+        for (int i = 0; i < trianglesCount; i++) {
+            indices[i * 3] = 0;
+            indices[i * 3 + 1] = i + 1;
+            indices[i * 3 + 2] = i + 2;
+        }
+        return indices;
     }
 }

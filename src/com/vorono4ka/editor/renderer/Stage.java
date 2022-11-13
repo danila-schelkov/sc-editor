@@ -245,7 +245,7 @@ public class Stage {
         this.stageSprite.removeAllChildren();
     }
 
-    public void setStencilRenderingState(int state) {
+    public void setStencilRenderingState(int state) {  // TODO
 
     }
 

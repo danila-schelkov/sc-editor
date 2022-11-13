@@ -1,13 +1,10 @@
 package com.vorono4ka.editor;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import com.vorono4ka.editor.layout.Window;
+import com.vorono4ka.editor.layout.EditorWindow;
 import com.vorono4ka.resources.ResourceManager;
 
 import javax.swing.*;
-import java.io.File;
-import java.nio.file.Path;
-import java.util.Arrays;
 
 public class Main {
     public static final String TITLE = "SC Editor";
@@ -19,7 +16,7 @@ public class Main {
         SwingUtilities.invokeLater(() -> {
             FlatLightLaf.setup();
 
-            Window window = Main.editor.getWindow();
+            EditorWindow window = Main.editor.getWindow();
             window.initialize(TITLE);
             window.show();
         });
