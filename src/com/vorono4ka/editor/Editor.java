@@ -4,7 +4,8 @@ import com.jogamp.opengl.GLAnimatorControl;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.vorono4ka.editor.displayObjects.SpriteSheet;
-import com.vorono4ka.editor.layout.Window;
+import com.vorono4ka.editor.layout.EditorWindow;
+import com.vorono4ka.editor.layout.UsagesWindow;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.menubar.menus.EditMenu;
 import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
@@ -21,25 +22,28 @@ import com.vorono4ka.swf.originalObjects.MovieClipOriginal;
 import com.vorono4ka.swf.originalObjects.SWFTexture;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
+import com.vorono4ka.utilities.ArrayUtilities;
 
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Editor {
-    private final Window window;
-
-    private SupercellSWF swf;
+    private final EditorWindow window;
 
     private final List<DisplayObject> clonedObjects;
     private final List<Integer> selectedIndices;
+
+    private final List<SpriteSheet> spriteSheets;
+
+    private SupercellSWF swf;
+
     private int selectedIndex;
 
-    private List<SpriteSheet> spriteSheets;
     private boolean shouldDisplayPolygons;
 
     public Editor() {
-        this.window = new Window();
+        this.window = new EditorWindow();
 
         this.clonedObjects = new ArrayList<>();
         this.selectedIndices = new ArrayList<>();
@@ -244,6 +248,34 @@ public class Editor {
         objectsTable.select(row);
     }
 
+    public void findUsages(int displayObjectId, String name) {
+        String title = "Usages";
+        if (name != null && name.length() > 0) {
+            title += " - " + name;
+        }
+
+        UsagesWindow usagesWindow = new UsagesWindow();
+        usagesWindow.initialize(title);
+
+        Table objectsTable = usagesWindow.getObjectsTable();
+
+        int[] ids = this.swf.getMovieClipsIds();
+        try {
+            for (int i = 0; i < this.swf.getMovieClipsCount(); i++) {
+                int movieClipId = ids[i];
+
+                MovieClipOriginal movieClipOriginal = this.swf.getOriginalMovieClip(movieClipId, null);
+                if (ArrayUtilities.contains(movieClipOriginal.getChildrenIds(), (short) displayObjectId)) {
+                    objectsTable.addRow(movieClipId, movieClipOriginal.getExportName(), "MovieClip");
+                }
+            }
+        } catch (UnableToFindObjectException e) {
+            throw new RuntimeException(e);
+        }
+
+        usagesWindow.show();
+    }
+
     public int getClonedObjectCount() {
         return this.selectedIndices.size();
     }
@@ -256,7 +288,7 @@ public class Editor {
         return swf;
     }
 
-    public Window getWindow() {
+    public EditorWindow getWindow() {
         return window;
     }
 

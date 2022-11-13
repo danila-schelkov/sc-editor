@@ -1,18 +1,18 @@
 package com.vorono4ka.editor.layout.menubar;
 
-import com.vorono4ka.editor.layout.Window;
+import com.vorono4ka.editor.layout.EditorWindow;
 import com.vorono4ka.editor.layout.menubar.menus.*;
 
 import javax.swing.*;
 
-public class MenuBar extends JMenuBar {
+public class EditorMenuBar extends JMenuBar {
     private final FileMenu fileMenu;
     private final EditMenu editMenu;
     private final ViewMenu viewMenu;
     private final OptionsMenu optionsMenu;
     private final HelpMenu helpMenu;
 
-    public MenuBar(Window window) {
+    public EditorMenuBar(EditorWindow window) {
         JFrame frame = window.getFrame();
 
         this.fileMenu = new FileMenu(frame);

@@ -245,16 +245,6 @@ public class ShapeDrawBitmapCommand {
         return false;
     }
 
-    private static int[] getIndices(int trianglesCount) {
-        int[] indices = new int[trianglesCount * 3];
-        for (int i = 0; i < trianglesCount; i++) {
-            indices[i * 3] = 0;
-            indices[i * 3 + 1] = i + 1;
-            indices[i * 3 + 2] = i + 2;
-        }
-        return indices;
-    }
-
     public float getX(int pointIndex) {
         return this.shapePoints[pointIndex].getX();
     }
@@ -313,5 +303,15 @@ public class ShapeDrawBitmapCommand {
         }
 
         return false;
+    }
+
+    private static int[] getIndices(int trianglesCount) {
+        int[] indices = new int[trianglesCount * 3];
+        for (int i = 0; i < trianglesCount; i++) {
+            indices[i * 3] = 0;
+            indices[i * 3 + 1] = i + 1;
+            indices[i * 3 + 2] = i + 2;
+        }
+        return indices;
     }
 }

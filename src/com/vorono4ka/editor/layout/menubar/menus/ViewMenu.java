@@ -1,7 +1,7 @@
 package com.vorono4ka.editor.layout.menubar.menus;
 
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.layout.Window;
+import com.vorono4ka.editor.layout.EditorWindow;
 import com.vorono4ka.editor.layout.panels.TimelinePanel;
 import com.vorono4ka.editor.renderer.Stage;
 
@@ -34,7 +34,7 @@ public class ViewMenu extends JMenu {
     private void toggleTimeline(ActionEvent actionEvent) {
         boolean visible = this.timelineToggle.getState();
 
-        Window window = Main.editor.getWindow();
+        EditorWindow window = Main.editor.getWindow();
 
         JFrame frame = window.getFrame();
         Dimension minimumSize = frame.getMinimumSize();

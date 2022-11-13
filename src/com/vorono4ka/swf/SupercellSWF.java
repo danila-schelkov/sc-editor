@@ -10,7 +10,7 @@ import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.exceptions.*;
 import com.vorono4ka.swf.originalObjects.*;
-import com.vorono4ka.utilities.Utilities;
+import com.vorono4ka.utilities.ArrayUtilities;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -86,7 +86,7 @@ public class SupercellSWF {
 
         try (FileInputStream fis = new FileInputStream(file)) {
             data = fis.readAllBytes();
-            int startSectionIndex = Utilities.indexOf(data, START_SECTION_BYTES);
+            int startSectionIndex = ArrayUtilities.indexOf(data, START_SECTION_BYTES);
             if (startSectionIndex != -1) {
                 data = Arrays.copyOf(data, startSectionIndex);
             }
