@@ -12,6 +12,8 @@ import java.awt.event.KeyEvent;
 
 public class FileMenu extends JMenu {
     private final JFrame frame;
+    private final JMenuItem saveButton;
+    private final JMenuItem saveAsButton;
 
     public FileMenu(JFrame frame) {
         super("File");
@@ -23,26 +25,35 @@ public class FileMenu extends JMenu {
         JMenuItem open = new JMenuItem("Open", KeyEvent.VK_O);
         open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
 
-        JMenuItem save = new JMenuItem("Save", KeyEvent.VK_O);
-        save.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
+        this.saveButton = new JMenuItem("Save", KeyEvent.VK_O);
+        this.saveButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
 
-        JMenuItem saveAs = new JMenuItem("Save as...", KeyEvent.VK_O);
-        saveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+        this.saveAsButton = new JMenuItem("Save as...", KeyEvent.VK_O);
+        this.saveAsButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
         JMenuItem close = new JMenuItem("Close", KeyEvent.VK_C);
         JMenuItem exit = new JMenuItem("Exit");
 
         open.addActionListener(this::open);
-        save.addActionListener(this::save);
+        this.saveButton.addActionListener(this::save);
         close.addActionListener(FileMenu::close);
         exit.addActionListener(FileMenu::exit);
 
         this.add(open);
-        this.add(save);
-        this.add(saveAs);
+        this.add(this.saveButton);
+        this.add(this.saveAsButton);
         this.add(close);
 
         this.addSeparator();
         this.add(exit);
+
+        this.checkCanSave();
+    }
+
+    public void checkCanSave() {
+        boolean canSave = Main.editor.getSwf() != null;
+
+        this.saveButton.setEnabled(canSave);
+        this.saveAsButton.setEnabled(canSave);
     }
 
     private void open(ActionEvent e) {

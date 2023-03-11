@@ -8,6 +8,7 @@ import com.vorono4ka.editor.layout.EditorWindow;
 import com.vorono4ka.editor.layout.UsagesWindow;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.menubar.menus.EditMenu;
+import com.vorono4ka.editor.layout.menubar.menus.FileMenu;
 import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
 import com.vorono4ka.editor.layout.panels.info.MovieClipInfoPanel;
 import com.vorono4ka.editor.layout.panels.info.ShapeInfoPanel;
@@ -96,6 +97,9 @@ public class Editor {
             spriteSheet.setBitmaps(swf.getDrawBitmapsOfTexture(i));
             this.spriteSheets.add(spriteSheet);
         }
+
+        FileMenu fileMenu = this.window.getMenubar().getFileMenu();
+        fileMenu.checkCanSave();
     }
 
     public void saveFile(String path) {
@@ -123,6 +127,9 @@ public class Editor {
         this.usagesWindows.clear();
 
         this.spriteSheets.clear();
+
+        FileMenu fileMenu = this.window.getMenubar().getFileMenu();
+        fileMenu.checkCanSave();
 
         EditMenu editMenu = this.window.getMenubar().getEditMenu();
         editMenu.checkPreviousAvailable();
