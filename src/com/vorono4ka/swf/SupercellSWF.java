@@ -347,7 +347,7 @@ public class SupercellSWF {
 
         this.saveTags(stream);
 
-        byte[] data = stream.getBuffer();
+        byte[] data = stream.getData();
 
         try {
             data = Compressor.compress(data, 4);

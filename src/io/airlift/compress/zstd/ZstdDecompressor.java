@@ -46,7 +46,7 @@ public class ZstdDecompressor
         // Java 9+ added an overload of various methods in ByteBuffer. When compiling with Java 11+ and targeting Java 8 bytecode
         // the resulting signatures are invalid for JDK 8, so accesses below result in NoSuchMethodError. Accessing the
         // methods through the interface class works around the problem
-        // Sidenote: we can't target "javac --release 8" because Unsafe is not available in the signature data for that profile
+        // Side note: we can't target "javac --release 8" because Unsafe is not available in the signature data for that profile
         Buffer input = inputBuffer;
         Buffer output = outputBuffer;
 

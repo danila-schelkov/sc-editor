@@ -143,4 +143,11 @@ public class Batch {
     public GLImage getImage() {
         return image;
     }
+
+    @Override
+    public String toString() {
+        return "Batch {" +
+                "textureId=" + this.image.getTextureId() +
+                "}";
+    }
 }

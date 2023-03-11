@@ -25,6 +25,7 @@ public class Stage {
 
     private final ConcurrentLinkedQueue<Runnable> tasks;
     private final List<Batch> batches;
+    private final BatchPool batchPool;
     private final StageSprite stageSprite;
 
     private boolean initialized;
@@ -44,6 +45,8 @@ public class Stage {
     public Stage() {
         this.tasks = new ConcurrentLinkedQueue<>();
         this.batches = new ArrayList<>();
+
+        this.batchPool = new BatchPool();
 
         this.scaleStep = 39;
         this.pointSize = 1.0f;
@@ -101,7 +104,11 @@ public class Stage {
         }
 
         this.gl.glClearColor(.5f, .5f, .5f, 1);
-        this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT);
+        this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
+
+        this.gl.glStencilMask(0xFF);
+        this.gl.glClearStencil(0);
+        this.gl.glStencilMask(0);
 
 //        DisplayObject selectedObject = Main.editor.getSelectedObject();
 //        if (selectedObject == null) return;
@@ -118,6 +125,7 @@ public class Stage {
         this.shader.bind();
 
         this.renderBuckets();
+        this.unloadBatchesToPool();
 
         this.shader.unbind();
     }
@@ -154,6 +162,11 @@ public class Stage {
         this.batches.clear();
     }
 
+    private void unloadBatchesToPool() {
+        this.batchPool.pullBatches(this.batches);
+        this.batches.clear();
+    }
+
     public boolean startShape(Rect rect, GLImage image, int renderConfigBits) {
         if (rect.getLeft() > this.clipArea.getRight() ||
             rect.getTop() > this.clipArea.getBottom() ||
@@ -163,32 +176,20 @@ public class Stage {
         }
 
         this.currentBatch = null;
-        for (Batch batch : this.batches) {
-            if (batch.getImage() == image) {
-                this.currentBatch = batch;
-                break;
+
+        if (this.batches.size() > 0) {
+            Batch lastBatch = this.batches.get(this.batches.size() - 1);
+            if (lastBatch.getImage() == image) {
+                this.currentBatch = lastBatch;
             }
         }
 
-        // TODO: do z-indexes for shapes
-//        if (this.batches.size() > 0) {
-//            Batch lastBatch = this.batches.get(this.batches.size() - 1);
-//            if (lastBatch.getImage() == image) {
-//                this.currentBatch = lastBatch;
-//            }
-//        }
-
         if (this.currentBatch == null) {
-            this.currentBatch = new Batch(image);
-            this.currentBatch.init(this.gl);
+            this.currentBatch = this.batchPool.createOrPopBatch(this.gl, image);
             this.batches.add(this.currentBatch);
         }
 
-        if (this.currentBatch != null) {
-            return this.currentBatch.startShape(image, renderConfigBits);
-        }
-
-        return false;
+        return this.currentBatch.startShape(image, renderConfigBits);
     }
 
     public void addTriangles(int count, int[] indices) {
@@ -245,8 +246,30 @@ public class Stage {
         this.stageSprite.removeAllChildren();
     }
 
-    public void setStencilRenderingState(int state) {  // TODO
+    public void setStencilRenderingState(int state) {  // TODO: split into separate batch buffer
+        switch (state) {
+            case 1 -> {
+                // scissors
+            }
+            case 2 -> {
+                this.gl.glEnable(GL3.GL_STENCIL_TEST);
+                this.gl.glStencilFunc(GL3.GL_ALWAYS, 1, 0xFF); // каждый фрагмент обновит трафаретный буфер
+                this.gl.glStencilOp(GL3.GL_KEEP, GL3.GL_KEEP, GL3.GL_REPLACE);
+                this.gl.glStencilMask(0xFF); // включить запись в трафаретный буфер
 
+                this.gl.glDepthMask(false);
+                this.gl.glClear(GL3.GL_STENCIL_BUFFER_BIT); // Clear stencil buffer (0 by default)
+            }
+            case 3 -> {
+                this.gl.glStencilFunc(GL3.GL_EQUAL, 1, 0xFF);
+                this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
+            }
+            case 4 -> this.gl.glDisable(GL3.GL_STENCIL_TEST);
+            case 5 -> {
+                this.gl.glStencilFunc(GL3.GL_NOTEQUAL, 1, 0xFF);
+                this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
+            }
+        }
     }
 
     public int getScaleStep() {

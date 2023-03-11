@@ -4,12 +4,13 @@ import com.vorono4ka.swf.constants.Tag;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.function.Consumer;
 
 public class ByteStream {
-    public static final int DEFAULT_BUFFER_LENGTH = 512;
+    public static final int DEFAULT_BUFFER_LENGTH = 16;
 
-    private byte[] buffer;
+    private byte[] data;
     private int offset;
 
     public ByteStream() {
@@ -21,26 +22,32 @@ public class ByteStream {
     }
 
     public boolean isAtAnd() {
-        return this.offset >= this.buffer.length;
+        return this.offset >= this.data.length;
     }
 
     public void ensureCapacity(int count) {
-        if (this.buffer.length < this.buffer.length + count) {
-            this.buffer = ByteBuffer.allocate(this.buffer.length + count).put(this.buffer).array();
+        int capacity = this.offset + count;
+        if (this.data.length < capacity) {
+            int newSize = (int)(this.data.length * 1.5f);
+            if (newSize < capacity) {
+                newSize = capacity;
+            }
+
+            this.data = Arrays.copyOf(this.data, newSize);
         }
     }
 
     public void write(byte[] data) {
         this.ensureCapacity(data.length);
 
-        System.arraycopy(data, 0, this.buffer, this.offset, data.length);
+        System.arraycopy(data, 0, this.data, this.offset, data.length);
         this.offset += data.length;
     }
 
     public byte[] read(int length) {
         byte[] data = new byte[length];
-        if (length <= this.buffer.length - this.offset) {
-            System.arraycopy(this.buffer, this.offset, data, 0, length);
+        if (length <= this.data.length - this.offset) {
+            System.arraycopy(this.data, this.offset, data, 0, length);
             this.offset += length;
         }
 
@@ -53,7 +60,7 @@ public class ByteStream {
 
 
     private void write(byte value) {
-        this.buffer[this.offset++] = value;
+        this.data[this.offset++] = value;
     }
 
     public void writeUnsignedChar(int value) {
@@ -101,7 +108,7 @@ public class ByteStream {
         ByteStream blockStream = new ByteStream();
         consumer.accept(blockStream);
 
-        byte[] blockData = blockStream.getBuffer();
+        byte[] blockData = blockStream.getData();
 
         this.writeUnsignedChar(tag.ordinal());
         this.writeInt(blockData.length);
@@ -109,7 +116,7 @@ public class ByteStream {
     }
 
     public int readUnsignedChar() {
-        return this.buffer[this.offset++] & 0xFF;
+        return this.data[this.offset++] & 0xFF;
     }
 
     public int readShort() {
@@ -156,12 +163,12 @@ public class ByteStream {
     }
 
 
-    public byte[] getBuffer() {
-        return ByteBuffer.allocate(this.offset).put(this.buffer, 0, this.offset).array();
+    public byte[] getData() {
+        return ByteBuffer.allocate(this.offset).put(this.data, 0, this.offset).array();
     }
 
     public void setData(byte[] a2) {
-        this.buffer = a2;
+        this.data = a2;
         this.offset = 0;
     }
 
