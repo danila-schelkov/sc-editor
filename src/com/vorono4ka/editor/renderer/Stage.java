@@ -25,6 +25,7 @@ public class Stage {
 
     private final ConcurrentLinkedQueue<Runnable> tasks;
     private final List<Batch> batches;
+    private final BatchPool batchPool;
     private final StageSprite stageSprite;
 
     private boolean initialized;
@@ -44,6 +45,8 @@ public class Stage {
     public Stage() {
         this.tasks = new ConcurrentLinkedQueue<>();
         this.batches = new ArrayList<>();
+
+        this.batchPool = new BatchPool();
 
         this.scaleStep = 39;
         this.pointSize = 1.0f;
@@ -122,6 +125,7 @@ public class Stage {
         this.shader.bind();
 
         this.renderBuckets();
+        this.unloadBatchesToPool();
 
         this.shader.unbind();
     }
@@ -158,6 +162,11 @@ public class Stage {
         this.batches.clear();
     }
 
+    private void unloadBatchesToPool() {
+        this.batchPool.pullBatches(this.batches);
+        this.batches.clear();
+    }
+
     public boolean startShape(Rect rect, GLImage image, int renderConfigBits) {
         if (rect.getLeft() > this.clipArea.getRight() ||
             rect.getTop() > this.clipArea.getBottom() ||
@@ -167,32 +176,20 @@ public class Stage {
         }
 
         this.currentBatch = null;
-        for (Batch batch : this.batches) {
-            if (batch.getImage() == image) {
-                this.currentBatch = batch;
-                break;
+
+        if (this.batches.size() > 0) {
+            Batch lastBatch = this.batches.get(this.batches.size() - 1);
+            if (lastBatch.getImage() == image) {
+                this.currentBatch = lastBatch;
             }
         }
 
-        // TODO: do z-indexes for shapes
-//        if (this.batches.size() > 0) {
-//            Batch lastBatch = this.batches.get(this.batches.size() - 1);
-//            if (lastBatch.getImage() == image) {
-//                this.currentBatch = lastBatch;
-//            }
-//        }
-
         if (this.currentBatch == null) {
-            this.currentBatch = new Batch(image);
-            this.currentBatch.init(this.gl);
+            this.currentBatch = this.batchPool.createOrPopBatch(this.gl, image);
             this.batches.add(this.currentBatch);
         }
 
-        if (this.currentBatch != null) {
-            return this.currentBatch.startShape(image, renderConfigBits);
-        }
-
-        return false;
+        return this.currentBatch.startShape(image, renderConfigBits);
     }
 
     public void addTriangles(int count, int[] indices) {
