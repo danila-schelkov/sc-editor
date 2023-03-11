@@ -101,7 +101,11 @@ public class Stage {
         }
 
         this.gl.glClearColor(.5f, .5f, .5f, 1);
-        this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT);
+        this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
+
+        this.gl.glStencilMask(0xFF);
+        this.gl.glClearStencil(0);
+        this.gl.glStencilMask(0);
 
 //        DisplayObject selectedObject = Main.editor.getSelectedObject();
 //        if (selectedObject == null) return;
@@ -245,8 +249,30 @@ public class Stage {
         this.stageSprite.removeAllChildren();
     }
 
-    public void setStencilRenderingState(int state) {  // TODO
+    public void setStencilRenderingState(int state) {  // TODO: split into separate batch buffer
+        switch (state) {
+            case 1 -> {
+                // scissors
+            }
+            case 2 -> {
+                this.gl.glEnable(GL3.GL_STENCIL_TEST);
+                this.gl.glStencilFunc(GL3.GL_ALWAYS, 1, 0xFF); // каждый фрагмент обновит трафаретный буфер
+                this.gl.glStencilOp(GL3.GL_KEEP, GL3.GL_KEEP, GL3.GL_REPLACE);
+                this.gl.glStencilMask(0xFF); // включить запись в трафаретный буфер
 
+                this.gl.glDepthMask(false);
+                this.gl.glClear(GL3.GL_STENCIL_BUFFER_BIT); // Clear stencil buffer (0 by default)
+            }
+            case 3 -> {
+                this.gl.glStencilFunc(GL3.GL_EQUAL, 1, 0xFF);
+                this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
+            }
+            case 4 -> this.gl.glDisable(GL3.GL_STENCIL_TEST);
+            case 5 -> {
+                this.gl.glStencilFunc(GL3.GL_NOTEQUAL, 1, 0xFF);
+                this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
+            }
+        }
     }
 
     public int getScaleStep() {

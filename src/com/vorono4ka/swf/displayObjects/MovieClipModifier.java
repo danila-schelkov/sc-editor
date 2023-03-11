@@ -26,7 +26,7 @@ public class MovieClipModifier extends DisplayObject {
             }
         }
 
-        stage.setStencilRenderingState(stencilRenderingState);
+        stage.doInRenderThread(() -> stage.setStencilRenderingState(stencilRenderingState));
 
         return false;
     }

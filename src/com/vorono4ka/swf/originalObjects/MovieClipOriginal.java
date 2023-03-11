@@ -172,11 +172,6 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
             stream.writeShort(id);
         }
 
-//        stream.writeShort(this.children.length);
-//        for (DisplayObjectOriginal child : this.children) {
-//            stream.writeShort(child.getId());
-//        }
-
         if (this.tag == Tag.MOVIE_CLIP_3 || this.tag == Tag.MOVIE_CLIP_35) {
             for (byte blend : this.childrenBlends) {
                 stream.writeUnsignedChar(blend);
