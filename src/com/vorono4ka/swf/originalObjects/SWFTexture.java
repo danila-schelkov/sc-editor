@@ -69,7 +69,14 @@ public class SWFTexture extends GLImage implements SavableObject {
 
         int finalPixelFormat = pixelFormat;
         int finalPixelType = pixelType;
-        GLImage.createWithFormat(this, false, 0, this.width, this.height, null, finalPixelFormat, finalPixelType);
+        int textureFilter = switch (tag) {
+            case TEXTURE, TEXTURE_4, TEXTURE_5, TEXTURE_6 -> 1;
+            case TEXTURE_2, TEXTURE_3, TEXTURE_7 -> 2;
+            case TEXTURE_8 -> 0;
+            default -> throw new IllegalStateException("Unsupported texture tag: " + tag);
+        };
+
+        GLImage.createWithFormat(this, false, textureFilter, this.width, this.height, null, finalPixelFormat, finalPixelType);
 
         this.loadTexture(swf, this.width, this.height, 0, pixelBytes, pixelType, tag == Tag.TEXTURE_5 || tag == Tag.TEXTURE_6 || tag == Tag.TEXTURE_7);
     }

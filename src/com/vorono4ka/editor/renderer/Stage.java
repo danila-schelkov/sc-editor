@@ -87,7 +87,7 @@ public class Stage {
 
         gl.glEnable(GL3.GL_BLEND);
         gl.glBlendEquation(GL3.GL_FUNC_ADD);
-        gl.glBlendFunc(GL3.GL_SRC_ALPHA, GL3.GL_ONE_MINUS_SRC_ALPHA);
+        gl.glBlendFunc(GL3.GL_ONE, GL3.GL_ONE_MINUS_SRC_ALPHA);
 
         this.initialized = true;
     }
