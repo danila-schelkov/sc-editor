@@ -46,8 +46,19 @@ public class Rect {
             this.bottom = y;
     }
 
+    public void mergeBounds(Rect rect) {
+        if (this.left > rect.left)
+            this.left = rect.left;
+        if (this.top > rect.top)
+            this.top = rect.top;
+        if (this.right < rect.right)
+            this.right = rect.right;
+        if (this.bottom < rect.bottom)
+            this.bottom = rect.bottom;
+    }
+
     public boolean containsPoint(float x, float y) {
-        return this.left <= x && this.right >= x && this.top <= y && this.bottom <= y;
+        return x >= this.left && x <= this.right && y >= this.top && y <= this.bottom;
     }
 
     public float getWidth() {
@@ -114,5 +125,15 @@ public class Rect {
 
         Rect rect = ((Rect) obj);
         return this.left == rect.left && this.top == rect.top && this.right == rect.right && this.bottom == rect.bottom;
+    }
+
+    @Override
+    public String toString() {
+        return "Rect{" +
+                "left=" + left +
+                ", top=" + top +
+                ", right=" + right +
+                ", bottom=" + bottom +
+                '}';
     }
 }

@@ -61,4 +61,18 @@ public class Camera {
     public Rect getClipArea() {
         return clipArea;
     }
+
+    public float getWorldX(int screenX) {
+        float viewportX = screenX - this.viewport.getWidth() / 2f;
+        viewportX /= this.pointSize;
+
+        return viewportX;
+    }
+
+    public float getWorldY(int screenY) {
+        float viewportY = screenY - this.viewport.getHeight() / 2f;
+        viewportY /= this.pointSize;
+
+        return viewportY;
+    }
 }

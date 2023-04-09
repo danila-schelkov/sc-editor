@@ -10,19 +10,13 @@ import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.menubar.menus.EditMenu;
 import com.vorono4ka.editor.layout.menubar.menus.FileMenu;
 import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
-import com.vorono4ka.editor.layout.panels.info.MovieClipInfoPanel;
-import com.vorono4ka.editor.layout.panels.info.ShapeInfoPanel;
 import com.vorono4ka.editor.renderer.Stage;
-import com.vorono4ka.swf.MovieClipFrame;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.MovieClip;
-import com.vorono4ka.swf.displayObjects.Shape;
-import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
-import com.vorono4ka.swf.originalObjects.MovieClipOriginal;
-import com.vorono4ka.swf.originalObjects.SWFTexture;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
+import com.vorono4ka.swf.originalObjects.MovieClipOriginal;
+import com.vorono4ka.swf.originalObjects.SWFTexture;
 import com.vorono4ka.utilities.ArrayUtilities;
 
 import java.nio.IntBuffer;
@@ -31,17 +25,19 @@ import java.util.List;
 
 public class Editor {
     private final EditorWindow window;
-    private final List<UsagesWindow> usagesWindows;
 
+    private final List<UsagesWindow> usagesWindows;
+    private final List<SpriteSheet> spriteSheets;
+
+    // For selection history
     private final List<DisplayObject> clonedObjects;
     private final List<Integer> selectedIndices;
 
-    private final List<SpriteSheet> spriteSheets;
+    private int selectedIndex;
 
     private SupercellSWF swf;
 
-    private int selectedIndex;
-
+    // Editor debug stuff
     private boolean shouldDisplayPolygons;
 
     public Editor() {
@@ -188,47 +184,9 @@ public class Editor {
 
         this.selectedIndex = objectIndex;
 
-        EditorInfoPanel infoBlock = this.window.getInfoPanel();
-        infoBlock.setPanel(null);
-
         DisplayObject displayObject = this.clonedObjects.get(this.selectedIndices.get(objectIndex));
-        if (displayObject.isMovieClip()) {
-            MovieClip movieClip = (MovieClip) displayObject;
 
-            MovieClipInfoPanel movieClipInfoPanel = new MovieClipInfoPanel();
-
-            DisplayObject[] timelineChildren = movieClip.getTimelineChildren();
-            String[] timelineChildrenNames = movieClip.getTimelineChildrenNames();
-            for (int i = 0; i < timelineChildren.length; i++) {
-                movieClipInfoPanel.addTimelineChild(String.format("%d (%s)", i, timelineChildren[i].getClass().getSimpleName()), timelineChildren[i].getId(), timelineChildrenNames[i]);
-            }
-
-            MovieClipFrame[] frames = movieClip.getFrames();
-            for (int i = 0; i < frames.length; i++) {
-                movieClipInfoPanel.addFrame(i, movieClip.getFrameLabel(i));
-            }
-
-            movieClipInfoPanel.setTextInfo(
-                "Export name: " + movieClip.getExportName(),
-                "FPS: " + movieClip.getFps(),
-                String.format("Duration: %.2fs", movieClip.getDuration())
-            );
-
-            infoBlock.setPanel(movieClipInfoPanel);
-
-            movieClipInfoPanel.getFramesTable().select(movieClip.getCurrentFrame());
-        } else if (displayObject.isShape()) {
-            ShapeInfoPanel shapeInfoPanel = new ShapeInfoPanel();
-
-            Shape shape = (Shape) displayObject;
-
-            for (int i = 0; i < shape.getCommandCount(); i++) {
-                ShapeDrawBitmapCommand command = shape.getCommand(i);
-                shapeInfoPanel.addCommandInfo(i, command.getTexture().getIndex(), command.getTag());
-            }
-
-            infoBlock.setPanel(shapeInfoPanel);
-        }
+        this.window.updateInfoPanel(displayObject);
 
         EditMenu editMenu = this.window.getMenubar().getEditMenu();
         editMenu.checkPreviousAvailable();

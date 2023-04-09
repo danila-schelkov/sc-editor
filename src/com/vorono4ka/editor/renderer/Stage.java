@@ -36,6 +36,9 @@ public class Stage {
     private Batch currentBatch;
     private GLImage gradientTexture;
 
+    private boolean isCalculatingBounds;
+    private Rect bounds;
+
     public Stage() {
         this.tasks = new ConcurrentLinkedQueue<>();
         this.batches = new ArrayList<>();
@@ -101,14 +104,11 @@ public class Stage {
         this.gl.glClearStencil(0);
         this.gl.glStencilMask(0);
 
-//        DisplayObject selectedObject = Main.editor.getSelectedObject();
-//        if (selectedObject == null) return;
-
         float deltaTime = 0;
 
         FPSAnimator animator = Main.editor.getAnimator();
         if (animator != null && animator.isAnimating()) {
-            deltaTime = 1f / animator.getFPS();
+            deltaTime = 1f / animator.getFPS(); // TODO: calculate delta time more precisely
         }
 
         this.stageSprite.render(new Matrix2x3(), new ColorTransform(), 0, deltaTime);
@@ -159,6 +159,14 @@ public class Stage {
     }
 
     public boolean startShape(Rect rect, GLImage image, int renderConfigBits) {
+        if (this.isCalculatingBounds) {
+            if (this.bounds != null) {
+                this.bounds.mergeBounds(rect);
+            }
+
+            return false;
+        }
+
         if (!this.camera.getClipArea().overlaps(rect)) {
             return false;
         }
@@ -265,5 +273,23 @@ public class Stage {
 
     public GLImage getGradientTexture() {
         return this.gradientTexture;
+    }
+
+    public StageSprite getStageSprite() {
+        return stageSprite;
+    }
+
+    public Rect getDisplayObjectBounds(DisplayObject displayObject) {
+        Rect bounds = new Rect();
+
+        this.isCalculatingBounds = true;
+        this.bounds = bounds;
+
+        displayObject.render(new Matrix2x3(), new ColorTransform(), 0, 0);
+
+        this.isCalculatingBounds = false;
+        this.bounds = null;
+
+        return bounds;
     }
 }

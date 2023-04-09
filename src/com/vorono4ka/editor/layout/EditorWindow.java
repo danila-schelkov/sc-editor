@@ -5,11 +5,19 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.vorono4ka.editor.layout.components.Table;
+import com.vorono4ka.editor.layout.listeners.ViewportMouseListener;
 import com.vorono4ka.editor.layout.menubar.EditorMenuBar;
 import com.vorono4ka.editor.layout.panels.DisplayObjectListPanel;
 import com.vorono4ka.editor.layout.panels.TexturesPanel;
 import com.vorono4ka.editor.layout.panels.TimelinePanel;
 import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
+import com.vorono4ka.editor.layout.panels.info.MovieClipInfoPanel;
+import com.vorono4ka.editor.layout.panels.info.ShapeInfoPanel;
+import com.vorono4ka.swf.MovieClipFrame;
+import com.vorono4ka.swf.displayObjects.DisplayObject;
+import com.vorono4ka.swf.displayObjects.MovieClip;
+import com.vorono4ka.swf.displayObjects.Shape;
+import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
 
 import javax.swing.*;
 import java.awt.*;
@@ -50,6 +58,8 @@ public class EditorWindow extends Window {
         this.tabbedPane.setPreferredSize(SIDE_PANEL_SIZE);
         this.canvas.setPreferredSize(CANVAS_SIZE);
         this.timelineSplitPane.setPreferredSize(CANVAS_SIZE);
+
+        this.canvas.addMouseListener(new ViewportMouseListener());
 
         this.timelinePanel.setVisible(false);
 
@@ -106,5 +116,57 @@ public class EditorWindow extends Window {
 
     public DisplayObjectListPanel getDisplayObjectPanel() {
         return this.displayObjectPanel;
+    }
+
+    public void updateInfoPanel(DisplayObject displayObject) {
+        EditorInfoPanel infoBlock = this.infoPanel;
+        infoBlock.setPanel(createInfoPanel(displayObject));
+
+        if (displayObject.isMovieClip()) {
+            MovieClipInfoPanel panel = (MovieClipInfoPanel) infoBlock.getPanel();
+            int currentFrame = ((MovieClip) displayObject).getCurrentFrame();
+
+            panel.getFramesTable().select(currentFrame);
+        }
+    }
+
+    private static JPanel createInfoPanel(DisplayObject displayObject) {
+        if (displayObject.isMovieClip()) {
+            MovieClip movieClip = (MovieClip) displayObject;
+
+            MovieClipInfoPanel movieClipInfoPanel = new MovieClipInfoPanel();
+
+            DisplayObject[] timelineChildren = movieClip.getTimelineChildren();
+            String[] timelineChildrenNames = movieClip.getTimelineChildrenNames();
+            for (int i = 0; i < timelineChildren.length; i++) {
+                movieClipInfoPanel.addTimelineChild(String.format("%d (%s)", i, timelineChildren[i].getClass().getSimpleName()), timelineChildren[i].getId(), timelineChildrenNames[i]);
+            }
+
+            MovieClipFrame[] frames = movieClip.getFrames();
+            for (int i = 0; i < frames.length; i++) {
+                movieClipInfoPanel.addFrame(i, movieClip.getFrameLabel(i));
+            }
+
+            movieClipInfoPanel.setTextInfo(
+                "Export name: " + movieClip.getExportName(),
+                "FPS: " + movieClip.getFps(),
+                String.format("Duration: %.2fs", movieClip.getDuration())
+            );
+
+            return movieClipInfoPanel;
+        } else if (displayObject.isShape()) {
+            ShapeInfoPanel shapeInfoPanel = new ShapeInfoPanel();
+
+            com.vorono4ka.swf.displayObjects.Shape shape = (Shape) displayObject;
+
+            for (int i = 0; i < shape.getCommandCount(); i++) {
+                ShapeDrawBitmapCommand command = shape.getCommand(i);
+                shapeInfoPanel.addCommandInfo(i, command.getTexture().getIndex(), command.getTag());
+            }
+
+            return shapeInfoPanel;
+        }
+
+        return null;
     }
 }
