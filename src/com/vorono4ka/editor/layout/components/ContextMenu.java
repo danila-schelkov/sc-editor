@@ -1,10 +1,9 @@
 package com.vorono4ka.editor.layout.components;
 
-import com.vorono4ka.editor.renderer.listeners.MouseListener;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public abstract class ContextMenu {
@@ -40,7 +39,7 @@ public abstract class ContextMenu {
     }
 
     public void linkTo(Component component) {
-        component.addMouseListener(new MouseListener() {
+        component.addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) { checkPopup(e); }
 
             public void mouseClicked(MouseEvent e) { checkPopup(e); }

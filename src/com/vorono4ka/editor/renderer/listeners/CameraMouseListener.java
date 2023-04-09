@@ -6,8 +6,10 @@ import com.vorono4ka.editor.renderer.Stage;
 
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 
-public class MouseListener implements java.awt.event.MouseListener, java.awt.event.MouseMotionListener {
+public class CameraMouseListener implements MouseListener, MouseMotionListener {
     private int startX;
     private int startY;
     private int previousX;

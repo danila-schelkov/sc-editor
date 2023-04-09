@@ -5,7 +5,6 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.vorono4ka.editor.layout.components.Table;
-import com.vorono4ka.editor.layout.listeners.ViewportMouseListener;
 import com.vorono4ka.editor.layout.menubar.EditorMenuBar;
 import com.vorono4ka.editor.layout.panels.DisplayObjectListPanel;
 import com.vorono4ka.editor.layout.panels.TexturesPanel;
@@ -58,8 +57,6 @@ public class EditorWindow extends Window {
         this.tabbedPane.setPreferredSize(SIDE_PANEL_SIZE);
         this.canvas.setPreferredSize(CANVAS_SIZE);
         this.timelineSplitPane.setPreferredSize(CANVAS_SIZE);
-
-        this.canvas.addMouseListener(new ViewportMouseListener());
 
         this.timelinePanel.setVisible(false);
 
