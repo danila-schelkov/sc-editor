@@ -1,6 +1,7 @@
 package com.vorono4ka.editor.renderer.listeners;
 
 import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.renderer.Camera;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.MathHelper;
 
@@ -12,8 +13,9 @@ public class MouseWheelListener implements java.awt.event.MouseWheelListener {
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
         Stage stage = Stage.getInstance();
+        Camera camera = stage.getCamera();
 
-        int step = stage.getScaleStep() - e.getWheelRotation() * SENSITIVE;
+        int step = camera.getScaleStep() - e.getWheelRotation() * SENSITIVE;
         if (step < 0) return;
 
         float scale = 2.5f;
@@ -22,12 +24,12 @@ public class MouseWheelListener implements java.awt.event.MouseWheelListener {
         }
 
         if (scale > 1000f) {
-            stage.setPointSize(10);
+            camera.setPointSize(10);
             return;
         }
 
-        stage.setScaleStep(step);
-        stage.setPointSize(scale / 100f);
+        camera.setScaleStep(step);
+        camera.setPointSize(scale / 100f);
 
         stage.doInRenderThread(stage::updatePMVMatrix);
         Main.editor.updateCanvas();
