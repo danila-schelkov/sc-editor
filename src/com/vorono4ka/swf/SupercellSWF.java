@@ -39,7 +39,7 @@ public class SupercellSWF {
     private short[] exportsIds;
     private String[] exportsNames;
 
-    private SWFTexture[] textures;
+    private SWFTexture[] textures = new SWFTexture[0];
     private ShapeOriginal[] shapes;
     private int[] shapesIds;
     private MovieClipOriginal[] movieClips;

@@ -14,10 +14,7 @@ import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.exceptions.UnsupportedTagException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class MovieClipOriginal extends DisplayObjectOriginal {
     private int fps;
@@ -47,17 +44,11 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
             this.frames[i] = new MovieClipFrame();
         }
 
-        switch (tag) {
+        switch (Objects.requireNonNull(tag)) {
+            case MOVIE_CLIP -> {}  // TAG_MOVIE_CLIP no longer supported
             case MOVIE_CLIP_4 -> {
                 try {
                     throw new UnsupportedTagException("TAG_MOVIE_CLIP_4 no longer supported\n");
-                } catch (UnsupportedTagException e) {
-                    e.printStackTrace();
-                }
-            }
-            case MOVIE_CLIP -> {
-                try {
-                    throw new UnsupportedTagException("TAG_MOVIE_CLIP no longer supported\n");
                 } catch (UnsupportedTagException e) {
                     e.printStackTrace();
                 }
@@ -99,28 +90,23 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
                 case EOF -> {
                     return this.id;
                 }
-                case MOVIE_CLIP_FRAME -> {
-                    try {
-                        throw new UnsupportedTagException("TAG_MOVIE_CLIP_FRAME no longer supported");
-                    } catch (UnsupportedTagException exception) {
-                        exception.printStackTrace();
-                    }
-                }
-                case MOVIE_CLIP_FRAME_2 -> {
+                case MOVIE_CLIP_FRAME, MOVIE_CLIP_FRAME_2 -> {  // TAG_MOVIE_CLIP_FRAME no longer supported
                     MovieClipFrame frame = this.frames[loadedCommands++];
-                    int elementsCount = frame.load(swf);
+                    int elementsCount = frame.load(swf, tagValue);
 
-                    MovieClipFrameElement[] elements = new MovieClipFrameElement[elementsCount];
-                    for (int i = 0; i < elementsCount; i++) {
-                        elements[i] = new MovieClipFrameElement(
-                            this.frameElements[usedElements * 3] & 0xFFFF,
-                            this.frameElements[usedElements * 3 + 1] & 0xFFFF,
-                            this.frameElements[usedElements * 3 + 2] & 0xFFFF
-                        );
+                    if (tagValue != Tag.MOVIE_CLIP_FRAME) {
+                        MovieClipFrameElement[] elements = new MovieClipFrameElement[elementsCount];
+                        for (int i = 0; i < elementsCount; i++) {
+                            elements[i] = new MovieClipFrameElement(
+                                this.frameElements[usedElements * 3] & 0xFFFF,
+                                this.frameElements[usedElements * 3 + 1] & 0xFFFF,
+                                this.frameElements[usedElements * 3 + 2] & 0xFFFF
+                            );
 
-                        usedElements++;
+                            usedElements++;
+                        }
+                        frame.setElements(elements);
                     }
-                    frame.setElements(elements);
                 }
                 case SCALING_GRID -> {
                     if (this.scalingGrid != null) {
