@@ -75,7 +75,7 @@ public class ShapeOriginal extends DisplayObjectOriginal {
         stream.writeShort(this.id);
         stream.writeShort(this.commands.length);
 
-        if (this.tag == Tag.SHAPE_2) {
+        if (this.tag != Tag.SHAPE) {
             stream.writeShort(getPointsCount());
         }
 

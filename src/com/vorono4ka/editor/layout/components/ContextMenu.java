@@ -2,9 +2,7 @@ package com.vorono4ka.editor.layout.components;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 public abstract class ContextMenu {
     protected final JPopupMenu popupMenu;
@@ -18,9 +16,39 @@ public abstract class ContextMenu {
         this.linkTo(component);
     }
 
+    public JMenu addMenu(String name) {
+        JMenu menu = new JMenu(name);
+        this.popupMenu.add(menu);
+        return menu;
+    }
+
+    public JMenu addMenu(String name, int mnemonic) {
+        JMenu menu = this.addMenu(name);
+        menu.setMnemonic(mnemonic);
+        return menu;
+    }
+
     public JMenuItem add(String label) {
         JMenuItem item = new JMenuItem(label);
         this.popupMenu.add(item);
+        return item;
+    }
+
+    public JMenuItem add(String label, int mnemonic) {
+        JMenuItem item = this.add(label);
+        item.setMnemonic(mnemonic);
+        return item;
+    }
+
+    public JMenuItem add(JComponent parent, String label) {
+        JMenuItem item = new JMenuItem(label);
+        parent.add(item);
+        return item;
+    }
+
+    public JMenuItem add(JComponent parent, String label, int mnemonic) {
+        JMenuItem item = this.add(parent, label);
+        item.setMnemonic(mnemonic);
         return item;
     }
 
