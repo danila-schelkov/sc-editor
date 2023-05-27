@@ -142,4 +142,8 @@ public abstract class Sprite extends DisplayObject {
     public int getChildrenCount() {
         return this.children.size();
     }
+
+    public DisplayObject getChild(int index) {
+        return this.children.get(index);
+    }
 }

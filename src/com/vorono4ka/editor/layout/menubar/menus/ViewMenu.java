@@ -50,10 +50,7 @@ public class ViewMenu extends JMenu {
     private static void resetView(ActionEvent e) {
         Stage stage = Stage.getInstance();
 
-        stage.setScaleStep(39);
-        stage.setPointSize(1);
-
-        stage.setOffset(0, 0);
+        stage.getCamera().reset();
 
         stage.doInRenderThread(stage::updatePMVMatrix);
         Main.editor.updateCanvas();

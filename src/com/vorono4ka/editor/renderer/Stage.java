@@ -25,6 +25,7 @@ public class Stage {
 
     private final ConcurrentLinkedQueue<Runnable> tasks;
     private final List<Batch> batches;
+    private final Camera camera;
     private final BatchPool batchPool;
     private final StageSprite stageSprite;
 
@@ -32,24 +33,18 @@ public class Stage {
     private Shader shader;
     private GL3 gl;
 
-    private Rect viewport;
-    private Rect clipArea;
-    private int scaleStep;
-    private float pointSize;
-    private float offsetX;
-    private float offsetY;
-
     private Batch currentBatch;
     private GLImage gradientTexture;
+
+    private boolean isCalculatingBounds;
+    private Rect bounds;
 
     public Stage() {
         this.tasks = new ConcurrentLinkedQueue<>();
         this.batches = new ArrayList<>();
 
+        this.camera = new Camera();
         this.batchPool = new BatchPool();
-
-        this.scaleStep = 39;
-        this.pointSize = 1.0f;
 
         this.stageSprite = new StageSprite(this);
 
@@ -78,8 +73,7 @@ public class Stage {
         this.gradientTexture = new GLImage();
         GLImage.createWithFormat(this.gradientTexture, true, 1, 256, 2, Utilities.getPixelBuffer(imageBuffer), GL3.GL_LUMINANCE_ALPHA, GL3.GL_UNSIGNED_BYTE);
 
-        this.viewport = new Rect(-(width / 2f), -(height / 2f), width / 2f, height / 2f);
-        this.clipArea = new Rect(this.viewport);
+        this.camera.init(width, height);
 
         gl.glViewport(x, y, width, height);
 
@@ -110,14 +104,11 @@ public class Stage {
         this.gl.glClearStencil(0);
         this.gl.glStencilMask(0);
 
-//        DisplayObject selectedObject = Main.editor.getSelectedObject();
-//        if (selectedObject == null) return;
-
         float deltaTime = 0;
 
         FPSAnimator animator = Main.editor.getAnimator();
         if (animator != null && animator.isAnimating()) {
-            deltaTime = 1f / animator.getFPS();
+            deltaTime = 1f / animator.getFPS(); // TODO: calculate delta time more precisely
         }
 
         this.stageSprite.render(new Matrix2x3(), new ColorTransform(), 0, deltaTime);
@@ -168,10 +159,15 @@ public class Stage {
     }
 
     public boolean startShape(Rect rect, GLImage image, int renderConfigBits) {
-        if (rect.getLeft() > this.clipArea.getRight() ||
-            rect.getTop() > this.clipArea.getBottom() ||
-            rect.getRight() < this.clipArea.getLeft() ||
-            rect.getBottom() < this.clipArea.getTop()) {
+        if (this.isCalculatingBounds) {
+            if (this.bounds != null) {
+                this.bounds.mergeBounds(rect);
+            }
+
+            return false;
+        }
+
+        if (!this.camera.getClipArea().overlaps(rect)) {
             return false;
         }
 
@@ -205,20 +201,15 @@ public class Stage {
     }
 
     public void updatePMVMatrix() {
-        this.clipArea = new Rect(
-            (this.viewport.getLeft() / this.pointSize + this.offsetX),
-            (this.viewport.getTop() / this.pointSize + this.offsetY),
-            (this.viewport.getRight() / this.pointSize + this.offsetX),
-            (this.viewport.getBottom() / this.pointSize + this.offsetY)
-        );
+        Rect clipArea = this.camera.updateClipArea();
 
         PMVMatrix matrix = new PMVMatrix();
         matrix.glLoadIdentity();
         matrix.glOrthof(
-            this.clipArea.getLeft(),
-            this.clipArea.getRight(),
-            this.clipArea.getBottom(),
-            this.clipArea.getTop(),
+            clipArea.getLeft(),
+            clipArea.getRight(),
+            clipArea.getBottom(),
+            clipArea.getTop(),
             // near
             -1,
             // far
@@ -272,33 +263,8 @@ public class Stage {
         }
     }
 
-    public int getScaleStep() {
-        return scaleStep;
-    }
-
-    public void setScaleStep(int scaleStep) {
-        this.scaleStep = scaleStep;
-    }
-
-    public float getPointSize() {
-        return pointSize;
-    }
-
-    public void setPointSize(float pointSize) {
-        this.pointSize = pointSize;
-        if (pointSize == 0) {
-            this.viewport = null;
-        }
-    }
-
-    public void addOffset(float x, float y) {
-        this.offsetX += x;
-        this.offsetY += y;
-    }
-
-    public void setOffset(float x, float y) {
-        this.offsetX = x;
-        this.offsetY = y;
+    public Camera getCamera() {
+        return camera;
     }
 
     public GL3 getGl() {
@@ -307,5 +273,23 @@ public class Stage {
 
     public GLImage getGradientTexture() {
         return this.gradientTexture;
+    }
+
+    public StageSprite getStageSprite() {
+        return stageSprite;
+    }
+
+    public Rect getDisplayObjectBounds(DisplayObject displayObject) {
+        Rect bounds = new Rect();
+
+        this.isCalculatingBounds = true;
+        this.bounds = bounds;
+
+        displayObject.render(new Matrix2x3(), new ColorTransform(), 0, 0);
+
+        this.isCalculatingBounds = false;
+        this.bounds = null;
+
+        return bounds;
     }
 }

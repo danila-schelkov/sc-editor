@@ -1,12 +1,15 @@
 package com.vorono4ka.editor.renderer.listeners;
 
 import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.renderer.Camera;
 import com.vorono4ka.editor.renderer.Stage;
 
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 
-public class MouseListener implements java.awt.event.MouseListener, java.awt.event.MouseMotionListener {
+public class CameraMouseListener implements MouseListener, MouseMotionListener {
     private int startX;
     private int startY;
     private int previousX;
@@ -49,7 +52,9 @@ public class MouseListener implements java.awt.event.MouseListener, java.awt.eve
         Stage stage = Stage.getInstance();
         float x = this.startX + this.previousX - e.getX();
         float y = this.startY + this.previousY - e.getY();
-        stage.addOffset(x / stage.getPointSize(), y / stage.getPointSize());
+
+        Camera camera = stage.getCamera();
+        camera.addOffset(x / camera.getPointSize(), y / camera.getPointSize());
 
         stage.doInRenderThread(stage::updatePMVMatrix);
         Main.editor.updateCanvas();
