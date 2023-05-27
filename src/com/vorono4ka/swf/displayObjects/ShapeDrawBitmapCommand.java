@@ -47,9 +47,12 @@ public class ShapeDrawBitmapCommand {
             float u = swf.readShort();
             float v = swf.readShort();
 
-            if (tag != Tag.SHAPE_DRAW_BITMAP_COMMAND_3) {
-                u /= 65535f * this.image.getWidth();  // width
-                v /= 65535f * this.image.getHeight();  // height
+            if (tag == Tag.SHAPE_DRAW_BITMAP_COMMAND) {
+                u *= 65535f / this.image.getWidth();
+                v *= 65535f / this.image.getHeight();
+            } else if (tag != Tag.SHAPE_DRAW_BITMAP_COMMAND_3) {
+                u /= 65535f * this.image.getWidth();
+                v /= 65535f * this.image.getHeight();
             }
 
             this.sheetPoints[i] = new Point(u, v);
@@ -73,8 +76,8 @@ public class ShapeDrawBitmapCommand {
             float v = point.getY();
 
             if (this.tag != Tag.SHAPE_DRAW_BITMAP_COMMAND_3) {
-                u *= 65535f / this.image.getWidth();  // width
-                v *= 65535f / this.image.getHeight();  // height
+                u *= 65535f / this.image.getWidth();
+                v *= 65535f / this.image.getHeight();
             }
 
             stream.writeShort((int) u);
