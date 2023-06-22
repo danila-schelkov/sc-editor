@@ -78,7 +78,7 @@ public class TextFieldOriginal extends DisplayObjectOriginal {
                 this.outlineColor = swf.readInt();
                 return this.id;
             }
-            case TEXT_FIELD_6, TEXT_FIELD_7, TEXT_FIELD_8 -> {
+            case TEXT_FIELD_6, TEXT_FIELD_7, TEXT_FIELD_8, TEXT_FIELD_9 -> {
                 this.outlineColor = swf.readInt();
                 this.unk32 = swf.readShort();
                 swf.readShort();  // unused
@@ -96,6 +96,12 @@ public class TextFieldOriginal extends DisplayObjectOriginal {
                 }
 
                 this.autoAdjustFontSize = swf.readBoolean();
+
+                if (tag == Tag.TEXT_FIELD_8) {
+                    return this.id;
+                }
+
+                boolean unk = swf.readBoolean();
 
                 return this.id;
             }

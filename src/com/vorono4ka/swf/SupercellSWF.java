@@ -222,7 +222,7 @@ public class SupercellSWF {
 
                     return true;
                 }
-                case TEXTURE, TEXTURE_2, TEXTURE_3, TEXTURE_4, TEXTURE_5, TEXTURE_6, TEXTURE_7, TEXTURE_8 -> {
+                case TEXTURE, TEXTURE_2, TEXTURE_3, TEXTURE_4, TEXTURE_5, TEXTURE_6, TEXTURE_7, TEXTURE_8, KHRONOS_TEXTURE -> {
                     if (loadedTextures >= this.texturesCount) {
                         throw new TooManyObjectsException("Trying to load too many textures from ");
                     }
@@ -241,7 +241,7 @@ public class SupercellSWF {
                     }
                     this.movieClipsIds[loadedMovieClips] = this.movieClips[loadedMovieClips++].load(this, tagValue);
                 }
-                case TEXT_FIELD, TEXT_FIELD_2, TEXT_FIELD_3, TEXT_FIELD_4, TEXT_FIELD_5, TEXT_FIELD_6, TEXT_FIELD_7, TEXT_FIELD_8 -> {
+                case TEXT_FIELD, TEXT_FIELD_2, TEXT_FIELD_3, TEXT_FIELD_4, TEXT_FIELD_5, TEXT_FIELD_6, TEXT_FIELD_7, TEXT_FIELD_8, TEXT_FIELD_9 -> {
                     if (loadedTextFields >= this.textFieldsCount) {
                         throw new TooManyObjectsException("Trying to load too many TextFields from ");
                     }

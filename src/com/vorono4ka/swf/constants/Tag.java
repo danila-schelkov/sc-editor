@@ -45,5 +45,7 @@ public enum Tag {
     MATRIX_BANK_INDEX,
     EXTRA_MATRIX_BANK,
     TEXT_FIELD_7,
-    TEXT_FIELD_8
+    TEXT_FIELD_8,
+    KHRONOS_TEXTURE,
+    TEXT_FIELD_9
 }

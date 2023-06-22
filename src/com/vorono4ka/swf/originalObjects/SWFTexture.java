@@ -5,6 +5,8 @@ import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
+import team.nulls.ntengine.assets.KhronosTexture;
+import team.nulls.ntengine.assets.KhronosTextureDataLoader;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
@@ -32,11 +34,20 @@ public class SWFTexture extends GLImage implements SavableObject {
     public void load(SupercellSWF swf, Tag tag, boolean hasTexture) {
         this.tag = tag;
 
+        int khronosTextureLength = 0;
+        if (tag == Tag.KHRONOS_TEXTURE) {
+            khronosTextureLength = swf.readInt();
+            assert khronosTextureLength > 0;
+        }
+
+        int type = swf.readUnsignedChar();
+        this.width = swf.readShort();
+        this.height = swf.readShort();
+
         int pixelFormat = GL3.GL_RGBA;
         int pixelType = GL3.GL_UNSIGNED_BYTE;
         int pixelBytes = 4;
 
-        int type = swf.readUnsignedChar();
         switch (type) {
             case 2, 8 -> {
                 pixelType = GL3.GL_UNSIGNED_SHORT_4_4_4_4;
@@ -61,8 +72,6 @@ public class SWFTexture extends GLImage implements SavableObject {
             }
         }
 
-        this.width = swf.readShort();
-        this.height = swf.readShort();
         this.pixelFormat = pixelFormat;
 
         if (!hasTexture) return;
@@ -72,13 +81,19 @@ public class SWFTexture extends GLImage implements SavableObject {
         int textureFilter = switch (tag) {
             case TEXTURE, TEXTURE_4, TEXTURE_5, TEXTURE_6 -> 1;
             case TEXTURE_2, TEXTURE_3, TEXTURE_7 -> 2;
-            case TEXTURE_8 -> 0;
+            case TEXTURE_8, KHRONOS_TEXTURE -> 0;
             default -> throw new IllegalStateException("Unsupported texture tag: " + tag);
         };
 
-        GLImage.createWithFormat(this, false, textureFilter, this.width, this.height, null, finalPixelFormat, finalPixelType);
+        KhronosTexture ktx = null;
+        if (tag == Tag.KHRONOS_TEXTURE) {
+            byte[] bytes = swf.readByteArray(khronosTextureLength);
+            ktx = KhronosTextureDataLoader.decodeKtx(ByteBuffer.wrap(bytes));
+        } else {
+            this.loadTexture(swf, this.width, this.height, 0, pixelBytes, pixelType, tag == Tag.TEXTURE_5 || tag == Tag.TEXTURE_6 || tag == Tag.TEXTURE_7);
+        }
 
-        this.loadTexture(swf, this.width, this.height, 0, pixelBytes, pixelType, tag == Tag.TEXTURE_5 || tag == Tag.TEXTURE_6 || tag == Tag.TEXTURE_7);
+        GLImage.createWithFormat(this, ktx, false, textureFilter, this.width, this.height, this.pixels, finalPixelFormat, finalPixelType);
     }
 
     @Override
@@ -126,8 +141,6 @@ public class SWFTexture extends GLImage implements SavableObject {
         } else {
             this.pixels = ByteBuffer.wrap(swf.readByteArray(width * height));
         }
-
-        GLImage.updateSubImage(this, this.pixels, 0, 0, width, height, pixelType, mipmapLevel);
     }
 
     private void loadTextureAsShort(SupercellSWF swf, int width, int height, int mipmapLevel, int pixelType, boolean separatedByTiles) {
@@ -160,8 +173,6 @@ public class SWFTexture extends GLImage implements SavableObject {
         } else {
             this.pixels = ShortBuffer.wrap(swf.readShortArray(width * height));
         }
-
-        GLImage.updateSubImage(this, this.pixels, 0, 0, width, height, pixelType, mipmapLevel);
     }
 
     private void loadTextureAsInt(SupercellSWF swf, int width, int height, int mipmapLevel, int pixelType, boolean separatedByTiles) {
@@ -194,8 +205,6 @@ public class SWFTexture extends GLImage implements SavableObject {
         } else {
             this.pixels = IntBuffer.wrap(swf.readIntArray(width * height));
         }
-
-        GLImage.updateSubImage(this, this.pixels, 0, 0, width, height, pixelType, mipmapLevel);
     }
 
     private byte[] readTileAsChar(SupercellSWF swf, int width, int height) {

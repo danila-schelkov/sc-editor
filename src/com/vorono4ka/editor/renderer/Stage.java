@@ -71,7 +71,7 @@ public class Stage {
         assert imageBuffer != null : "Gradient texture not found.";
 
         this.gradientTexture = new GLImage();
-        GLImage.createWithFormat(this.gradientTexture, true, 1, 256, 2, Utilities.getPixelBuffer(imageBuffer), GL3.GL_LUMINANCE_ALPHA, GL3.GL_UNSIGNED_BYTE);
+        GLImage.createWithFormat(this.gradientTexture, null, true, 1, 256, 2, Utilities.getPixelBuffer(imageBuffer), GL3.GL_LUMINANCE_ALPHA, GL3.GL_UNSIGNED_BYTE);
 
         this.camera.init(width, height);
 
