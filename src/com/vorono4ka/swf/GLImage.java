@@ -2,8 +2,10 @@ package com.vorono4ka.swf;
 
 import com.jogamp.opengl.GL3;
 import com.vorono4ka.editor.renderer.Stage;
+import team.nulls.ntengine.assets.KhronosTexture;
 
 import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 public class GLImage {
@@ -51,7 +53,7 @@ public class GLImage {
         this.textureId = textureId;
     }
 
-    public static void createWithFormat(GLImage image, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
+    public static void createWithFormat(GLImage image, KhronosTexture ktx, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
         Stage stage = Stage.getInstance();
         GL3 gl = stage.getGl();
 
@@ -97,36 +99,57 @@ public class GLImage {
             gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, minFilter);
     //        gl.glPixelStorei(GL3.GL_UNPACK_ALIGNMENT, 4);
 
-            gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, pixelFormat, width, height, 0, pixelFormat, pixelType, pixels);
-            if (gl.glGetError() == GL3.GL_INVALID_ENUM) {
-                IntBuffer swizzleMask = null;
-                int format = -1;
-
-                switch (pixelFormat) {
-                    case GL3.GL_LUMINANCE_ALPHA -> {
-                        swizzleMask = IntBuffer.wrap(new int[] {GL3.GL_RED, GL3.GL_RED, GL3.GL_RED, GL3.GL_GREEN});
-                        format = GL3.GL_RG;
-                    }
-                    case GL3.GL_LUMINANCE -> {
-                        swizzleMask = IntBuffer.wrap(new int[] {GL3.GL_RED, GL3.GL_RED, GL3.GL_RED, 1});
-                        format = GL3.GL_RED;
-                    }
-                    default -> {
-                        assert false : "GL_INVALID_ENUM";
-                    }
-                }
-
-                gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, format, width, height, 0, format, pixelType, pixels);
-                if (gl.glGetError() == GL3.GL_NO_ERROR) {
-                    gl.glTexParameteriv(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
-                    image.setPixelFormat(format);
-                }
+            if (ktx != null) {
+                loadKtx(gl, ktx);
+            } else {
+                loadImage(gl, image, width, height, pixels, pixelFormat, pixelType);
             }
 
             gl.glGenerateMipmap(GL3.GL_TEXTURE_2D);
 
             gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
         });
+    }
+
+    private static void loadImage(GL3 gl, GLImage image, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
+        gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, pixelFormat, width, height, 0, pixelFormat, pixelType, pixels);
+        if (gl.glGetError() == GL3.GL_INVALID_ENUM) {
+            IntBuffer swizzleMask = null;
+            int format = -1;
+
+            switch (pixelFormat) {
+                case GL3.GL_LUMINANCE_ALPHA -> {
+                    swizzleMask = IntBuffer.wrap(new int[] {GL3.GL_RED, GL3.GL_RED, GL3.GL_RED, GL3.GL_GREEN});
+                    format = GL3.GL_RG;
+                }
+                case GL3.GL_LUMINANCE -> {
+                    swizzleMask = IntBuffer.wrap(new int[] {GL3.GL_RED, GL3.GL_RED, GL3.GL_RED, 1});
+                    format = GL3.GL_RED;
+                }
+                default -> {
+                    assert false : "GL_INVALID_ENUM";
+                }
+            }
+
+            gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, format, width, height, 0, format, pixelType, pixels);
+            if (gl.glGetError() == GL3.GL_NO_ERROR) {
+                gl.glTexParameteriv(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
+                image.setPixelFormat(format);
+            }
+        }
+    }
+
+    private static void loadKtx(GL3 gl, KhronosTexture ktx) {
+        if (ktx.glFormat != 0) {
+            for (int level = 0; level < ktx.data.length; level++) {
+                gl.glTexImage2D(GL3.GL_TEXTURE_2D, level, ktx.glInternalFormat, ktx.pixelWidth, ktx.pixelHeight, 0, ktx.glFormat, GL3.GL_UNSIGNED_INT, ktx.data[level]);
+            }
+        } else {
+            for (int level = 0; level < ktx.data.length; level++) {
+                ByteBuffer data = ktx.data[level];
+                gl.glCompressedTexImage2D(GL3.GL_TEXTURE_2D, level, ktx.glInternalFormat, ktx.pixelWidth, ktx.pixelHeight, 0, data.remaining(), data);
+            }
+        }
     }
 
     private static int genTexture() {
@@ -136,16 +159,5 @@ public class GLImage {
         gl.glGenTextures(1, ids);
         gl.glBindTexture(GL3.GL_TEXTURE_2D, ids.get(0));
         return ids.get(0);
-    }
-
-    public static void updateSubImage(GLImage image, Buffer pixels, int xOffset, int yOffset, int width, int height, int pixelType, int mipmapLevel) {
-        Stage stage = Stage.getInstance();
-        GL3 gl = stage.getGl();
-
-        stage.doInRenderThread(() -> {
-            gl.glBindTexture(GL3.GL_TEXTURE_2D, image.getTextureId());
-            gl.glTexSubImage2D(GL3.GL_TEXTURE_2D, mipmapLevel, xOffset, yOffset, width, height, image.getPixelFormat(), pixelType, pixels);
-            gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
-        });
     }
 }
