@@ -365,20 +365,20 @@ public class SupercellSWF {
     }
 
     private void saveTags(ByteStream stream) {
-        List<SavableObject> savableObjects = this.getSavableObjects();
+        List<Savable> savables = this.getSavableObjects();
 
-        for (SavableObject object : savableObjects) {
+        for (Savable object : savables) {
             stream.writeBlock(object.getTag(), object::save);
         }
 
         stream.writeBlock(Tag.EOF, (ignored) -> {});
     }
 
-    private List<SavableObject> getSavableObjects() {
-        ArrayList<SavableObject> objects = new ArrayList<>();
+    private List<Savable> getSavableObjects() {
+        ArrayList<Savable> objects = new ArrayList<>();
 
         if (this.isHalfScalePossible()) {
-            objects.add(new SavableObject() {
+            objects.add(new Savable() {
                 @Override
                 public void save(ByteStream stream) {
 
@@ -392,7 +392,7 @@ public class SupercellSWF {
         }
 
         if (this.useExternalTexture) {
-            objects.add(new SavableObject() {
+            objects.add(new Savable() {
                 @Override
                 public void save(ByteStream stream) {
 
@@ -411,7 +411,7 @@ public class SupercellSWF {
             ScMatrixBank matrixBank = this.matrixBanks.get(i);
 
             if (i != 0) {
-                objects.add(new SavableObject() {
+                objects.add(new Savable() {
                     @Override
                     public void save(ByteStream stream) {
                         stream.writeShort(matrixBank.getMatricesCount());
@@ -432,7 +432,7 @@ public class SupercellSWF {
         objects.addAll(List.of(this.movieClips));
 
         if (this.getMovieClipModifiersCount() > 0) {
-            objects.add(new SavableObject() {
+            objects.add(new Savable() {
                 @Override
                 public void save(ByteStream stream) {
                     stream.writeShort(getMovieClipModifiersCount());

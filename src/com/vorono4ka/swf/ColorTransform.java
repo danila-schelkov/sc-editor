@@ -3,9 +3,9 @@ package com.vorono4ka.swf;
 import com.vorono4ka.math.MathHelper;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.constants.Tag;
-import com.vorono4ka.swf.originalObjects.SavableObject;
+import com.vorono4ka.swf.originalObjects.Savable;
 
-public class ColorTransform implements SavableObject {
+public class ColorTransform implements Savable {
     private int redAddition;
     private int greenAddition;
     private int blueAddition;

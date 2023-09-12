@@ -13,7 +13,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 
-public class SWFTexture extends GLImage implements SavableObject {
+public class SWFTexture extends GLImage implements Savable {
     public static final int TILE_SIZE = 32;
 
     private Buffer pixels;

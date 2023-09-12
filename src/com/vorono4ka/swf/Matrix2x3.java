@@ -2,10 +2,10 @@ package com.vorono4ka.swf;
 
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.constants.Tag;
-import com.vorono4ka.swf.originalObjects.SavableObject;
+import com.vorono4ka.swf.originalObjects.Savable;
 
 @SuppressWarnings("SuspiciousNameCombination")
-public class Matrix2x3 implements SavableObject {
+public class Matrix2x3 implements Savable {
     public static final float PRECISE_MULTIPLIER = 65535f;
     public static final float DEFAULT_MULTIPLIER = 1024f;
 
