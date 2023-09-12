@@ -70,13 +70,13 @@ public class Matrix2x3 implements SavableObject {
         float shearX = (this.scaleX * matrix.shearX) + (this.shearX * matrix.scaleY);
         float scaleY = (this.scaleY * matrix.scaleY) + (this.shearY * matrix.shearX);
         float shearY = (this.scaleY * matrix.shearY) + (this.shearY * matrix.scaleX);
+        float x = matrix.applyX(this.x, this.y);
+        float y = matrix.applyY(this.x, this.y);
+
         this.scaleX = scaleX;
         this.shearX = shearX;
         this.scaleY = scaleY;
         this.shearY = shearY;
-
-        float x = matrix.applyX(this.x, this.y);
-        float y = matrix.applyY(this.x, this.y);
         this.x = x;
         this.y = y;
     }
@@ -110,14 +110,21 @@ public class Matrix2x3 implements SavableObject {
     }
 
     public void inverse() {
-        float v5 = (this.scaleY * this.scaleX) - (this.shearY * this.shearX);
-        if ( v5 != 0.0f ) {
-            this.x = ((this.y * this.shearY) - (this.x * this.scaleY)) / v5;
-            this.y = ((this.x * this.shearX) - (this.y * this.scaleX)) / v5;
-            this.scaleX = this.scaleY / v5;
-            this.shearX = -this.shearX / v5;
-            this.shearY = -this.shearY / v5;
-            this.scaleY = this.scaleX / v5;
+        float determinant = (this.scaleY * this.scaleX) - (this.shearY * this.shearX);
+        if (determinant != 0.0f) {
+            float y = this.y;
+            float x = this.x;
+            float shearX = this.shearX;
+            float shearY = this.shearY;
+            float scaleX = this.scaleX;
+            float scaleY = this.scaleY;
+
+            this.x = ((y * shearY) - (x * scaleY)) / determinant;
+            this.y = ((x * shearX) - (y * scaleX)) / determinant;
+            this.scaleX = scaleY / determinant;
+            this.shearX = -shearX / determinant;
+            this.shearY = -shearY / determinant;
+            this.scaleY = scaleX / determinant;
         }
     }
 
@@ -159,7 +166,7 @@ public class Matrix2x3 implements SavableObject {
     }
 
     public void setScale(float x, float y) {
-        this.scaleX = x;
-        this.scaleY = y;
+        scaleMultiply(1f / this.scaleX, 1f / this.scaleY);  // scale to identical
+        scaleMultiply(x, y);
     }
 }
