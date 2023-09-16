@@ -32,6 +32,7 @@ public class Batch {
     private VAO vao;
     private VBO vbo;
     private EBO ebo;
+    private int stencilRenderingState;
 
     public Batch(GLImage image) {
         this.image = image;
@@ -147,7 +148,16 @@ public class Batch {
     @Override
     public String toString() {
         return "Batch {" +
-                "textureId=" + this.image.getTextureId() +
+                "textureId=" + (this.image != null ? this.image.getTextureId() : -1) +
+                ", stencilRenderingState=" + this.stencilRenderingState +
                 "}";
+    }
+
+    public int getStencilRenderingState() {
+        return stencilRenderingState;
+    }
+
+    public void setStencilRenderingState(int stencilRenderingState) {
+        this.stencilRenderingState = stencilRenderingState;
     }
 }

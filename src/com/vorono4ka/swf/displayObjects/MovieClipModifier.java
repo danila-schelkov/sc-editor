@@ -26,7 +26,6 @@ public class MovieClipModifier extends DisplayObject {
             }
         }
 
-        // TODO: Realize why it doesn't work. Do i need to create another batches?
         stage.setStencilRenderingState(stencilRenderingState);
 
         return false;

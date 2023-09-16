@@ -7,21 +7,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BatchPool {
-    private final List<Batch> batches;
-
-    public BatchPool() {
-        this.batches = new ArrayList<>();
-    }
+    private final List<Batch> batches = new ArrayList<>();
 
     public void pullBatches(List<Batch> batches) {
         this.batches.addAll(batches);
     }
 
-    public Batch createOrPopBatch(GL3 gl, GLImage image) {
+    public Batch createOrPopBatch(GL3 gl, GLImage image, int stencilRenderingState) {
         Batch neededBatch = null;
 
         for (Batch batch : this.batches) {
-            if (batch.getImage() == image) {
+            if (batch.getImage() == image && batch.getStencilRenderingState() == stencilRenderingState) {
                 neededBatch = batch;
                 break;
             }
@@ -32,6 +28,7 @@ public class BatchPool {
         if (neededBatch == null) {
             neededBatch = new Batch(image);
             neededBatch.init(gl);
+            neededBatch.setStencilRenderingState(stencilRenderingState);
         }
 
         return neededBatch;
