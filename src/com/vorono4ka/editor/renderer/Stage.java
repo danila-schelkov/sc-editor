@@ -137,6 +137,7 @@ public class Stage {
 
     private void renderBuckets() {
         for (Batch batch : this.batches) {
+            setRenderStencilState(batch.getStencilRenderingState());
             batch.render(this.gl);
         }
 
@@ -173,7 +174,7 @@ public class Stage {
 
         this.currentBatch = null;
 
-        if (this.batches.size() > 0) {
+        if (!this.batches.isEmpty()) {
             Batch lastBatch = this.batches.get(this.batches.size() - 1);
             if (lastBatch.getImage() == image) {
                 this.currentBatch = lastBatch;
@@ -181,7 +182,7 @@ public class Stage {
         }
 
         if (this.currentBatch == null) {
-            this.currentBatch = this.batchPool.createOrPopBatch(this.gl, image);
+            this.currentBatch = this.batchPool.createOrPopBatch(this.gl, image, 0);
             this.batches.add(this.currentBatch);
         }
 
@@ -237,7 +238,11 @@ public class Stage {
         this.stageSprite.removeAllChildren();
     }
 
-    public void setStencilRenderingState(int state) {  // TODO: split into separate batch buffer
+    public void setStencilRenderingState(int state) {
+        this.batches.add(this.batchPool.createOrPopBatch(this.gl, null, state));
+    }
+
+    private void setRenderStencilState(int state) {
         switch (state) {
             case 1 -> {
                 // scissors
@@ -247,6 +252,7 @@ public class Stage {
                 this.gl.glStencilFunc(GL3.GL_ALWAYS, 1, 0xFF); // каждый фрагмент обновит трафаретный буфер
                 this.gl.glStencilOp(GL3.GL_KEEP, GL3.GL_KEEP, GL3.GL_REPLACE);
                 this.gl.glStencilMask(0xFF); // включить запись в трафаретный буфер
+                this.gl.glColorMask(false, false, false, false);
 
                 this.gl.glDepthMask(false);
                 this.gl.glClear(GL3.GL_STENCIL_BUFFER_BIT); // Clear stencil buffer (0 by default)
@@ -254,11 +260,13 @@ public class Stage {
             case 3 -> {
                 this.gl.glStencilFunc(GL3.GL_EQUAL, 1, 0xFF);
                 this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
+                this.gl.glColorMask(true, true, true, true);
             }
             case 4 -> this.gl.glDisable(GL3.GL_STENCIL_TEST);
             case 5 -> {
                 this.gl.glStencilFunc(GL3.GL_NOTEQUAL, 1, 0xFF);
                 this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
+                this.gl.glColorMask(true, true, true, true);
             }
         }
     }
