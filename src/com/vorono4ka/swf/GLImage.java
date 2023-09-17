@@ -53,22 +53,22 @@ public class GLImage {
         this.textureId = textureId;
     }
 
-    public static void createWithFormat(GLImage image, KhronosTexture ktx, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
+    public void createWithFormat(KhronosTexture ktx, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
         Stage stage = Stage.getInstance();
         GL3 gl = stage.getGl();
 
-        image.setWidth(width);
-        image.setHeight(height);
-        image.setPixelFormat(pixelFormat);
+        this.setWidth(width);
+        this.setHeight(height);
+        this.setPixelFormat(pixelFormat);
 
         stage.doInRenderThread(() -> {
-            if (image.getTextureId() != 0) {
-                gl.glDeleteTextures(1, new int[] {image.getTextureId()}, 0);
+            if (this.getTextureId() != 0) {
+                gl.glDeleteTextures(1, new int[] {this.getTextureId()}, 0);
             }
 
             int id = genTexture();
 
-            image.setTextureId(id);
+            this.setTextureId(id);
 
             int magFilter;
             int minFilter;
@@ -102,7 +102,7 @@ public class GLImage {
             if (ktx != null) {
                 loadKtx(gl, ktx);
             } else {
-                loadImage(gl, image, width, height, pixels, pixelFormat, pixelType);
+                loadImage(gl, this, width, height, pixels, pixelFormat, pixelType);
             }
 
             gl.glGenerateMipmap(GL3.GL_TEXTURE_2D);

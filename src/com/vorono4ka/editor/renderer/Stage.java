@@ -13,8 +13,12 @@ import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.StageSprite;
 import com.vorono4ka.utilities.Utilities;
 
-import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
+import java.awt.image.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -24,10 +28,10 @@ public class Stage {
     private static int STAGE_COUNT;
     private static Stage INSTANCE;
 
-    private final ConcurrentLinkedQueue<Runnable> tasks;
-    private final List<Batch> batches;
-    private final Camera camera;
-    private final BatchPool batchPool;
+    private final ConcurrentLinkedQueue<Runnable> tasks = new ConcurrentLinkedQueue<>();
+    private final List<Batch> batches = new ArrayList<>();
+    private final Camera camera = new Camera();
+    private final BatchPool batchPool = new BatchPool();
     private final StageSprite stageSprite;
 
     private boolean initialized;
@@ -36,17 +40,13 @@ public class Stage {
 
     private Batch currentBatch;
     private GLImage gradientTexture;
+    private Framebuffer framebuffer;
 
     private boolean isCalculatingBounds;
     private Rect bounds;
+    private long timer;
 
-    public Stage() {
-        this.tasks = new ConcurrentLinkedQueue<>();
-        this.batches = new ArrayList<>();
-
-        this.camera = new Camera();
-        this.batchPool = new BatchPool();
-
+    private Stage() {
         this.stageSprite = new StageSprite(this);
 
         Stage.STAGE_COUNT++;
@@ -72,11 +72,12 @@ public class Stage {
         assert imageBuffer != null : "Gradient texture not found.";
 
         this.gradientTexture = new GLImage();
-        GLImage.createWithFormat(this.gradientTexture, null, true, 1, 256, 2, Utilities.getPixelBuffer(imageBuffer), GL3.GL_LUMINANCE_ALPHA, GL3.GL_UNSIGNED_BYTE);
+        this.gradientTexture.createWithFormat(null, true, 1, 256, 2, Utilities.getPixelBuffer(imageBuffer), GL3.GL_LUMINANCE_ALPHA, GL3.GL_UNSIGNED_BYTE);
 
         this.camera.init(width, height);
 
         gl.glViewport(x, y, width, height);
+        this.framebuffer = new Framebuffer(gl, width, height);
 
         this.updatePMVMatrix();
 
@@ -98,13 +99,6 @@ public class Stage {
             iterator.remove();
         }
 
-        this.gl.glClearColor(.5f, .5f, .5f, 1);
-        this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
-
-        this.gl.glStencilMask(0xFF);
-        this.gl.glClearStencil(0);
-        this.gl.glStencilMask(0);
-
         float deltaTime = 0;
 
         FPSAnimator animator = Main.editor.getAnimator();
@@ -114,16 +108,81 @@ public class Stage {
 
         this.stageSprite.render(new Matrix2x3(), new ColorTransform(), 0, deltaTime);
 
+        this.gl.glClearColor(.5f, .5f, .5f, 1);
+        this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
+
+        this.gl.glStencilMask(0xFF);
+        this.gl.glClearStencil(0);
+        this.gl.glStencilMask(0);
+
+        this.gl.glClearColor(.5f, .5f, .5f, 0);
+        this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
+
+        this.framebuffer.bind();
         this.shader.bind();
-
         this.renderBuckets();
-        this.unloadBatchesToPool();
-
         this.shader.unbind();
+        this.framebuffer.unbind();
+
+        this.shader.bind();
+        this.renderBuckets();
+        this.shader.unbind();
+
+        if (this.framebuffer != null && timer++ >= 100) {
+            timer = 0;
+
+            // TODO: use to clamp render only the object
+            Rect bounds = getDisplayObjectBounds(this.stageSprite);
+            int width = this.framebuffer.getWidth();
+            int height = this.framebuffer.getHeight();
+
+            if (width != 0 && height != 0) {
+                IntBuffer pixels = this.framebuffer.getTexture().getPixels();
+                int[] pixelArray = new int[pixels.capacity()];
+                pixels.rewind();
+                pixels.get(pixelArray);
+
+                for (int x = 0; x < width; x++) {
+                    for (int y = 0; y < height / 2; y++) {
+                        int pixelIndex = x + y * width;
+                        int flippedIndex = x + (height - y) * width;
+
+                        int oldPixel = pixelArray[pixelIndex];
+                        pixelArray[pixelIndex] = pixelArray[flippedIndex];
+                        pixelArray[flippedIndex] = oldPixel;
+                    }
+                }
+
+                DirectColorModel colorModel = new DirectColorModel(32,
+                    0xff,
+                    0xff00,
+                    0xff0000,
+                    0xff000000
+                );
+
+                SampleModel sampleModel = colorModel.createCompatibleSampleModel(width, height);
+                DataBufferInt dataBufferInt = new DataBufferInt(pixelArray, pixelArray.length);
+                WritableRaster writableRaster = Raster.createWritableRaster(sampleModel, dataBufferInt, null);
+                BufferedImage image = new BufferedImage(colorModel, writableRaster, false, null);
+
+                try {
+                    File file = new File("test.png");
+                    ImageIO.write(image, "png", file);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        this.unloadBatchesToPool();
     }
 
     public void unbindRender() {
         if (!this.initialized) return;
+
+        if (this.framebuffer != null) {
+            this.framebuffer.delete();
+        }
 
         this.clearBatches();
 
@@ -141,10 +200,6 @@ public class Stage {
             setRenderStencilState(batch.getStencilRenderingState());
             batch.render(this.gl);
         }
-
-        for (Batch batch : this.batches) {
-            batch.reset();
-        }
     }
 
     public void clearBatches() {
@@ -156,6 +211,10 @@ public class Stage {
     }
 
     private void unloadBatchesToPool() {
+        for (Batch batch : this.batches) {
+            batch.reset();
+        }
+
         this.batchPool.pullBatches(this.batches);
         this.batches.clear();
     }
