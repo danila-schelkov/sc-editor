@@ -14,6 +14,7 @@ import com.vorono4ka.swf.displayObjects.StageSprite;
 import com.vorono4ka.utilities.Utilities;
 
 import java.awt.image.BufferedImage;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -217,8 +218,11 @@ public class Stage {
             1
         );
 
+        FloatBuffer matrixBuffer = FloatBuffer.allocate(16);
+        matrix.glGetFloatv(matrix.glGetMatrixMode(), matrixBuffer);
+
         this.shader.bind();
-        this.gl.glUniformMatrix4fv(this.shader.getUniformLocation("pmv"), 1, false, matrix.glGetMatrixf());
+        this.gl.glUniformMatrix4fv(this.shader.getUniformLocation("pmv"), 1, false, matrixBuffer);
         this.shader.unbind();
     }
 
