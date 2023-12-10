@@ -24,32 +24,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Editor {
-    private final EditorWindow window;
+    private final EditorWindow window = new EditorWindow();
 
-    private final List<UsagesWindow> usagesWindows;
-    private final List<SpriteSheet> spriteSheets;
+    private final List<UsagesWindow> usagesWindows = new ArrayList<>();
+    private final List<SpriteSheet> spriteSheets = new ArrayList<>();
 
     // For selection history
-    private final List<DisplayObject> clonedObjects;
-    private final List<Integer> selectedIndices;
+    private final List<DisplayObject> clonedObjects = new ArrayList<>();
+    private final List<Integer> selectedIndices = new ArrayList<>();
 
-    private int selectedIndex;
+    private int selectedIndex = -1;
 
     private SupercellSWF swf;
 
     // Editor debug stuff
     private boolean shouldDisplayPolygons;
-
-    public Editor() {
-        this.window = new EditorWindow();
-        this.usagesWindows = new ArrayList<>();
-
-        this.clonedObjects = new ArrayList<>();
-        this.selectedIndices = new ArrayList<>();
-        this.selectedIndex = -1;
-
-        this.spriteSheets = new ArrayList<>();
-    }
 
     public void openFile(String path) {
         try {
@@ -223,7 +212,7 @@ public class Editor {
 
     public void findUsages(int displayObjectId, String name) {
         String title = "Usages";
-        if (name != null && name.length() > 0) {
+        if (name != null && !name.isEmpty()) {
             title += " - " + name;
         }
 

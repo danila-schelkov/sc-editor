@@ -22,11 +22,11 @@ public class Batch {
 
     private float[] vertices;
     private int[] indices;
-    private int maxSize;  // triangles count
+    private int maxSize;  // triangle count
 
     private GLImage image;
-    private int trianglesCount;
-    private int pointsCount;
+    private int triangleCount;
+    private int pointCount;
     private int vertexIndex;
     private int renderConfigBits;
     private VAO vao;
@@ -67,7 +67,7 @@ public class Batch {
         this.ebo.subData(0, this.indices);
 
         this.vao.bind();
-        gl.glDrawElements(GL3.GL_TRIANGLES, this.indices.length, GL.GL_UNSIGNED_INT, 0);
+        gl.glDrawElements(GL3.GL_TRIANGLES, this.triangleCount * 3, GL.GL_UNSIGNED_INT, 0);
         this.vao.unbind();
     }
 
@@ -75,8 +75,8 @@ public class Batch {
         Arrays.fill(this.vertices, 0);
         Arrays.fill(this.indices, 0);
 
-        this.trianglesCount = 0;
-        this.pointsCount = 0;
+        this.triangleCount = 0;
+        this.pointCount = 0;
         this.vertexIndex = 0;
     }
 
@@ -114,11 +114,11 @@ public class Batch {
         }
 
         for (int i = 0; i < triangles.length; i++) {
-            this.indices[this.trianglesCount * 3 + i] = triangles[i] + this.pointsCount;
+            this.indices[this.triangleCount * 3 + i] = triangles[i] + this.pointCount;
         }
 
-        this.trianglesCount += count;
-        this.pointsCount += count + 2;
+        this.triangleCount += count;
+        this.pointCount += count + 2;
     }
 
     public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float redAdd, float greenAdd, float blueAdd, float alpha) {
@@ -138,7 +138,7 @@ public class Batch {
     }
 
     public boolean hasSpaceFor(int trianglesCount) {
-        return this.trianglesCount + trianglesCount <= this.maxSize;
+        return this.triangleCount + trianglesCount <= this.maxSize;
     }
 
     public GLImage getImage() {
