@@ -10,6 +10,8 @@ public class Framebuffer {
     private final Texture texture;
     private final Renderbuffer renderbuffer;
 
+    private int previousFramebuffer;
+
     public Framebuffer(GL3 gl, int width, int height) {
         this.gl = gl;
         this.width = width;
@@ -32,11 +34,13 @@ public class Framebuffer {
     }
 
     public void bind() {
+        this.previousFramebuffer = this.gl.getBoundFramebuffer(GL3.GL_FRAMEBUFFER);
         this.gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, this.id);
     }
 
     public void unbind() {
-        this.gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, 0);
+        this.gl.glBindFramebuffer(GL3.GL_FRAMEBUFFER, this.previousFramebuffer);
+        this.previousFramebuffer = -1;
     }
 
     public void delete() {
