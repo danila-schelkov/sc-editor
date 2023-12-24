@@ -4,6 +4,7 @@ import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.vorono4ka.editor.Main;
+import com.vorono4ka.math.MathHelper;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.resources.Assets;
 import com.vorono4ka.swf.ColorTransform;
@@ -19,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -44,7 +46,6 @@ public class Stage {
 
     private boolean isCalculatingBounds;
     private Rect bounds;
-    private long timer;
 
     private Stage() {
         this.stageSprite = new StageSprite(this);
@@ -64,6 +65,41 @@ public class Stage {
         return STAGE_COUNT;
     }
 
+    private static void savePixelArrayAsImage(Path filepath, int width, int height, int[] pixelArray) {
+        DirectColorModel colorModel = new DirectColorModel(32,
+            0xff,
+            0xff00,
+            0xff0000,
+            0xff000000
+        );
+
+        SampleModel sampleModel = colorModel.createCompatibleSampleModel(width, height);
+        DataBufferInt dataBufferInt = new DataBufferInt(pixelArray, pixelArray.length);
+        WritableRaster writableRaster = Raster.createWritableRaster(sampleModel, dataBufferInt, null);
+        BufferedImage image = new BufferedImage(colorModel, writableRaster, false, null);
+
+        try {
+            File file = filepath.toFile();
+            file.mkdirs();
+            ImageIO.write(image, "png", file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void flipY(int framebufferWidth, int framebufferHeight, int[] pixelArray) {
+        for (int x = 0; x < framebufferWidth; x++) {
+            for (int y = 0; y < framebufferHeight / 2; y++) {
+                int pixelIndex = x + y * framebufferWidth;
+                int flippedIndex = x + (framebufferHeight - y) * framebufferWidth;
+
+                int oldPixel = pixelArray[pixelIndex];
+                pixelArray[pixelIndex] = pixelArray[flippedIndex];
+                pixelArray[flippedIndex] = oldPixel;
+            }
+        }
+    }
+
     public void init(GL3 gl, int x, int y, int width, int height) {
         this.shader = Assets.getShader(gl, "vertex.glsl", "fragment.glsl");
         this.gl = gl;
@@ -71,8 +107,10 @@ public class Stage {
         BufferedImage imageBuffer = Assets.getImageBuffer("gradient_texture.png");
         assert imageBuffer != null : "Gradient texture not found.";
 
-        this.gradientTexture = new GLImage();
-        this.gradientTexture.createWithFormat(null, true, 1, 256, 2, Utilities.getPixelBuffer(imageBuffer), GL3.GL_LUMINANCE_ALPHA, GL3.GL_UNSIGNED_BYTE);
+        if (this.gradientTexture == null) {
+            this.gradientTexture = new GLImage();
+            this.gradientTexture.createWithFormat(null, true, 1, 256, 2, Utilities.getPixelBuffer(imageBuffer), GL3.GL_LUMINANCE_ALPHA, GL3.GL_UNSIGNED_BYTE);
+        }
 
         this.camera.init(width, height);
 
@@ -94,7 +132,11 @@ public class Stage {
         Iterator<Runnable> iterator = this.tasks.iterator();
         while (iterator.hasNext()) {
             Runnable task = iterator.next();
-            task.run();
+            try {
+                task.run();
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
 
             iterator.remove();
         }
@@ -118,63 +160,67 @@ public class Stage {
         this.gl.glClearColor(.5f, .5f, .5f, 0);
         this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
 
+        this.shader.bind();
+        this.renderBuckets();
+
         this.framebuffer.bind();
-        this.shader.bind();
         this.renderBuckets();
-        this.shader.unbind();
         this.framebuffer.unbind();
-
-        this.shader.bind();
-        this.renderBuckets();
         this.shader.unbind();
 
-        if (this.framebuffer != null && timer++ >= 100) {
-            timer = 0;
+        this.unloadBatchesToPool();
+    }
 
-            // TODO: use to clamp render only the object
-            Rect bounds = getDisplayObjectBounds(this.stageSprite);
-            int width = this.framebuffer.getWidth();
-            int height = this.framebuffer.getHeight();
+    public void takeScreenshot() {
+        Rect bounds = getDisplayObjectBounds(this.stageSprite);
+        int framebufferWidth = framebuffer.getWidth();
+        int framebufferHeight = framebuffer.getHeight();
+        int width = (int) (bounds.getWidth() * camera.getPointSize());
+        int height = (int) (bounds.getHeight() * camera.getPointSize());
 
-            if (width != 0 && height != 0) {
-                IntBuffer pixels = this.framebuffer.getTexture().getPixels();
-                int[] pixelArray = new int[pixels.capacity()];
-                pixels.rewind();
-                pixels.get(pixelArray);
+        width = MathHelper.clamp(width, 1, framebufferWidth);
+        height = MathHelper.clamp(height, 1, framebufferHeight);
 
-                for (int x = 0; x < width; x++) {
-                    for (int y = 0; y < height / 2; y++) {
-                        int pixelIndex = x + y * width;
-                        int flippedIndex = x + (height - y) * width;
+        if (width == 0 || height == 0) return;
 
-                        int oldPixel = pixelArray[pixelIndex];
-                        pixelArray[pixelIndex] = pixelArray[flippedIndex];
-                        pixelArray[flippedIndex] = oldPixel;
-                    }
-                }
+        IntBuffer pixels = framebuffer.getTexture().getPixels();
+        int[] pixelArray = new int[pixels.capacity()];
+        pixels.rewind();
+        pixels.get(pixelArray);
 
-                DirectColorModel colorModel = new DirectColorModel(32,
-                    0xff,
-                    0xff00,
-                    0xff0000,
-                    0xff000000
-                );
+        flipY(framebufferWidth, framebufferHeight, pixelArray);
 
-                SampleModel sampleModel = colorModel.createCompatibleSampleModel(width, height);
-                DataBufferInt dataBufferInt = new DataBufferInt(pixelArray, pixelArray.length);
-                WritableRaster writableRaster = Raster.createWritableRaster(sampleModel, dataBufferInt, null);
-                BufferedImage image = new BufferedImage(colorModel, writableRaster, false, null);
+        int[] croppedPixelArray = cropPixelArray(
+            pixelArray,
+            framebufferWidth,
+            framebufferHeight,
+            width,
+            height,
+            (int) (bounds.getLeft() * camera.getPointSize()),
+            (int) (bounds.getTop() * camera.getPointSize())
+        );
 
-                try {
-                    File file = new File("test.png");
-                    ImageIO.write(image, "png", file);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+        Path path = Path.of("screenshots", stageSprite.getChild(0).getId() + ".png");
+        savePixelArrayAsImage(path, width, height, croppedPixelArray);
+    }
+
+    private int[] cropPixelArray(int[] pixelArray, int originalWidth, int originalHeight, int width, int height, int offsetX, int offsetY) {
+        int startX = MathHelper.clamp(originalWidth / 2 + offsetX, 0, originalWidth);
+        int startY = MathHelper.clamp(originalHeight / 2 + offsetY, 0, originalHeight);
+        int endX = MathHelper.clamp(startX + width, 0, originalWidth);
+        int endY = MathHelper.clamp(startY + height, 0, originalHeight);
+
+        int[] croppedPixelArray = new int[width * height];
+        for (int x = startX; x < endX; x++) {
+            for (int y = startY; y < endY; y++) {
+                int pixelIndex = x + y * originalWidth;
+                int croppedPixelIndex = (x - startX) + (y - startY) * width;
+
+                croppedPixelArray[croppedPixelIndex] = pixelArray[pixelIndex];
             }
         }
 
-        this.unloadBatchesToPool();
+        return croppedPixelArray;
     }
 
     public void unbindRender() {
@@ -183,6 +229,8 @@ public class Stage {
         if (this.framebuffer != null) {
             this.framebuffer.delete();
         }
+
+        this.gl.glDeleteTextures(1, new int[]{this.gradientTexture.getTextureId()}, 0);
 
         this.clearBatches();
 

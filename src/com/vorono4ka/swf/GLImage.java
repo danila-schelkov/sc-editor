@@ -97,7 +97,9 @@ public class GLImage {
             gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T, wrap);
             gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, magFilter);
             gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, minFilter);
-    //        gl.glPixelStorei(GL3.GL_UNPACK_ALIGNMENT, 4);
+
+            int channelCount = getChannelCount(pixelFormat);
+            gl.glPixelStorei(GL3.GL_UNPACK_ALIGNMENT, channelCount);
 
             if (ktx != null) {
                 loadKtx(gl, ktx);
@@ -111,9 +113,20 @@ public class GLImage {
         });
     }
 
+    private static int getChannelCount(int pixelFormat) {
+        return switch (pixelFormat) {
+            case GL3.GL_RGBA -> 4;
+            case GL3.GL_RGB -> 3;
+            case GL3.GL_LUMINANCE_ALPHA, GL3.GL_RG -> 2;
+            case GL3.GL_LUMINANCE, GL3.GL_RED -> 1;
+            default ->
+                throw new IllegalArgumentException("Unsupported pixel format for pixel storage, pixel format: " + pixelFormat);
+        };
+    }
+
     private static void loadImage(GL3 gl, GLImage image, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
         gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, pixelFormat, width, height, 0, pixelFormat, pixelType, pixels);
-        if (gl.glGetError() == GL3.GL_INVALID_ENUM) {
+        if (gl.glGetError() == GL3.GL_INVALID_ENUM && (pixelFormat == GL3.GL_LUMINANCE_ALPHA || pixelFormat == GL3.GL_LUMINANCE)) {
             IntBuffer swizzleMask = null;
             int format = -1;
 
