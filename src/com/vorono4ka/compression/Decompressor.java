@@ -1,8 +1,8 @@
 package com.vorono4ka.compression;
 
+import com.github.luben.zstd.Zstd;
 import com.vorono4ka.compression.exceptions.UnknownFileMagicException;
 import com.vorono4ka.compression.exceptions.UnknownFileVersionException;
-import io.airlift.compress.zstd.ZstdDecompressor;
 import org.sevenzip.compression.LZMA.Decoder;
 
 import java.io.ByteArrayInputStream;
@@ -11,12 +11,6 @@ import java.io.DataInputStream;
 import java.io.IOException;
 
 public class Decompressor {
-    public static final ZstdDecompressor ZSTD_DECOMPRESSOR;
-
-    static {
-        ZSTD_DECOMPRESSOR = new ZstdDecompressor();
-    }
-
     public static byte[] decompress(byte[] compressedData) throws UnknownFileMagicException, UnknownFileVersionException, IOException {
         DataInputStream stream = new DataInputStream(new ByteArrayInputStream(compressedData));
 
@@ -54,17 +48,14 @@ public class Decompressor {
             }
             case 2, 3 -> {
                 int offset = compressedData.length - stream.available();
-                int decompressedSize = (int) ZstdDecompressor.getDecompressedSize(compressedData, offset, compressedData.length - offset);
+                int decompressedSize = (int) Zstd.getFrameContentSize(compressedData, offset, compressedData.length - offset);
 
-                decompressed = new byte[decompressedSize];
+                byte[] zstdContent = new byte[compressedData.length - offset];
+                System.arraycopy(compressedData, offset, zstdContent, 0, zstdContent.length);
 
-                ZSTD_DECOMPRESSOR.decompress(
-                    compressedData,
-                    offset,
-                    compressedData.length - offset,
-                    decompressed,
-                    0,
-                    decompressed.length
+                decompressed = Zstd.decompress(
+                    zstdContent,
+                    decompressedSize
                 );
             }
             default -> throw new UnknownFileVersionException("Unknown file version: " + version);
