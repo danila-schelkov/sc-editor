@@ -1,8 +1,8 @@
 package com.vorono4ka.editor.layout.panels;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import com.jogamp.opengl.util.FPSAnimator;
 import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
 
@@ -69,19 +69,11 @@ public class TimelinePanel extends JPanel {
     }
 
     private void playButtonPressed(ActionEvent actionEvent) {
-        FPSAnimator animator = Main.editor.getAnimator();
-
-        if (animator.isPaused()) {
-            animator.resume();
-            return;
-        }
-
-        animator.start();
+        Stage.getInstance().resumeAnimation();
     }
 
     private void stopButtonPressed(ActionEvent actionEvent) {
-        FPSAnimator animator = Main.editor.getAnimator();
-        animator.stop();
+        Stage.getInstance().pauseAnimation();
     }
 
     private void currentFrameChanged(ChangeEvent e) {

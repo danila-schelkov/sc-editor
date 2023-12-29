@@ -61,6 +61,7 @@ public class FileMenu extends JMenu {
     private void exportAsImage(ActionEvent actionEvent) {
         Stage instance = Stage.getInstance();
         instance.doInRenderThread(instance::takeScreenshot);
+        Main.editor.updateCanvas();
     }
 
     public void checkCanSave() {

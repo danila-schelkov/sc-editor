@@ -46,6 +46,7 @@ public class Stage {
 
     private boolean isCalculatingBounds;
     private Rect bounds;
+    private boolean isAnimationPaused;
 
     private Stage() {
         this.stageSprite = new StageSprite(this);
@@ -146,6 +147,10 @@ public class Stage {
         FPSAnimator animator = Main.editor.getAnimator();
         if (animator != null && animator.isAnimating()) {
             deltaTime = 1f / animator.getFPS(); // TODO: calculate delta time more precisely
+        }
+
+        if (isAnimationPaused) {
+            deltaTime = 0;
         }
 
         this.stageSprite.render(new Matrix2x3(), new ColorTransform(), 0, deltaTime);
@@ -410,5 +415,13 @@ public class Stage {
         this.bounds = null;
 
         return bounds;
+    }
+
+    public void pauseAnimation() {
+        isAnimationPaused = true;
+    }
+
+    public void resumeAnimation() {
+        isAnimationPaused = false;
     }
 }
