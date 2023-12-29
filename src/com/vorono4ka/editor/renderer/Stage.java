@@ -196,8 +196,8 @@ public class Stage {
             framebufferHeight,
             width,
             height,
-            (int) (bounds.getLeft() * camera.getPointSize()),
-            (int) (bounds.getTop() * camera.getPointSize())
+            (int) ((bounds.getLeft() - camera.getOffsetX()) * camera.getPointSize()),
+            (int) ((bounds.getTop() - camera.getOffsetY()) * camera.getPointSize())
         );
 
         Path path = Path.of("screenshots", stageSprite.getChild(0).getId() + ".png");
