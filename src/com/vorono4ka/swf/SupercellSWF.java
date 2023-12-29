@@ -158,7 +158,7 @@ public class SupercellSWF {
         if (this.loadTags(false, path)) {
             for (int i = 0; i < exportsCount; i++) {
                 String exportName = this.exportsNames[i];
-                MovieClipOriginal movieClip = this.getOriginalMovieClip(this.exportsIds[i], exportName);
+                MovieClipOriginal movieClip = this.getOriginalMovieClip(this.exportsIds[i] & 0xFFFF, exportName);
                 movieClip.setExportName(exportName);
             }
 
