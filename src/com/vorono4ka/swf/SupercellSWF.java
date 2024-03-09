@@ -61,7 +61,7 @@ public class SupercellSWF {
         this.fontsNames = new ArrayList<>();
     }
 
-    public boolean load(String path, String filename) throws LoadingFaultException, UnableToFindObjectException {
+    public boolean load(String path, String filename) throws LoadingFaultException, UnableToFindObjectException, UnsupportedCustomPropertyException {
         this.filename = filename;
 
         if (this.loadInternal(path, false)) {
@@ -79,7 +79,7 @@ public class SupercellSWF {
         return false;
     }
 
-    private boolean loadInternal(String path, boolean isTextureFile) throws LoadingFaultException, UnableToFindObjectException {
+    private boolean loadInternal(String path, boolean isTextureFile) throws LoadingFaultException, UnableToFindObjectException, UnsupportedCustomPropertyException {
         byte[] data;
 
         File file = new File(path);
@@ -167,7 +167,7 @@ public class SupercellSWF {
         return false;
     }
 
-    private boolean loadTags(boolean isTextureFile, String path) throws LoadingFaultException {
+    private boolean loadTags(boolean isTextureFile, String path) throws LoadingFaultException, UnsupportedCustomPropertyException {
         String highresSuffix = "_highres";
         String lowresSuffix = "_lowres";
 
@@ -235,7 +235,7 @@ public class SupercellSWF {
                     }
                     this.shapesIds[loadedShapes] = this.shapes[loadedShapes++].load(this, tagValue);
                 }
-                case MOVIE_CLIP, MOVIE_CLIP_2, MOVIE_CLIP_3, MOVIE_CLIP_4, MOVIE_CLIP_35 -> {
+                case MOVIE_CLIP, MOVIE_CLIP_2, MOVIE_CLIP_3, MOVIE_CLIP_4, MOVIE_CLIP_5, MOVIE_CLIP_6 -> {
                     if (loadedMovieClips >= this.movieClipsCount) {
                         throw new TooManyObjectsException("Trying to load too many MovieClips from ");
                     }
@@ -304,6 +304,8 @@ public class SupercellSWF {
                     loadedColorTransforms = 0;
                 }
                 default -> {
+                    // TODO: add strict mode which crashes on errors and probably enable it by default
+                    // TODO: also add properties and settings for the app
                     try {
                         throw new UnsupportedTagException(String.format("Encountered unknown tag %d, %s", tag, this.filename));
                     } catch (UnsupportedTagException exception) {
