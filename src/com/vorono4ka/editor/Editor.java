@@ -15,6 +15,7 @@ import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
+import com.vorono4ka.swf.exceptions.UnsupportedCustomPropertyException;
 import com.vorono4ka.swf.originalObjects.MovieClipOriginal;
 import com.vorono4ka.swf.originalObjects.SWFTexture;
 import com.vorono4ka.utilities.ArrayUtilities;
@@ -44,7 +45,8 @@ public class Editor {
         try {
             this.swf = new SupercellSWF();
             this.swf.load(path, path.substring(path.lastIndexOf("\\") + 1));
-        } catch (LoadingFaultException | UnableToFindObjectException e) {
+        } catch (LoadingFaultException | UnableToFindObjectException |
+                 UnsupportedCustomPropertyException e) {
             e.printStackTrace();
             return;
         }

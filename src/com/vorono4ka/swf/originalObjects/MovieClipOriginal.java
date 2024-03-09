@@ -9,10 +9,7 @@ import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
-import com.vorono4ka.swf.exceptions.LoadingFaultException;
-import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
-import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
-import com.vorono4ka.swf.exceptions.UnsupportedTagException;
+import com.vorono4ka.swf.exceptions.*;
 
 import java.util.*;
 
@@ -32,16 +29,31 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
     private String exportName;
     private DisplayObjectOriginal[] children;
 
-    public int load(SupercellSWF swf, Tag tag) throws LoadingFaultException {
+    public int load(SupercellSWF swf, Tag tag) throws LoadingFaultException, UnsupportedCustomPropertyException {
         this.tag = tag;
 
         this.id = swf.readShort();
         this.fps = swf.readUnsignedChar();
+        // *(a1 + 54) = *(a1 + 54) & 0xFF80 | ZN12SupercellSWF16readUnsignedCharEv(a2) & 0x7F;
 
         int framesCount = swf.readShort();
         this.frames = new MovieClipFrame[framesCount];
         for (int i = 0; i < this.frames.length; i++) {
             this.frames[i] = new MovieClipFrame();
+        }
+
+        if (tag.hasCustomProperties()) {
+            int propertyCount = swf.readUnsignedChar();
+            for (int i = 0; i < propertyCount; i++) {
+                int propertyType = swf.readUnsignedChar();
+                switch (propertyType) {
+                    case 0 -> {
+                        boolean unknown = swf.readBoolean();
+                        // *(a1 + 54) = *(a1 + 54) & 0xFF7F | (unknown ? 128 : 0);
+                    }
+                    default -> throw new UnsupportedCustomPropertyException("Unsupported custom property type: " + propertyType);
+                }
+            }
         }
 
         switch (Objects.requireNonNull(tag)) {
@@ -62,7 +74,7 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
         this.childrenCount = swf.readShort();
         this.childrenIds = swf.readShortArray(this.childrenCount);
 
-        if (tag == Tag.MOVIE_CLIP_3 || tag == Tag.MOVIE_CLIP_35) {
+        if (tag.hasBlendData()) {
             this.childrenBlends = swf.readByteArray(this.childrenCount);
         } else {
             this.childrenBlends = new byte[this.childrenCount];
@@ -122,7 +134,8 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
 
                     this.scalingGrid = new Rect(left, top, right, bottom);
                 }
-                case MATRIX_BANK_INDEX -> this.matrixBankIndex = swf.readUnsignedChar();
+                case MATRIX_BANK_INDEX -> // (a1 + 54) & 0x80FF | ((ZN12SupercellSWF16readUnsignedCharEv(a2) & 0x7F) << 8);
+                    this.matrixBankIndex = swf.readUnsignedChar();
                 default -> {
                     try {
                         throw new UnsupportedTagException(String.format("Unknown tag %d in MovieClip, %s", frameTag, swf.getFilename()));
@@ -158,7 +171,7 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
             stream.writeShort(id);
         }
 
-        if (this.tag == Tag.MOVIE_CLIP_3 || this.tag == Tag.MOVIE_CLIP_35) {
+        if (this.tag == Tag.MOVIE_CLIP_3 || this.tag == Tag.MOVIE_CLIP_5) {
             for (byte blend : this.childrenBlends) {
                 stream.writeUnsignedChar(blend);
             }
