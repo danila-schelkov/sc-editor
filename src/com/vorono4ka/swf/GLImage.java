@@ -53,22 +53,22 @@ public class GLImage {
         this.textureId = textureId;
     }
 
-    public static void createWithFormat(GLImage image, KhronosTexture ktx, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
+    public void createWithFormat(KhronosTexture ktx, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
         Stage stage = Stage.getInstance();
         GL3 gl = stage.getGl();
 
-        image.setWidth(width);
-        image.setHeight(height);
-        image.setPixelFormat(pixelFormat);
+        this.setWidth(width);
+        this.setHeight(height);
+        this.setPixelFormat(pixelFormat);
 
         stage.doInRenderThread(() -> {
-            if (image.getTextureId() != 0) {
-                gl.glDeleteTextures(1, new int[] {image.getTextureId()}, 0);
+            if (this.getTextureId() != 0) {
+                gl.glDeleteTextures(1, new int[] {this.getTextureId()}, 0);
             }
 
             int id = genTexture();
 
-            image.setTextureId(id);
+            this.setTextureId(id);
 
             int magFilter;
             int minFilter;
@@ -97,12 +97,14 @@ public class GLImage {
             gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T, wrap);
             gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, magFilter);
             gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, minFilter);
-    //        gl.glPixelStorei(GL3.GL_UNPACK_ALIGNMENT, 4);
+
+            int channelCount = getChannelCount(pixelFormat);
+            gl.glPixelStorei(GL3.GL_UNPACK_ALIGNMENT, channelCount);
 
             if (ktx != null) {
                 loadKtx(gl, ktx);
             } else {
-                loadImage(gl, image, width, height, pixels, pixelFormat, pixelType);
+                loadImage(gl, this, width, height, pixels, pixelFormat, pixelType);
             }
 
             gl.glGenerateMipmap(GL3.GL_TEXTURE_2D);
@@ -111,9 +113,20 @@ public class GLImage {
         });
     }
 
+    private static int getChannelCount(int pixelFormat) {
+        return switch (pixelFormat) {
+            case GL3.GL_RGBA -> 4;
+            case GL3.GL_RGB -> 3;
+            case GL3.GL_LUMINANCE_ALPHA, GL3.GL_RG -> 2;
+            case GL3.GL_LUMINANCE, GL3.GL_RED -> 1;
+            default ->
+                throw new IllegalArgumentException("Unsupported pixel format for pixel storage, pixel format: " + pixelFormat);
+        };
+    }
+
     private static void loadImage(GL3 gl, GLImage image, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
         gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, pixelFormat, width, height, 0, pixelFormat, pixelType, pixels);
-        if (gl.glGetError() == GL3.GL_INVALID_ENUM) {
+        if (gl.glGetError() == GL3.GL_INVALID_ENUM && (pixelFormat == GL3.GL_LUMINANCE_ALPHA || pixelFormat == GL3.GL_LUMINANCE)) {
             IntBuffer swizzleMask = null;
             int format = -1;
 

@@ -93,7 +93,7 @@ public class SWFTexture extends GLImage implements Savable {
             this.loadTexture(swf, this.width, this.height, 0, pixelBytes, pixelType, tag == Tag.TEXTURE_5 || tag == Tag.TEXTURE_6 || tag == Tag.TEXTURE_7);
         }
 
-        GLImage.createWithFormat(this, ktx, false, textureFilter, this.width, this.height, this.pixels, finalPixelFormat, finalPixelType);
+        this.createWithFormat(ktx, false, textureFilter, this.width, this.height, this.pixels, finalPixelFormat, finalPixelType);
     }
 
     @Override

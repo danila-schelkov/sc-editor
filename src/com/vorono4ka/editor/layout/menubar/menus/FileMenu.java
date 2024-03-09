@@ -1,6 +1,7 @@
 package com.vorono4ka.editor.layout.menubar.menus;
 
 import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.resources.ResourceManager;
 import com.vorono4ka.swf.SupercellSWF;
 
@@ -14,6 +15,7 @@ public class FileMenu extends JMenu {
     private final JFrame frame;
     private final JMenuItem saveButton;
     private final JMenuItem saveAsButton;
+    private final JMenuItem exportButton;
 
     public FileMenu(JFrame frame) {
         super("File");
@@ -28,6 +30,9 @@ public class FileMenu extends JMenu {
         this.saveButton = new JMenuItem("Save", KeyEvent.VK_O);
         this.saveButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
 
+        this.exportButton = new JMenuItem("Take screenshot", KeyEvent.VK_T);
+        this.exportButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_DOWN_MASK));
+
         this.saveAsButton = new JMenuItem("Save as...", KeyEvent.VK_O);
         this.saveAsButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
         JMenuItem close = new JMenuItem("Close", KeyEvent.VK_C);
@@ -35,6 +40,7 @@ public class FileMenu extends JMenu {
 
         open.addActionListener(this::open);
         this.saveButton.addActionListener(this::save);
+        this.exportButton.addActionListener(this::exportAsImage);
         close.addActionListener(FileMenu::close);
         exit.addActionListener(FileMenu::exit);
 
@@ -44,9 +50,18 @@ public class FileMenu extends JMenu {
         this.add(close);
 
         this.addSeparator();
+        this.add(this.exportButton);
+
+        this.addSeparator();
         this.add(exit);
 
         this.checkCanSave();
+    }
+
+    private void exportAsImage(ActionEvent actionEvent) {
+        Stage instance = Stage.getInstance();
+        instance.doInRenderThread(instance::takeScreenshot);
+        Main.editor.updateCanvas();
     }
 
     public void checkCanSave() {
@@ -54,6 +69,7 @@ public class FileMenu extends JMenu {
 
         this.saveButton.setEnabled(canSave);
         this.saveAsButton.setEnabled(canSave);
+        this.exportButton.setEnabled(canSave);
     }
 
     private void open(ActionEvent e) {

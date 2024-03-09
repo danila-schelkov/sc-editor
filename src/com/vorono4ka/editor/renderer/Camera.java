@@ -58,6 +58,14 @@ public class Camera {
         this.offsetY += y;
     }
 
+    public float getOffsetX() {
+        return offsetX;
+    }
+
+    public float getOffsetY() {
+        return offsetY;
+    }
+
     public Rect getClipArea() {
         return clipArea;
     }
