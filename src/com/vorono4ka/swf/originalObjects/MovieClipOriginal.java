@@ -196,7 +196,7 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
         if (this.children == null) {
             this.children = new DisplayObjectOriginal[this.childrenCount];
             for (int i = 0; i < this.childrenCount; i++) {
-                this.children[i] = swf.getOriginalDisplayObject(this.childrenIds[i], this.exportName);
+                this.children[i] = swf.getOriginalDisplayObject(this.childrenIds[i] & 0xFFFF, this.exportName);
             }
         }
     }

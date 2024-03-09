@@ -1,8 +1,8 @@
 package com.vorono4ka.compression;
 
+import com.github.luben.zstd.Zstd;
 import com.vorono4ka.compression.exceptions.UnknownFileMagicException;
 import com.vorono4ka.compression.exceptions.UnknownFileVersionException;
-import io.airlift.compress.zstd.ZstdCompressor;
 import org.sevenzip.compression.LZMA.Encoder;
 
 import java.io.*;
@@ -11,7 +11,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
 public class Compressor {
-    private static final ZstdCompressor ZSTD_COMPRESSOR = new ZstdCompressor();
     private static final byte[] LZMA_PROPERTIES = new byte[] {
         0x5d, 0x00, 0x00, 0x04, 0x00
     };
@@ -60,15 +59,12 @@ public class Compressor {
                 dos.write(outputArray.toByteArray());
             }
             case 2, 3 -> {  // TODO: fix
-                byte[] compressed = new byte[ZSTD_COMPRESSOR.maxCompressedLength(data.length)];
+                byte[] compressed = new byte[(int) Zstd.compressBound(data.length)];
 
-                int compressedLength = ZSTD_COMPRESSOR.compress(
-                        data,
-                        0,
-                        data.length,
-                        compressed,
-                        0,
-                        compressed.length
+                int compressedLength = (int) Zstd.compress(
+                    data,
+                    compressed,
+                    Zstd.defaultCompressionLevel()
                 );
 
                 dos.write(compressed, 0, compressedLength);
