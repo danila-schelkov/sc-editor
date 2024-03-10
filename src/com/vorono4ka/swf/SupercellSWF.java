@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +26,9 @@ public class SupercellSWF {
     public static final String TEXTURE_EXTENSION = "_tex.sc";
     public static final byte[] START_SECTION_BYTES = {'S', 'T', 'A', 'R', 'T'};
 
+    private final List<String> fontsNames = new ArrayList<>();
+    private final List<ScMatrixBank> matrixBanks = new ArrayList<>();
+
     private ByteStream stream;
 
     private int shapesCount;
@@ -32,9 +36,6 @@ public class SupercellSWF {
     private int texturesCount;
     private int textFieldsCount;
     private int movieClipModifiersCount;
-
-    private final List<String> fontsNames;
-    private final List<ScMatrixBank> matrixBanks;
 
     private short[] exportsIds;
     private String[] exportsNames;
@@ -55,25 +56,22 @@ public class SupercellSWF {
     private String uncommonResolutionTexturePath;
 
     private String filename;
+    private Path path;
 
-    public SupercellSWF() {
-        this.matrixBanks = new ArrayList<>();
-        this.fontsNames = new ArrayList<>();
-    }
-
-    public boolean load(String path, String filename) throws LoadingFaultException, UnableToFindObjectException, UnsupportedCustomPropertyException {
+    public boolean load(String filepath, String filename) throws LoadingFaultException, UnableToFindObjectException, UnsupportedCustomPropertyException {
         this.filename = filename;
+        this.path = Path.of(filepath);
 
-        if (this.loadInternal(path, false)) {
+        if (this.loadInternal(filepath, false)) {
             if (!this.useExternalTexture) return true;
 
             if (this.useUncommonResolution) {
-                path = this.uncommonResolutionTexturePath;
+                filepath = this.uncommonResolutionTexturePath;
             } else {
-                path = path.substring(0, path.length() - 3) + TEXTURE_EXTENSION;
+                filepath = filepath.substring(0, filepath.length() - 3) + TEXTURE_EXTENSION;
             }
 
-            return this.loadInternal(path, true);
+            return this.loadInternal(filepath, true);
         }
 
         return false;
@@ -222,7 +220,7 @@ public class SupercellSWF {
 
                     return true;
                 }
-                case TEXTURE, TEXTURE_2, TEXTURE_3, TEXTURE_4, TEXTURE_5, TEXTURE_6, TEXTURE_7, TEXTURE_8, KHRONOS_TEXTURE -> {
+                case TEXTURE, TEXTURE_2, TEXTURE_3, TEXTURE_4, TEXTURE_5, TEXTURE_6, TEXTURE_7, TEXTURE_8, KHRONOS_TEXTURE, COMPRESSED_KHRONOS_TEXTURE -> {
                     if (loadedTextures >= this.texturesCount) {
                         throw new TooManyObjectsException("Trying to load too many textures from ");
                     }
@@ -322,29 +320,14 @@ public class SupercellSWF {
 
     public void save(String path) {
         this.saveInternal(path, false);
+        // Add an option "Save textures as external files" when saving the whole project
     }
 
     private void saveInternal(String path, boolean isTextureFile) {
         ByteStream stream = new ByteStream();
 
         if (!isTextureFile) {
-            stream.writeShort(this.getShapesCount());
-            stream.writeShort(this.getMovieClipsCount());
-            stream.writeShort(this.getTexturesCount());
-            stream.writeShort(this.getTextFieldsCount());
-            stream.writeShort(this.matrixBanks.get(0).getMatricesCount());
-            stream.writeShort(this.matrixBanks.get(0).getColorTransformsCount());
-
-            stream.write(new byte[5]);  // unused
-
-            stream.writeShort(this.getExportsCount());
-            for (int i = 0; i < this.getExportsCount(); i++) {
-                stream.writeShort(this.exportsIds[i]);
-            }
-
-            for (int i = 0; i < this.getExportsCount(); i++) {
-                stream.writeAscii(this.exportsNames[i]);
-            }
+            saveObjectsInfo(stream);
         }
 
         this.saveTags(stream);
@@ -363,6 +346,26 @@ public class SupercellSWF {
             fos.write(data);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void saveObjectsInfo(ByteStream stream) {
+        stream.writeShort(this.getShapesCount());
+        stream.writeShort(this.getMovieClipsCount());
+        stream.writeShort(this.getTexturesCount());
+        stream.writeShort(this.getTextFieldsCount());
+        stream.writeShort(this.matrixBanks.get(0).getMatricesCount());
+        stream.writeShort(this.matrixBanks.get(0).getColorTransformsCount());
+
+        stream.write(new byte[5]);  // unused
+
+        stream.writeShort(this.getExportsCount());
+        for (int i = 0; i < this.getExportsCount(); i++) {
+            stream.writeShort(this.exportsIds[i]);
+        }
+
+        for (int i = 0; i < this.getExportsCount(); i++) {
+            stream.writeAscii(this.exportsNames[i]);
         }
     }
 
@@ -458,7 +461,7 @@ public class SupercellSWF {
                 return this.movieClips[i];
             }
         }
-        
+
         String message = String.format("Unable to find some MovieClip id from %s", this.filename);
         if (name != null) {
             message += String.format(" needed by export name %s", name);
@@ -548,6 +551,13 @@ public class SupercellSWF {
         return filename;
     }
 
+    /**
+     * @return path, containing a filename
+     */
+    public Path getPath() {
+        return path;
+    }
+
     public int readUnsignedChar() {
         return this.stream.readUnsignedChar();
     }
@@ -607,7 +617,7 @@ public class SupercellSWF {
     }
 
     public List<ShapeDrawBitmapCommand> getDrawBitmapsOfTexture(int textureIndex) {
-        List <ShapeDrawBitmapCommand> bitmapCommands = new ArrayList<>();
+        List<ShapeDrawBitmapCommand> bitmapCommands = new ArrayList<>();
 
         for (ShapeOriginal shape : this.shapes) {
             for (ShapeDrawBitmapCommand command : shape.getCommands()) {

@@ -81,4 +81,14 @@ public enum Tag {
     public boolean hasCustomProperties() {
         return this == Tag.MOVIE_CLIP_6;
     }
+
+    public int getTextureFilter() {
+        return switch (this) {
+            case TEXTURE, TEXTURE_4, TEXTURE_5, TEXTURE_6 -> 1;
+            case TEXTURE_2, TEXTURE_3, TEXTURE_7 -> 2;
+            case TEXTURE_8, KHRONOS_TEXTURE, COMPRESSED_KHRONOS_TEXTURE -> 0;
+            default ->
+                throw new IllegalStateException("Unsupported texture tag: " + this);
+        };
+    }
 }
