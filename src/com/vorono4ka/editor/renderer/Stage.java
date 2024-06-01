@@ -27,6 +27,9 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Stage {
+    private static final Rect VIEWPORT_RECT = new Rect(-1, -1, 1, 1);
+    private static final int[] RECT_INDICES = {0, 1, 2, 0, 2, 3};
+
     private static int STAGE_COUNT;
     private static Stage INSTANCE;
 
@@ -37,7 +40,7 @@ public class Stage {
     private final StageSprite stageSprite;
 
     private boolean initialized;
-    private Shader shader;
+    private Shader shader, screenShader;
     private GL3 gl;
 
     private Batch currentBatch;
@@ -67,12 +70,7 @@ public class Stage {
     }
 
     private static void savePixelArrayAsImage(Path filepath, int width, int height, int[] pixelArray) {
-        DirectColorModel colorModel = new DirectColorModel(32,
-            0xff,
-            0xff00,
-            0xff0000,
-            0xff000000
-        );
+        DirectColorModel colorModel = new DirectColorModel(32, 0xff, 0xff00, 0xff0000, 0xff000000);
 
         SampleModel sampleModel = colorModel.createCompatibleSampleModel(width, height);
         DataBufferInt dataBufferInt = new DataBufferInt(pixelArray, pixelArray.length);
@@ -102,7 +100,8 @@ public class Stage {
     }
 
     public void init(GL3 gl, int x, int y, int width, int height) {
-        this.shader = Assets.getShader(gl, "vertex.glsl", "fragment.glsl");
+        this.shader = Assets.getShader(gl, "objects.vertex.glsl", "objects.fragment.glsl");
+        this.screenShader = Assets.getShader(gl, "screen.vertex.glsl", "screen.fragment.glsl");
         this.gl = gl;
 
         BufferedImage imageBuffer = Assets.getImageBuffer("gradient_texture.png");
@@ -110,8 +109,9 @@ public class Stage {
 
         if (this.gradientTexture == null) {
             this.gradientTexture = new GLImage();
-            this.gradientTexture.createWithFormat(null, true, 1, 256, 2, Utilities.getPixelBuffer(imageBuffer), GL3.GL_LUMINANCE_ALPHA, GL3.GL_UNSIGNED_BYTE);
         }
+
+        this.gradientTexture.createWithFormat(null, true, 1, 256, 2, Utilities.getPixelBuffer(imageBuffer), GL3.GL_LUMINANCE_ALPHA, GL3.GL_UNSIGNED_BYTE);
 
         this.camera.init(width, height);
 
@@ -127,7 +127,7 @@ public class Stage {
         this.initialized = true;
     }
 
-    public void render() {
+    public void update() {
         if (!this.initialized) return;
 
         Iterator<Runnable> iterator = this.tasks.iterator();
@@ -153,25 +153,37 @@ public class Stage {
             deltaTime = 0;
         }
 
+        render(deltaTime);
+    }
+
+    private void render(float deltaTime) {
         this.stageSprite.render(new Matrix2x3(), new ColorTransform(), 0, deltaTime);
 
-        this.gl.glClearColor(.5f, .5f, .5f, 1);
+        this.framebuffer.bind();
+        this.gl.glClearColor(0, 0, 0, 0);
         this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
 
         this.gl.glStencilMask(0xFF);
         this.gl.glClearStencil(0);
         this.gl.glStencilMask(0);
 
-        this.gl.glClearColor(.5f, .5f, .5f, 0);
-        this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
-
         this.shader.bind();
         this.renderBuckets();
-
-        this.framebuffer.bind();
-        this.renderBuckets();
-        this.framebuffer.unbind();
         this.shader.unbind();
+        this.framebuffer.unbind();
+
+        this.unloadBatchesToPool();
+
+        this.screenShader.bind();
+
+        this.gl.glClearColor(.5f, .5f, .5f, 1);
+        this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
+
+        renderRect(VIEWPORT_RECT, this.framebuffer.getTexture());
+
+        this.renderBuckets();
+
+        this.screenShader.unbind();
 
         this.unloadBatchesToPool();
     }
@@ -188,7 +200,13 @@ public class Stage {
 
         if (width == 0 || height == 0) return;
 
+        framebuffer.bind();
+
+        gl.glClearColor(0, 0, 0, 1);
+
         IntBuffer pixels = framebuffer.getTexture().getPixels();
+        framebuffer.unbind();
+
         int[] pixelArray = new int[pixels.capacity()];
         pixels.rewind();
         pixels.get(pixelArray);
@@ -235,7 +253,10 @@ public class Stage {
             this.framebuffer.delete();
         }
 
-        this.gl.glDeleteTextures(1, new int[]{this.gradientTexture.getTextureId()}, 0);
+        if (this.gradientTexture != null && this.gradientTexture.getTexture() != null) {
+            this.gradientTexture.getTexture().delete();
+            this.gradientTexture = null;
+        }
 
         this.clearBatches();
 
@@ -272,7 +293,7 @@ public class Stage {
         this.batches.clear();
     }
 
-    public boolean startShape(Rect rect, GLImage image, int renderConfigBits) {
+    public boolean startShape(Rect rect, Texture texture, int renderConfigBits) {
         if (this.isCalculatingBounds) {
             if (this.bounds != null) {
                 this.bounds.mergeBounds(rect);
@@ -289,17 +310,17 @@ public class Stage {
 
         if (!this.batches.isEmpty()) {
             Batch lastBatch = this.batches.get(this.batches.size() - 1);
-            if (lastBatch.getImage() == image) {
+            if (lastBatch.getTexture() == texture) {
                 this.currentBatch = lastBatch;
             }
         }
 
         if (this.currentBatch == null) {
-            this.currentBatch = this.batchPool.createOrPopBatch(this.gl, image, 0);
+            this.currentBatch = this.batchPool.createOrPopBatch(this.gl, texture, 0);
             this.batches.add(this.currentBatch);
         }
 
-        return this.currentBatch.startShape(image, renderConfigBits);
+        return this.currentBatch.startShape(texture, renderConfigBits);
     }
 
     public void addTriangles(int count, int[] indices) {
@@ -423,5 +444,20 @@ public class Stage {
 
     public void resumeAnimation() {
         isAnimationPaused = false;
+    }
+
+    public boolean renderRect(Rect rect, Texture texture) {
+        if (this.startShape(rect, texture, 0)) {
+            this.addTriangles(2, RECT_INDICES);
+
+            this.addVertex(rect.getLeft(), rect.getTop(), 0, 0, 1, 1, 1, 0, 0, 0, 1);
+            this.addVertex(rect.getLeft(), rect.getBottom(), 0, 1, 1, 1, 1, 0, 0, 0, 1);
+            this.addVertex(rect.getRight(), rect.getBottom(), 1, 1, 1, 1, 1, 0, 0, 0, 1);
+            this.addVertex(rect.getRight(), rect.getTop(), 1, 0, 1, 1, 1, 0, 0, 0, 1);
+
+            return true;
+        }
+
+        return false;
     }
 }

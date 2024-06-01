@@ -1,7 +1,6 @@
 package com.vorono4ka.editor.renderer;
 
 import com.jogamp.opengl.GL3;
-import com.vorono4ka.swf.GLImage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,24 +12,24 @@ public class BatchPool {
         this.batches.addAll(batches);
     }
 
-    public Batch createOrPopBatch(GL3 gl, GLImage image, int stencilRenderingState) {
-        Batch neededBatch = null;
+    public Batch createOrPopBatch(GL3 gl, Texture texture, int stencilRenderingState) {
+        Batch targetBatch = null;
 
         for (Batch batch : this.batches) {
-            if (batch.getImage() == image && batch.getStencilRenderingState() == stencilRenderingState) {
-                neededBatch = batch;
+            if (batch.getTexture() == texture && batch.getStencilRenderingState() == stencilRenderingState) {
+                targetBatch = batch;
                 break;
             }
         }
 
-        this.batches.remove(neededBatch);
+        this.batches.remove(targetBatch);
 
-        if (neededBatch == null) {
-            neededBatch = new Batch(image);
-            neededBatch.init(gl);
-            neededBatch.setStencilRenderingState(stencilRenderingState);
+        if (targetBatch == null) {
+            targetBatch = new Batch(texture);
+            targetBatch.init(gl);
+            targetBatch.setStencilRenderingState(stencilRenderingState);
         }
 
-        return neededBatch;
+        return targetBatch;
     }
 }
