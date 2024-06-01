@@ -1,4 +1,4 @@
-package com.vorono4ka.editor.layout;
+package com.vorono4ka.editor.layout.windows;
 
 import javax.swing.*;
 import java.awt.*;

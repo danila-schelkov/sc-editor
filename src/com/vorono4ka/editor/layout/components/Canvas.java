@@ -1,4 +1,4 @@
-package com.vorono4ka.editor.layout;
+package com.vorono4ka.editor.layout.components;
 
 import com.jogamp.opengl.GLCapabilitiesImmutable;
 import com.jogamp.opengl.GLException;
