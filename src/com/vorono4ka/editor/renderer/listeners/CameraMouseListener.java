@@ -54,7 +54,7 @@ public class CameraMouseListener implements MouseListener, MouseMotionListener {
         float y = this.startY + this.previousY - e.getY();
 
         Camera camera = stage.getCamera();
-        camera.addOffset(x / camera.getPointSize(), y / camera.getPointSize());
+        camera.addOffset(x / camera.getZoom().getPointSize(), y / camera.getZoom().getPointSize());
 
         stage.doInRenderThread(stage::updatePMVMatrix);
         Main.editor.updateCanvas();

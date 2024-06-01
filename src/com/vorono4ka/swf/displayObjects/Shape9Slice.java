@@ -5,6 +5,7 @@ import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.originalObjects.ShapeOriginal;
+import com.vorono4ka.utilities.RenderConfig;
 
 import java.util.List;
 
@@ -32,20 +33,7 @@ public class Shape9Slice extends Shape {
         ColorTransform colorTransformApplied = new ColorTransform(this.getColorTransform());
         colorTransformApplied.multiply(colorTransform);
 
-        float redMultiplier = colorTransformApplied.getRedMultiplier();
-        float greenMultiplier = colorTransformApplied.getGreenMultiplier();
-        float blueMultiplier = colorTransformApplied.getBlueMultiplier();
-        float alpha = colorTransformApplied.getAlpha();
-
-        float redAddition = colorTransformApplied.getRedAddition();
-        float greenAddition = colorTransformApplied.getGreenAddition();
-        float blueAddition = colorTransformApplied.getBlueAddition();
-
-        int v35 = a4;
-        if (redMultiplier + greenMultiplier + blueMultiplier + alpha != 1020f)
-            v35 = a4 | 1;
-        if (redAddition + greenAddition + blueAddition > 0)
-            v35 = a4 | 3;
+        int v35 = RenderConfig.getUnknownRenderModification(colorTransformApplied, a4);
 
         int renderConfigBits = this.getRenderConfigBits() | v35;
 

@@ -12,6 +12,7 @@ import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
 import com.vorono4ka.utilities.ImageData;
 import com.vorono4ka.utilities.ImageUtils;
+import com.vorono4ka.utilities.MovieClipHelper;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -112,17 +113,11 @@ public class FileMenu extends JMenu {
             if (!child.isMovieClip()) return;
 
             MovieClip movieClip = ((MovieClip) child);
-            int maxFrames = movieClip.getFrames().length;
 
             int currentFrame = movieClip.getCurrentFrame();
 
-            StatusBar statusBar = Main.editor.getWindow().getStatusBar();
-
             Rect movieClipBounds = new Rect();
-            for (int i = 0; i < maxFrames; i++) {
-                movieClip.gotoAbsoluteTimeRecursive(i * movieClip.getMSPerFrame());
-                movieClipBounds.mergeBounds(instance.getDisplayObjectBounds(movieClip));
-            }
+            MovieClipHelper.doForAllFrames(movieClip, (movieClip1, frameIndex) -> movieClipBounds.mergeBounds(instance.getDisplayObjectBounds(movieClip1)));
 
             Rect clipArea = new Rect(instance.getCamera().getClipArea());
             if (!clipArea.containsPoint(movieClipBounds.getLeft(), movieClipBounds.getTop())
@@ -131,28 +126,23 @@ public class FileMenu extends JMenu {
             }
 
             Rect scaledBounds = new Rect(movieClipBounds);
-            scaledBounds.scale(instance.getCamera().getPointSize());
+            scaledBounds.scale(instance.getCamera().getZoom().getPointSize());
 
             String filename = child.getId() + movieClip.getExportName();
             Path workingDirectory = Path.of("screenshots");
             // TODO: ask where to save the video file
             try (VideoExporter videoExporter = new FfmpegVideoExporter(workingDirectory, filename, "webm", "libvpx-vp9", movieClip.getFps())) {
-                for (int i = 0; i < maxFrames; i++) {
-                    movieClip.gotoAbsoluteTimeRecursive(i * movieClip.getMSPerFrame());
+                MovieClipHelper.doForAllFrames(movieClip, (movieClip1, frameIndex) -> {
                     // Note: it's necessary to set frame index using this method,
                     // because absolute time frame setting may skip frames.
-                    movieClip.gotoAndStopFrameIndex(i);
+                    movieClip1.gotoAndStopFrameIndex(frameIndex);
                     instance.render(0);
 
                     ImageData imageData = instance.getCroppedFramebufferData(movieClipBounds);
                     BufferedImage image = ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels());
-                    videoExporter.encodeFrame(image, i);
-
-                    statusBar.createProgressBarTask(i, 0, maxFrames);
-                }
+                    videoExporter.encodeFrame(image, frameIndex);
+                });
             }
-
-            statusBar.removeProgressBarTask();
 
             movieClip.gotoAndPlayFrameIndex(currentFrame, -1, MovieClipState.PLAYING);
         });

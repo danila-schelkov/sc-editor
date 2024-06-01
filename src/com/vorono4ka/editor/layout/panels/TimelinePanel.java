@@ -94,7 +94,7 @@ public class TimelinePanel extends JPanel {
             return;
         }
 
-        movieClip.gotoAbsoluteTimeRecursive(value * movieClip.getMSPerFrame());
+        movieClip.gotoAbsoluteTimeRecursive(value * movieClip.getMsPerFrame());
         Main.editor.updateCanvas();
     }
 

@@ -4,6 +4,7 @@ import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.constants.MovieClipState;
+import com.vorono4ka.utilities.RenderConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,20 +30,7 @@ public abstract class Sprite extends DisplayObject {
         ColorTransform colorTransformApplied = new ColorTransform(this.getColorTransform());
         colorTransformApplied.multiply(colorTransform);
 
-        int redMultiplier = colorTransformApplied.getRedMultiplier();
-        int greenMultiplier = colorTransformApplied.getGreenMultiplier();
-        int blueMultiplier = colorTransformApplied.getBlueMultiplier();
-        int alpha = colorTransformApplied.getAlpha();
-
-        int redAddition = colorTransformApplied.getRedAddition();
-        int greenAddition = colorTransformApplied.getGreenAddition();
-        int blueAddition = colorTransformApplied.getBlueAddition();
-
-        int v45 = a4;
-        if (redMultiplier + greenMultiplier + blueMultiplier + alpha != 1020)
-            v45 = a4 | 1;
-        if (redAddition + greenAddition + blueAddition > 0)
-            v45 = a4 | 3;
+        int v45 = RenderConfig.getUnknownRenderModification(colorTransformApplied, a4);
 
         boolean result = false;
         int spriteRenderConfigBits = (this.getRenderConfigBits() & 0x3FF) | v45;
@@ -108,7 +96,8 @@ public abstract class Sprite extends DisplayObject {
     }
 
     public void removeChild(DisplayObject displayObject) {
-        if (displayObject.getParent() != this || displayObject.getIndexInParent() == -1) return;
+        if (displayObject.getParent() != this || displayObject.getIndexInParent() == -1)
+            return;
 
         this.removeChildAt(displayObject.getIndexInParent());
     }
@@ -145,5 +134,9 @@ public abstract class Sprite extends DisplayObject {
 
     public DisplayObject getChild(int index) {
         return this.children.get(index);
+    }
+
+    public MovieClipState getState() {
+        return state;
     }
 }
