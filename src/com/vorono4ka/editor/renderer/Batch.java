@@ -2,7 +2,6 @@ package com.vorono4ka.editor.renderer;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;
-import com.vorono4ka.swf.GLImage;
 
 import java.util.Arrays;
 
@@ -24,7 +23,7 @@ public class Batch {
     private int[] indices;
     private int maxSize;  // triangle count
 
-    private GLImage image;
+    private Texture texture;
     private int triangleCount;
     private int pointCount;
     private int vertexIndex;
@@ -34,8 +33,8 @@ public class Batch {
     private EBO ebo;
     private int stencilRenderingState;
 
-    public Batch(GLImage image) {
-        this.image = image;
+    public Batch(Texture texture) {
+        this.texture = texture;
 
         this.maxSize = SIZE;
 
@@ -59,8 +58,8 @@ public class Batch {
     }
 
     public void render(GL3 gl) {
-        if (this.image != null) {
-            this.image.bind();
+        if (this.texture != null) {
+            this.texture.bind();
         }
 
         this.vbo.subData(0, this.vertices);
@@ -86,11 +85,11 @@ public class Batch {
         this.ebo.delete();
     }
 
-    public boolean startShape(GLImage image, int renderConfigBits) {
-        if (image == null) return false;
+    public boolean startShape(Texture texture, int renderConfigBits) {
+        if (texture == null) return false;
 
-        if (this.image == null) {
-            this.image = image;
+        if (this.texture == null) {
+            this.texture = texture;
             this.renderConfigBits = renderConfigBits;
         }
 
@@ -141,14 +140,14 @@ public class Batch {
         return this.triangleCount + trianglesCount <= this.maxSize;
     }
 
-    public GLImage getImage() {
-        return image;
+    public Texture getTexture() {
+        return texture;
     }
 
     @Override
     public String toString() {
         return "Batch {" +
-                "textureId=" + (this.image != null ? this.image.getTextureId() : -1) +
+                "textureId=" + (this.texture != null ? this.texture.getId() : -1) +
                 ", stencilRenderingState=" + this.stencilRenderingState +
                 "}";
     }

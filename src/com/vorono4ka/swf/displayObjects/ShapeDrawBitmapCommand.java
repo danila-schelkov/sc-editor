@@ -107,7 +107,7 @@ public class ShapeDrawBitmapCommand {
         int trianglesCount = this.vertexCount - 2;
         int[] indices = getIndices(trianglesCount);
 
-        if (stage.startShape(bounds, this.image, renderConfigBits)) {
+        if (stage.startShape(bounds, this.image.getTexture(), renderConfigBits)) {
             stage.addTriangles(trianglesCount, indices);
 
             float redMultiplier = colorTransform.getRedMultiplier() / 255f;
@@ -176,7 +176,7 @@ public class ShapeDrawBitmapCommand {
         int trianglesCount = this.vertexCount - 2;
         int[] indices = getIndices(trianglesCount);
 
-        if (stage.startShape(bounds, this.image, renderConfigBits)) {
+        if (stage.startShape(bounds, this.image.getTexture(), renderConfigBits)) {
             stage.addTriangles(trianglesCount, indices);
 
             float redMultiplier = colorTransform.getRedMultiplier() / 255f;
@@ -235,7 +235,7 @@ public class ShapeDrawBitmapCommand {
         int trianglesCount = this.vertexCount - 2;
         int[] indices = getIndices(trianglesCount);
 
-        if (stage.startShape(bounds, stage.getGradientTexture(), renderConfigBits)) {
+        if (stage.startShape(bounds, stage.getGradientTexture().getTexture(), renderConfigBits)) {
             stage.addTriangles(trianglesCount, indices);
 
             for (int i = 0; i < this.vertexCount; i++) {
@@ -298,8 +298,7 @@ public class ShapeDrawBitmapCommand {
     public boolean equals(Object other) {
         if (other == this) return true;
 
-        if (other instanceof ShapeDrawBitmapCommand) {
-            ShapeDrawBitmapCommand command = (ShapeDrawBitmapCommand) other;
+        if (other instanceof ShapeDrawBitmapCommand command) {
 
             return Arrays.equals(command.shapePoints, this.shapePoints) &&
                     Arrays.equals(command.sheetPoints, this.sheetPoints);

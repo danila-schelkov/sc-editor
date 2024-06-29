@@ -24,7 +24,7 @@ public class EventListener implements GLEventListener {
 
     @Override
     public void display(GLAutoDrawable glAutoDrawable) {
-        Stage.getInstance().render();
+        Stage.getInstance().update();
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.vorono4ka.swf;
 
 import com.jogamp.opengl.GL3;
 import com.vorono4ka.editor.renderer.Stage;
+import com.vorono4ka.editor.renderer.Texture;
 import team.nulls.ntengine.assets.KhronosTexture;
 
 import java.nio.Buffer;
@@ -9,32 +10,17 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 public class GLImage {
-    private int textureId;
-
+    protected Texture texture;
     protected int width;
     protected int height;
     protected int pixelFormat;
-
-    public void bind() {
-        GL3 gl = Stage.getInstance().getGl();
-        gl.glBindTexture(GL3.GL_TEXTURE_2D, this.textureId);
-    }
-
 
     public int getWidth() {
         return width;
     }
 
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
     public int getHeight() {
         return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
     }
 
     public int getPixelFormat() {
@@ -45,58 +31,53 @@ public class GLImage {
         this.pixelFormat = pixelFormat;
     }
 
-    public int getTextureId() {
-        return textureId;
+    public Texture getTexture() {
+        return texture;
     }
 
-    public void setTextureId(int textureId) {
-        this.textureId = textureId;
+    public int getTextureId() {
+        return texture.getId();
     }
 
     public void createWithFormat(KhronosTexture ktx, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
         Stage stage = Stage.getInstance();
         GL3 gl = stage.getGl();
 
-        this.setWidth(width);
-        this.setHeight(height);
+        this.width = width;
+        this.height = height;
         this.setPixelFormat(pixelFormat);
 
-        stage.doInRenderThread(() -> {
-            if (this.getTextureId() != 0) {
-                gl.glDeleteTextures(1, new int[] {this.getTextureId()}, 0);
-            }
-
-            int id = genTexture();
-
-            this.setTextureId(id);
-
-            int magFilter;
-            int minFilter;
-            switch (filter) {
+        int magFilter;
+        int minFilter;
+        switch (filter) {
 //                case 1 -> {  // TODO: find out what's wrong with linear and why sprites become transparent using this filter
 //                    magFilter = GL3.GL_LINEAR;
 //                    minFilter = GL3.GL_LINEAR;
 //                }
-                case 2 -> {
-                    magFilter = GL3.GL_LINEAR;
-                    minFilter = GL3.GL_LINEAR_MIPMAP_NEAREST;
-                }
-                case 3 -> {
-                    magFilter = GL3.GL_LINEAR;
-                    minFilter = GL3.GL_LINEAR_MIPMAP_LINEAR;
-                }
-                default -> {
-                    magFilter = GL3.GL_NEAREST;
-                    minFilter = GL3.GL_NEAREST;
-                }
+            case 2 -> {
+                magFilter = GL3.GL_LINEAR;
+                minFilter = GL3.GL_LINEAR_MIPMAP_NEAREST;
+            }
+            case 3 -> {
+                magFilter = GL3.GL_LINEAR;
+                minFilter = GL3.GL_LINEAR_MIPMAP_LINEAR;
+            }
+            default -> {
+                magFilter = GL3.GL_NEAREST;
+                minFilter = GL3.GL_NEAREST;
+            }
+        }
+
+        stage.doInRenderThread(() -> {
+            if (this.texture != null) {
+                this.texture.delete();
             }
 
-            int wrap = clampToEdge ? GL3.GL_CLAMP_TO_EDGE : GL3.GL_REPEAT;
+            texture = new Texture(gl, width, height, pixelFormat, pixelFormat, pixelType);
+            texture.bind();
 
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_S, wrap);
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_WRAP_T, wrap);
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MAG_FILTER, magFilter);
-            gl.glTexParameteri(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_MIN_FILTER, minFilter);
+            texture.setWrap(clampToEdge ? GL3.GL_CLAMP_TO_EDGE : GL3.GL_REPEAT);
+            texture.setFilters(minFilter, magFilter);
 
             int channelCount = getChannelCount(pixelFormat);
             gl.glPixelStorei(GL3.GL_UNPACK_ALIGNMENT, channelCount);
@@ -107,9 +88,9 @@ public class GLImage {
                 loadImage(gl, this, width, height, pixels, pixelFormat, pixelType);
             }
 
-            gl.glGenerateMipmap(GL3.GL_TEXTURE_2D);
+            texture.generateMipMap();
 
-            gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+            texture.unbind();
         });
     }
 
@@ -163,14 +144,5 @@ public class GLImage {
                 gl.glCompressedTexImage2D(GL3.GL_TEXTURE_2D, level, ktx.glInternalFormat, ktx.pixelWidth, ktx.pixelHeight, 0, data.remaining(), data);
             }
         }
-    }
-
-    private static int genTexture() {
-        GL3 gl = Stage.getInstance().getGl();
-
-        IntBuffer ids = IntBuffer.allocate(1);
-        gl.glGenTextures(1, ids);
-        gl.glBindTexture(GL3.GL_TEXTURE_2D, ids.get(0));
-        return ids.get(0);
     }
 }
