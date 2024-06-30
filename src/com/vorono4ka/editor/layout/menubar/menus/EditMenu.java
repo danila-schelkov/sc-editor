@@ -2,7 +2,7 @@ package com.vorono4ka.editor.layout.menubar.menus;
 
 import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.layout.EditorWindow;
+import com.vorono4ka.editor.layout.windows.EditorWindow;
 import com.vorono4ka.editor.layout.components.Table;
 
 import javax.swing.*;

@@ -1,4 +1,4 @@
-package com.vorono4ka.editor.layout;
+package com.vorono4ka.editor.layout.windows;
 
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.panels.DisplayObjectListPanel;

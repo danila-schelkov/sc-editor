@@ -57,6 +57,17 @@ public class Rect {
             this.bottom = rect.bottom;
     }
 
+    public void clamp(Rect clampingRect) {
+        if (this.left < clampingRect.left)
+            this.left = clampingRect.left;
+        if (this.right > clampingRect.right)
+            this.right = clampingRect.right;
+        if (this.top < clampingRect.top)
+            this.top = clampingRect.top;
+        if (this.bottom > clampingRect.bottom)
+            this.bottom = clampingRect.bottom;
+    }
+
     public boolean containsPoint(float x, float y) {
         return x >= this.left && x <= this.right && y >= this.top && y <= this.bottom;
     }
@@ -121,9 +132,8 @@ public class Rect {
     @Override
     public boolean equals(Object obj) {
         if (obj == null) return false;
-        if (!(obj instanceof Rect)) return false;
+        if (!(obj instanceof Rect rect)) return false;
 
-        Rect rect = ((Rect) obj);
         return this.left == rect.left && this.top == rect.top && this.right == rect.right && this.bottom == rect.bottom;
     }
 

@@ -1,7 +1,7 @@
 package com.vorono4ka.editor;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import com.vorono4ka.editor.layout.EditorWindow;
+import com.vorono4ka.editor.layout.windows.EditorWindow;
 import com.vorono4ka.resources.ResourceManager;
 
 import javax.swing.*;

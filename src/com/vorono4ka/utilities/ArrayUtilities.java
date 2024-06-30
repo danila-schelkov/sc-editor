@@ -1,6 +1,6 @@
 package com.vorono4ka.utilities;
 
-public class ArrayUtilities {
+public final class ArrayUtilities {
     public static int indexOf(byte[] array, byte[] bytesToFind) {
         for (int i = 0; i < array.length; i++) {
             boolean found = true;

@@ -1,5 +1,5 @@
 # SC Editor
-Java 15+ required.
+Java 16+ required.
 
 [Technical Requirements (ru)](./docs/technical_requirements.md)
 

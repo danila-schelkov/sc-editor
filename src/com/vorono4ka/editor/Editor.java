@@ -4,16 +4,17 @@ import com.jogamp.opengl.GLAnimatorControl;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.vorono4ka.editor.displayObjects.SpriteSheet;
-import com.vorono4ka.editor.layout.EditorWindow;
-import com.vorono4ka.editor.layout.UsagesWindow;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.menubar.menus.EditMenu;
 import com.vorono4ka.editor.layout.menubar.menus.FileMenu;
 import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
+import com.vorono4ka.editor.layout.windows.EditorWindow;
+import com.vorono4ka.editor.layout.windows.UsagesWindow;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
+import com.vorono4ka.swf.exceptions.TextureFileNotFound;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.exceptions.UnsupportedCustomPropertyException;
 import com.vorono4ka.swf.originalObjects.MovieClipOriginal;
@@ -48,6 +49,9 @@ public class Editor {
         } catch (LoadingFaultException | UnableToFindObjectException |
                  UnsupportedCustomPropertyException e) {
             e.printStackTrace();
+            return;
+        } catch (TextureFileNotFound e) {
+            this.window.showErrorDialog(e.getMessage());
             return;
         }
 

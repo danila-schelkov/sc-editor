@@ -1,12 +1,14 @@
-package com.vorono4ka.editor.layout;
+package com.vorono4ka.editor.layout.windows;
 
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
+import com.vorono4ka.editor.layout.components.Canvas;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.menubar.EditorMenuBar;
 import com.vorono4ka.editor.layout.panels.DisplayObjectListPanel;
+import com.vorono4ka.editor.layout.panels.StatusBar;
 import com.vorono4ka.editor.layout.panels.TexturesPanel;
 import com.vorono4ka.editor.layout.panels.TimelinePanel;
 import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
@@ -19,6 +21,7 @@ import com.vorono4ka.swf.displayObjects.Shape;
 import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class EditorWindow extends Window {
@@ -34,6 +37,7 @@ public class EditorWindow extends Window {
     private TimelinePanel timelinePanel;
     private JSplitPane timelineSplitPane;
     private JTabbedPane tabbedPane;
+    private StatusBar statusBar;
 
     public void initialize(String title) {
         this.frame = new JFrame(title);
@@ -64,11 +68,14 @@ public class EditorWindow extends Window {
         this.tabbedPane.add("Info", this.infoPanel);
         this.tabbedPane.add("Textures", this.texturesPanel);
 
+        statusBar = new StatusBar();
+
         this.frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.frame.setJMenuBar(this.menubar);
 
         this.frame.getContentPane().add(this.tabbedPane, BorderLayout.WEST);
         this.frame.getContentPane().add(this.timelineSplitPane);
+        this.frame.getContentPane().add(statusBar, BorderLayout.SOUTH);
         this.frame.setMinimumSize(MINIMUM_SIZE);
         this.frame.setSize(this.frame.getContentPane().getPreferredSize());
     }
@@ -165,5 +172,9 @@ public class EditorWindow extends Window {
         }
 
         return null;
+    }
+
+    public StatusBar getStatusBar() {
+        return this.statusBar;
     }
 }

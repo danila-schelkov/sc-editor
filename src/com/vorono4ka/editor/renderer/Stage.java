@@ -11,13 +11,14 @@ import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
+import com.vorono4ka.swf.displayObjects.MovieClip;
 import com.vorono4ka.swf.displayObjects.StageSprite;
+import com.vorono4ka.utilities.BufferUtils;
+import com.vorono4ka.utilities.ImageData;
+import com.vorono4ka.utilities.ImageUtils;
 import com.vorono4ka.utilities.Utilities;
 
-import javax.imageio.ImageIO;
 import java.awt.image.*;
-import java.io.File;
-import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
@@ -67,23 +68,6 @@ public class Stage {
 
     public static int getStageCount() {
         return STAGE_COUNT;
-    }
-
-    private static void savePixelArrayAsImage(Path filepath, int width, int height, int[] pixelArray) {
-        DirectColorModel colorModel = new DirectColorModel(32, 0xff, 0xff00, 0xff0000, 0xff000000);
-
-        SampleModel sampleModel = colorModel.createCompatibleSampleModel(width, height);
-        DataBufferInt dataBufferInt = new DataBufferInt(pixelArray, pixelArray.length);
-        WritableRaster writableRaster = Raster.createWritableRaster(sampleModel, dataBufferInt, null);
-        BufferedImage image = new BufferedImage(colorModel, writableRaster, false, null);
-
-        try {
-            File file = filepath.toFile();
-            file.mkdirs();
-            ImageIO.write(image, "png", file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     private static void flipY(int framebufferWidth, int framebufferHeight, int[] pixelArray) {
@@ -156,7 +140,7 @@ public class Stage {
         render(deltaTime);
     }
 
-    private void render(float deltaTime) {
+    public void render(float deltaTime) {
         this.stageSprite.render(new Matrix2x3(), new ColorTransform(), 0, deltaTime);
 
         this.framebuffer.bind();
@@ -189,31 +173,34 @@ public class Stage {
     }
 
     public void takeScreenshot() {
-        Rect bounds = getDisplayObjectBounds(this.stageSprite);
+        takeScreenshot(null);
+    }
+
+    public void takeScreenshot(Rect bounds) {
+        if (bounds == null) {
+            bounds = getDisplayObjectBounds(this.stageSprite);
+        }
+
+        ImageData imageData = getCroppedFramebufferData(bounds);
+
+        BufferedImage image = ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels());
+
+        Path path = getScreenshotPath();
+        ImageUtils.saveImage(path, image);
+    }
+
+    public ImageData getCroppedFramebufferData(Rect bounds) {
         int framebufferWidth = framebuffer.getWidth();
         int framebufferHeight = framebuffer.getHeight();
-        int width = (int) (bounds.getWidth() * camera.getPointSize());
-        int height = (int) (bounds.getHeight() * camera.getPointSize());
+        int width = (int) Math.ceil(bounds.getWidth() * camera.getPointSize());
+        int height = (int) Math.ceil(bounds.getHeight() * camera.getPointSize());
 
         width = MathHelper.clamp(width, 1, framebufferWidth);
         height = MathHelper.clamp(height, 1, framebufferHeight);
 
-        if (width == 0 || height == 0) return;
+        int[] pixelArray = getFramebufferPixelArray();
 
-        framebuffer.bind();
-
-        gl.glClearColor(0, 0, 0, 1);
-
-        IntBuffer pixels = framebuffer.getTexture().getPixels();
-        framebuffer.unbind();
-
-        int[] pixelArray = new int[pixels.capacity()];
-        pixels.rewind();
-        pixels.get(pixelArray);
-
-        flipY(framebufferWidth, framebufferHeight, pixelArray);
-
-        int[] croppedPixelArray = cropPixelArray(
+        int[] croppedPixelArray = ImageUtils.cropPixelArray(
             pixelArray,
             framebufferWidth,
             framebufferHeight,
@@ -223,28 +210,44 @@ public class Stage {
             (int) ((bounds.getTop() - camera.getOffsetY()) * camera.getPointSize())
         );
 
-        Path path = Path.of("screenshots", stageSprite.getChild(0).getId() + ".png");
-        savePixelArrayAsImage(path, width, height, croppedPixelArray);
+        return new ImageData(width, height, croppedPixelArray);
     }
 
-    private int[] cropPixelArray(int[] pixelArray, int originalWidth, int originalHeight, int width, int height, int offsetX, int offsetY) {
-        int startX = MathHelper.clamp(originalWidth / 2 + offsetX, 0, originalWidth);
-        int startY = MathHelper.clamp(originalHeight / 2 + offsetY, 0, originalHeight);
-        int endX = MathHelper.clamp(startX + width, 0, originalWidth);
-        int endY = MathHelper.clamp(startY + height, 0, originalHeight);
+    public int[] getFramebufferPixelArray() {
+        framebuffer.bind();
+        IntBuffer pixels = framebuffer.getTexture().getPixels();
+        framebuffer.unbind();
 
-        int[] croppedPixelArray = new int[width * height];
-        for (int x = startX; x < endX; x++) {
-            for (int y = startY; y < endY; y++) {
-                int pixelIndex = x + y * originalWidth;
-                int croppedPixelIndex = (x - startX) + (y - startY) * width;
+        int[] pixelArray = BufferUtils.toArray(pixels);
 
-                croppedPixelArray[croppedPixelIndex] = pixelArray[pixelIndex];
+        flipY(framebuffer.getWidth(), framebuffer.getHeight(), pixelArray);
+        return pixelArray;
+    }
+
+    private Path getScreenshotPath() {
+        Path path;
+
+        DisplayObject child = stageSprite.getChild(0);
+        if (child.isMovieClip()) {
+            MovieClip movieClip = (MovieClip) child;
+
+            if (movieClip.getFrames().length > 1) {
+                int currentFrame = movieClip.getCurrentFrame();
+                String frameLabel = movieClip.getFrameLabel(currentFrame);
+                String frameName = String.valueOf(currentFrame);
+                if (frameLabel != null) {
+                    frameName = String.join("-", frameName, frameLabel);
+                }
+
+                path = Path.of("screenshots", String.valueOf(child.getId()), frameName + ".png");
+                return path;
             }
         }
 
-        return croppedPixelArray;
-    }
+        path = Path.of("screenshots", child.getId() + ".png");
+
+        return path;
+}
 
     public void unbindRender() {
         if (!this.initialized) return;
