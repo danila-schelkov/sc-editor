@@ -179,23 +179,6 @@ public class FileMenu extends JMenu {
         if (result != JFileChooser.APPROVE_OPTION) return;
 
         String path = fileChooser.getSelectedFile().getPath();
-        // TODO: check highres and lowres texture paths from the SC file
-        if (!ResourceManager.doesFileExist(path.substring(0, path.length() - 3) + SupercellSWF.TEXTURE_EXTENSION)) {
-            Object[] options = {"Yes", "Cancel"};
-            int warningResult = JOptionPane.showOptionDialog(
-                this.frame,
-                "There is no texture file (but it may have a different suffix specified in the file).\n" +
-                    "Do you want to open file anyway?",
-                "Answer the question",
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.WARNING_MESSAGE,
-                null,
-                options,
-                options[0]
-            );
-
-            if (warningResult != 0) return;
-        }
 
         close(null);
 

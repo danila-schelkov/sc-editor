@@ -7,6 +7,7 @@ import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
+import com.vorono4ka.swf.exceptions.TextureFileNotFound;
 import team.nulls.ntengine.assets.KhronosTexture;
 import team.nulls.ntengine.assets.KhronosTextureDataLoader;
 
@@ -38,7 +39,7 @@ public class SWFTexture extends GLImage implements Savable {
         this.index = -1;
     }
 
-    private static byte[] getTextureFileBytes(SupercellSWF swf, String compressedTextureFilename) throws LoadingFaultException {
+    private static byte[] getTextureFileBytes(SupercellSWF swf, String compressedTextureFilename) throws TextureFileNotFound {
         Path compressedTextureFilepath = swf.getPath().getParent().resolve(compressedTextureFilename);
         File file = new File(compressedTextureFilepath.toUri());
 
@@ -46,14 +47,14 @@ public class SWFTexture extends GLImage implements Savable {
         try (FileInputStream fis = new FileInputStream(file)) {
             compressedData = fis.readAllBytes();
         } catch (FileNotFoundException e) {
-            throw new LoadingFaultException("Texture file is not found. Expected path: " + compressedTextureFilepath);
+            throw new TextureFileNotFound(compressedTextureFilepath.toString());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return compressedData;
     }
 
-    public void load(SupercellSWF swf, Tag tag, boolean hasTexture) throws LoadingFaultException {
+    public void load(SupercellSWF swf, Tag tag, boolean hasTexture) throws LoadingFaultException, TextureFileNotFound {
         this.tag = tag;
 
         int khronosTextureLength = 0;

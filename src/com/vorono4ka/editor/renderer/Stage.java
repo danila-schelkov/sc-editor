@@ -173,7 +173,14 @@ public class Stage {
     }
 
     public void takeScreenshot() {
-        Rect bounds = getDisplayObjectBounds(this.stageSprite);
+        takeScreenshot(null);
+    }
+
+    public void takeScreenshot(Rect bounds) {
+        if (bounds == null) {
+            bounds = getDisplayObjectBounds(this.stageSprite);
+        }
+
         ImageData imageData = getCroppedFramebufferData(bounds);
 
         BufferedImage image = ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels());
