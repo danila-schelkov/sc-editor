@@ -5,24 +5,30 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class StatusBar extends JPanel {
-    private JLabel progressBarLabel;
-    private JProgressBar progressBar;
+    private final JLabel progressBarLabel;
+    private final JProgressBar progressBar;
 
     public StatusBar() {
         super(new FlowLayout(FlowLayout.LEFT));
 
         setBorder(new EmptyBorder(0, 0, 0, 0));
 
+        progressBarLabel = new JLabel();
+        progressBar = new JProgressBar();
+
         initComponents();
     }
 
     private void initComponents() {
-        progressBarLabel = new JLabel("Status: Test");
         add(progressBarLabel);
-
-        progressBar = new JProgressBar();
-        progressBar.setVisible(false);
         add(progressBar);
+
+        setStatus("Test");
+        progressBar.setVisible(false);
+    }
+
+    public void setStatus(String status) {
+        progressBarLabel.setText("Status: " + status);
     }
 
     public void createProgressBarTask(int value, int min, int max) {
