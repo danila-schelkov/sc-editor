@@ -3,10 +3,10 @@ package com.vorono4ka.editor.layout.menubar.menus;
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.layout.panels.StatusBar;
 import com.vorono4ka.editor.renderer.Stage;
-import com.vorono4ka.exporter.HumbleVideoExporter;
+import com.vorono4ka.exporter.FfmpegVideoExporter;
+import com.vorono4ka.exporter.VideoExporter;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.resources.ResourceManager;
-import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.MovieClipState;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
@@ -120,7 +120,7 @@ public class FileMenu extends JMenu {
 
             Rect movieClipBounds = new Rect();
             for (int i = 0; i < maxFrames; i++) {
-                movieClip.gotoAndStopFrameIndex(i);
+                movieClip.gotoAbsoluteTimeRecursive(i * movieClip.getMSPerFrame());
                 movieClipBounds.mergeBounds(instance.getDisplayObjectBounds(movieClip));
             }
 
@@ -133,18 +133,16 @@ public class FileMenu extends JMenu {
             Rect scaledBounds = new Rect(movieClipBounds);
             scaledBounds.scale(instance.getCamera().getPointSize());
 
-            Path path = Path.of("screenshots", child.getId() + movieClip.getExportName() + ".webm");
-            String formatName = "webm";
-            String codecName = null;  // "libvpx-vp9";
-            int roundedWidth = (int) Math.ceil(scaledBounds.getWidth());
-            int roundedHeight = (int) Math.ceil(scaledBounds.getHeight());
-            try (HumbleVideoExporter videoExporter = new HumbleVideoExporter(path, formatName, codecName, movieClip.getFps(), roundedWidth, roundedHeight)) {
-                videoExporter.startEncoding();
-
+            String filename = child.getId() + movieClip.getExportName();
+            Path workingDirectory = Path.of("screenshots");
+            // TODO: ask where to save the video file
+            try (VideoExporter videoExporter = new FfmpegVideoExporter(workingDirectory, filename, "webm", "libvpx-vp9", movieClip.getFps())) {
                 for (int i = 0; i < maxFrames; i++) {
+                    movieClip.gotoAbsoluteTimeRecursive(i * movieClip.getMSPerFrame());
+                    // Note: it's necessary to set frame index using this method,
+                    // because absolute time frame setting may skip frames.
                     movieClip.gotoAndStopFrameIndex(i);
                     instance.render(0);
-                    instance.takeScreenshot();
 
                     ImageData imageData = instance.getCroppedFramebufferData(movieClipBounds);
                     BufferedImage image = ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels());

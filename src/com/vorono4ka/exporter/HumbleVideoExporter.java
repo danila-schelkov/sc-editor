@@ -9,28 +9,30 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class HumbleVideoExporter implements AutoCloseable {
-    private final Rational frameRate;
-    private final Encoder encoder;
+@SuppressWarnings("unused")
+public class HumbleVideoExporter implements VideoExporter {
     private final Muxer muxer;
-    private final PixelFormat.Type pixelFormat;
     private final int targetPixelType;
+    private final PixelFormat.Type pixelFormat;
+    private final Rational frameRate;
+    private final Codec codec;
+    private final MuxerFormat format;
 
-    private MediaPictureConverter converter;
+    private Encoder encoder;
     private MediaPicture picture;
     private MediaPacket packet;
+    private MediaPictureConverter converter;
     private boolean isOpen;
 
-    public HumbleVideoExporter(Path path, String formatName, String codecName, int fps, int width, int height) {
-        this.frameRate = Rational.make(1, fps);
-
-        this.muxer = Muxer.make(path.toString(), null, formatName);
-        final MuxerFormat format = this.muxer.getFormat();
-        Codec codec = createCodec(codecName, format);
+    public HumbleVideoExporter(Path directory, String filename, String formatName, String codecName, int fps) {
+        Path filepath = directory.resolve(String.join(".", filename, formatName));
+        this.muxer = Muxer.make(filepath.toString(), null, formatName);
+        this.format = this.muxer.getFormat();
+        this.codec = createCodec(codecName, format);
 
         this.pixelFormat = PixelFormat.Type.PIX_FMT_YUV420P;
         this.targetPixelType = BufferedImage.TYPE_3BYTE_BGR;
-        this.encoder = createEncoder(width, height, pixelFormat, frameRate, codec, format);
+        this.frameRate = Rational.make(1, fps);
     }
 
     private static Codec createCodec(String codecName, MuxerFormat format) {
@@ -57,20 +59,13 @@ public class HumbleVideoExporter implements AutoCloseable {
         return encoder;
     }
 
-    public void startEncoding() {
-        openStream();
-
-        this.picture = MediaPicture.make(
-            this.encoder.getWidth(),
-            this.encoder.getHeight(),
-            this.pixelFormat
-        );
-        this.picture.setTimeBase(this.frameRate);
-        this.packet = MediaPacket.make();
-    }
-
     public void encodeFrame(BufferedImage image, int frameIndex) {
         image = ImageUtils.convertToType(image, this.targetPixelType);
+
+        if (this.encoder == null) {
+            this.encoder = createEncoder(image.getWidth(), image.getHeight(), pixelFormat, frameRate, codec, format);
+            startEncoding();
+        }
 
         if (this.converter == null)
             this.converter = MediaPictureConverterFactory.createConverter(image, this.picture);
@@ -88,8 +83,20 @@ public class HumbleVideoExporter implements AutoCloseable {
         this.isOpen = false;
     }
 
-    public void flush() {
+    private void flush() {
         encodePacket(this.packet, null);
+    }
+
+    private void startEncoding() {
+        openStream();
+
+        this.picture = MediaPicture.make(
+            this.encoder.getWidth(),
+            this.encoder.getHeight(),
+            this.pixelFormat
+        );
+        this.picture.setTimeBase(this.frameRate);
+        this.packet = MediaPacket.make();
     }
 
     private void openStream() {
