@@ -21,7 +21,6 @@ import com.vorono4ka.swf.displayObjects.Shape;
 import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 public class EditorWindow extends Window {
@@ -38,6 +37,7 @@ public class EditorWindow extends Window {
     private JSplitPane timelineSplitPane;
     private JTabbedPane tabbedPane;
     private StatusBar statusBar;
+    private FPSAnimator fpsAnimator;
 
     public void initialize(String title) {
         this.frame = new JFrame(title);
@@ -55,7 +55,7 @@ public class EditorWindow extends Window {
         this.timelinePanel = new TimelinePanel();
         this.timelineSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, this.canvas, this.timelinePanel);
 
-        new FPSAnimator(this.canvas, 30);
+        this.fpsAnimator = new FPSAnimator(this.canvas, 60);
 
         MINIMUM_SIZE.width += SIDE_PANEL_SIZE.width;
         this.tabbedPane.setPreferredSize(SIDE_PANEL_SIZE);
@@ -120,6 +120,14 @@ public class EditorWindow extends Window {
 
     public DisplayObjectListPanel getDisplayObjectPanel() {
         return this.displayObjectPanel;
+    }
+
+    public void setTargetFps(int fps) {
+        if (fps == fpsAnimator.getFPS()) return;
+
+        fpsAnimator.stop();
+        fpsAnimator.setFPS(fps);
+        fpsAnimator.start();
     }
 
     public void updateInfoPanel(DisplayObject displayObject) {
