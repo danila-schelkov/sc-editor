@@ -5,6 +5,7 @@ import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.math.MathHelper;
+import com.vorono4ka.math.ReadonlyRect;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.resources.Assets;
 import com.vorono4ka.swf.ColorTransform;
@@ -297,6 +298,10 @@ public class Stage {
     }
 
     public boolean startShape(Rect rect, Texture texture, int renderConfigBits) {
+        return startShape(rect, texture, renderConfigBits, camera.getClipArea());
+    }
+
+    public boolean startShape(Rect rect, Texture texture, int renderConfigBits, ReadonlyRect clipArea) {
         if (this.isCalculatingBounds) {
             if (this.bounds != null) {
                 this.bounds.mergeBounds(rect);
@@ -305,7 +310,7 @@ public class Stage {
             return false;
         }
 
-        if (!this.camera.getClipArea().overlaps(rect)) {
+        if (clipArea != null && !clipArea.overlaps(rect)) {
             return false;
         }
 
@@ -379,6 +384,7 @@ public class Stage {
     }
 
     public void setStencilRenderingState(int state) {
+        if (this.isCalculatingBounds) return;
         this.batches.add(this.batchPool.createOrPopBatch(this.gl, null, state));
     }
 
@@ -450,7 +456,7 @@ public class Stage {
     }
 
     public boolean renderRect(Rect rect, Texture texture) {
-        if (this.startShape(rect, texture, 0)) {
+        if (this.startShape(rect, texture, 0, null)) {
             this.addTriangles(2, RECT_INDICES);
 
             this.addVertex(rect.getLeft(), rect.getTop(), 0, 0, 1, 1, 1, 0, 0, 0, 1);
