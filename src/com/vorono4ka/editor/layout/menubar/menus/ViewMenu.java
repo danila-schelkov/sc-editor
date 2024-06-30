@@ -73,7 +73,11 @@ public class ViewMenu extends JMenu {
             DisplayObject child = stageSprite.getChild(0);
             Rect bounds = stage.getDisplayObjectBounds(child);
             if (child.isMovieClip()) {
-                MovieClipHelper.doForAllFrames((MovieClip) child, (movieClip, frameIndex) -> bounds.mergeBounds(stage.getDisplayObjectBounds(movieClip)));
+                MovieClip movieClip = (MovieClip) child;
+
+                int currentFrame = movieClip.getCurrentFrame();
+                MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> bounds.mergeBounds(stage.getDisplayObjectBounds(movieClip)));
+                movieClip.gotoAbsoluteTimeRecursive(currentFrame * movieClip.getMsPerFrame());
             }
 
             camera.reset();
