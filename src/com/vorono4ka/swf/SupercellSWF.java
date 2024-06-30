@@ -58,7 +58,7 @@ public class SupercellSWF {
     private String filename;
     private Path path;
 
-    public boolean load(String filepath, String filename) throws LoadingFaultException, UnableToFindObjectException, UnsupportedCustomPropertyException {
+    public boolean load(String filepath, String filename) throws LoadingFaultException, UnableToFindObjectException, UnsupportedCustomPropertyException, TextureFileNotFound {
         this.filename = filename;
         this.path = Path.of(filepath);
 
@@ -77,20 +77,17 @@ public class SupercellSWF {
         return false;
     }
 
-    private boolean loadInternal(String path, boolean isTextureFile) throws LoadingFaultException, UnableToFindObjectException, UnsupportedCustomPropertyException {
+    private boolean loadInternal(String path, boolean isTextureFile) throws LoadingFaultException, UnableToFindObjectException, UnsupportedCustomPropertyException, TextureFileNotFound {
         byte[] data;
 
-        File file = new File(path);
-
-        try (FileInputStream fis = new FileInputStream(file)) {
+        try (FileInputStream fis = new FileInputStream(path)) {
             data = fis.readAllBytes();
             int startSectionIndex = ArrayUtilities.indexOf(data, START_SECTION_BYTES);
             if (startSectionIndex != -1) {
                 data = Arrays.copyOf(data, startSectionIndex);
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            return false;
+            throw new TextureFileNotFound(path);
         }
 
         byte[] decompressedData;
@@ -165,7 +162,7 @@ public class SupercellSWF {
         return false;
     }
 
-    private boolean loadTags(boolean isTextureFile, String path) throws LoadingFaultException, UnsupportedCustomPropertyException {
+    private boolean loadTags(boolean isTextureFile, String path) throws LoadingFaultException, UnsupportedCustomPropertyException, TextureFileNotFound {
         String highresSuffix = "_highres";
         String lowresSuffix = "_lowres";
 

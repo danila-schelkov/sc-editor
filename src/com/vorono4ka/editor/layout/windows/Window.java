@@ -32,8 +32,16 @@ public class Window {
         this.frame.setTitle(title);
     }
 
-
     public JFrame getFrame() {
         return frame;
+    }
+
+    public void showErrorDialog(String message) {
+        JOptionPane.showMessageDialog(
+            this.getFrame(),
+            message,
+            "Error",
+            JOptionPane.ERROR_MESSAGE
+        );
     }
 }
