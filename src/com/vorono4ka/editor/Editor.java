@@ -13,6 +13,7 @@ import com.vorono4ka.editor.layout.windows.UsagesWindow;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
+import com.vorono4ka.swf.displayObjects.MovieClip;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.TextureFileNotFound;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
@@ -180,6 +181,10 @@ public class Editor {
         this.selectedIndex = objectIndex;
 
         DisplayObject displayObject = this.clonedObjects.get(this.selectedIndices.get(objectIndex));
+
+        if (displayObject.isMovieClip()) {
+            this.window.setTargetFps(((MovieClip) displayObject).getFps());
+        }
 
         this.window.updateInfoPanel(displayObject);
 
