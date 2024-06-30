@@ -4,6 +4,7 @@ import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
+import com.vorono4ka.utilities.RenderConfig;
 
 public class TextField extends DisplayObject {
     private boolean isInteractive;
@@ -18,20 +19,7 @@ public class TextField extends DisplayObject {
         ColorTransform colorTransformApplied = new ColorTransform(this.getColorTransform());
         colorTransformApplied.multiply(colorTransform);
 
-        int redMultiplier = colorTransformApplied.getRedMultiplier();
-        int greenMultiplier = colorTransformApplied.getGreenMultiplier();
-        int blueMultiplier = colorTransformApplied.getBlueMultiplier();
-        int alpha = colorTransformApplied.getAlpha();
-
-        int redAddition = colorTransformApplied.getRedAddition();
-        int greenAddition = colorTransformApplied.getGreenAddition();
-        int blueAddition = colorTransformApplied.getBlueAddition();
-
-        int v45 = a4;
-        if (redMultiplier + greenMultiplier + blueMultiplier + alpha != 1020)
-            v45 = a4 | 1;
-        if (redAddition + greenAddition + blueAddition > 0)
-            v45 = a4 | 3;
+        int v45 = RenderConfig.getUnknownRenderModification(colorTransformApplied, a4);
 
         this.cursorBlinkTime = (this.cursorBlinkTime + deltaTime) % 1.0f;
         return this.shapeRender(this.getStage(), matrixApplied, colorTransformApplied, this.getRenderConfigBits() | v45, this.bounds == null);

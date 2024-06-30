@@ -192,8 +192,8 @@ public class Stage {
     public ImageData getCroppedFramebufferData(Rect bounds) {
         int framebufferWidth = framebuffer.getWidth();
         int framebufferHeight = framebuffer.getHeight();
-        int width = (int) Math.ceil(bounds.getWidth() * camera.getPointSize());
-        int height = (int) Math.ceil(bounds.getHeight() * camera.getPointSize());
+        int width = (int) Math.ceil(bounds.getWidth() * camera.getZoom().getPointSize());
+        int height = (int) Math.ceil(bounds.getHeight() * camera.getZoom().getPointSize());
 
         width = MathHelper.clamp(width, 1, framebufferWidth);
         height = MathHelper.clamp(height, 1, framebufferHeight);
@@ -206,8 +206,8 @@ public class Stage {
             framebufferHeight,
             width,
             height,
-            (int) ((bounds.getLeft() - camera.getOffsetX()) * camera.getPointSize()),
-            (int) ((bounds.getTop() - camera.getOffsetY()) * camera.getPointSize())
+            (int) ((bounds.getLeft() - camera.getOffsetX()) * camera.getZoom().getPointSize()),
+            (int) ((bounds.getTop() - camera.getOffsetY()) * camera.getZoom().getPointSize())
         );
 
         return new ImageData(width, height, croppedPixelArray);

@@ -187,6 +187,7 @@ public class ShapeDrawBitmapCommand {
             float blueAddition = colorTransform.getBlueAddition() / 255f;
             float alpha = colorTransform.getAlpha() / 255f;
 
+            // TODO: optimize vertices and pass color transform via uniforms instead
             for (int i = 0; i < this.vertexCount; i++) {
                 stage.addVertex(
                     transformedPoints[i * 2],

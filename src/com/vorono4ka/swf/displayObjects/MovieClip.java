@@ -45,7 +45,7 @@ public class MovieClip extends Sprite {
         movieClip.timelineChildren = childrenArray;
         movieClip.timelineChildrenNames = original.getChildrenNames();
         movieClip.frames = original.getFrames();
-        movieClip.setFPS(original.getFps());
+        movieClip.setFps(original.getFps());
         movieClip.exportName = original.getExportName();
         movieClip.setFrame(0);
 
@@ -269,6 +269,9 @@ public class MovieClip extends Sprite {
         return currentFrame;
     }
 
+    public int getLoopFrame() {
+        return loopFrame;
+    }
 
     public String getExportName() {
         return exportName;
@@ -278,12 +281,12 @@ public class MovieClip extends Sprite {
         return fps;
     }
 
-    public void setFPS(int fps) {
+    public void setFps(int fps) {
         this.fps = fps;
         this.msPerFrame = 1f / fps;
     }
 
-    public float getMSPerFrame() {
+    public float getMsPerFrame() {
         return msPerFrame;
     }
 

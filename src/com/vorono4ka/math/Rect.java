@@ -1,6 +1,6 @@
 package com.vorono4ka.math;
 
-public class Rect {
+public class Rect implements ReadonlyRect {
     private float left;
     private float top;
     private float right;
@@ -8,11 +8,11 @@ public class Rect {
 
     public Rect() {}
 
-    public Rect(Rect rect) {
-        this.left = rect.left;
-        this.top = rect.top;
-        this.right = rect.right;
-        this.bottom = rect.bottom;
+    public Rect(ReadonlyRect rect) {
+        this.left = rect.getLeft();
+        this.top = rect.getTop();
+        this.right = rect.getRight();
+        this.bottom = rect.getBottom();
     }
 
     public Rect(float width, float height) {

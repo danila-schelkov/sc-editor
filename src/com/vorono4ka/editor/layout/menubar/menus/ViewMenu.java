@@ -1,14 +1,25 @@
 package com.vorono4ka.editor.layout.menubar.menus;
 
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.layout.windows.EditorWindow;
 import com.vorono4ka.editor.layout.panels.TimelinePanel;
+import com.vorono4ka.editor.layout.windows.EditorWindow;
+import com.vorono4ka.editor.renderer.Camera;
+import com.vorono4ka.editor.renderer.CameraZoom;
 import com.vorono4ka.editor.renderer.Stage;
+import com.vorono4ka.math.ReadonlyRect;
+import com.vorono4ka.math.Rect;
+import com.vorono4ka.swf.displayObjects.DisplayObject;
+import com.vorono4ka.swf.displayObjects.MovieClip;
+import com.vorono4ka.swf.displayObjects.StageSprite;
+import com.vorono4ka.utilities.MovieClipHelper;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class ViewMenu extends JMenu {
     private final JCheckBoxMenuItem timelineToggle;
@@ -18,17 +29,104 @@ public class ViewMenu extends JMenu {
 
         setMnemonic(KeyEvent.VK_V);
 
-        JMenuItem tools = new JMenu("Tools");
-        JMenuItem reset = new JMenuItem("Reset", KeyEvent.VK_R);
-
         this.timelineToggle = new JCheckBoxMenuItem("Timeline");
 
-        this.timelineToggle.addActionListener(this::toggleTimeline);
-        reset.addActionListener(ViewMenu::resetView);
+        initializeZoomMenu();
+        initializeToolsMenu();
 
+        JMenuItem reset = new JMenuItem("Reset", KeyEvent.VK_R);
+        reset.addActionListener(ViewMenu::resetView);
+        add(reset);
+    }
+
+    private static void updateCamera(Consumer<Camera> function) {
+        updateCamera((stage, camera) -> function.accept(camera));
+    }
+
+    private static void updateCamera(BiConsumer<Stage, Camera> function) {
+        Stage stage = Stage.getInstance();
+        Camera camera = stage.getCamera();
+
+        function.accept(stage, camera);
+
+        stage.doInRenderThread(stage::updatePMVMatrix);
+        Main.editor.updateCanvas();
+    }
+
+    private static void resetView(ActionEvent e) {
+        updateCamera(Camera::reset);
+    }
+
+    private static void zoomIn(ActionEvent actionEvent) {
+        updateCamera(camera -> camera.getZoom().zoomIn(1));
+    }
+
+    private static void zoomOut(ActionEvent actionEvent) {
+        updateCamera(camera -> camera.getZoom().zoomOut(1));
+    }
+
+    private static void zoomToFit(ActionEvent actionEvent) {
+        updateCamera((stage, camera) -> {
+            StageSprite stageSprite = stage.getStageSprite();
+            if (stageSprite.getChildrenCount() == 0) return;
+
+            DisplayObject child = stageSprite.getChild(0);
+            Rect bounds = stage.getDisplayObjectBounds(child);
+            if (child.isMovieClip()) {
+                MovieClipHelper.doForAllFrames((MovieClip) child, (movieClip, frameIndex) -> bounds.mergeBounds(stage.getDisplayObjectBounds(movieClip)));
+            }
+
+            camera.reset();
+
+            ReadonlyRect viewport = camera.getViewport();
+            float pointSize = Math.min(viewport.getWidth() / bounds.getWidth(), viewport.getHeight() / bounds.getHeight());
+
+            CameraZoom zoom = camera.getZoom();
+            zoom.setScaleStep(CameraZoom.estimateCurrentScaleStep(pointSize));
+            zoom.setPointSize(pointSize);
+
+            float offsetX = bounds.getMidX() - camera.getViewport().getMidX();
+            float offsetY = bounds.getMidY() - camera.getViewport().getMidY();
+
+            camera.addOffset(offsetX, offsetY);
+        });
+    }
+
+    private void initializeZoomMenu() {
+        JMenuItem zoom = new JMenu("Zoom");
+        zoom.setMnemonic(KeyEvent.VK_Z);
+
+        JMenuItem zoomIn = new JMenuItem("Zoom in", KeyEvent.VK_I);
+        zoomIn.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_ADD, InputEvent.CTRL_DOWN_MASK));
+        zoomIn.addActionListener(ViewMenu::zoomIn);
+        zoom.add(zoomIn);
+
+        JMenuItem zoomOut = new JMenuItem("Zoom out", KeyEvent.VK_O);
+        zoomOut.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, InputEvent.CTRL_DOWN_MASK));
+        zoomOut.addActionListener(ViewMenu::zoomOut);
+        zoom.add(zoomOut);
+
+        JMenuItem zoomToFit = new JMenuItem("Zoom to fit", KeyEvent.VK_F);
+        zoomToFit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, InputEvent.CTRL_DOWN_MASK));
+        zoomToFit.addActionListener(ViewMenu::zoomToFit);
+        zoom.add(zoomToFit);
+
+        JMenuItem reset = new JMenuItem("Reset zoom", KeyEvent.VK_R);
+        reset.addActionListener(ViewMenu::resetZoom);
+        zoom.add(reset);
+        this.add(zoom);
+    }
+
+    private static void resetZoom(ActionEvent actionEvent) {
+        updateCamera(camera -> camera.getZoom().reset());
+    }
+
+    private void initializeToolsMenu() {
+        this.timelineToggle.addActionListener(this::toggleTimeline);
+
+        JMenuItem tools = new JMenu("Tools");
         tools.add(this.timelineToggle);
         this.add(tools);
-        this.add(reset);
     }
 
     private void toggleTimeline(ActionEvent actionEvent) {
@@ -45,14 +143,5 @@ public class ViewMenu extends JMenu {
 
         JSplitPane timelineSplitPane = window.getTimelineSplitPane();
         timelineSplitPane.setDividerLocation(0.7f);
-    }
-
-    private static void resetView(ActionEvent e) {
-        Stage stage = Stage.getInstance();
-
-        stage.getCamera().reset();
-
-        stage.doInRenderThread(stage::updatePMVMatrix);
-        Main.editor.updateCanvas();
     }
 }

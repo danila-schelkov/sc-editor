@@ -1,13 +1,11 @@
 package com.vorono4ka.editor.renderer;
 
+import com.vorono4ka.math.ReadonlyRect;
 import com.vorono4ka.math.Rect;
 
 public class Camera {
-    public static final int DEFAULT_SCALE_STEP = 39;
-    public static final float DEFAULT_POINT_SIZE = 1.0f;
+    private final CameraZoom zoom = new CameraZoom();
     private Rect viewport, clipArea;
-    private int scaleStep;
-    private float pointSize;
     private float offsetX, offsetY;
 
     public Camera() {
@@ -15,42 +13,30 @@ public class Camera {
     }
 
     public void reset() {
+        this.zoom.reset();
         this.offsetX = 0;
         this.offsetY = 0;
-        this.scaleStep = DEFAULT_SCALE_STEP;
-        this.pointSize = DEFAULT_POINT_SIZE;
+    }
+
+    public void init(Rect rect) {
+        init(rect.getLeft(), rect.getTop(), rect.getRight(), rect.getBottom());
     }
 
     public void init(int width, int height) {
-        this.viewport = new Rect(-(width / 2f), -(height / 2f), width / 2f, height / 2f);
+        init(-(width / 2f), -(height / 2f), width / 2f, height / 2f);
+    }
+
+    public void init(float left, float top, float right, float bottom) {
+        this.viewport = new Rect(left, top, right, bottom);
         this.clipArea = new Rect(this.viewport);
     }
 
     public Rect updateClipArea() {
         this.clipArea.copyFrom(this.viewport);
-        this.clipArea.scale(DEFAULT_POINT_SIZE / this.pointSize);
+        this.clipArea.scale(this.zoom.getScaleFactor());
         this.clipArea.movePosition(this.offsetX, this.offsetY);
 
         return this.clipArea;
-    }
-
-    public int getScaleStep() {
-        return scaleStep;
-    }
-
-    public void setScaleStep(int scaleStep) {
-        this.scaleStep = scaleStep;
-    }
-
-    public float getPointSize() {
-        return pointSize;
-    }
-
-    public void setPointSize(float pointSize) {
-        this.pointSize = pointSize;
-        if (pointSize == 0) {
-            this.viewport = null;
-        }
     }
 
     public void addOffset(float x, float y) {
@@ -66,20 +52,28 @@ public class Camera {
         return offsetY;
     }
 
-    public Rect getClipArea() {
+    public ReadonlyRect getViewport() {
+        return viewport;
+    }
+
+    public ReadonlyRect getClipArea() {
         return clipArea;
+    }
+
+    public CameraZoom getZoom() {
+        return zoom;
     }
 
     public float getWorldX(int screenX) {
         float viewportX = screenX - this.viewport.getWidth() / 2f;
-        viewportX /= this.pointSize;
+        viewportX /= zoom.getPointSize();
 
         return viewportX;
     }
 
     public float getWorldY(int screenY) {
         float viewportY = screenY - this.viewport.getHeight() / 2f;
-        viewportY /= this.pointSize;
+        viewportY /= zoom.getPointSize();
 
         return viewportY;
     }
