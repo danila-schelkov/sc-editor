@@ -117,7 +117,7 @@ public class FileMenu extends JMenu {
             int currentFrame = movieClip.getCurrentFrame();
 
             Rect movieClipBounds = new Rect();
-            MovieClipHelper.doForAllFrames(movieClip, (movieClip1, frameIndex) -> movieClipBounds.mergeBounds(instance.getDisplayObjectBounds(movieClip1)));
+            MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> movieClipBounds.mergeBounds(instance.getDisplayObjectBounds(movieClip)));
 
             Rect clipArea = new Rect(instance.getCamera().getClipArea());
             if (!clipArea.containsPoint(movieClipBounds.getLeft(), movieClipBounds.getTop())
@@ -132,10 +132,10 @@ public class FileMenu extends JMenu {
             Path workingDirectory = Path.of("screenshots");
             // TODO: ask where to save the video file
             try (VideoExporter videoExporter = new FfmpegVideoExporter(workingDirectory, filename, "webm", "libvpx-vp9", movieClip.getFps())) {
-                MovieClipHelper.doForAllFrames(movieClip, (movieClip1, frameIndex) -> {
+                MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> {
                     // Note: it's necessary to set frame index using this method,
                     // because absolute time frame setting may skip frames.
-                    movieClip1.gotoAndStopFrameIndex(frameIndex);
+                    movieClip.gotoAndStopFrameIndex(frameIndex);
                     instance.render(0);
 
                     ImageData imageData = instance.getCroppedFramebufferData(movieClipBounds);

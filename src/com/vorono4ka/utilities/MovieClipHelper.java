@@ -3,8 +3,6 @@ package com.vorono4ka.utilities;
 import com.vorono4ka.swf.constants.MovieClipState;
 import com.vorono4ka.swf.displayObjects.MovieClip;
 
-import java.util.function.BiConsumer;
-
 public final class MovieClipHelper {
     public static void doForAllFrames(MovieClip movieClip, MovieClipFrameIndexConsumer consumer) {
         int maxFrames = movieClip.getFrames().length;
@@ -15,7 +13,7 @@ public final class MovieClipHelper {
 
         for (int i = 0; i < maxFrames; i++) {
             movieClip.gotoAbsoluteTimeRecursive(i * movieClip.getMsPerFrame());
-            consumer.accept(movieClip, i);
+            consumer.accept(i);
         }
 
         movieClip.resetTimelinePositionRecursive();
@@ -23,7 +21,7 @@ public final class MovieClipHelper {
     }
 
     @FunctionalInterface
-    public interface MovieClipFrameIndexConsumer extends BiConsumer<MovieClip, Integer> {
-        void accept(MovieClip movieClip, Integer frameIndex);
+    public interface MovieClipFrameIndexConsumer {
+        void accept(Integer frameIndex);
     }
 }
