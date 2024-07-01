@@ -1,5 +1,7 @@
 package team.nulls.ntengine.assets;
 
+import com.vorono4ka.utilities.BufferUtils;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,7 +29,7 @@ public class KhronosTextureDataLoader {
         while ((count = is.read(tmp)) > 0) {
             outputBuffer.write(tmp, 0, count);
         }
-        return decodeKtx(ByteBuffer.wrap(outputBuffer.toByteArray()));
+        return decodeKtx(BufferUtils.wrapDirect(outputBuffer.toByteArray()));
     }
 
     public static KhronosTexture decodeKtx(ByteBuffer buffer) {
@@ -64,7 +66,7 @@ public class KhronosTextureDataLoader {
             int dataChunkSize = addPadding4(buffer.getInt());
             byte[] dataChunk = new byte[dataChunkSize];
             buffer.get(dataChunk);
-            ByteBuffer dataBuffer = ByteBuffer.allocateDirect(dataChunkSize).order(ByteOrder.nativeOrder());
+            ByteBuffer dataBuffer = BufferUtils.allocateDirect(dataChunkSize);
             dataBuffer.put(dataChunk);
             dataBuffer.position(0);
             data[i] = dataBuffer;

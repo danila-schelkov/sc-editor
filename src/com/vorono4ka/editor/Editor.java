@@ -85,8 +85,7 @@ public class Editor {
             SWFTexture texture = this.swf.getTexture(i);
             texturesTable.addRow(i, texture.getWidth(), texture.getHeight(), texture.getPixelFormat());
 
-            SpriteSheet spriteSheet = new SpriteSheet(texture);
-            spriteSheet.setBitmaps(swf.getDrawBitmapsOfTexture(i));
+            SpriteSheet spriteSheet = new SpriteSheet(texture, swf.getDrawBitmapsOfTexture(i));
             this.spriteSheets.add(spriteSheet);
         }
 

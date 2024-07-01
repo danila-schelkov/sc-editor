@@ -12,11 +12,11 @@ public class BatchPool {
         this.batches.addAll(batches);
     }
 
-    public Batch createOrPopBatch(GL3 gl, Texture texture, int stencilRenderingState) {
+    public Batch createOrPopBatch(GL3 gl, Shader shader, Texture texture, int stencilRenderingState) {
         Batch targetBatch = null;
 
         for (Batch batch : this.batches) {
-            if (batch.getTexture() == texture && batch.getStencilRenderingState() == stencilRenderingState) {
+            if (batch.hasSame(shader, texture, stencilRenderingState)) {
                 targetBatch = batch;
                 break;
             }
@@ -25,9 +25,8 @@ public class BatchPool {
         this.batches.remove(targetBatch);
 
         if (targetBatch == null) {
-            targetBatch = new Batch(texture);
+            targetBatch = new Batch(shader, texture, stencilRenderingState);
             targetBatch.init(gl);
-            targetBatch.setStencilRenderingState(stencilRenderingState);
         }
 
         return targetBatch;

@@ -3,6 +3,7 @@ package com.vorono4ka.swf;
 import com.jogamp.opengl.GL3;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.editor.renderer.Texture;
+import com.vorono4ka.utilities.BufferUtils;
 import team.nulls.ntengine.assets.KhronosTexture;
 
 import java.nio.Buffer;
@@ -113,11 +114,11 @@ public class GLImage {
 
             switch (pixelFormat) {
                 case GL3.GL_LUMINANCE_ALPHA -> {
-                    swizzleMask = IntBuffer.wrap(new int[] {GL3.GL_RED, GL3.GL_RED, GL3.GL_RED, GL3.GL_GREEN});
+                    swizzleMask = BufferUtils.wrapDirect(GL3.GL_RED, GL3.GL_RED, GL3.GL_RED, GL3.GL_GREEN);
                     format = GL3.GL_RG;
                 }
                 case GL3.GL_LUMINANCE -> {
-                    swizzleMask = IntBuffer.wrap(new int[] {GL3.GL_RED, GL3.GL_RED, GL3.GL_RED, 1});
+                    swizzleMask = BufferUtils.wrapDirect(GL3.GL_RED, GL3.GL_RED, GL3.GL_RED, 1);
                     format = GL3.GL_RED;
                 }
                 default -> {

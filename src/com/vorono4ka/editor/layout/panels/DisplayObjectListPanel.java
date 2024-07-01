@@ -61,7 +61,7 @@ public class DisplayObjectListPanel extends JPanel {
     }
 
     private void find(String text) {
-        if (text.trim().length() == 0) {
+        if (text.trim().isEmpty()) {
             this.resetFilter();
             return;
         }

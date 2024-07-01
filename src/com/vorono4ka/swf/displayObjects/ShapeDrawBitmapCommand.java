@@ -127,10 +127,10 @@ public class ShapeDrawBitmapCommand {
                     redMultiplier,
                     greenMultiplier,
                     blueMultiplier,
+                    alpha,
                     redAddition,
                     greenAddition,
-                    blueAddition,
-                    alpha
+                    blueAddition
                 );
             }
 
@@ -197,10 +197,10 @@ public class ShapeDrawBitmapCommand {
                     redMultiplier,
                     greenMultiplier,
                     blueMultiplier,
+                    alpha,
                     redAddition,
                     greenAddition,
-                    blueAddition,
-                    alpha
+                    blueAddition
                 );
             }
 
@@ -240,7 +240,7 @@ public class ShapeDrawBitmapCommand {
             stage.addTriangles(trianglesCount, indices);
 
             for (int i = 0; i < this.vertexCount; i++) {
-                stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], 1f, 0, 1, 0, 0, 1, 0, 0, 0.5f);
+                stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], 1f, 0, 1, 0, 0, 0.5f, 0, 0, 0);
             }
 
             return true;
@@ -302,7 +302,7 @@ public class ShapeDrawBitmapCommand {
         if (other instanceof ShapeDrawBitmapCommand command) {
 
             return Arrays.equals(command.shapePoints, this.shapePoints) &&
-                    Arrays.equals(command.sheetPoints, this.sheetPoints);
+                Arrays.equals(command.sheetPoints, this.sheetPoints);
         }
 
         return false;

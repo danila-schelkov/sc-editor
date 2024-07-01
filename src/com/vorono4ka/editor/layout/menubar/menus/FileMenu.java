@@ -138,7 +138,7 @@ public class FileMenu extends JMenu {
                     movieClip.gotoAndStopFrameIndex(frameIndex);
                     instance.render(0);
 
-                    ImageData imageData = instance.getCroppedFramebufferData(movieClipBounds);
+                    ImageData imageData = instance.getCroppedFramebufferData(movieClipBounds, false);
                     BufferedImage image = ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels());
                     videoExporter.encodeFrame(image, frameIndex);
                 });

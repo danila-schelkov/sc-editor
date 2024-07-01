@@ -2,9 +2,6 @@
 
 layout (location = 0) in vec2 aPos;
 layout (location = 1) in vec2 aTexCoords;
-// TODO: remove unused layouts
-layout (location = 2) in vec4 aColorMul;
-layout (location = 3) in vec3 aColorAdd;
 
 uniform mat4 pmv;
 
