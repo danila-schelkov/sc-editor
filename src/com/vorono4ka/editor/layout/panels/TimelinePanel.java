@@ -90,12 +90,10 @@ public class TimelinePanel extends JPanel {
 
         if (value == 0) {
             movieClip.resetTimelinePositionRecursive();
-            Main.editor.updateCanvas();
             return;
         }
 
         movieClip.gotoAbsoluteTimeRecursive(value * movieClip.getMsPerFrame());
-        Main.editor.updateCanvas();
     }
 
     private void startFrameChanged(ChangeEvent e) {

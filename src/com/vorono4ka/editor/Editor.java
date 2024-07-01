@@ -1,13 +1,12 @@
 package com.vorono4ka.editor;
 
-import com.jogamp.opengl.GLAnimatorControl;
-import com.jogamp.opengl.awt.GLCanvas;
-import com.jogamp.opengl.util.FPSAnimator;
 import com.vorono4ka.editor.displayObjects.SpriteSheet;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.menubar.menus.EditMenu;
 import com.vorono4ka.editor.layout.menubar.menus.FileMenu;
+import com.vorono4ka.editor.layout.panels.StatusBar;
 import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
+import com.vorono4ka.editor.layout.panels.status.TaskProgressTracker;
 import com.vorono4ka.editor.layout.windows.EditorWindow;
 import com.vorono4ka.editor.layout.windows.UsagesWindow;
 import com.vorono4ka.editor.renderer.Stage;
@@ -22,7 +21,7 @@ import com.vorono4ka.swf.originalObjects.MovieClipOriginal;
 import com.vorono4ka.swf.originalObjects.SWFTexture;
 import com.vorono4ka.utilities.ArrayUtilities;
 
-import java.nio.IntBuffer;
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,27 +57,7 @@ public class Editor {
 
         this.window.setTitle(Main.TITLE + " - " + this.swf.getFilename());
 
-        Table objectsTable = this.window.getObjectsTable();
-
-        int[] movieClipsIds = this.swf.getMovieClipsIds();
-        for (int movieClipId : movieClipsIds) {
-            try {
-                MovieClipOriginal movieClipOriginal = this.swf.getOriginalMovieClip(movieClipId, null);
-                objectsTable.addRow(movieClipId, movieClipOriginal.getExportName(), "MovieClip");
-            } catch (UnableToFindObjectException e) {
-                e.printStackTrace();
-            }
-        }
-
-        int[] shapesIds = this.swf.getShapesIds();
-        for (int shapesId : shapesIds) {
-            objectsTable.addRow(shapesId, null, "Shape");
-        }
-
-        int[] textFieldsIds = this.swf.getTextFieldsIds();
-        for (int textFieldId : textFieldsIds) {
-            objectsTable.addRow(textFieldId, null, "TextField");
-        }
+        SwingUtilities.invokeLater(this::updateObjectTable);
 
         Table texturesTable = this.window.getTexturesTable();
         for (int i = 0; i < this.swf.getTexturesCount(); i++) {
@@ -127,30 +106,18 @@ public class Editor {
         editMenu.checkNextAvailable();
 
         if (this.swf != null) {
-            IntBuffer textureIds = IntBuffer.allocate(this.swf.getTexturesCount());
+            int[] textureIds = new int[this.swf.getTexturesCount()];
             for (int i = 0; i < this.swf.getTexturesCount(); i++) {
-                SWFTexture texture = this.swf.getTexture(i);
-                textureIds.put(texture.getTextureId());
+                textureIds[i] = this.swf.getTexture(i).getTextureId();
             }
 
             Stage stage = Stage.getInstance();
-            stage.doInRenderThread(() -> stage.getGl().glDeleteTextures(0, textureIds));
+            stage.doInRenderThread(() -> stage.getGl().glDeleteTextures(textureIds.length, textureIds, 0));
             stage.clearBatches();
             stage.removeAllChildren();
 
             this.swf = null;
         }
-
-        this.updateCanvas();
-    }
-
-    public void updateCanvas() {
-        GLCanvas canvas = this.window.getCanvas();
-
-        GLAnimatorControl animator = canvas.getAnimator();
-        if (animator != null && animator.isAnimating()) return;
-
-        canvas.display();
     }
 
     public DisplayObject getSelectedObject() {
@@ -195,7 +162,6 @@ public class Editor {
         stage.clearBatches();
         stage.removeAllChildren();
         stage.addChild(displayObject);
-        this.updateCanvas();
     }
 
     public void selectPrevious() {
@@ -265,10 +231,6 @@ public class Editor {
         return window;
     }
 
-    public FPSAnimator getAnimator() {
-        return (FPSAnimator) this.window.getCanvas().getAnimator();
-    }
-
     public SpriteSheet getSpriteSheet(int index) {
         return this.spriteSheets.get(index);
     }
@@ -279,5 +241,63 @@ public class Editor {
 
     public void setShouldDisplayPolygons(boolean shouldDisplayPolygons) {
         this.shouldDisplayPolygons = shouldDisplayPolygons;
+    }
+
+    private void updateObjectTable() {
+        List<Object[]> rowDataList = collectObjectTableRows();
+
+        StatusBar statusBar = this.window.getStatusBar();
+
+        try (TaskProgressTracker taskProgressTracker = statusBar.createTaskTracker("Loading objects table...", 0, rowDataList.size())) {
+            Table objectsTable = this.window.getObjectsTable();
+            for (int i = 0; i < rowDataList.size(); i++) {
+                Object[] objects = rowDataList.get(i);
+                objectsTable.addRow(objects);
+
+                taskProgressTracker.setValue(i);
+            }
+        }
+    }
+
+    private List<Object[]> collectObjectTableRows() {
+        List<Object[]> rowDataList = new ArrayList<>();
+
+        StatusBar statusBar = this.window.getStatusBar();
+
+        int[] movieClipsIds = this.swf.getMovieClipsIds();
+        try (TaskProgressTracker taskProgressTracker = statusBar.createTaskTracker("Collecting MovieClip info...", 0, movieClipsIds.length)) {
+            for (int i = 0; i < movieClipsIds.length; i++) {
+                int movieClipId = movieClipsIds[i];
+
+                try {
+                    MovieClipOriginal movieClipOriginal = this.swf.getOriginalMovieClip(movieClipId, null);
+                    rowDataList.add(new Object[]{movieClipId, movieClipOriginal.getExportName(), "MovieClip"});
+                } catch (UnableToFindObjectException e) {
+                    e.printStackTrace();
+                }
+
+                taskProgressTracker.setValue(i);
+            }
+        }
+
+        int[] shapesIds = this.swf.getShapesIds();
+        try (TaskProgressTracker taskProgressTracker = statusBar.createTaskTracker("Collecting Shape info...", 0, shapesIds.length)) {
+            for (int i = 0; i < shapesIds.length; i++) {
+                int shapesId = shapesIds[i];
+                rowDataList.add(new Object[]{shapesId, null, "Shape"});
+                taskProgressTracker.setValue(i);
+            }
+        }
+
+        int[] textFieldsIds = this.swf.getTextFieldsIds();
+        try (TaskProgressTracker taskProgressTracker = statusBar.createTaskTracker("Collecting TextField info...", 0, textFieldsIds.length)) {
+            for (int i = 0; i < textFieldsIds.length; i++) {
+                int textFieldId = textFieldsIds[i];
+                rowDataList.add(new Object[]{textFieldId, null, "TextField"});
+                taskProgressTracker.setValue(i);
+            }
+        }
+
+        return rowDataList;
     }
 }

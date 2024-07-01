@@ -1,7 +1,6 @@
 package com.vorono4ka.editor.layout.menubar.menus;
 
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.layout.panels.StatusBar;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.exporter.FfmpegVideoExporter;
 import com.vorono4ka.exporter.VideoExporter;
@@ -103,7 +102,6 @@ public class FileMenu extends JMenu {
     private void exportAsImage(ActionEvent actionEvent) {
         Stage instance = Stage.getInstance();
         instance.doInRenderThread(instance::takeScreenshot);
-        Main.editor.updateCanvas();
     }
 
     private void exportAllFrames(ActionEvent actionEvent) {
@@ -146,8 +144,6 @@ public class FileMenu extends JMenu {
 
             movieClip.gotoAndPlayFrameIndex(currentFrame, -1, MovieClipState.PLAYING);
         });
-
-        Main.editor.updateCanvas();
     }
 
     public void checkCanSave() {
@@ -170,9 +166,6 @@ public class FileMenu extends JMenu {
 
         close(null);
 
-        StatusBar statusBar = Main.editor.getWindow().getStatusBar();
-        statusBar.createProgressBarTask(0, 0, 100);
-
         SwingWorker<Integer, Integer> worker = new SwingWorker<>() {
             @Override
             protected Integer doInBackground() {
@@ -183,7 +176,6 @@ public class FileMenu extends JMenu {
             @Override
             protected void done() {
                 super.done();
-                statusBar.removeProgressBarTask();
             }
         };
 
