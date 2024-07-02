@@ -1,8 +1,7 @@
 package com.vorono4ka.editor.renderer;
 
 import com.jogamp.opengl.GL3;
-
-import java.nio.FloatBuffer;
+import com.vorono4ka.utilities.BufferUtils;
 
 public class VBO {
     private final GL3 gl;
@@ -16,13 +15,13 @@ public class VBO {
         this.id = VBOs[0];
 
         this.bind();
-        this.gl.glBufferData(GL3.GL_ARRAY_BUFFER, (long) vertices.length * Float.BYTES, FloatBuffer.wrap(vertices), usage);
+        this.gl.glBufferData(GL3.GL_ARRAY_BUFFER, (long) vertices.length * Float.BYTES, BufferUtils.wrapDirect(vertices), usage);
         this.unbind();
     }
 
     public void subData(int offset, float[] vertices) {
         this.bind();
-        this.gl.glBufferSubData(GL3.GL_ARRAY_BUFFER, offset, (long) vertices.length * Float.BYTES, FloatBuffer.wrap(vertices));
+        this.gl.glBufferSubData(GL3.GL_ARRAY_BUFFER, offset, (long) vertices.length * Float.BYTES, BufferUtils.wrapDirect(vertices));
         this.unbind();
     }
 

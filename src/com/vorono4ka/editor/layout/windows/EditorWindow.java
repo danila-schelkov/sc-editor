@@ -38,6 +38,7 @@ public class EditorWindow extends Window {
     private JTabbedPane tabbedPane;
     private StatusBar statusBar;
     private FPSAnimator fpsAnimator;
+    private int targetFps;
 
     public void initialize(String title) {
         this.frame = new JFrame(title);
@@ -56,6 +57,7 @@ public class EditorWindow extends Window {
         this.timelineSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, this.canvas, this.timelinePanel);
 
         this.fpsAnimator = new FPSAnimator(this.canvas, 60);
+        this.targetFps = fpsAnimator.getFPS();
 
         MINIMUM_SIZE.width += SIDE_PANEL_SIZE.width;
         this.tabbedPane.setPreferredSize(SIDE_PANEL_SIZE);
@@ -123,11 +125,17 @@ public class EditorWindow extends Window {
     }
 
     public void setTargetFps(int fps) {
-        if (fps == fpsAnimator.getFPS()) return;
+        if (fps == targetFps) return;
+
+        targetFps = fps;
 
         fpsAnimator.stop();
         fpsAnimator.setFPS(fps);
         fpsAnimator.start();
+    }
+
+    public int getTargetFps() {
+        return targetFps;
     }
 
     public void updateInfoPanel(DisplayObject displayObject) {

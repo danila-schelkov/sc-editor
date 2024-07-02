@@ -1,8 +1,7 @@
 package com.vorono4ka.editor.renderer;
 
 import com.jogamp.opengl.GL3;
-
-import java.nio.IntBuffer;
+import com.vorono4ka.utilities.BufferUtils;
 
 public class EBO {
     private final GL3 gl;
@@ -16,13 +15,13 @@ public class EBO {
         this.id = EBOs[0];
 
         this.bind();
-        this.gl.glBufferData(GL3.GL_ELEMENT_ARRAY_BUFFER, (long) indices.length * Integer.BYTES, IntBuffer.wrap(indices), usage);
+        this.gl.glBufferData(GL3.GL_ELEMENT_ARRAY_BUFFER, (long) indices.length * Integer.BYTES, BufferUtils.wrapDirect(indices), usage);
         this.unbind();
     }
 
     public void subData(int offset, int[] indices) {
         this.bind();
-        this.gl.glBufferSubData(GL3.GL_ELEMENT_ARRAY_BUFFER, offset, (long) indices.length * Integer.BYTES, IntBuffer.wrap(indices));
+        this.gl.glBufferSubData(GL3.GL_ELEMENT_ARRAY_BUFFER, offset, (long) indices.length * Integer.BYTES, BufferUtils.wrapDirect(indices));
         this.unbind();
     }
 

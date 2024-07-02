@@ -3,58 +3,60 @@ package com.vorono4ka.editor.renderer;
 import com.jogamp.opengl.GL3;
 import com.vorono4ka.resources.ResourceManager;
 
+
 public class Shader {
     private final GL3 gl;
+    private final int programId;
+    private final Attribute[] attributes;
 
-    private final int id;
-
-    public Shader(GL3 gl, String vertexFile, String fragmentFile) {
+    public Shader(GL3 gl, String vertexFile, String fragmentFile, Attribute... attributes) {
         this.gl = gl;
+        this.attributes = attributes;
 
-        int vertexShader = this.gl.glCreateShader(GL3.GL_VERTEX_SHADER);
-        this.gl.glShaderSource(vertexShader, 1, new String[] {ResourceManager.loadString(vertexFile)}, null);
-        this.gl.glCompileShader(vertexShader);
+        int vertexShader = gl.glCreateShader(GL3.GL_VERTEX_SHADER);
+        gl.glShaderSource(vertexShader, 1, new String[]{ResourceManager.loadString(vertexFile)}, null);
+        gl.glCompileShader(vertexShader);
 
-        int fragmentShader = this.gl.glCreateShader(GL3.GL_FRAGMENT_SHADER);
-        this.gl.glShaderSource(fragmentShader, 1, new String[] {ResourceManager.loadString(fragmentFile)}, null);
-        this.gl.glCompileShader(fragmentShader);
+        int fragmentShader = gl.glCreateShader(GL3.GL_FRAGMENT_SHADER);
+        gl.glShaderSource(fragmentShader, 1, new String[]{ResourceManager.loadString(fragmentFile)}, null);
+        gl.glCompileShader(fragmentShader);
 
-        this.id = this.gl.glCreateProgram();
-        this.gl.glAttachShader(this.id, vertexShader);
-        this.gl.glAttachShader(this.id, fragmentShader);
-        this.gl.glLinkProgram(this.id);
+        this.programId = gl.glCreateProgram();
+        gl.glAttachShader(this.programId, vertexShader);
+        gl.glAttachShader(this.programId, fragmentShader);
+        gl.glLinkProgram(this.programId);
 
-        this.gl.glDeleteShader(vertexShader);
-        this.gl.glDeleteShader(fragmentShader);
+        gl.glDeleteShader(vertexShader);
+        gl.glDeleteShader(fragmentShader);
     }
 
     public int getUniformLocation(String uniform) {
-        return this.gl.glGetUniformLocation(this.id, uniform);
+        return gl.glGetUniformLocation(this.programId, uniform);
     }
 
     public void setTexture(int id, String uniform, int slot) {
-        this.gl.glActiveTexture(GL3.GL_TEXTURE0 + slot);
-        this.gl.glBindTexture(GL3.GL_TEXTURE_2D, id);
+        gl.glActiveTexture(GL3.GL_TEXTURE0 + slot);
+        gl.glBindTexture(GL3.GL_TEXTURE_2D, id);
 
         int uniformLocation = this.getUniformLocation(uniform);
         if (uniformLocation != -1) {
-            this.gl.glUniform1i(uniformLocation, slot);
+            gl.glUniform1i(uniformLocation, slot);
         }
     }
 
     public void bind() {
-        this.gl.glUseProgram(this.id);
+        gl.glUseProgram(this.programId);
     }
 
     public void unbind() {
-        this.gl.glUseProgram(0);
+        gl.glUseProgram(0);
     }
 
     public void delete() {
-        this.gl.glDeleteProgram(this.id);
+        gl.glDeleteProgram(this.programId);
     }
 
-    public int getId() {
-        return id;
+    public Attribute[] getAttributes() {
+        return attributes;
     }
 }

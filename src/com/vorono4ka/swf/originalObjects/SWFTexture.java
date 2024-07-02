@@ -8,6 +8,7 @@ import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.TextureFileNotFound;
+import com.vorono4ka.utilities.BufferUtils;
 import team.nulls.ntengine.assets.KhronosTexture;
 import team.nulls.ntengine.assets.KhronosTextureDataLoader;
 
@@ -15,10 +16,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
+import java.nio.*;
 import java.nio.file.Path;
 
 public class SWFTexture extends GLImage implements Savable {
@@ -115,12 +113,12 @@ public class SWFTexture extends GLImage implements Savable {
         switch (tag) {
             case KHRONOS_TEXTURE -> {
                 byte[] bytes = swf.readByteArray(khronosTextureLength);
-                ktx = KhronosTextureDataLoader.decodeKtx(ByteBuffer.wrap(bytes));
+                ktx = KhronosTextureDataLoader.decodeKtx(BufferUtils.wrapDirect(bytes));
             }
             case COMPRESSED_KHRONOS_TEXTURE -> {
                 byte[] compressedData = getTextureFileBytes(swf, compressedTextureFilename);
                 byte[] decompressed = Decompressor.decompressZstd(compressedData, 0);
-                ktx = KhronosTextureDataLoader.decodeKtx(ByteBuffer.wrap(decompressed));
+                ktx = KhronosTextureDataLoader.decodeKtx(BufferUtils.wrapDirect(decompressed));
             }
             default ->
                 this.loadTexture(swf, this.width, this.height, pixelBytes, tag == Tag.TEXTURE_5 || tag == Tag.TEXTURE_6 || tag == Tag.TEXTURE_7);
@@ -149,7 +147,7 @@ public class SWFTexture extends GLImage implements Savable {
             int xChunksCount = width / TILE_SIZE;
             int yChunksCount = height / TILE_SIZE;
 
-            ByteBuffer pixels = ByteBuffer.allocate(width * height);
+            ByteBuffer pixels = BufferUtils.allocateDirect(width * height);
 
             for (int tileY = 0; tileY < yChunksCount + 1; tileY++) {
                 for (int tileX = 0; tileX < xChunksCount + 1; tileX++) {
@@ -172,7 +170,7 @@ public class SWFTexture extends GLImage implements Savable {
 
             this.pixels = pixels;
         } else {
-            this.pixels = ByteBuffer.wrap(swf.readByteArray(width * height));
+            this.pixels = BufferUtils.wrapDirect(swf.readByteArray(width * height));
         }
     }
 
@@ -181,7 +179,7 @@ public class SWFTexture extends GLImage implements Savable {
             int xChunksCount = width / TILE_SIZE;
             int yChunksCount = height / TILE_SIZE;
 
-            ShortBuffer pixels = ShortBuffer.allocate(width * height);
+            ShortBuffer pixels = BufferUtils.allocateDirect(width * height * Short.BYTES).asShortBuffer();
 
             for (int tileY = 0; tileY < yChunksCount + 1; tileY++) {
                 for (int tileX = 0; tileX < xChunksCount + 1; tileX++) {
@@ -204,7 +202,7 @@ public class SWFTexture extends GLImage implements Savable {
 
             this.pixels = pixels;
         } else {
-            this.pixels = ShortBuffer.wrap(swf.readShortArray(width * height));
+            this.pixels = BufferUtils.wrapDirect(swf.readShortArray(width * height));
         }
     }
 
@@ -213,7 +211,7 @@ public class SWFTexture extends GLImage implements Savable {
             int xChunksCount = width / TILE_SIZE;
             int yChunksCount = height / TILE_SIZE;
 
-            IntBuffer pixels = IntBuffer.allocate(width * height);
+            IntBuffer pixels = BufferUtils.allocateDirect(width * height * Integer.BYTES).asIntBuffer();
 
             for (int tileY = 0; tileY < yChunksCount + 1; tileY++) {
                 for (int tileX = 0; tileX < xChunksCount + 1; tileX++) {
@@ -236,7 +234,7 @@ public class SWFTexture extends GLImage implements Savable {
 
             this.pixels = pixels;
         } else {
-            this.pixels = IntBuffer.wrap(swf.readIntArray(width * height));
+            this.pixels = BufferUtils.wrapDirect(swf.readIntArray(width * height));
         }
     }
 

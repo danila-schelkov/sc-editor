@@ -1,6 +1,7 @@
 package com.vorono4ka.editor.renderer;
 
 import com.jogamp.opengl.GL3;
+import com.vorono4ka.utilities.BufferUtils;
 
 import java.nio.IntBuffer;
 
@@ -66,7 +67,7 @@ public class Texture {
 
     // Ensure using in the render thread
     public IntBuffer getPixels() {
-        IntBuffer pixels = IntBuffer.allocate(width * height * 4);
+        IntBuffer pixels = BufferUtils.allocateDirect(width * height * Integer.BYTES * 4).asIntBuffer();
         this.gl.glReadPixels(0, 0, width, height, GL3.GL_RGBA, GL3.GL_UNSIGNED_BYTE, pixels);
         return pixels;
     }

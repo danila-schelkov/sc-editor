@@ -6,6 +6,6 @@ import java.nio.ByteBuffer;
 
 public final class Utilities {
     public static ByteBuffer getPixelBuffer(BufferedImage image) {
-        return ByteBuffer.wrap(((DataBufferByte) image.getRaster().getDataBuffer()).getData());
+        return BufferUtils.wrapDirect(((DataBufferByte) image.getRaster().getDataBuffer()).getData());
     }
 }

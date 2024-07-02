@@ -12,12 +12,15 @@ import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
 import java.util.List;
 
 public class SpriteSheet extends DisplayObject {
+    private static final int[] INDICES = {0, 1, 2, 0, 2, 3};
+
     private final GLImage image;
     private final Rect bounds;
-    private List<ShapeDrawBitmapCommand> drawBitmapCommands;
+    private final List<ShapeDrawBitmapCommand> drawBitmapCommands;
 
-    public SpriteSheet(GLImage image) {
+    public SpriteSheet(GLImage image, List<ShapeDrawBitmapCommand> drawBitmapCommands) {
         this.image = image;
+        this.drawBitmapCommands = drawBitmapCommands;
 
         float halfWidth = this.image.getWidth() / 2f;
         float halfHeight = this.image.getHeight() / 2f;
@@ -28,7 +31,14 @@ public class SpriteSheet extends DisplayObject {
     @Override
     public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
         Stage stage = this.getStage();
-        if (stage.renderRect(this.bounds, this.image.getTexture())) {
+        if (stage.startShape(this.bounds, this.image.getTexture(), 0)) {
+            stage.addTriangles(2, INDICES);
+
+            stage.addVertex(this.bounds.getLeft(), this.bounds.getTop(), 0, 0, 1, 1, 1, 1, 0, 0, 0);
+            stage.addVertex(this.bounds.getLeft(), this.bounds.getBottom(), 0, 1, 1, 1, 1, 1, 0, 0, 0);
+            stage.addVertex(this.bounds.getRight(), this.bounds.getBottom(), 1, 1, 1, 1, 1, 1, 0, 0, 0);
+            stage.addVertex(this.bounds.getRight(), this.bounds.getTop(), 1, 0, 1, 1, 1, 1, 0, 0, 0);
+
             if (Main.editor.shouldDisplayPolygons()) {
                 for (ShapeDrawBitmapCommand drawBitmapCommand : this.drawBitmapCommands) {
                     drawBitmapCommand.renderUV(stage, 0);
@@ -44,9 +54,5 @@ public class SpriteSheet extends DisplayObject {
     @Override
     public boolean collisionRender(Matrix2x3 matrix) {
         return false;
-    }
-
-    public void setBitmaps(List<ShapeDrawBitmapCommand> commands) {
-        this.drawBitmapCommands = commands;
     }
 }

@@ -1,7 +1,6 @@
 package com.vorono4ka.editor.renderer;
 
 import com.jogamp.opengl.GL3;
-import com.jogamp.opengl.util.FPSAnimator;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.math.MathHelper;
@@ -19,7 +18,7 @@ import com.vorono4ka.utilities.ImageData;
 import com.vorono4ka.utilities.ImageUtils;
 import com.vorono4ka.utilities.Utilities;
 
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
@@ -85,9 +84,24 @@ public class Stage {
     }
 
     public void init(GL3 gl, int x, int y, int width, int height) {
-        this.shader = Assets.getShader(gl, "objects.vertex.glsl", "objects.fragment.glsl");
-        this.screenShader = Assets.getShader(gl, "screen.vertex.glsl", "screen.fragment.glsl");
         this.gl = gl;
+
+        this.shader = Assets.getShader(
+            this.gl,
+            "objects.vertex.glsl",
+            "objects.fragment.glsl",
+            new Attribute(0, 2, Float.BYTES, GL3.GL_FLOAT),
+            new Attribute(1, 2, Float.BYTES, GL3.GL_FLOAT),
+            new Attribute(2, 4, Float.BYTES, GL3.GL_FLOAT),
+            new Attribute(3, 3, Float.BYTES, GL3.GL_FLOAT)
+        );
+        this.screenShader = Assets.getShader(
+            this.gl,
+            "screen.vertex.glsl",
+            "screen.fragment.glsl",
+            new Attribute(0, 2, Float.BYTES, GL3.GL_FLOAT),
+            new Attribute(1, 2, Float.BYTES, GL3.GL_FLOAT)
+        );
 
         BufferedImage imageBuffer = Assets.getImageBuffer("gradient_texture.png");
         assert imageBuffer != null : "Gradient texture not found.";
@@ -127,12 +141,7 @@ public class Stage {
             iterator.remove();
         }
 
-        float deltaTime = 0;
-
-        FPSAnimator animator = Main.editor.getAnimator();
-        if (animator != null && animator.isAnimating()) {
-            deltaTime = 1f / animator.getFPS(); // TODO: calculate delta time more precisely
-        }
+        float deltaTime = 1f / Main.editor.getWindow().getTargetFps(); // TODO: calculate delta time more precisely
 
         if (isAnimationPaused) {
             deltaTime = 0;
@@ -164,9 +173,7 @@ public class Stage {
         this.gl.glClearColor(.5f, .5f, .5f, 1);
         this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
 
-        renderRect(VIEWPORT_RECT, this.framebuffer.getTexture());
-
-        this.renderBuckets();
+        renderScreen(VIEWPORT_RECT, this.framebuffer.getTexture());
 
         this.screenShader.unbind();
 
@@ -182,7 +189,7 @@ public class Stage {
             bounds = getDisplayObjectBounds(this.stageSprite);
         }
 
-        ImageData imageData = getCroppedFramebufferData(bounds);
+        ImageData imageData = getCroppedFramebufferData(bounds, false);
 
         BufferedImage image = ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels());
 
@@ -190,28 +197,43 @@ public class Stage {
         ImageUtils.saveImage(path, image);
     }
 
-    public ImageData getCroppedFramebufferData(Rect bounds) {
-        int framebufferWidth = framebuffer.getWidth();
-        int framebufferHeight = framebuffer.getHeight();
+    public Rect toFramebufferBounds(Rect bounds, boolean shouldBeDividableByTwo) {
         int width = (int) Math.ceil(bounds.getWidth() * camera.getZoom().getPointSize());
         int height = (int) Math.ceil(bounds.getHeight() * camera.getZoom().getPointSize());
 
-        width = MathHelper.clamp(width, 1, framebufferWidth);
-        height = MathHelper.clamp(height, 1, framebufferHeight);
+        width = MathHelper.clamp(width, 1, framebuffer.getWidth());
+        height = MathHelper.clamp(height, 1, framebuffer.getHeight());
+
+        if (shouldBeDividableByTwo) {
+            width += width % 2;
+            height += height % 2;
+        }
+
+        Rect framebufferBounds = new Rect(width, height);
+        framebufferBounds.movePosition(
+            (int) ((bounds.getLeft() - camera.getOffsetX()) * camera.getZoom().getPointSize()),
+            (int) ((bounds.getTop() - camera.getOffsetY()) * camera.getZoom().getPointSize())
+        );
+
+        return framebufferBounds;
+    }
+
+    public ImageData getCroppedFramebufferData(Rect bounds, boolean shouldBeDividableByTwo) {
+        Rect framebufferBounds = toFramebufferBounds(bounds, shouldBeDividableByTwo);
 
         int[] pixelArray = getFramebufferPixelArray();
 
         int[] croppedPixelArray = ImageUtils.cropPixelArray(
             pixelArray,
-            framebufferWidth,
-            framebufferHeight,
-            width,
-            height,
-            (int) ((bounds.getLeft() - camera.getOffsetX()) * camera.getZoom().getPointSize()),
-            (int) ((bounds.getTop() - camera.getOffsetY()) * camera.getZoom().getPointSize())
+            framebuffer.getWidth(),
+            framebuffer.getHeight(),
+            (int) framebufferBounds.getWidth(),
+            (int) framebufferBounds.getHeight(),
+            (int) framebufferBounds.getLeft(),
+            (int) framebufferBounds.getTop()
         );
 
-        return new ImageData(width, height, croppedPixelArray);
+        return new ImageData((int) framebufferBounds.getWidth(), (int) framebufferBounds.getHeight(), croppedPixelArray);
     }
 
     public int[] getFramebufferPixelArray() {
@@ -248,7 +270,7 @@ public class Stage {
         path = Path.of("screenshots", child.getId() + ".png");
 
         return path;
-}
+    }
 
     public void unbindRender() {
         if (!this.initialized) return;
@@ -298,10 +320,10 @@ public class Stage {
     }
 
     public boolean startShape(Rect rect, Texture texture, int renderConfigBits) {
-        return startShape(rect, texture, renderConfigBits, camera.getClipArea());
+        return startShape(shader, rect, texture, renderConfigBits, camera.getClipArea());
     }
 
-    public boolean startShape(Rect rect, Texture texture, int renderConfigBits, ReadonlyRect clipArea) {
+    public boolean startShape(Shader shader, Rect rect, Texture texture, int renderConfigBits, ReadonlyRect clipArea) {
         if (this.isCalculatingBounds) {
             if (this.bounds != null) {
                 this.bounds.mergeBounds(rect);
@@ -318,17 +340,17 @@ public class Stage {
 
         if (!this.batches.isEmpty()) {
             Batch lastBatch = this.batches.get(this.batches.size() - 1);
-            if (lastBatch.getTexture() == texture) {
+            if (lastBatch.hasSame(shader, texture)) {
                 this.currentBatch = lastBatch;
             }
         }
 
         if (this.currentBatch == null) {
-            this.currentBatch = this.batchPool.createOrPopBatch(this.gl, texture, 0);
+            this.currentBatch = this.batchPool.createOrPopBatch(gl, shader, texture, 0);
             this.batches.add(this.currentBatch);
         }
 
-        return this.currentBatch.startShape(texture, renderConfigBits);
+        return this.currentBatch.startShape(renderConfigBits);
     }
 
     public void addTriangles(int count, int[] indices) {
@@ -337,10 +359,22 @@ public class Stage {
         this.currentBatch.addTriangles(count, indices);
     }
 
-    public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float redAdd, float greenAdd, float blueAdd, float alpha) {
+    public void addVertex(float x, float y, float u, float v) {
         if (this.currentBatch == null) return;
 
-        this.currentBatch.addVertex(x, y, u, v, redMul, greenMul, blueMul, redAdd, greenAdd, blueAdd, alpha);
+        this.currentBatch.addVertex(x, y, u, v);
+    }
+
+    public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float alpha, float redAdd, float greenAdd, float blueAdd) {
+        if (this.currentBatch == null) return;
+
+        this.currentBatch.addVertex(x, y, u, v, redMul, greenMul, blueMul, alpha, redAdd, greenAdd, blueAdd);
+    }
+
+    public void addVertex(Float... parameters) {
+        if (this.currentBatch == null) return;
+
+        this.currentBatch.addVertex(parameters);
     }
 
     public void updatePMVMatrix() {
@@ -359,7 +393,7 @@ public class Stage {
             1
         );
 
-        FloatBuffer matrixBuffer = FloatBuffer.allocate(16);
+        FloatBuffer matrixBuffer = BufferUtils.allocateDirect(16 * Float.BYTES).asFloatBuffer();
         matrix.glGetFloatv(matrix.glGetMatrixMode(), matrixBuffer);
 
         this.shader.bind();
@@ -385,7 +419,7 @@ public class Stage {
 
     public void setStencilRenderingState(int state) {
         if (this.isCalculatingBounds) return;
-        this.batches.add(this.batchPool.createOrPopBatch(this.gl, null, state));
+        this.batches.add(this.batchPool.createOrPopBatch(gl, shader, null, state));
     }
 
     private void setRenderStencilState(int state) {
@@ -455,18 +489,16 @@ public class Stage {
         isAnimationPaused = false;
     }
 
-    public boolean renderRect(Rect rect, Texture texture) {
-        if (this.startShape(rect, texture, 0, null)) {
+    private void renderScreen(Rect rect, Texture texture) {
+        if (this.startShape(screenShader, rect, texture, 0, null)) {
             this.addTriangles(2, RECT_INDICES);
 
-            this.addVertex(rect.getLeft(), rect.getTop(), 0, 0, 1, 1, 1, 0, 0, 0, 1);
-            this.addVertex(rect.getLeft(), rect.getBottom(), 0, 1, 1, 1, 1, 0, 0, 0, 1);
-            this.addVertex(rect.getRight(), rect.getBottom(), 1, 1, 1, 1, 1, 0, 0, 0, 1);
-            this.addVertex(rect.getRight(), rect.getTop(), 1, 0, 1, 1, 1, 0, 0, 0, 1);
-
-            return true;
+            this.addVertex(rect.getLeft(), rect.getTop(), 0, 0);
+            this.addVertex(rect.getLeft(), rect.getBottom(), 0, 1);
+            this.addVertex(rect.getRight(), rect.getBottom(), 1, 1);
+            this.addVertex(rect.getRight(), rect.getTop(), 1, 0);
         }
 
-        return false;
+        this.renderBuckets();
     }
 }

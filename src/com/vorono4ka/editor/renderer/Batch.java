@@ -1,45 +1,63 @@
 package com.vorono4ka.editor.renderer;
 
-import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;
 
 import java.util.Arrays;
 
 public class Batch {
-    private static final int POSITION_SIZE = 2;
-    private static final int TEX_COORDS_SIZE = 2;
-    private static final int COLOR_MUL_SIZE = 4;
-    private static final int COLOR_ADD_SIZE = 3;
-    private static final int VERTEX_SIZE = POSITION_SIZE + TEX_COORDS_SIZE + COLOR_MUL_SIZE + COLOR_ADD_SIZE;
-
-    private static final int POSITION_SIZE_BYTES = POSITION_SIZE * Float.BYTES;
-    private static final int TEX_COORDS_SIZE_BYTES = TEX_COORDS_SIZE * Float.BYTES;
-    private static final int COLOR_MUL_SIZE_BYTES = COLOR_MUL_SIZE * Float.BYTES;
-    private static final int COLOR_ADD_SIZE_BYTES = COLOR_ADD_SIZE * Float.BYTES;
-    private static final int VERTEX_SIZE_BYTES = POSITION_SIZE_BYTES + TEX_COORDS_SIZE_BYTES + COLOR_MUL_SIZE_BYTES + COLOR_ADD_SIZE_BYTES;
     public static final int SIZE = 512;
+
+    private final Attribute[] attributes;
+    private final Texture texture;
+    private final Shader shader;
+    private final int stencilRenderingState;
+    private final int vertexSize, vertexSizeInBytes;
 
     private float[] vertices;
     private int[] indices;
-    private int maxSize;  // triangle count
 
-    private Texture texture;
-    private int triangleCount;
-    private int pointCount;
-    private int vertexIndex;
+    /**
+     * Represents max triangle count.
+     */
+    private int capacity;
+
     private int renderConfigBits;
+    private int triangleCount;
+    private int vertexIndex;
+    private int pointCount;
+
     private VAO vao;
     private VBO vbo;
     private EBO ebo;
-    private int stencilRenderingState;
 
-    public Batch(Texture texture) {
+    public Batch(Shader shader, Texture texture, int stencilRenderingState) {
+        this.shader = shader;
         this.texture = texture;
+        this.stencilRenderingState = stencilRenderingState;
 
-        this.maxSize = SIZE;
+        this.capacity = SIZE;
+        this.attributes = shader.getAttributes();
+        this.vertexSize = calculateVertexSize(this.attributes);
+        this.vertexSizeInBytes = calculateVertexSizeInBytes(this.attributes);
 
-        this.vertices = new float[this.maxSize * VERTEX_SIZE * 3];
-        this.indices = new int[this.maxSize * 3];
+        this.vertices = new float[this.capacity * vertexSize * 3];
+        this.indices = new int[this.capacity * 3];
+    }
+
+    private static int calculateVertexSize(Attribute... attributes) {
+        int vertexSize = 0;
+        for (Attribute attribute : attributes) {
+            vertexSize += attribute.size();
+        }
+        return vertexSize;
+    }
+
+    private static int calculateVertexSizeInBytes(Attribute... attributes) {
+        int vertexSize = 0;
+        for (Attribute attribute : attributes) {
+            vertexSize += attribute.sizeInBytes();
+        }
+        return vertexSize;
     }
 
     public void init(GL3 gl) {
@@ -49,10 +67,10 @@ public class Batch {
         this.vbo = new VBO(gl, this.vertices, GL3.GL_DYNAMIC_DRAW);
         this.ebo = new EBO(gl, this.indices, GL3.GL_DYNAMIC_DRAW);
         this.ebo.bind();
-        this.vao.linkAttrib(this.vbo, 0, POSITION_SIZE, GL3.GL_FLOAT, VERTEX_SIZE_BYTES, 0);
-        this.vao.linkAttrib(this.vbo, 1, TEX_COORDS_SIZE, GL3.GL_FLOAT, VERTEX_SIZE_BYTES, POSITION_SIZE_BYTES);
-        this.vao.linkAttrib(this.vbo, 2, COLOR_MUL_SIZE, GL3.GL_FLOAT, VERTEX_SIZE_BYTES, POSITION_SIZE_BYTES + TEX_COORDS_SIZE_BYTES);
-        this.vao.linkAttrib(this.vbo, 3, COLOR_ADD_SIZE, GL3.GL_FLOAT, VERTEX_SIZE_BYTES, POSITION_SIZE_BYTES + TEX_COORDS_SIZE_BYTES + COLOR_MUL_SIZE_BYTES);
+
+        linkAttributes();
+        this.vao.bind();
+
         this.vao.unbind();
         this.ebo.unbind();
     }
@@ -66,7 +84,7 @@ public class Batch {
         this.ebo.subData(0, this.indices);
 
         this.vao.bind();
-        gl.glDrawElements(GL3.GL_TRIANGLES, this.triangleCount * 3, GL.GL_UNSIGNED_INT, 0);
+        gl.glDrawElements(GL3.GL_TRIANGLES, this.triangleCount * 3, GL3.GL_UNSIGNED_INT, 0);
         this.vao.unbind();
     }
 
@@ -85,27 +103,42 @@ public class Batch {
         this.ebo.delete();
     }
 
-    public boolean startShape(Texture texture, int renderConfigBits) {
-        if (texture == null) return false;
-
-        if (this.texture == null) {
-            this.texture = texture;
-            this.renderConfigBits = renderConfigBits;
-        }
+    public boolean startShape(int renderConfigBits) {
+        this.renderConfigBits = renderConfigBits;
 
         return true;
     }
 
+    public void addVertex(float x, float y, float u, float v) {
+        addVertex(new Float[]{x, y, u, v});
+    }
+
+    public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float alpha, float redAdd, float greenAdd, float blueAdd) {
+        addVertex(new Float[]{x, y, u, v, redMul, greenMul, blueMul, alpha, redAdd, greenAdd, blueAdd});
+    }
+
+    public void addVertex(Float... parameters) {
+        if (parameters.length != vertexSize) {
+            throw new IllegalStateException("Parameter count doesn't match to vertex attributes");
+        }
+
+        for (int i = 0; i < parameters.length; i++) {
+            this.vertices[this.vertexIndex * vertexSize + i] = parameters[i];
+        }
+
+        this.vertexIndex++;
+    }
+
     public void addTriangles(int count, int[] triangles) {
         if (!this.hasSpaceFor(count)) {
-            this.maxSize += SIZE;
+            this.capacity += SIZE;
 
             float[] vertices = this.vertices;
-            this.vertices = new float[this.maxSize * VERTEX_SIZE * 3];
+            this.vertices = new float[this.capacity * vertexSize * 3];
             System.arraycopy(vertices, 0, this.vertices, 0, vertices.length);
 
             int[] indices = this.indices;
-            this.indices = new int[this.maxSize * 3];
+            this.indices = new int[this.capacity * 3];
             System.arraycopy(indices, 0, this.indices, 0, indices.length);
 
             this.delete();
@@ -120,43 +153,35 @@ public class Batch {
         this.pointCount += count + 2;
     }
 
-    public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float redAdd, float greenAdd, float blueAdd, float alpha) {
-        this.vertices[this.vertexIndex * VERTEX_SIZE] = x;
-        this.vertices[this.vertexIndex * VERTEX_SIZE + 1] = y;
-        this.vertices[this.vertexIndex * VERTEX_SIZE + 2] = u;
-        this.vertices[this.vertexIndex * VERTEX_SIZE + 3] = v;
-        this.vertices[this.vertexIndex * VERTEX_SIZE + 4] = redMul;
-        this.vertices[this.vertexIndex * VERTEX_SIZE + 5] = greenMul;
-        this.vertices[this.vertexIndex * VERTEX_SIZE + 6] = blueMul;
-        this.vertices[this.vertexIndex * VERTEX_SIZE + 7] = alpha;
-        this.vertices[this.vertexIndex * VERTEX_SIZE + 8] = redAdd;
-        this.vertices[this.vertexIndex * VERTEX_SIZE + 9] = greenAdd;
-        this.vertices[this.vertexIndex * VERTEX_SIZE + 10] = blueAdd;
-
-        this.vertexIndex++;
-    }
-
     public boolean hasSpaceFor(int trianglesCount) {
-        return this.triangleCount + trianglesCount <= this.maxSize;
+        return this.triangleCount + trianglesCount <= this.capacity;
     }
 
-    public Texture getTexture() {
-        return texture;
+    public boolean hasSame(Shader shader, Texture texture) {
+        return this.shader == shader && this.texture == texture;
+    }
+
+    public boolean hasSame(Shader shader, Texture texture, int stencilRenderingState) {
+        return this.shader == shader && this.texture == texture && this.stencilRenderingState == stencilRenderingState;
     }
 
     @Override
     public String toString() {
         return "Batch {" +
-                "textureId=" + (this.texture != null ? this.texture.getId() : -1) +
-                ", stencilRenderingState=" + this.stencilRenderingState +
-                "}";
+            "textureId=" + (this.texture != null ? this.texture.getId() : -1) +
+            ", stencilRenderingState=" + this.stencilRenderingState +
+            "}";
     }
 
     public int getStencilRenderingState() {
         return stencilRenderingState;
     }
 
-    public void setStencilRenderingState(int stencilRenderingState) {
-        this.stencilRenderingState = stencilRenderingState;
+    private void linkAttributes() {
+        int offset = 0;
+        for (Attribute attribute : attributes) {
+            this.vao.linkAttrib(this.vbo, attribute.layout(), attribute.size(), attribute.glType(), vertexSizeInBytes, offset);
+            offset += attribute.sizeInBytes();
+        }
     }
 }
