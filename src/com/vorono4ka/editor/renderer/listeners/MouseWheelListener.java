@@ -32,6 +32,5 @@ public class MouseWheelListener implements java.awt.event.MouseWheelListener {
         }
 
         stage.doInRenderThread(stage::updatePMVMatrix);
-        Main.editor.updateCanvas();
     }
 }

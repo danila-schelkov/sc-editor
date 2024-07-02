@@ -1,12 +1,22 @@
 package com.vorono4ka.editor.layout.panels;
 
+import com.vorono4ka.editor.layout.panels.status.TaskFinished;
+import com.vorono4ka.editor.layout.panels.status.TaskProgressChanged;
+import com.vorono4ka.editor.layout.panels.status.TaskProgressTracker;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StatusBar extends JPanel {
+    private final List<TaskProgressTracker> taskTrackers = new ArrayList<>();
+
     private final JLabel progressBarLabel;
     private final JProgressBar progressBar;
+
+    private TaskProgressTracker currentTracker;
 
     public StatusBar() {
         super(new FlowLayout(FlowLayout.LEFT));
@@ -23,27 +33,59 @@ public class StatusBar extends JPanel {
         add(progressBarLabel);
         add(progressBar);
 
-        setStatus("Test");
+        setStatus(null);
         progressBar.setVisible(false);
     }
 
     public void setStatus(String status) {
+        if (status == null) {
+            status = "Idling...";
+        }
+
         progressBarLabel.setText("Status: " + status);
     }
 
-    public void createProgressBarTask(int value, int min, int max) {
-        if (!progressBar.isVisible()) {
-            progressBar.setVisible(true);
-        }
-
-        progressBar.setMinimum(min);
-        progressBar.setMaximum(max);
-        progressBar.setValue(value);
+    public TaskProgressTracker createTaskTracker(String description, int min, int max) {
+        TaskProgressTracker tracker = new TaskProgressTracker(description, min, max);
+        tracker.addListener((TaskFinished) this::taskFinished);
+        tracker.addListener((TaskProgressChanged) this::taskProgressChanged);
+        changeTask(tracker);
+        return tracker;
     }
 
-    public void removeProgressBarTask() {
-        if (progressBar.isVisible()) {
-            progressBar.setVisible(false);
+    private void taskProgressChanged(TaskProgressTracker tracker) {
+        if (currentTracker != tracker) return;
+
+        progressBar.setValue(tracker.getValue());
+    }
+
+    private void taskFinished(TaskProgressTracker tracker) {
+        taskTrackers.remove(tracker);
+
+        if (taskTrackers.isEmpty()) {
+            if (progressBar.isVisible()) {
+                progressBar.setVisible(false);
+            }
+
+            changeTask(null);
+        } else {
+            changeTask(taskTrackers.get(taskTrackers.size() - 1));
         }
+    }
+
+    private void changeTask(TaskProgressTracker tracker) {
+        if (this.currentTracker == tracker) return;
+
+        this.currentTracker = tracker;
+        progressBar.setVisible(tracker != null);
+
+        if (tracker == null) {
+            setStatus(null);
+            return;
+        }
+
+        setStatus(tracker.getDescription());
+        progressBar.setMinimum(tracker.getMin());
+        progressBar.setMaximum(tracker.getMax());
     }
 }

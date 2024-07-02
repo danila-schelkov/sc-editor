@@ -35,7 +35,6 @@ public class DisplayObjectListMouseListener extends MouseAdapter {
 
             Main.editor.selectObject(displayObject);
             Main.editor.selectObjectInTable(Main.editor.getSelectedObject());
-            Main.editor.updateCanvas();
         } catch (UnableToFindObjectException exception) {
             exception.printStackTrace();
         }

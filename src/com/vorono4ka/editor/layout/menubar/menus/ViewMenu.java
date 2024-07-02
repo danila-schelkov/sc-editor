@@ -50,7 +50,6 @@ public class ViewMenu extends JMenu {
         function.accept(stage, camera);
 
         stage.doInRenderThread(stage::updatePMVMatrix);
-        Main.editor.updateCanvas();
     }
 
     private static void resetView(ActionEvent e) {

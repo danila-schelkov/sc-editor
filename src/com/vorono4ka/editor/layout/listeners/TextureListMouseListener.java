@@ -27,6 +27,5 @@ public class TextureListMouseListener extends MouseAdapter {
         DisplayObject displayObject = Main.editor.getSpriteSheet(textureIndex);
 
         Main.editor.selectObject(displayObject);
-        Main.editor.updateCanvas();
     }
 }
