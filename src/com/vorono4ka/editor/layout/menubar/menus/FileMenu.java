@@ -1,17 +1,7 @@
 package com.vorono4ka.editor.layout.menubar.menus;
 
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.renderer.Stage;
-import com.vorono4ka.exporter.FfmpegVideoExporter;
-import com.vorono4ka.exporter.VideoExporter;
-import com.vorono4ka.math.Rect;
 import com.vorono4ka.resources.ResourceManager;
-import com.vorono4ka.swf.constants.MovieClipState;
-import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.MovieClip;
-import com.vorono4ka.utilities.ImageData;
-import com.vorono4ka.utilities.ImageUtils;
-import com.vorono4ka.utilities.MovieClipHelper;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -19,7 +9,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Path;
 
@@ -27,7 +16,6 @@ public class FileMenu extends JMenu {
     private final JFrame frame;
     private final JMenuItem saveButton;
     private final JMenuItem saveAsButton;
-    private final JMenu exportMenu;
 
     public FileMenu(JFrame frame) {
         super("File");
@@ -42,16 +30,6 @@ public class FileMenu extends JMenu {
         this.saveButton = new JMenuItem("Save", KeyEvent.VK_O);
         this.saveButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
 
-        this.exportMenu = new JMenu("Export");
-
-        JMenuItem takeScreenshotButton = new JMenuItem("Take screenshot", KeyEvent.VK_T);
-        takeScreenshotButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2, InputEvent.CTRL_DOWN_MASK));
-        this.exportMenu.add(takeScreenshotButton);
-
-        JMenuItem recordAllFramesButton = new JMenuItem("Record all frames", KeyEvent.VK_T);
-        recordAllFramesButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.CTRL_DOWN_MASK));
-        this.exportMenu.add(recordAllFramesButton);
-
         JMenuItem openScreenshotsFolderButton = new JMenuItem("Open screenshots folder");
 
         this.saveAsButton = new JMenuItem("Save as...", KeyEvent.VK_O);
@@ -61,8 +39,6 @@ public class FileMenu extends JMenu {
 
         open.addActionListener(this::open);
         this.saveButton.addActionListener(this::save);
-        takeScreenshotButton.addActionListener(this::exportAsImage);
-        recordAllFramesButton.addActionListener(this::exportAllFrames);
         openScreenshotsFolderButton.addActionListener(e -> {
             try {
                 Path screenshots = Path.of("screenshots");
@@ -82,7 +58,6 @@ public class FileMenu extends JMenu {
         this.add(close);
 
         this.addSeparator();
-        this.add(this.exportMenu);
         this.add(openScreenshotsFolderButton);
 
         this.addSeparator();
@@ -99,59 +74,11 @@ public class FileMenu extends JMenu {
         System.exit(0);
     }
 
-    private void exportAsImage(ActionEvent actionEvent) {
-        Stage instance = Stage.getInstance();
-        instance.doInRenderThread(instance::takeScreenshot);
-    }
-
-    private void exportAllFrames(ActionEvent actionEvent) {
-        Stage instance = Stage.getInstance();
-        instance.doInRenderThread(() -> {
-            DisplayObject child = instance.getStageSprite().getChild(0);
-            if (!child.isMovieClip()) return;
-
-            MovieClip movieClip = ((MovieClip) child);
-
-            int currentFrame = movieClip.getCurrentFrame();
-
-            Rect movieClipBounds = new Rect();
-            MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> movieClipBounds.mergeBounds(instance.getDisplayObjectBounds(movieClip)));
-
-            Rect clipArea = new Rect(instance.getCamera().getClipArea());
-            if (!clipArea.containsPoint(movieClipBounds.getLeft(), movieClipBounds.getTop())
-                || !clipArea.containsPoint(movieClipBounds.getRight(), movieClipBounds.getBottom())) {
-                movieClipBounds.clamp(clipArea);
-            }
-
-            Rect scaledBounds = new Rect(movieClipBounds);
-            scaledBounds.scale(instance.getCamera().getZoom().getPointSize());
-
-            String filename = child.getId() + movieClip.getExportName();
-            Path workingDirectory = Path.of("screenshots");
-            // TODO: ask where to save the video file
-            try (VideoExporter videoExporter = new FfmpegVideoExporter(workingDirectory, filename, "webm", "libvpx-vp9", movieClip.getFps())) {
-                MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> {
-                    // Note: it's necessary to set frame index using this method,
-                    // because absolute time frame setting may skip frames.
-                    movieClip.gotoAndStopFrameIndex(frameIndex);
-                    instance.render(0);
-
-                    ImageData imageData = instance.getCroppedFramebufferData(movieClipBounds, false);
-                    BufferedImage image = ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels());
-                    videoExporter.encodeFrame(image, frameIndex);
-                });
-            }
-
-            movieClip.gotoAndPlayFrameIndex(currentFrame, -1, MovieClipState.PLAYING);
-        });
-    }
-
     public void checkCanSave() {
         boolean canSave = Main.editor.getSwf() != null;
 
         this.saveButton.setEnabled(canSave);
         this.saveAsButton.setEnabled(canSave);
-        this.exportMenu.setEnabled(canSave);
     }
 
     private void open(ActionEvent e) {

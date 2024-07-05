@@ -3,7 +3,6 @@ package com.vorono4ka.editor.renderer;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.math.MathHelper;
 import com.vorono4ka.math.ReadonlyRect;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.resources.Assets;
@@ -14,14 +13,11 @@ import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
 import com.vorono4ka.swf.displayObjects.StageSprite;
 import com.vorono4ka.utilities.BufferUtils;
-import com.vorono4ka.utilities.ImageData;
-import com.vorono4ka.utilities.ImageUtils;
+import com.vorono4ka.utilities.MovieClipHelper;
 import com.vorono4ka.utilities.Utilities;
 
 import java.awt.image.BufferedImage;
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -68,19 +64,6 @@ public class Stage {
 
     public static int getStageCount() {
         return STAGE_COUNT;
-    }
-
-    private static void flipY(int framebufferWidth, int framebufferHeight, int[] pixelArray) {
-        for (int x = 0; x < framebufferWidth; x++) {
-            for (int y = 0; y < framebufferHeight / 2; y++) {
-                int pixelIndex = x + y * framebufferWidth;
-                int flippedIndex = x + (framebufferHeight - y) * framebufferWidth;
-
-                int oldPixel = pixelArray[pixelIndex];
-                pixelArray[pixelIndex] = pixelArray[flippedIndex];
-                pixelArray[flippedIndex] = oldPixel;
-            }
-        }
     }
 
     public void init(GL3 gl, int x, int y, int width, int height) {
@@ -180,96 +163,20 @@ public class Stage {
         this.unloadBatchesToPool();
     }
 
-    public void takeScreenshot() {
-        takeScreenshot(null);
-    }
-
-    public void takeScreenshot(Rect bounds) {
-        if (bounds == null) {
-            bounds = getDisplayObjectBounds(this.stageSprite);
-        }
-
-        ImageData imageData = getCroppedFramebufferData(bounds, false);
-
-        BufferedImage image = ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels());
-
-        Path path = getScreenshotPath();
-        ImageUtils.saveImage(path, image);
-    }
-
-    public Rect toFramebufferBounds(Rect bounds, boolean shouldBeDividableByTwo) {
-        int width = (int) Math.ceil(bounds.getWidth() * camera.getZoom().getPointSize());
-        int height = (int) Math.ceil(bounds.getHeight() * camera.getZoom().getPointSize());
-
-        width = MathHelper.clamp(width, 1, framebuffer.getWidth());
-        height = MathHelper.clamp(height, 1, framebuffer.getHeight());
-
-        if (shouldBeDividableByTwo) {
-            width += width % 2;
-            height += height % 2;
-        }
-
-        Rect framebufferBounds = new Rect(width, height);
-        framebufferBounds.movePosition(
-            (int) ((bounds.getLeft() - camera.getOffsetX()) * camera.getZoom().getPointSize()),
-            (int) ((bounds.getTop() - camera.getOffsetY()) * camera.getZoom().getPointSize())
-        );
-
-        return framebufferBounds;
-    }
-
-    public ImageData getCroppedFramebufferData(Rect bounds, boolean shouldBeDividableByTwo) {
-        Rect framebufferBounds = toFramebufferBounds(bounds, shouldBeDividableByTwo);
-
-        int[] pixelArray = getFramebufferPixelArray();
-
-        int[] croppedPixelArray = ImageUtils.cropPixelArray(
-            pixelArray,
-            framebuffer.getWidth(),
-            framebuffer.getHeight(),
-            (int) framebufferBounds.getWidth(),
-            (int) framebufferBounds.getHeight(),
-            (int) framebufferBounds.getLeft(),
-            (int) framebufferBounds.getTop()
-        );
-
-        return new ImageData((int) framebufferBounds.getWidth(), (int) framebufferBounds.getHeight(), croppedPixelArray);
-    }
-
-    public int[] getFramebufferPixelArray() {
-        framebuffer.bind();
-        IntBuffer pixels = framebuffer.getTexture().getPixels();
-        framebuffer.unbind();
-
-        int[] pixelArray = BufferUtils.toArray(pixels);
-
-        flipY(framebuffer.getWidth(), framebuffer.getHeight(), pixelArray);
-        return pixelArray;
-    }
-
-    private Path getScreenshotPath() {
-        Path path;
-
-        DisplayObject child = stageSprite.getChild(0);
-        if (child.isMovieClip()) {
-            MovieClip movieClip = (MovieClip) child;
+    public Rect calculateBoundsForAllFrames(DisplayObject displayObject) {
+        if (displayObject.isMovieClip()) {
+            MovieClip movieClip = (MovieClip) displayObject;
 
             if (movieClip.getFrames().length > 1) {
+                Rect bounds = new Rect();
                 int currentFrame = movieClip.getCurrentFrame();
-                String frameLabel = movieClip.getFrameLabel(currentFrame);
-                String frameName = String.valueOf(currentFrame);
-                if (frameLabel != null) {
-                    frameName = String.join("-", frameName, frameLabel);
-                }
-
-                path = Path.of("screenshots", String.valueOf(child.getId()), frameName + ".png");
-                return path;
+                MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> bounds.mergeBounds(getDisplayObjectBounds(movieClip)));
+                movieClip.gotoAbsoluteTimeRecursive(currentFrame * movieClip.getMsPerFrame());
+                return bounds;
             }
         }
 
-        path = Path.of("screenshots", child.getId() + ".png");
-
-        return path;
+        return getDisplayObjectBounds(displayObject);
     }
 
     public void unbindRender() {
@@ -453,6 +360,10 @@ public class Stage {
 
     public Camera getCamera() {
         return camera;
+    }
+
+    public Framebuffer getFramebuffer() {
+        return framebuffer;
     }
 
     public GL3 getGl() {

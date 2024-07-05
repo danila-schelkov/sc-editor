@@ -63,4 +63,17 @@ public final class ImageUtils {
 
         return image;
     }
+
+    public static void flipY(int width, int height, int[] pixelArray) {
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height / 2; y++) {
+                int pixelIndex = x + y * width;
+                int flippedIndex = x + (height - y) * width;
+
+                int oldPixel = pixelArray[pixelIndex];
+                pixelArray[pixelIndex] = pixelArray[flippedIndex];
+                pixelArray[flippedIndex] = oldPixel;
+            }
+        }
+    }
 }

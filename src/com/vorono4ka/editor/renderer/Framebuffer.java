@@ -2,6 +2,8 @@ package com.vorono4ka.editor.renderer;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL3;
+import com.vorono4ka.utilities.BufferUtils;
+import com.vorono4ka.utilities.ImageUtils;
 
 import java.nio.IntBuffer;
 
@@ -87,5 +89,24 @@ public class Framebuffer {
 
     public Renderbuffer getRenderbuffer() {
         return renderbuffer;
+    }
+
+    /**
+     * Returns pixel array of the framebuffer from the graphics memory.
+     * @param flipY whether to flip pixels along the Y axis or not
+     * @return integer array of pixels
+     */
+    public int[] getPixelArray(boolean flipY) {
+        bind();
+        IntBuffer pixels = texture.getPixels();
+        unbind();
+
+        int[] pixelArray = BufferUtils.toArray(pixels);
+
+        if (flipY) {
+            ImageUtils.flipY(width, height, pixelArray);
+        }
+
+        return pixelArray;
     }
 }
