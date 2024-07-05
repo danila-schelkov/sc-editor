@@ -68,6 +68,7 @@ public class CameraZoom {
 
         if (scale > 1000f) {
             setPointSize(MAX_POINT_SIZE);
+            scaleStep = Math.min(step, estimateCurrentScaleStep(MAX_POINT_SIZE));
             return;
         }
 
