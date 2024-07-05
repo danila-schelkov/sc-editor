@@ -1,6 +1,5 @@
 package com.vorono4ka.editor.renderer.listeners;
 
-import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.renderer.Camera;
 import com.vorono4ka.editor.renderer.CameraZoom;
 import com.vorono4ka.editor.renderer.Stage;
