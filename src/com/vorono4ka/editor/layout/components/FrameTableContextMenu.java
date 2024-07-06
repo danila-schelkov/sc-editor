@@ -4,10 +4,6 @@ import com.vorono4ka.editor.Main;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
 
-import javax.swing.*;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 
 public class FrameTableContextMenu extends ContextMenu {
@@ -21,7 +17,7 @@ public class FrameTableContextMenu extends ContextMenu {
         this.add("Goto and play", this::gotoAndPlay);
         this.add("Goto and stop", this::gotoAndStop);
 
-        this.popupMenu.addPopupMenuListener(new TablePopupMenuListener(this.popupMenu, table, null));
+        this.popupMenu.addPopupMenuListener(new TablePopupMenuListener(this.popupMenu, table, rowIndex -> setMainComponentsEnabled(rowIndex != -1)));
     }
 
     private void gotoAndPlay(ActionEvent event) {
