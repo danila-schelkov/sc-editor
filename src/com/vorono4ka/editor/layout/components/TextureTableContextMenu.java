@@ -19,14 +19,17 @@ import java.nio.file.Path;
 
 public class TextureTableContextMenu extends ContextMenu {
     private final Table table;
+    private final JMenuItem exportButton;
 
     public TextureTableContextMenu(Table table) {
         super(table, null);
 
         this.table = table;
 
-        JMenuItem exportButton = this.add("Export", KeyEvent.VK_E);
+        exportButton = this.add("Export", KeyEvent.VK_E);
         exportButton.addActionListener(this::export);
+
+        this.popupMenu.addPopupMenuListener(new TablePopupMenuListener(this.popupMenu, table, this::onRowSelected));
     }
 
     private void export(ActionEvent actionEvent) {
@@ -61,5 +64,9 @@ public class TextureTableContextMenu extends ContextMenu {
                 }
             }
         });
+    }
+
+    private void onRowSelected(int rowIndex) {
+        exportButton.setEnabled(rowIndex != -1);
     }
 }
