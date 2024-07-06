@@ -16,6 +16,46 @@ public class GLImage {
     protected int height;
     protected int pixelFormat;
 
+    private static void loadImage(Texture texture, Buffer pixels, int pixelFormat, int pixelType) {
+        int error = texture.init(0, pixelFormat, pixelFormat, pixelType, pixels);
+        if (error == GL3.GL_INVALID_ENUM && (pixelFormat == GL3.GL_LUMINANCE_ALPHA || pixelFormat == GL3.GL_LUMINANCE)) {
+            IntBuffer swizzleMask = null;
+            int format = -1;
+
+            switch (pixelFormat) {
+                case GL3.GL_LUMINANCE_ALPHA -> {
+                    swizzleMask = BufferUtils.wrapDirect(GL3.GL_RED, GL3.GL_RED, GL3.GL_RED, GL3.GL_GREEN);
+                    format = GL3.GL_RG;
+                }
+                case GL3.GL_LUMINANCE -> {
+                    swizzleMask = BufferUtils.wrapDirect(GL3.GL_RED, GL3.GL_RED, GL3.GL_RED, 1);
+                    format = GL3.GL_RED;
+                }
+                default -> {
+                    assert false : "GL_INVALID_ENUM";
+                }
+            }
+
+            error = texture.init(0, GL3.GL_RGBA, format, pixelType, pixels);
+            if (error == GL3.GL_NO_ERROR) {
+                texture.setParameter(GL3.GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
+            }
+        }
+    }
+
+    private static void loadKtx(Texture texture, KhronosTexture ktx) {
+        if (ktx.glFormat() != 0) {
+            for (int level = 0; level < ktx.levels().length; level++) {
+                texture.init(level, ktx.glInternalFormat(), ktx.glFormat(), GL3.GL_UNSIGNED_INT, ktx.levels()[level]);
+            }
+        } else {
+            for (int level = 0; level < ktx.levels().length; level++) {
+                ByteBuffer data = ktx.levels()[level];
+                texture.initCompressed(level, ktx.glInternalFormat(), ktx.glBaseInternalFormat(), ktx.width(), ktx.height(), data);
+            }
+        }
+    }
+
     public int getWidth() {
         return width;
     }
@@ -74,76 +114,24 @@ public class GLImage {
                 this.texture.delete();
             }
 
-            texture = new Texture(gl, width, height, pixelFormat, pixelFormat, pixelType);
+            texture = new Texture(gl, width, height);
             texture.bind();
 
             texture.setWrap(clampToEdge ? GL3.GL_CLAMP_TO_EDGE : GL3.GL_REPEAT);
             texture.setFilters(minFilter, magFilter);
 
-            int channelCount = getChannelCount(pixelFormat);
-            gl.glPixelStorei(GL3.GL_UNPACK_ALIGNMENT, channelCount);
-
             if (ktx != null) {
-                loadKtx(gl, ktx);
+                loadKtx(texture, ktx);
             } else {
-                loadImage(gl, this, width, height, pixels, pixelFormat, pixelType);
+                loadImage(texture, pixels, pixelFormat, pixelType);
             }
 
             texture.generateMipMap();
 
+            int channelCount = texture.getChannelCount();
+            gl.glPixelStorei(GL3.GL_UNPACK_ALIGNMENT, channelCount);
+
             texture.unbind();
         });
-    }
-
-    private static int getChannelCount(int pixelFormat) {
-        return switch (pixelFormat) {
-            case GL3.GL_RGBA -> 4;
-            case GL3.GL_RGB -> 3;
-            case GL3.GL_LUMINANCE_ALPHA, GL3.GL_RG -> 2;
-            case GL3.GL_LUMINANCE, GL3.GL_RED -> 1;
-            default ->
-                throw new IllegalArgumentException("Unsupported pixel format for pixel storage, pixel format: " + pixelFormat);
-        };
-    }
-
-    private static void loadImage(GL3 gl, GLImage image, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
-        gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, pixelFormat, width, height, 0, pixelFormat, pixelType, pixels);
-        if (gl.glGetError() == GL3.GL_INVALID_ENUM && (pixelFormat == GL3.GL_LUMINANCE_ALPHA || pixelFormat == GL3.GL_LUMINANCE)) {
-            IntBuffer swizzleMask = null;
-            int format = -1;
-
-            switch (pixelFormat) {
-                case GL3.GL_LUMINANCE_ALPHA -> {
-                    swizzleMask = BufferUtils.wrapDirect(GL3.GL_RED, GL3.GL_RED, GL3.GL_RED, GL3.GL_GREEN);
-                    format = GL3.GL_RG;
-                }
-                case GL3.GL_LUMINANCE -> {
-                    swizzleMask = BufferUtils.wrapDirect(GL3.GL_RED, GL3.GL_RED, GL3.GL_RED, 1);
-                    format = GL3.GL_RED;
-                }
-                default -> {
-                    assert false : "GL_INVALID_ENUM";
-                }
-            }
-
-            gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, format, width, height, 0, format, pixelType, pixels);
-            if (gl.glGetError() == GL3.GL_NO_ERROR) {
-                gl.glTexParameteriv(GL3.GL_TEXTURE_2D, GL3.GL_TEXTURE_SWIZZLE_RGBA, swizzleMask);
-                image.setPixelFormat(format);
-            }
-        }
-    }
-
-    private static void loadKtx(GL3 gl, KhronosTexture ktx) {
-        if (ktx.glFormat != 0) {
-            for (int level = 0; level < ktx.data.length; level++) {
-                gl.glTexImage2D(GL3.GL_TEXTURE_2D, level, ktx.glInternalFormat, ktx.pixelWidth, ktx.pixelHeight, 0, ktx.glFormat, GL3.GL_UNSIGNED_INT, ktx.data[level]);
-            }
-        } else {
-            for (int level = 0; level < ktx.data.length; level++) {
-                ByteBuffer data = ktx.data[level];
-                gl.glCompressedTexImage2D(GL3.GL_TEXTURE_2D, level, ktx.glInternalFormat, ktx.pixelWidth, ktx.pixelHeight, 0, data.remaining(), data);
-            }
-        }
     }
 }

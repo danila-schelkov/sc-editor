@@ -9,6 +9,20 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public final class ImageUtils {
+    public static final DirectColorModel RGBA_MODEL = new DirectColorModel(32,
+        0xff,
+        0xff00,
+        0xff0000,
+        0xff000000
+    );
+
+    public static final DirectColorModel LUMINANCE_ALPHA_MODEL = new DirectColorModel(32,
+        0xff00,
+        0xff00,
+        0xff00,
+        0xff
+    );
+
     public static void saveImage(Path filepath, BufferedImage image) {
         try {
             File file = filepath.toFile();
@@ -19,13 +33,8 @@ public final class ImageUtils {
         }
     }
 
-    public static BufferedImage createBufferedImageFromPixels(int width, int height, int[] pixelArray) {
-        DirectColorModel colorModel = new DirectColorModel(32,
-            0xff,
-            0xff00,
-            0xff0000,
-            0xff000000
-        );
+    public static BufferedImage createBufferedImageFromPixels(int width, int height, int[] pixelArray, boolean isLuminanceAlpha) {
+        DirectColorModel colorModel = isLuminanceAlpha ? LUMINANCE_ALPHA_MODEL : RGBA_MODEL;
 
         SampleModel sampleModel = colorModel.createCompatibleSampleModel(width, height);
         DataBufferInt dataBufferInt = new DataBufferInt(pixelArray, pixelArray.length);

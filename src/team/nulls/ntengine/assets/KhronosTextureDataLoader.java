@@ -41,14 +41,14 @@ public class KhronosTextureDataLoader {
         if (buffer.getInt() == 0x01020304) {
             buffer.order(ByteOrder.LITTLE_ENDIAN);
         }
-        KhronosTexture ktx = new KhronosTexture();
-        ktx.glType = buffer.getInt();
-        ktx.glTypeSize = buffer.getInt();
-        ktx.glFormat = buffer.getInt();
-        ktx.glInternalFormat = buffer.getInt();
-        ktx.glBaseInternalFormat = buffer.getInt();
-        ktx.pixelWidth = buffer.getInt();
-        ktx.pixelHeight = buffer.getInt();
+
+        int glType = buffer.getInt();
+        int glTypeSize = buffer.getInt();
+        int glFormat = buffer.getInt();
+        int glInternalFormat = buffer.getInt();
+        int glBaseInternalFormat = buffer.getInt();
+        int width = buffer.getInt();
+        int height = buffer.getInt();
         if (buffer.getInt() != 0) {
             throw new RuntimeException("pixelDepth != 0");
         }
@@ -61,7 +61,7 @@ public class KhronosTextureDataLoader {
         int mipmapLevels = buffer.getInt();
         int dictSize = buffer.getInt();
         LOGGER.info("Dict: " + decodeDict(buffer, dictSize));
-        ByteBuffer[] data = new ByteBuffer[mipmapLevels];
+        ByteBuffer[] levels = new ByteBuffer[mipmapLevels];
         for (int i = 0; i < mipmapLevels; i++) {
             int dataChunkSize = addPadding4(buffer.getInt());
             byte[] dataChunk = new byte[dataChunkSize];
@@ -69,10 +69,10 @@ public class KhronosTextureDataLoader {
             ByteBuffer dataBuffer = BufferUtils.allocateDirect(dataChunkSize);
             dataBuffer.put(dataChunk);
             dataBuffer.position(0);
-            data[i] = dataBuffer;
+            levels[i] = dataBuffer;
         }
-        ktx.data = data;
-        return ktx;
+
+        return new KhronosTexture(glType, glTypeSize, glFormat, glInternalFormat, glBaseInternalFormat, width, height, levels);
     }
 
     private static Map<String, String> decodeDict(ByteBuffer buffer, int size) {
