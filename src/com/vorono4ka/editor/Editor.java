@@ -61,15 +61,7 @@ public class Editor {
         this.window.setTitle(Main.TITLE + " - " + this.swf.getFilename());
 
         SwingUtilities.invokeLater(this::updateObjectTable);
-
-        Table texturesTable = this.window.getTexturesTable();
-        for (int i = 0; i < this.swf.getTexturesCount(); i++) {
-            SWFTexture texture = this.swf.getTexture(i);
-            texturesTable.addRow(i, texture.getWidth(), texture.getHeight(), texture.getPixelFormat());
-
-            SpriteSheet spriteSheet = new SpriteSheet(texture, swf.getDrawBitmapsOfTexture(i));
-            this.spriteSheets.add(spriteSheet);
-        }
+        SwingUtilities.invokeLater(this::updateTextureTable);
 
         FileMenu fileMenu = this.window.getMenubar().getFileMenu();
         fileMenu.checkCanSave();
@@ -255,13 +247,31 @@ public class Editor {
 
         StatusBar statusBar = this.window.getStatusBar();
 
-        try (TaskProgressTracker taskProgressTracker = statusBar.createTaskTracker("Loading objects table...", 0, rowDataList.size())) {
+        try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Loading objects table...", 0, rowDataList.size())) {
             Table objectsTable = this.window.getObjectsTable();
             for (int i = 0; i < rowDataList.size(); i++) {
                 Object[] objects = rowDataList.get(i);
                 objectsTable.addRow(objects);
 
-                taskProgressTracker.setValue(i);
+                taskTracker.setValue(i);
+            }
+        }
+    }
+
+    private void updateTextureTable() {
+        Table texturesTable = this.window.getTexturesTable();
+        StatusBar statusBar = this.window.getStatusBar();
+
+        int texturesCount = this.swf.getTexturesCount();
+        try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Loading textures table...", 0, texturesCount)) {
+            for (int i = 0; i < texturesCount; i++) {
+                SWFTexture texture = this.swf.getTexture(i);
+                texturesTable.addRow(i, texture.getWidth(), texture.getHeight(), texture.getPixelFormat());
+
+                SpriteSheet spriteSheet = new SpriteSheet(texture, swf.getDrawBitmapsOfTexture(i));
+                this.spriteSheets.add(spriteSheet);
+
+                taskTracker.setValue(i);
             }
         }
     }
@@ -272,7 +282,7 @@ public class Editor {
         StatusBar statusBar = this.window.getStatusBar();
 
         int[] movieClipsIds = this.swf.getMovieClipsIds();
-        try (TaskProgressTracker taskProgressTracker = statusBar.createTaskTracker("Collecting MovieClip info...", 0, movieClipsIds.length)) {
+        try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Collecting MovieClip info...", 0, movieClipsIds.length)) {
             for (int i = 0; i < movieClipsIds.length; i++) {
                 int movieClipId = movieClipsIds[i];
 
@@ -283,25 +293,25 @@ public class Editor {
                     e.printStackTrace();
                 }
 
-                taskProgressTracker.setValue(i);
+                taskTracker.setValue(i);
             }
         }
 
         int[] shapesIds = this.swf.getShapesIds();
-        try (TaskProgressTracker taskProgressTracker = statusBar.createTaskTracker("Collecting Shape info...", 0, shapesIds.length)) {
+        try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Collecting Shape info...", 0, shapesIds.length)) {
             for (int i = 0; i < shapesIds.length; i++) {
                 int shapesId = shapesIds[i];
                 rowDataList.add(new Object[]{shapesId, null, "Shape"});
-                taskProgressTracker.setValue(i);
+                taskTracker.setValue(i);
             }
         }
 
         int[] textFieldsIds = this.swf.getTextFieldsIds();
-        try (TaskProgressTracker taskProgressTracker = statusBar.createTaskTracker("Collecting TextField info...", 0, textFieldsIds.length)) {
+        try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Collecting TextField info...", 0, textFieldsIds.length)) {
             for (int i = 0; i < textFieldsIds.length; i++) {
                 int textFieldId = textFieldsIds[i];
                 rowDataList.add(new Object[]{textFieldId, null, "TextField"});
-                taskProgressTracker.setValue(i);
+                taskTracker.setValue(i);
             }
         }
 
