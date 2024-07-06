@@ -68,10 +68,6 @@ public class GLImage {
         return this.pixelFormat;
     }
 
-    public void setPixelFormat(int pixelFormat) {
-        this.pixelFormat = pixelFormat;
-    }
-
     public Texture getTexture() {
         return texture;
     }
@@ -86,7 +82,7 @@ public class GLImage {
 
         this.width = width;
         this.height = height;
-        this.setPixelFormat(pixelFormat);
+        this.pixelFormat = pixelFormat;
 
         int magFilter;
         int minFilter;

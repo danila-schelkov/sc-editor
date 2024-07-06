@@ -16,13 +16,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.*;
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import java.nio.file.Path;
 
 public class SWFTexture extends GLImage implements Savable {
     public static final int TILE_SIZE = 32;
-
-    private Buffer pixels;
 
     private int index;
 
@@ -52,27 +53,7 @@ public class SWFTexture extends GLImage implements Savable {
         return compressedData;
     }
 
-    public void load(SupercellSWF swf, Tag tag, boolean hasTexture) throws LoadingFaultException, TextureFileNotFound {
-        this.tag = tag;
-
-        int khronosTextureLength = 0;
-        if (tag == Tag.KHRONOS_TEXTURE) {
-            khronosTextureLength = swf.readInt();
-            assert khronosTextureLength > 0;
-        }
-
-        String compressedTextureFilename = null;
-        if (tag == Tag.COMPRESSED_KHRONOS_TEXTURE) {
-            compressedTextureFilename = swf.readAscii();
-            if (compressedTextureFilename == null) {
-                throw new LoadingFaultException("Compressed texture filename cannot be null.");
-            }
-        }
-
-        int type = swf.readUnsignedChar();
-        this.width = swf.readShort();
-        this.height = swf.readShort();
-
+    private static TextureInfo getTextureInfoByType(int type) {
         int pixelFormat = GL3.GL_RGBA;
         int pixelType = GL3.GL_UNSIGNED_BYTE;
         int pixelBytes = 4;
@@ -101,15 +82,44 @@ public class SWFTexture extends GLImage implements Savable {
             }
         }
 
-        this.pixelFormat = pixelFormat;
+        return new TextureInfo(pixelFormat, pixelType, pixelBytes);
+    }
+
+    private static boolean isSeparatedByTiles(Tag tag) {
+        return tag == Tag.TEXTURE_5 || tag == Tag.TEXTURE_6 || tag == Tag.TEXTURE_7;
+    }
+
+    public void load(SupercellSWF swf, Tag tag, boolean hasTexture) throws LoadingFaultException, TextureFileNotFound {
+        this.tag = tag;
+
+        int khronosTextureLength = 0;
+        if (tag == Tag.KHRONOS_TEXTURE) {
+            khronosTextureLength = swf.readInt();
+            assert khronosTextureLength > 0;
+        }
+
+        String compressedTextureFilename = null;
+        if (tag == Tag.COMPRESSED_KHRONOS_TEXTURE) {
+            compressedTextureFilename = swf.readAscii();
+            if (compressedTextureFilename == null) {
+                throw new LoadingFaultException("Compressed texture filename cannot be null.");
+            }
+        }
+
+        int type = swf.readUnsignedChar();
+        this.width = swf.readShort();
+        this.height = swf.readShort();
 
         if (!hasTexture) return;
 
-        int finalPixelFormat = pixelFormat;
-        int finalPixelType = pixelType;
+        TextureInfo textureInfo = getTextureInfoByType(type);
+
+        int finalPixelFormat = textureInfo.pixelFormat();
+        int finalPixelType = textureInfo.pixelType();
         int textureFilter = tag.getTextureFilter();
 
         KhronosTexture ktx = null;
+        Buffer pixels = null;
         switch (tag) {
             case KHRONOS_TEXTURE -> {
                 byte[] bytes = swf.readByteArray(khronosTextureLength);
@@ -121,10 +131,10 @@ public class SWFTexture extends GLImage implements Savable {
                 ktx = KhronosTextureDataLoader.decodeKtx(BufferUtils.wrapDirect(decompressed));
             }
             default ->
-                this.loadTexture(swf, this.width, this.height, pixelBytes, tag == Tag.TEXTURE_5 || tag == Tag.TEXTURE_6 || tag == Tag.TEXTURE_7);
+                pixels = this.loadTexture(swf, this.width, this.height, textureInfo.pixelBytes(), isSeparatedByTiles(tag));
         }
 
-        this.createWithFormat(ktx, false, textureFilter, this.width, this.height, this.pixels, finalPixelFormat, finalPixelType);
+        this.createWithFormat(ktx, false, textureFilter, this.width, this.height, pixels, finalPixelFormat, finalPixelType);
     }
 
     @Override
@@ -134,15 +144,33 @@ public class SWFTexture extends GLImage implements Savable {
         stream.writeShort(this.height);
     }
 
-    private void loadTexture(SupercellSWF swf, int width, int height, int pixelBytes, boolean separatedByTiles) {
-        switch (pixelBytes) {
+    public int getIndex() {
+        return this.index;
+    }
+
+    public void setIndex(int index) {
+        this.index = index;
+    }
+
+    public Tag getTag() {
+        return tag;
+    }
+
+    public void setTag(Tag tag) {
+        this.tag = tag;
+    }
+
+    private Buffer loadTexture(SupercellSWF swf, int width, int height, int pixelBytes, boolean separatedByTiles) {
+        return switch (pixelBytes) {
             case 1 -> this.loadTextureAsChar(swf, width, height, separatedByTiles);
             case 2 -> this.loadTextureAsShort(swf, width, height, separatedByTiles);
             case 4 -> this.loadTextureAsInt(swf, width, height, separatedByTiles);
-        }
+            default ->
+                throw new IllegalStateException("Unexpected value: " + pixelBytes);
+        };
     }
 
-    private void loadTextureAsChar(SupercellSWF swf, int width, int height, boolean separatedByTiles) {
+    private ByteBuffer loadTextureAsChar(SupercellSWF swf, int width, int height, boolean separatedByTiles) {
         if (separatedByTiles) {
             int xChunksCount = width / TILE_SIZE;
             int yChunksCount = height / TILE_SIZE;
@@ -168,13 +196,13 @@ public class SWFTexture extends GLImage implements Savable {
                 }
             }
 
-            this.pixels = pixels;
+            return pixels;
         } else {
-            this.pixels = BufferUtils.wrapDirect(swf.readByteArray(width * height));
+            return BufferUtils.wrapDirect(swf.readByteArray(width * height));
         }
     }
 
-    private void loadTextureAsShort(SupercellSWF swf, int width, int height, boolean separatedByTiles) {
+    private ShortBuffer loadTextureAsShort(SupercellSWF swf, int width, int height, boolean separatedByTiles) {
         if (separatedByTiles) {
             int xChunksCount = width / TILE_SIZE;
             int yChunksCount = height / TILE_SIZE;
@@ -200,13 +228,13 @@ public class SWFTexture extends GLImage implements Savable {
                 }
             }
 
-            this.pixels = pixels;
+            return pixels;
         } else {
-            this.pixels = BufferUtils.wrapDirect(swf.readShortArray(width * height));
+            return BufferUtils.wrapDirect(swf.readShortArray(width * height));
         }
     }
 
-    private void loadTextureAsInt(SupercellSWF swf, int width, int height, boolean separatedByTiles) {
+    private IntBuffer loadTextureAsInt(SupercellSWF swf, int width, int height, boolean separatedByTiles) {
         if (separatedByTiles) {
             int xChunksCount = width / TILE_SIZE;
             int yChunksCount = height / TILE_SIZE;
@@ -232,9 +260,9 @@ public class SWFTexture extends GLImage implements Savable {
                 }
             }
 
-            this.pixels = pixels;
+            return pixels;
         } else {
-            this.pixels = BufferUtils.wrapDirect(swf.readIntArray(width * height));
+            return BufferUtils.wrapDirect(swf.readIntArray(width * height));
         }
     }
 
@@ -250,24 +278,6 @@ public class SWFTexture extends GLImage implements Savable {
         return swf.readIntArray(width * height);
     }
 
-    public int getIndex() {
-        return this.index;
-    }
-
-    public void setIndex(int index) {
-        this.index = index;
-    }
-
-    public Tag getTag() {
-        return tag;
-    }
-
-    public void setTag(Tag tag) {
-        this.tag = tag;
-    }
-
-    @Override
-    public String toString() {
-        return "width=" + this.width + ", height=" + this.height;
+    private record TextureInfo(int pixelFormat, int pixelType, int pixelBytes) {
     }
 }
