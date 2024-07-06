@@ -57,7 +57,7 @@ public class Texture {
     }
 
     public void initCompressed(int level, int internalFormat, int format, int width, int height, ByteBuffer data) {
-        this.internalFormat = internalFormat;
+        this.internalFormat = format;
         this.format = format;
 
         gl.glCompressedTexImage2D(GL3.GL_TEXTURE_2D, level, internalFormat, width, height, 0, data.remaining(), data);
@@ -98,7 +98,6 @@ public class Texture {
     // Ensure using in the render thread
     public IntBuffer getPixels(int level) {
         IntBuffer pixels = BufferUtils.allocateDirect(width * height * Integer.BYTES * getChannelCount()).asIntBuffer();
-        // Add support for luminance alpha
         this.gl.glGetTexImage(GL3.GL_TEXTURE_2D, level, this.internalFormat, this.pixelType, pixels);
         return pixels;
     }
@@ -158,5 +157,11 @@ public class Texture {
 
     public void setParameter(int type, IntBuffer value) {
         gl.glTexParameteriv(GL3.GL_TEXTURE_2D, type, value);
+    }
+
+    public void setPixelInfo(int format, int pixelType) {
+        this.internalFormat = format;
+        this.format = format;
+        this.pixelType = pixelType;
     }
 }

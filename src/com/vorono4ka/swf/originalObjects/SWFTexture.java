@@ -114,10 +114,6 @@ public class SWFTexture extends GLImage implements Savable {
 
         TextureInfo textureInfo = getTextureInfoByType(type);
 
-        int finalPixelFormat = textureInfo.pixelFormat();
-        int finalPixelType = textureInfo.pixelType();
-        int textureFilter = tag.getTextureFilter();
-
         KhronosTexture ktx = null;
         Buffer pixels = null;
         switch (tag) {
@@ -134,7 +130,7 @@ public class SWFTexture extends GLImage implements Savable {
                 pixels = this.loadTexture(swf, this.width, this.height, textureInfo.pixelBytes(), isSeparatedByTiles(tag));
         }
 
-        this.createWithFormat(ktx, false, textureFilter, this.width, this.height, pixels, finalPixelFormat, finalPixelType);
+        this.createWithFormat(ktx, false, tag.getTextureFilter(), this.width, this.height, pixels, textureInfo.pixelFormat(), textureInfo.pixelType());
     }
 
     @Override

@@ -113,6 +113,8 @@ public class GLImage {
             texture = new Texture(gl, width, height);
             texture.bind();
 
+            texture.setPixelInfo(pixelFormat, pixelType);
+
             texture.setWrap(clampToEdge ? GL3.GL_CLAMP_TO_EDGE : GL3.GL_REPEAT);
             texture.setFilters(minFilter, magFilter);
 
