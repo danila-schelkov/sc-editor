@@ -85,6 +85,7 @@ public class StatusBar extends JPanel {
         }
 
         setStatus(tracker.getDescription());
+        progressBar.setValue(tracker.getValue());
         progressBar.setMinimum(tracker.getMin());
         progressBar.setMaximum(tracker.getMax());
     }
