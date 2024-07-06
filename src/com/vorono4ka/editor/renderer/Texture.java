@@ -3,15 +3,20 @@ package com.vorono4ka.editor.renderer;
 import com.jogamp.opengl.GL3;
 import com.vorono4ka.utilities.BufferUtils;
 
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 public class Texture {
     private final GL3 gl;
     private final int id;
+    private final int width, height;
 
-    private int width, height;
+    private int internalFormat;
+    private int format;
+    private int pixelType;
 
-    public Texture(GL3 gl, int width, int height, int format, int pixelFormat, int pixelType) {
+    public Texture(GL3 gl, int width, int height) {
         this.gl = gl;
         this.width = width;
         this.height = height;
@@ -21,11 +26,7 @@ public class Texture {
         this.bind();
 
         this.setFilters(GL3.GL_LINEAR, GL3.GL_LINEAR);
-
         this.setWrap(GL3.GL_REPEAT);
-
-        this.gl.glTexImage2D(GL3.GL_TEXTURE_2D, 0, format, width, height, 0, pixelFormat, pixelType, null);
-        this.gl.glGenerateMipmap(GL3.GL_TEXTURE_2D);
 
         this.unbind();
     }
@@ -36,6 +37,32 @@ public class Texture {
         return ids.get(0);
     }
 
+    /**
+     * Initializes 2d texture in OpenGL
+     *
+     * @param level mip map level
+     * @param internalFormat e.g. GL_RGBA
+     * @param format e.g. GL_RGBA
+     * @param pixelType e.g. GL_UNSIGNED_BYTE
+     * @param pixels buffer containing texture pixels
+     * @return 0 if succeeded, otherwise gl error code
+     */
+    public int init(int level, int internalFormat, int format, int pixelType, Buffer pixels) {
+        this.internalFormat = internalFormat;
+        this.format = format;
+        this.pixelType = pixelType;
+
+        gl.glTexImage2D(GL3.GL_TEXTURE_2D, level, internalFormat, width, height, 0, format, pixelType, pixels);
+        return gl.glGetError();
+    }
+
+    public void initCompressed(int level, int internalFormat, int format, int width, int height, ByteBuffer data) {
+        this.internalFormat = format;
+        this.format = format;
+
+        gl.glCompressedTexImage2D(GL3.GL_TEXTURE_2D, level, internalFormat, width, height, 0, data.remaining(), data);
+    }
+
     public void bind() {
         gl.glBindTexture(GL3.GL_TEXTURE_2D, this.id);
     }
@@ -43,7 +70,6 @@ public class Texture {
     public void unbind() {
         gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
     }
-
 
     public int getId() {
         return id;
@@ -53,22 +79,26 @@ public class Texture {
         return width;
     }
 
-    public void setWidth(int width) {
-        this.width = width;
-    }
-
     public int getHeight() {
         return height;
     }
 
-    public void setHeight(int height) {
-        this.height = height;
+    public int getInternalFormat() {
+        return internalFormat;
+    }
+
+    public int getFormat() {
+        return format;
+    }
+
+    public int getPixelType() {
+        return pixelType;
     }
 
     // Ensure using in the render thread
-    public IntBuffer getPixels() {
-        IntBuffer pixels = BufferUtils.allocateDirect(width * height * Integer.BYTES * 4).asIntBuffer();
-        this.gl.glReadPixels(0, 0, width, height, GL3.GL_RGBA, GL3.GL_UNSIGNED_BYTE, pixels);
+    public IntBuffer getPixels(int level) {
+        IntBuffer pixels = BufferUtils.allocateDirect(width * height * Integer.BYTES * getChannelCount()).asIntBuffer();
+        this.gl.glGetTexImage(GL3.GL_TEXTURE_2D, level, this.internalFormat, this.pixelType, pixels);
         return pixels;
     }
 
@@ -113,5 +143,25 @@ public class Texture {
             ", width=" + width +
             ", height=" + height +
             '}';
+    }
+
+    public int getChannelCount() {
+        return switch (format) {
+            case GL3.GL_RGBA -> 4;
+            case GL3.GL_RGB -> 3;
+            case GL3.GL_LUMINANCE_ALPHA, GL3.GL_RG -> 2;
+            case GL3.GL_LUMINANCE, GL3.GL_RED -> 1;
+            default -> throw new IllegalArgumentException("Unsupported pixel format for pixel storage, pixel format: " + format);
+        };
+    }
+
+    public void setParameter(int type, IntBuffer value) {
+        gl.glTexParameteriv(GL3.GL_TEXTURE_2D, type, value);
+    }
+
+    public void setPixelInfo(int format, int pixelType) {
+        this.internalFormat = format;
+        this.format = format;
+        this.pixelType = pixelType;
     }
 }

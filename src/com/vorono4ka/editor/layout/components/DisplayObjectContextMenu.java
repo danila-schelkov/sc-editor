@@ -211,7 +211,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
                         stage.render(0);
 
                         ImageData imageData = Main.editor.getImageExporter().getCroppedFramebufferData(bounds, false);
-                        BufferedImage image = ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels());
+                        BufferedImage image = ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels(), false);
                         videoExporter.encodeFrame(image, frameIndex);
                     });
                 }

@@ -24,10 +24,14 @@ public class Framebuffer {
         this.id = generateId(gl);
 
         this.bind();
-        this.texture = new Texture(this.gl, this.width, this.height, GL3.GL_RGBA, GL3.GL_RGBA, GL3.GL_UNSIGNED_BYTE);
+        this.texture = new Texture(this.gl, this.width, this.height);
+        this.texture.bind();
+        this.texture.init(0, GL3.GL_RGBA, GL3.GL_RGBA, GL3.GL_UNSIGNED_BYTE, null);
         this.attachTexture(texture, GL3.GL_COLOR_ATTACHMENT0);
 
-        this.stencilTexture = new Texture(this.gl, this.width, this.height, GL3.GL_DEPTH24_STENCIL8, GL3.GL_DEPTH_STENCIL, GL3.GL_UNSIGNED_INT_24_8);
+        this.stencilTexture = new Texture(this.gl, this.width, this.height);
+        this.stencilTexture.bind();
+        this.stencilTexture.init(0, GL3.GL_DEPTH24_STENCIL8, GL3.GL_DEPTH_STENCIL, GL3.GL_UNSIGNED_INT_24_8, null);
         this.attachTexture(stencilTexture, GL3.GL_DEPTH_STENCIL_ATTACHMENT);
 
         // Note: it brokes the framebuffer rendering, so I've commented it out
@@ -97,9 +101,9 @@ public class Framebuffer {
      * @return integer array of pixels
      */
     public int[] getPixelArray(boolean flipY) {
-        bind();
-        IntBuffer pixels = texture.getPixels();
-        unbind();
+        texture.bind();
+        IntBuffer pixels = texture.getPixels(0);
+        texture.unbind();
 
         int[] pixelArray = BufferUtils.toArray(pixels);
 

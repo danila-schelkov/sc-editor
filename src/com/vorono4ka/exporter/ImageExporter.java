@@ -43,7 +43,7 @@ public class ImageExporter {
 
         ImageData imageData = getCroppedFramebufferData(bounds, false);
 
-        return ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels());
+        return ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels(), false);
     }
 
     /**
