@@ -21,7 +21,7 @@ public class FrameTableContextMenu extends ContextMenu {
         this.add("Goto and play", this::gotoAndPlay);
         this.add("Goto and stop", this::gotoAndStop);
 
-        this.popupMenu.addPopupMenuListener(new TablePopupMenuListener(this.popupMenu, table));
+        this.popupMenu.addPopupMenuListener(new TablePopupMenuListener(this.popupMenu, table, null));
     }
 
     private void gotoAndPlay(ActionEvent event) {

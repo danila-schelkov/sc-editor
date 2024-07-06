@@ -10,6 +10,7 @@ import com.vorono4ka.editor.layout.panels.status.TaskProgressTracker;
 import com.vorono4ka.editor.layout.windows.EditorWindow;
 import com.vorono4ka.editor.layout.windows.UsagesWindow;
 import com.vorono4ka.editor.renderer.Stage;
+import com.vorono4ka.exporter.ImageExporter;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
@@ -34,6 +35,8 @@ public class Editor {
     // For selection history
     private final List<DisplayObject> clonedObjects = new ArrayList<>();
     private final List<Integer> selectedIndices = new ArrayList<>();
+
+    private final ImageExporter imageExporter = new ImageExporter(Stage.getInstance());
 
     private int selectedIndex = -1;
 
@@ -225,6 +228,10 @@ public class Editor {
 
     public SupercellSWF getSwf() {
         return swf;
+    }
+
+    public ImageExporter getImageExporter() {
+        return imageExporter;
     }
 
     public EditorWindow getWindow() {

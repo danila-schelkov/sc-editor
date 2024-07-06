@@ -69,29 +69,9 @@ public class ViewMenu extends JMenu {
             StageSprite stageSprite = stage.getStageSprite();
             if (stageSprite.getChildrenCount() == 0) return;
 
-            DisplayObject child = stageSprite.getChild(0);
-            Rect bounds = stage.getDisplayObjectBounds(child);
-            if (child.isMovieClip()) {
-                MovieClip movieClip = (MovieClip) child;
+            Rect bounds = stage.calculateBoundsForAllFrames(stageSprite.getChild(0));
 
-                int currentFrame = movieClip.getCurrentFrame();
-                MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> bounds.mergeBounds(stage.getDisplayObjectBounds(movieClip)));
-                movieClip.gotoAbsoluteTimeRecursive(currentFrame * movieClip.getMsPerFrame());
-            }
-
-            camera.reset();
-
-            ReadonlyRect viewport = camera.getViewport();
-            float pointSize = Math.min(viewport.getWidth() / bounds.getWidth(), viewport.getHeight() / bounds.getHeight());
-
-            CameraZoom zoom = camera.getZoom();
-            zoom.setScaleStep(CameraZoom.estimateCurrentScaleStep(pointSize));
-            zoom.setPointSize(pointSize);
-
-            float offsetX = bounds.getMidX() - camera.getViewport().getMidX();
-            float offsetY = bounds.getMidY() - camera.getViewport().getMidY();
-
-            camera.addOffset(offsetX, offsetY);
+            camera.zoomToFit(bounds);
         });
     }
 

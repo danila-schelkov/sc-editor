@@ -77,4 +77,18 @@ public class Camera {
 
         return viewportY;
     }
+
+    public void zoomToFit(Rect bounds) {
+        reset();
+
+        float pointSize = Math.min(viewport.getWidth() / bounds.getWidth(), viewport.getHeight() / bounds.getHeight());
+
+        zoom.setScaleStep(CameraZoom.estimateCurrentScaleStep(pointSize));
+        zoom.setPointSize(pointSize);
+
+        float offsetX = bounds.getMidX() - viewport.getMidX();
+        float offsetY = bounds.getMidY() - viewport.getMidY();
+
+        addOffset(offsetX, offsetY);
+    }
 }
