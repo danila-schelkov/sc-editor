@@ -27,6 +27,8 @@ public class TextureTableContextMenu extends ContextMenu {
 
         JMenuItem exportButton = this.add("Export", KeyEvent.VK_E);
         exportButton.addActionListener(this::export);
+
+        this.popupMenu.addPopupMenuListener(new TablePopupMenuListener(this.popupMenu, table, this::onRowSelected));
     }
 
     private void export(ActionEvent actionEvent) {
@@ -61,5 +63,9 @@ public class TextureTableContextMenu extends ContextMenu {
                 }
             }
         });
+    }
+
+    private void onRowSelected(int rowIndex) {
+        setMainComponentsEnabled(rowIndex != -1);
     }
 }

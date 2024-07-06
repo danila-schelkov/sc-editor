@@ -3,22 +3,27 @@ package com.vorono4ka.editor.layout.components;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class ContextMenu {
     protected final JPopupMenu popupMenu;
+    protected final List<JComponent> mainComponents = new ArrayList<>();
 
     public ContextMenu(String label) {
-        this.popupMenu = new JPopupMenu(label);
+        popupMenu = new JPopupMenu(label);
     }
 
     public ContextMenu(Component component, String label) {
         this(label);
+
         this.linkTo(component);
     }
 
     public JMenu addMenu(String name) {
         JMenu menu = new JMenu(name);
-        this.popupMenu.add(menu);
+        mainComponents.add(menu);
+        popupMenu.add(menu);
         return menu;
     }
 
@@ -30,7 +35,8 @@ public abstract class ContextMenu {
 
     public JMenuItem add(String label) {
         JMenuItem item = new JMenuItem(label);
-        this.popupMenu.add(item);
+        mainComponents.add(item);
+        popupMenu.add(item);
         return item;
     }
 
@@ -63,7 +69,7 @@ public abstract class ContextMenu {
     }
 
     public void addSeparator() {
-        this.popupMenu.addSeparator();
+        popupMenu.addSeparator();
     }
 
     public void linkTo(Component component) {
@@ -82,7 +88,7 @@ public abstract class ContextMenu {
         });
     }
 
-    public JPopupMenu getPopupMenu() {
-        return popupMenu;
+    protected void setMainComponentsEnabled(boolean enabled) {
+        mainComponents.forEach(component -> component.setEnabled(enabled));
     }
 }

@@ -1,5 +1,7 @@
 package com.vorono4ka.editor.layout.components;
 
+import com.vorono4ka.utilities.ArrayUtilities;
+
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -21,11 +23,15 @@ public class TablePopupMenuListener implements PopupMenuListener {
         SwingUtilities.invokeLater(() -> {
             int rowAtPoint = table.rowAtPoint(SwingUtilities.convertPoint(popupMenu, new Point(0, 0), table));
             if (rowAtPoint > -1) {
-                table.setRowSelectionInterval(rowAtPoint, rowAtPoint);
+                boolean shouldUpdateValue = shouldUpdateValue(rowAtPoint);
 
-                if (rowSelectionAction != null) {
-                    rowSelectionAction.onRowSelected(rowAtPoint);
+                if (shouldUpdateValue) {
+                    table.setRowSelectionInterval(rowAtPoint, rowAtPoint);
                 }
+            }
+
+            if (rowSelectionAction != null) {
+                rowSelectionAction.onRowSelected(rowAtPoint);
             }
         });
     }
@@ -38,6 +44,19 @@ public class TablePopupMenuListener implements PopupMenuListener {
     @Override
     public void popupMenuCanceled(PopupMenuEvent e) {
 
+    }
+
+    private boolean shouldUpdateValue(int rowAtPoint) {
+        boolean shouldUpdateValue = true;
+
+        int selectionMode = table.getSelectionModel().getSelectionMode();
+        if (selectionMode == ListSelectionModel.SINGLE_INTERVAL_SELECTION) {
+            int[] selectedRows = table.getSelectedRows();
+            if (ArrayUtilities.contains(selectedRows, rowAtPoint)) {
+                shouldUpdateValue = false;
+            }
+        }
+        return shouldUpdateValue;
     }
 
     @FunctionalInterface

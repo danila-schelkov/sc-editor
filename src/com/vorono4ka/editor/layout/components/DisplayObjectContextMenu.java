@@ -30,6 +30,7 @@ import java.nio.file.Path;
 
 public class DisplayObjectContextMenu extends ContextMenu {
     public static final Clipboard SYSTEM_CLIPBOARD = Toolkit.getDefaultToolkit().getSystemClipboard();
+
     private final Table table;
     private final JMenuItem exportAsVideoButton;
     private final JMenu exportAsMenu;
@@ -70,6 +71,13 @@ public class DisplayObjectContextMenu extends ContextMenu {
     private void onRowSelected(int rowIndex) {
         SupercellSWF swf = Main.editor.getSwf();
         if (swf == null) return;
+
+        if (rowIndex != -1) {
+            setMainComponentsEnabled(true);
+        } else {
+            setMainComponentsEnabled(false);
+            return;
+        }
 
         int displayObjectId = getDisplayObjectId(rowIndex);
         try {
