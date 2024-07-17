@@ -17,12 +17,31 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>com.vorono4ka.editor.Main</mainClass>
+                            <classpathPrefix>libs/</classpathPrefix>
+                            <mainClass>
+                                com.vorono4ka.editor.Main
+                            </mainClass>
                         </manifest>
                     </archive>
                 </configuration>
             </plugin>
-            <!-- Add the assembly plugin with standard configuration -->
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>
+                                ${project.build.directory}/libs
+                            </outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
