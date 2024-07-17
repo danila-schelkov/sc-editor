@@ -9,16 +9,26 @@ public class ColorTransform implements Savable {
     private int redAddition;
     private int greenAddition;
     private int blueAddition;
+    private int alpha;
     private int redMultiplier;
     private int greenMultiplier;
     private int blueMultiplier;
-    private int alpha;
 
     public ColorTransform() {
         this.redMultiplier = 255;
         this.greenMultiplier = 255;
         this.blueMultiplier = 255;
         this.alpha = 255;
+    }
+
+    public ColorTransform(int redAddition, int greenAddition, int blueAddition, int alpha, int redMultiplier, int greenMultiplier, int blueMultiplier) {
+        this.redAddition = redAddition;
+        this.greenAddition = greenAddition;
+        this.blueAddition = blueAddition;
+        this.alpha = alpha;
+        this.redMultiplier = redMultiplier;
+        this.greenMultiplier = greenMultiplier;
+        this.blueMultiplier = blueMultiplier;
     }
 
     public ColorTransform(ColorTransform colorTransform) {
@@ -67,20 +77,23 @@ public class ColorTransform implements Savable {
         this.blueAddition = MathHelper.clamp(this.blueAddition + colorTransform.blueAddition, 0, 255);
     }
 
-    public void setMulColor(float red, float green, float blue) {
+    public ColorTransform setMulColor(float red, float green, float blue) {
         this.redMultiplier = (int) (MathHelper.clamp(red, 0f, 1f) * 255);
         this.greenMultiplier = (int) (MathHelper.clamp(green, 0f, 1f) * 255);
         this.blueMultiplier = (int) (MathHelper.clamp(blue, 0f, 1f) * 255);
+        return this;
     }
 
-    public void setAddColor(float red, float green, float blue) {
+    public ColorTransform setAddColor(float red, float green, float blue) {
         this.redAddition = (int) (MathHelper.clamp(red, 0f, 1f) * 255);
         this.greenAddition = (int) (MathHelper.clamp(green, 0f, 1f) * 255);
         this.blueAddition = (int) (MathHelper.clamp(blue, 0f, 1f) * 255);
+        return this;
     }
 
-    public void setAlpha(float alpha) {
+    public ColorTransform setAlpha(float alpha) {
         this.alpha = (int) (MathHelper.clamp(alpha, 0f, 1f) * 255);
+        return this;
     }
 
     public int getRedMultiplier() {
