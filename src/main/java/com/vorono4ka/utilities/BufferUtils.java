@@ -6,6 +6,13 @@ import java.nio.*;
 public final class BufferUtils {
     public static final ByteOrder NATIVE_ORDER = ByteOrder.nativeOrder();
 
+    public static byte[] toArray(ByteBuffer buffer) {
+        byte[] array = new byte[buffer.capacity()];
+        buffer.rewind();
+        buffer.get(array);
+        return array;
+    }
+
     public static int[] toArray(IntBuffer buffer) {
         int[] array = new int[buffer.capacity()];
         buffer.rewind();

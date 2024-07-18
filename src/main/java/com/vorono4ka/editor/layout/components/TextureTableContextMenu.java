@@ -5,7 +5,7 @@ import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.layout.panels.StatusBar;
 import com.vorono4ka.editor.layout.panels.status.TaskProgressTracker;
 import com.vorono4ka.editor.renderer.Stage;
-import com.vorono4ka.editor.renderer.Texture;
+import com.vorono4ka.editor.renderer.texture.Texture;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.utilities.BufferUtils;
 import com.vorono4ka.utilities.ImageUtils;

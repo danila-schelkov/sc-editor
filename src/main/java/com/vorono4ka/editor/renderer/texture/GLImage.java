@@ -1,23 +1,23 @@
-package com.vorono4ka.swf;
+package com.vorono4ka.editor.renderer.texture;
 
 import com.jogamp.opengl.GL3;
 import com.vorono4ka.editor.renderer.Stage;
-import com.vorono4ka.editor.renderer.Texture;
-import com.vorono4ka.swf.originalObjects.SWFTexture;
+import com.vorono4ka.editor.renderer.texture.khronos.KhronosTextureLoader;
 import com.vorono4ka.utilities.BufferUtils;
-import team.nulls.ntengine.assets.KhronosTexture;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 public class GLImage {
+    public static KhronosTextureLoader khronosTextureLoader;
+
     protected Texture texture;
     protected int width;
     protected int height;
     protected int pixelFormat;
 
-    private static void loadImage(Texture texture, Buffer pixels, int pixelFormat, int pixelType) {
+    public static void loadImage(Texture texture, Buffer pixels, int pixelFormat, int pixelType) {
         int error = texture.init(0, pixelFormat, pixelFormat, pixelType, pixels);
         if (error == GL3.GL_INVALID_ENUM && (pixelFormat == GL3.GL_LUMINANCE_ALPHA || pixelFormat == GL3.GL_LUMINANCE)) {
             IntBuffer swizzleMask = null;
@@ -44,17 +44,18 @@ public class GLImage {
         }
     }
 
-    private static void loadKtx(Texture texture, KhronosTexture ktx) {
-        if (ktx.glFormat() != 0) {
-            for (int level = 0; level < ktx.levels().length; level++) {
-                texture.init(level, ktx.glInternalFormat(), ktx.glFormat(), GL3.GL_UNSIGNED_INT, ktx.levels()[level]);
+    private static void loadKhronosTexture(Texture texture, ByteBuffer khronosTextureFileData) {
+        if (khronosTextureLoader != null) {
+            try {
+                khronosTextureLoader.load(texture, khronosTextureFileData);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
-        } else {
-            for (int level = 0; level < ktx.levels().length; level++) {
-                ByteBuffer data = ktx.levels()[level];
-                texture.initCompressed(level, ktx.glInternalFormat(), ktx.glBaseInternalFormat(), ktx.width(), ktx.height(), data);
-            }
+
+            return;
         }
+
+        throw new RuntimeException("Khronos textures aren't supported on your device");
     }
 
     public int getWidth() {
@@ -77,7 +78,7 @@ public class GLImage {
         return texture.getId();
     }
 
-    public void createWithFormat(KhronosTexture ktx, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
+    public void createWithFormat(ByteBuffer khronosTextureFileData, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
         Stage stage = Stage.getInstance();
         GL3 gl = stage.getGl();
 
@@ -119,8 +120,8 @@ public class GLImage {
             texture.setWrap(clampToEdge ? GL3.GL_CLAMP_TO_EDGE : GL3.GL_REPEAT);
             texture.setFilters(minFilter, magFilter);
 
-            if (ktx != null) {
-                loadKtx(texture, ktx);
+            if (khronosTextureFileData != null) {
+                loadKhronosTexture(texture, khronosTextureFileData);
             } else {
                 loadImage(texture, pixels, pixelFormat, pixelType);
             }

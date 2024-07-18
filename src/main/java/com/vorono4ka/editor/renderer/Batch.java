@@ -1,6 +1,7 @@
 package com.vorono4ka.editor.renderer;
 
 import com.jogamp.opengl.GL3;
+import com.vorono4ka.editor.renderer.texture.Texture;
 import com.vorono4ka.utilities.BufferUtils;
 
 import java.nio.FloatBuffer;

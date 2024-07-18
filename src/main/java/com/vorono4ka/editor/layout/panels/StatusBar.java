@@ -40,6 +40,8 @@ public class StatusBar extends JPanel {
     public void setStatus(String status) {
         if (status == null) {
             status = "Idling...";
+        } else {
+            System.out.println(status);
         }
 
         progressBarLabel.setText("Status: " + status);
