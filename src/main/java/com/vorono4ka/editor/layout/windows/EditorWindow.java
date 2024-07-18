@@ -4,7 +4,7 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
-import com.vorono4ka.editor.layout.components.Canvas;
+import com.vorono4ka.editor.layout.components.EditorCanvas;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.menubar.EditorMenuBar;
 import com.vorono4ka.editor.layout.panels.DisplayObjectListPanel;
@@ -29,7 +29,7 @@ public class EditorWindow extends Window {
     public static final Dimension MINIMUM_SIZE = new Dimension(CANVAS_SIZE);
 
     private EditorMenuBar menubar;
-    private GLCanvas canvas;
+    private EditorCanvas canvas;
     private EditorInfoPanel infoPanel;
     private TexturesPanel texturesPanel;
     private DisplayObjectListPanel displayObjectPanel;
@@ -39,6 +39,46 @@ public class EditorWindow extends Window {
     private StatusBar statusBar;
     private FPSAnimator fpsAnimator;
     private int targetFps;
+
+    private static JPanel createInfoPanel(DisplayObject displayObject) {
+        if (displayObject.isMovieClip()) {
+            MovieClip movieClip = (MovieClip) displayObject;
+
+            MovieClipInfoPanel movieClipInfoPanel = new MovieClipInfoPanel();
+
+            DisplayObject[] timelineChildren = movieClip.getTimelineChildren();
+            String[] timelineChildrenNames = movieClip.getTimelineChildrenNames();
+            for (int i = 0; i < timelineChildren.length; i++) {
+                movieClipInfoPanel.addTimelineChild(String.format("%d (%s)", i, timelineChildren[i].getClass().getSimpleName()), timelineChildren[i].getId(), timelineChildrenNames[i]);
+            }
+
+            MovieClipFrame[] frames = movieClip.getFrames();
+            for (int i = 0; i < frames.length; i++) {
+                movieClipInfoPanel.addFrame(i, movieClip.getFrameLabel(i));
+            }
+
+            movieClipInfoPanel.setTextInfo(
+                "Export name: " + movieClip.getExportName(),
+                "FPS: " + movieClip.getFps(),
+                String.format("Duration: %.2fs", movieClip.getDuration())
+            );
+
+            return movieClipInfoPanel;
+        } else if (displayObject.isShape()) {
+            ShapeInfoPanel shapeInfoPanel = new ShapeInfoPanel();
+
+            Shape shape = (Shape) displayObject;
+
+            for (int i = 0; i < shape.getCommandCount(); i++) {
+                ShapeDrawBitmapCommand command = shape.getCommand(i);
+                shapeInfoPanel.addCommandInfo(i, command.getTexture().getIndex(), command.getTag());
+            }
+
+            return shapeInfoPanel;
+        }
+
+        return null;
+    }
 
     public void initialize(String title) {
         this.frame = new JFrame(title);
@@ -52,7 +92,7 @@ public class EditorWindow extends Window {
         this.texturesPanel = new TexturesPanel();
         this.infoPanel = new EditorInfoPanel();
         this.tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
-        this.canvas = new Canvas(capabilities);
+        this.canvas = new EditorCanvas(capabilities);
         this.timelinePanel = new TimelinePanel();
         this.timelineSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, this.canvas, this.timelinePanel);
 
@@ -124,6 +164,10 @@ public class EditorWindow extends Window {
         return this.displayObjectPanel;
     }
 
+    public int getTargetFps() {
+        return targetFps;
+    }
+
     public void setTargetFps(int fps) {
         if (fps == targetFps) return;
 
@@ -132,10 +176,6 @@ public class EditorWindow extends Window {
         fpsAnimator.stop();
         fpsAnimator.setFPS(fps);
         fpsAnimator.start();
-    }
-
-    public int getTargetFps() {
-        return targetFps;
     }
 
     public void updateInfoPanel(DisplayObject displayObject) {
@@ -148,46 +188,6 @@ public class EditorWindow extends Window {
 
             panel.getFramesTable().select(currentFrame);
         }
-    }
-
-    private static JPanel createInfoPanel(DisplayObject displayObject) {
-        if (displayObject.isMovieClip()) {
-            MovieClip movieClip = (MovieClip) displayObject;
-
-            MovieClipInfoPanel movieClipInfoPanel = new MovieClipInfoPanel();
-
-            DisplayObject[] timelineChildren = movieClip.getTimelineChildren();
-            String[] timelineChildrenNames = movieClip.getTimelineChildrenNames();
-            for (int i = 0; i < timelineChildren.length; i++) {
-                movieClipInfoPanel.addTimelineChild(String.format("%d (%s)", i, timelineChildren[i].getClass().getSimpleName()), timelineChildren[i].getId(), timelineChildrenNames[i]);
-            }
-
-            MovieClipFrame[] frames = movieClip.getFrames();
-            for (int i = 0; i < frames.length; i++) {
-                movieClipInfoPanel.addFrame(i, movieClip.getFrameLabel(i));
-            }
-
-            movieClipInfoPanel.setTextInfo(
-                "Export name: " + movieClip.getExportName(),
-                "FPS: " + movieClip.getFps(),
-                String.format("Duration: %.2fs", movieClip.getDuration())
-            );
-
-            return movieClipInfoPanel;
-        } else if (displayObject.isShape()) {
-            ShapeInfoPanel shapeInfoPanel = new ShapeInfoPanel();
-
-            com.vorono4ka.swf.displayObjects.Shape shape = (Shape) displayObject;
-
-            for (int i = 0; i < shape.getCommandCount(); i++) {
-                ShapeDrawBitmapCommand command = shape.getCommand(i);
-                shapeInfoPanel.addCommandInfo(i, command.getTexture().getIndex(), command.getTag());
-            }
-
-            return shapeInfoPanel;
-        }
-
-        return null;
     }
 
     public StatusBar getStatusBar() {

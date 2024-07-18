@@ -1,8 +1,6 @@
 package com.vorono4ka.editor.layout.panels.info;
 
 import com.vorono4ka.editor.layout.components.Table;
-import com.vorono4ka.editor.layout.listeners.ChildrenListMouseListener;
-import com.vorono4ka.editor.layout.listeners.FrameSelectionListener;
 
 import javax.swing.*;
 import java.awt.*;

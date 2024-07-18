@@ -38,7 +38,7 @@ public class InWindow {
 		if (_streamEndWasReached)
 			return;
 		while (true) {
-			int size = (0 - _bufferOffset) + _blockSize - _streamPos;
+			int size = (-_bufferOffset) + _blockSize - _streamPos;
 			if (size == 0)
 				return;
 			int numReadBytes = _stream.read(_bufferBase, _bufferOffset + _streamPos, size);

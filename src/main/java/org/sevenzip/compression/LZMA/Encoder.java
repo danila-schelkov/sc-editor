@@ -1,8 +1,9 @@
 package org.sevenzip.compression.LZMA;
 
-import org.sevenzip.compression.RangeCoder.BitTreeEncoder;
-import org.sevenzip.compression.LZ.BinTree;
 import org.sevenzip.ICodeProgress;
+import org.sevenzip.compression.LZ.BinTree;
+import org.sevenzip.compression.RangeCoder.BitTreeEncoder;
+
 import java.io.IOException;
 
 public class Encoder {

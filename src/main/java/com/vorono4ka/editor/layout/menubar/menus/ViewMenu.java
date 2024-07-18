@@ -4,14 +4,9 @@ import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.layout.panels.TimelinePanel;
 import com.vorono4ka.editor.layout.windows.EditorWindow;
 import com.vorono4ka.editor.renderer.Camera;
-import com.vorono4ka.editor.renderer.CameraZoom;
 import com.vorono4ka.editor.renderer.Stage;
-import com.vorono4ka.math.ReadonlyRect;
 import com.vorono4ka.math.Rect;
-import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.MovieClip;
 import com.vorono4ka.swf.displayObjects.StageSprite;
-import com.vorono4ka.utilities.MovieClipHelper;
 
 import javax.swing.*;
 import java.awt.*;

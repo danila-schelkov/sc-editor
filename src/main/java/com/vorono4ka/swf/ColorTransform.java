@@ -58,13 +58,13 @@ public class ColorTransform implements Savable {
     }
 
     public void multiply(ColorTransform colorTransform) {
-        this.redMultiplier *= colorTransform.redMultiplier / 255f;
-        this.greenMultiplier *= colorTransform.greenMultiplier / 255f;
-        this.blueMultiplier *= colorTransform.blueMultiplier / 255f;
-        this.alpha *= colorTransform.alpha / 255f;
-        this.redAddition = Math.min(this.redAddition + colorTransform.redAddition, 255);
-        this.greenAddition = Math.min(this.greenAddition + colorTransform.greenAddition, 255);
-        this.blueAddition = Math.min(this.blueAddition + colorTransform.blueAddition, 255);
+        this.redMultiplier = (int) MathHelper.clamp(this.redMultiplier * colorTransform.redMultiplier / 255f, 0, 255);
+        this.greenMultiplier = (int) MathHelper.clamp(this.greenMultiplier * colorTransform.greenMultiplier / 255f, 0, 255);
+        this.blueMultiplier = (int) MathHelper.clamp(this.blueMultiplier * colorTransform.blueMultiplier / 255f, 0, 255);
+        this.alpha = (int) MathHelper.clamp(this.alpha * colorTransform.alpha / 255f, 0, 255);
+        this.redAddition = MathHelper.clamp(this.redAddition + colorTransform.redAddition, 0, 255);
+        this.greenAddition = MathHelper.clamp(this.greenAddition + colorTransform.greenAddition, 0, 255);
+        this.blueAddition = MathHelper.clamp(this.blueAddition + colorTransform.blueAddition, 0, 255);
     }
 
     public void setMulColor(float red, float green, float blue) {

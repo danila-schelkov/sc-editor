@@ -3,3 +3,4 @@
 *.iml
 
 screenshots/
+/target/
