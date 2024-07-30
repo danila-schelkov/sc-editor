@@ -105,8 +105,8 @@ public class Editor {
         editMenu.checkNextAvailable();
 
         if (this.swf != null) {
-            int[] textureIds = new int[this.swf.getTexturesCount()];
-            for (int i = 0; i < this.swf.getTexturesCount(); i++) {
+            int[] textureIds = new int[this.swf.getTextureCount()];
+            for (int i = 0; i < this.swf.getTextureCount(); i++) {
                 textureIds[i] = this.swf.getTexture(i).getTextureId();
             }
 
@@ -197,9 +197,9 @@ public class Editor {
 
         Table objectsTable = usagesWindow.getObjectsTable();
 
-        int[] ids = this.swf.getMovieClipsIds();
+        Integer[] ids = this.swf.getMovieClipsIds();
         try {
-            for (int i = 0; i < this.swf.getMovieClipsCount(); i++) {
+            for (int i = 0; i < this.swf.getMovieClipCount(); i++) {
                 int movieClipId = ids[i];
 
                 MovieClipOriginal movieClipOriginal = this.swf.getOriginalMovieClip(movieClipId, null);
@@ -266,7 +266,7 @@ public class Editor {
         Table texturesTable = this.window.getTexturesTable();
         StatusBar statusBar = this.window.getStatusBar();
 
-        int texturesCount = this.swf.getTexturesCount();
+        int texturesCount = this.swf.getTextureCount();
         try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Loading textures table...", 0, texturesCount)) {
             for (int i = 0; i < texturesCount; i++) {
                 SWFTexture texture = this.swf.getTexture(i);
@@ -285,7 +285,7 @@ public class Editor {
 
         StatusBar statusBar = this.window.getStatusBar();
 
-        int[] movieClipsIds = this.swf.getMovieClipsIds();
+        Integer[] movieClipsIds = this.swf.getMovieClipsIds();
         try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Collecting MovieClip info...", 0, movieClipsIds.length)) {
             for (int i = 0; i < movieClipsIds.length; i++) {
                 int movieClipId = movieClipsIds[i];
@@ -301,7 +301,7 @@ public class Editor {
             }
         }
 
-        int[] shapesIds = this.swf.getShapesIds();
+        Integer[] shapesIds = this.swf.getShapesIds();
         try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Collecting Shape info...", 0, shapesIds.length)) {
             for (int i = 0; i < shapesIds.length; i++) {
                 int shapesId = shapesIds[i];
@@ -310,7 +310,7 @@ public class Editor {
             }
         }
 
-        int[] textFieldsIds = this.swf.getTextFieldsIds();
+        Integer[] textFieldsIds = this.swf.getTextFieldsIds();
         try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Collecting TextField info...", 0, textFieldsIds.length)) {
             for (int i = 0; i < textFieldsIds.length; i++) {
                 int textFieldId = textFieldsIds[i];

@@ -35,22 +35,17 @@ public class SupercellSWF {
 
     private ByteStream stream;
 
-    private int shapesCount;
-    private int movieClipsCount;
-    private int texturesCount;
-    private int textFieldsCount;
-    private int movieClipModifiersCount;
+    private int shapeCount;
+    private int movieClipCount;
+    private int textureCount;
+    private int textFieldCount;
 
-    private short[] exportsIds;
-    private String[] exportsNames;
+    private Export[] exports;
 
     private SWFTexture[] textures = new SWFTexture[0];
     private ShapeOriginal[] shapes;
-    private int[] shapesIds;
     private MovieClipOriginal[] movieClips;
-    private int[] movieClipsIds;
     private TextFieldOriginal[] textFields;
-    private int[] textFieldsIds;
 
     private MovieClipModifierOriginal[] movieClipModifiers;
 
@@ -110,60 +105,62 @@ public class SupercellSWF {
             return this.loadTags(true, path);
         }
 
-        this.shapesCount = this.readShort();
-        this.movieClipsCount = this.readShort();
-        this.texturesCount = this.readShort();
-        this.textFieldsCount = this.readShort();
-        int matricesCount = this.readShort();
-        int colorTransformsCount = this.readShort();
+        this.shapeCount = this.readShort();
+        this.movieClipCount = this.readShort();
+        this.textureCount = this.readShort();
+        this.textFieldCount = this.readShort();
+        int matrixCount = this.readShort();
+        int colorTransformCount = this.readShort();
 
         ScMatrixBank matrixBank = new ScMatrixBank();
-        matrixBank.init(matricesCount, colorTransformsCount);
+        matrixBank.init(matrixCount, colorTransformCount);
         this.matrixBanks.add(matrixBank);
 
         this.skip(5);
 
-        int exportsCount = this.readShort();
-        this.exportsIds = this.readShortArray(exportsCount);
+        int exportCount = this.readShort();
 
-        this.exportsNames = new String[exportsCount];
-        for (int i = 0; i < exportsCount; i++) {
-            this.exportsNames[i] = this.readAscii();
+        short[] exportIds = this.readShortArray(exportCount);
+
+        String[] exportNames = new String[exportCount];
+        for (int i = 0; i < exportCount; i++) {
+            exportNames[i] = this.readAscii();
         }
 
-        this.shapesIds = new int[this.shapesCount];
-        this.movieClipsIds = new int[this.movieClipsCount];
-        this.textFieldsIds = new int[this.textFieldsCount];
+        this.exports = new Export[exportCount];
+        for (int i = 0; i < exportCount; i++) {
+            exports[i] = new Export(exportIds[i], exportNames[i]);
+        }
 
-        this.shapes = new ShapeOriginal[this.shapesCount];
-        for (int i = 0; i < this.shapesCount; i++) {
+        this.shapes = new ShapeOriginal[this.shapeCount];
+        for (int i = 0; i < this.shapeCount; i++) {
             this.shapes[i] = new ShapeOriginal();
         }
 
-        this.movieClips = new MovieClipOriginal[this.movieClipsCount];
-        for (int i = 0; i < this.movieClipsCount; i++) {
+        this.movieClips = new MovieClipOriginal[this.movieClipCount];
+        for (int i = 0; i < this.movieClipCount; i++) {
             this.movieClips[i] = new MovieClipOriginal();
         }
 
-        this.textures = new SWFTexture[this.texturesCount];
-        for (int i = 0; i < this.texturesCount; i++) {
+        this.textures = new SWFTexture[this.textureCount];
+        for (int i = 0; i < this.textureCount; i++) {
             this.textures[i] = new SWFTexture();
         }
 
-        this.textFields = new TextFieldOriginal[this.textFieldsCount];
-        for (int i = 0; i < this.textFieldsCount; i++) {
+        this.textFields = new TextFieldOriginal[this.textFieldCount];
+        for (int i = 0; i < this.textFieldCount; i++) {
             this.textFields[i] = new TextFieldOriginal();
         }
 
         if (this.loadTags(false, path)) {
-            for (int i = 0; i < exportsCount; i++) {
-                String exportName = this.exportsNames[i];
-                MovieClipOriginal movieClip = this.getOriginalMovieClip(this.exportsIds[i] & 0xFFFF, exportName);
-                movieClip.setExportName(exportName);
+            for (Export export : exports) {
+                MovieClipOriginal movieClip = this.getOriginalMovieClip(export.id() & 0xFFFF, export.name());
+                movieClip.setExportName(export.name());
             }
 
             return true;
         }
+
         return false;
     }
 
@@ -207,53 +204,51 @@ public class SupercellSWF {
             switch (tagValue) {
                 case EOF -> {
                     if (isTextureFile) {
-                        if (loadedTextures != this.texturesCount) {
+                        if (loadedTextures != this.textureCount) {
                             throw new LoadingFaultException(String.format("Texture count in .sc and _tex.sc doesn't match: %s", this.filename));
                         }
                     } else {
-                        if (loadedMatrices != matrixBank.getMatricesCount() ||
-                            loadedColorTransforms != matrixBank.getColorTransformsCount() ||
-                            loadedMovieClips != this.movieClipsCount ||
-                            loadedShapes != this.shapesCount ||
-                            loadedTextFields != this.textFieldsCount) {
+                        if (loadedMatrices != matrixBank.getMatrixCount() ||
+                            loadedColorTransforms != matrixBank.getColorTransformCount() ||
+                            loadedMovieClips != this.movieClipCount ||
+                            loadedShapes != this.shapeCount ||
+                            loadedTextFields != this.textFieldCount) {
                             throw new LoadingFaultException("Didn't load whole .sc properly. ");
                         }
                     }
 
                     return true;
                 }
-                case TEXTURE, TEXTURE_2, TEXTURE_3, TEXTURE_4, TEXTURE_5, TEXTURE_6,
-                     TEXTURE_7, TEXTURE_8, KHRONOS_TEXTURE,
-                     COMPRESSED_KHRONOS_TEXTURE -> {
-                    if (loadedTextures >= this.texturesCount) {
+                case TEXTURE, TEXTURE_2, TEXTURE_3, TEXTURE_4, TEXTURE_5, TEXTURE_6, TEXTURE_7, TEXTURE_8, KHRONOS_TEXTURE, COMPRESSED_KHRONOS_TEXTURE -> {
+                    if (loadedTextures >= this.textureCount) {
                         throw new TooManyObjectsException("Trying to load too many textures from ");
                     }
                     this.textures[loadedTextures].setIndex(loadedTextures);
                     this.textures[loadedTextures++].load(this, tagValue, !this.useExternalTexture || isTextureFile);
                 }
                 case SHAPE, SHAPE_2 -> {
-                    if (loadedShapes >= this.shapesCount) {
+                    if (loadedShapes >= this.shapeCount) {
                         throw new TooManyObjectsException("Trying to load too many shapes from ");
                     }
-                    this.shapesIds[loadedShapes] = this.shapes[loadedShapes++].load(this, tagValue);
+
+                    this.shapes[loadedShapes++].load(this, tagValue);
                 }
-                case MOVIE_CLIP, MOVIE_CLIP_2, MOVIE_CLIP_3, MOVIE_CLIP_4, MOVIE_CLIP_5,
-                     MOVIE_CLIP_6 -> {
-                    if (loadedMovieClips >= this.movieClipsCount) {
+                case MOVIE_CLIP, MOVIE_CLIP_2, MOVIE_CLIP_3, MOVIE_CLIP_4, MOVIE_CLIP_5, MOVIE_CLIP_6 -> {
+                    if (loadedMovieClips >= this.movieClipCount) {
                         throw new TooManyObjectsException("Trying to load too many MovieClips from ");
                     }
-                    this.movieClipsIds[loadedMovieClips] = this.movieClips[loadedMovieClips++].load(this, tagValue);
+
+                    this.movieClips[loadedMovieClips++].load(this, tagValue);
                 }
-                case TEXT_FIELD, TEXT_FIELD_2, TEXT_FIELD_3, TEXT_FIELD_4, TEXT_FIELD_5,
-                     TEXT_FIELD_6, TEXT_FIELD_7, TEXT_FIELD_8, TEXT_FIELD_9 -> {
-                    if (loadedTextFields >= this.textFieldsCount) {
+                case TEXT_FIELD, TEXT_FIELD_2, TEXT_FIELD_3, TEXT_FIELD_4, TEXT_FIELD_5, TEXT_FIELD_6, TEXT_FIELD_7, TEXT_FIELD_8, TEXT_FIELD_9 -> {
+                    if (loadedTextFields >= this.textFieldCount) {
                         throw new TooManyObjectsException("Trying to load too many TextFields from ");
                     }
-                    this.textFieldsIds[loadedTextFields] = this.textFields[loadedTextFields++].load(this, tagValue);
+
+                    this.textFields[loadedTextFields++].load(this, tagValue);
                 }
                 case MATRIX -> matrixBank.getMatrix(loadedMatrices++).load(this, false);
-                case COLOR_TRANSFORM ->
-                    matrixBank.getColorTransforms(loadedColorTransforms++).read(this.stream);
+                case COLOR_TRANSFORM -> matrixBank.getColorTransform(loadedColorTransforms++).read(this.stream);
                 case TAG_TIMELINE_INDEXES -> {
                     try {
                         throw new UnsupportedTagException("TAG_TIMELINE_INDEXES no longer in use");
@@ -287,24 +282,22 @@ public class SupercellSWF {
                     highresSuffix = this.readAscii();
                     lowresSuffix = this.readAscii();
                 }
-                case MATRIX_PRECISE ->
-                    matrixBank.getMatrix(loadedMatrices++).load(this, true);
+                case MATRIX_PRECISE -> matrixBank.getMatrix(loadedMatrices++).load(this, true);
                 case MOVIE_CLIP_MODIFIERS -> {
-                    this.movieClipModifiersCount = this.readShort();
-                    this.movieClipModifiers = new MovieClipModifierOriginal[this.movieClipModifiersCount];
+                    int movieClipModifierCount = this.readShort();
+                    this.movieClipModifiers = new MovieClipModifierOriginal[movieClipModifierCount];
 
-                    for (int i = 0; i < this.movieClipModifiersCount; i++) {
+                    for (int i = 0; i < movieClipModifierCount; i++) {
                         this.movieClipModifiers[i] = new MovieClipModifierOriginal();
                     }
                 }
-                case MODIFIER_STATE_2, MODIFIER_STATE_3, MODIFIER_STATE_4 ->
-                    this.movieClipModifiers[loadedMovieClipsModifiers++].load(this, tagValue);
+                case MODIFIER_STATE_2, MODIFIER_STATE_3, MODIFIER_STATE_4 -> this.movieClipModifiers[loadedMovieClipsModifiers++].load(this, tagValue);
                 case EXTRA_MATRIX_BANK -> {
-                    int matricesCount = this.readShort();
-                    int colorTransformsCount = this.readShort();
+                    int matrixCount = this.readShort();
+                    int colorTransformCount = this.readShort();
 
                     matrixBank = new ScMatrixBank();
-                    matrixBank.init(matricesCount, colorTransformsCount);
+                    matrixBank.init(matrixCount, colorTransformCount);
                     this.matrixBanks.add(matrixBank);
 
                     loadedMatrices = 0;
@@ -359,22 +352,22 @@ public class SupercellSWF {
     }
 
     private void saveObjectsInfo(ByteStream stream) {
-        stream.writeShort(this.getShapesCount());
-        stream.writeShort(this.getMovieClipsCount());
-        stream.writeShort(this.getTexturesCount());
-        stream.writeShort(this.getTextFieldsCount());
-        stream.writeShort(this.matrixBanks.get(0).getMatricesCount());
-        stream.writeShort(this.matrixBanks.get(0).getColorTransformsCount());
+        stream.writeShort(this.shapes.length);
+        stream.writeShort(this.movieClips.length);
+        stream.writeShort(this.textures.length);
+        stream.writeShort(this.textFields.length);
+        stream.writeShort(this.matrixBanks.get(0).getMatrixCount());
+        stream.writeShort(this.matrixBanks.get(0).getColorTransformCount());
 
         stream.write(new byte[5]);  // unused
 
-        stream.writeShort(this.getExportsCount());
-        for (int i = 0; i < this.getExportsCount(); i++) {
-            stream.writeShort(this.exportsIds[i]);
+        stream.writeShort(this.exports.length);
+        for (Export export : exports) {
+            stream.writeShort(export.id());
         }
 
-        for (int i = 0; i < this.getExportsCount(); i++) {
-            stream.writeAscii(this.exportsNames[i]);
+        for (Export export : exports) {
+            stream.writeAscii(export.name());
         }
     }
 
@@ -385,12 +378,11 @@ public class SupercellSWF {
             stream.writeBlock(object.getTag(), object::save);
         }
 
-        stream.writeBlock(Tag.EOF, (ignored) -> {
-        });
+        stream.writeBlock(Tag.EOF, (ignored) -> {});
     }
 
     private List<Savable> getSavableObjects() {
-        ArrayList<Savable> objects = new ArrayList<>();
+        List<Savable> objects = new ArrayList<>();
 
         if (this.isHalfScalePossible()) {
             objects.add(new Savable() {
@@ -429,8 +421,8 @@ public class SupercellSWF {
                 objects.add(new Savable() {
                     @Override
                     public void save(ByteStream stream) {
-                        stream.writeShort(matrixBank.getMatricesCount());
-                        stream.writeShort(matrixBank.getColorTransformsCount());
+                        stream.writeShort(matrixBank.getMatrixCount());
+                        stream.writeShort(matrixBank.getColorTransformCount());
                     }
 
                     @Override
@@ -446,11 +438,11 @@ public class SupercellSWF {
         objects.addAll(List.of(this.textFields));
         objects.addAll(List.of(this.movieClips));
 
-        if (this.getMovieClipModifiersCount() > 0) {
+        if (this.movieClipModifiers != null && this.movieClipModifiers.length > 0) {
             objects.add(new Savable() {
                 @Override
                 public void save(ByteStream stream) {
-                    stream.writeShort(getMovieClipModifiersCount());
+                    stream.writeShort(movieClipModifiers.length);
                 }
 
                 @Override
@@ -466,9 +458,9 @@ public class SupercellSWF {
     }
 
     public MovieClipOriginal getOriginalMovieClip(int id, String name) throws UnableToFindObjectException {
-        for (int i = 0; i < this.movieClipsCount; i++) {
-            if (this.movieClipsIds[i] == id) {
-                return this.movieClips[i];
+        for (MovieClipOriginal movieClip : this.movieClips) {
+            if (movieClip.getId() == id) {
+                return movieClip;
             }
         }
 
@@ -481,27 +473,27 @@ public class SupercellSWF {
     }
 
     public DisplayObjectOriginal getOriginalDisplayObject(int id, String name) throws UnableToFindObjectException {
-        for (int i = 0; i < this.shapesCount; i++) {
-            if (this.shapesIds[i] == id) {
-                return this.shapes[i];
+        for (ShapeOriginal shape : this.shapes) {
+            if (shape.getId() == id) {
+                return shape;
             }
         }
 
-        for (int i = 0; i < this.movieClipsCount; i++) {
-            if (this.movieClipsIds[i] == id) {
-                return this.movieClips[i];
+        for (MovieClipOriginal movieClip : this.movieClips) {
+            if (movieClip.getId() == id) {
+                return movieClip;
             }
         }
 
-        for (int i = 0; i < this.textFieldsCount; i++) {
-            if (this.textFieldsIds[i] == id) {
-                return this.textFields[i];
+        for (TextFieldOriginal textField : textFields) {
+            if (textField.getId() == id) {
+                return textField;
             }
         }
 
-        for (int i = 0; i < this.movieClipModifiersCount; i++) {
-            if (this.movieClipModifiers[i].getId() == id) {
-                return this.movieClipModifiers[i];
+        for (MovieClipModifierOriginal movieClipModifier : movieClipModifiers) {
+            if (movieClipModifier.getId() == id) {
+                return movieClipModifier;
             }
         }
 
@@ -513,40 +505,24 @@ public class SupercellSWF {
         throw new UnableToFindObjectException(message);
     }
 
-    public int getShapesCount() {
-        return this.shapes.length;
-    }
-
-    public int getMovieClipsCount() {
+    public int getMovieClipCount() {
         return this.movieClips.length;
     }
 
-    public int getTexturesCount() {
+    public int getTextureCount() {
         return this.textures.length;
     }
 
-    public int getTextFieldsCount() {
-        return this.textFields.length;
+    public Integer[] getShapesIds() {
+        return Arrays.stream(shapes).map(DisplayObjectOriginal::getId).toArray(Integer[]::new);
     }
 
-    public int getMovieClipModifiersCount() {
-        return this.movieClipModifiers != null ? this.movieClipModifiers.length : 0;
+    public Integer[] getMovieClipsIds() {
+        return Arrays.stream(movieClips).map(DisplayObjectOriginal::getId).toArray(Integer[]::new);
     }
 
-    public int getExportsCount() {
-        return this.exportsNames.length;
-    }
-
-    public int[] getShapesIds() {
-        return shapesIds;
-    }
-
-    public int[] getMovieClipsIds() {
-        return movieClipsIds;
-    }
-
-    public int[] getTextFieldsIds() {
-        return textFieldsIds;
+    public Integer[] getTextFieldsIds() {
+        return Arrays.stream(textFields).map(DisplayObjectOriginal::getId).toArray(Integer[]::new);
     }
 
     public ScMatrixBank getMatrixBank(int index) {

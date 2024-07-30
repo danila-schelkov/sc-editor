@@ -7,18 +7,14 @@ public class ScMatrixBank {
     private List<Matrix2x3> matrices;
     private List<ColorTransform> colorTransforms;
 
-    public ScMatrixBank() {
-
-    }
-
-    public void init(int matricesCount, int colorTransformsCount) {
-        this.matrices = new ArrayList<>(matricesCount);
-        for (int i = 0; i < matricesCount; i++) {
+    public void init(int matrixCount, int colorTransformCount) {
+        this.matrices = new ArrayList<>(matrixCount);
+        for (int i = 0; i < matrixCount; i++) {
             this.matrices.add(i, new Matrix2x3());
         }
 
-        this.colorTransforms = new ArrayList<>(colorTransformsCount);
-        for (int i = 0; i < colorTransformsCount; i++) {
+        this.colorTransforms = new ArrayList<>(colorTransformCount);
+        for (int i = 0; i < colorTransformCount; i++) {
             this.colorTransforms.add(i, new ColorTransform());
         }
     }
@@ -35,15 +31,15 @@ public class ScMatrixBank {
         return this.matrices.get(index);
     }
 
-    public ColorTransform getColorTransforms(int index) {
+    public ColorTransform getColorTransform(int index) {
         return this.colorTransforms.get(index);
     }
 
-    public int getMatricesCount() {
+    public int getMatrixCount() {
         return this.matrices.size();
     }
 
-    public int getColorTransformsCount() {
+    public int getColorTransformCount() {
         return this.colorTransforms.size();
     }
 }

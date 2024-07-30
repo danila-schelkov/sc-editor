@@ -142,7 +142,7 @@ public class MovieClip extends Sprite {
 
             int colorTransformIndex = element.getColorTransformIndex();
             if (colorTransformIndex != 0xFFFF) {
-                ColorTransform colorTransform = this.matrixBank.getColorTransforms(colorTransformIndex);
+                ColorTransform colorTransform = this.matrixBank.getColorTransform(colorTransformIndex);
                 child.setColorTransform(new ColorTransform(colorTransform));
             } else {
                 child.setColorTransform(new ColorTransform());
