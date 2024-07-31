@@ -1,8 +1,10 @@
 package com.vorono4ka.editor.renderer;
 
 import com.jogamp.opengl.GL3;
+import com.vorono4ka.utilities.BufferUtils;
 
-import java.util.Arrays;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 public class Batch {
     public static final int SIZE = 512;
@@ -13,8 +15,8 @@ public class Batch {
     private final int stencilRenderingState;
     private final int vertexSize, vertexSizeInBytes;
 
-    private float[] vertices;
-    private int[] indices;
+    private FloatBuffer vertices;
+    private IntBuffer indices;
 
     /**
      * Represents max triangle count.
@@ -40,8 +42,8 @@ public class Batch {
         this.vertexSize = calculateVertexSize(this.attributes);
         this.vertexSizeInBytes = calculateVertexSizeInBytes(this.attributes);
 
-        this.vertices = new float[this.capacity * vertexSize * 3];
-        this.indices = new int[this.capacity * 3];
+        this.vertices = BufferUtils.allocateDirectFloat(this.capacity * vertexSize * 3);
+        this.indices = BufferUtils.allocateDirectInt(this.capacity * 3);
     }
 
     private static int calculateVertexSize(Attribute... attributes) {
@@ -64,8 +66,8 @@ public class Batch {
         this.vao = new VAO(gl);
         this.vao.bind();
 
-        this.vbo = new VBO(gl, this.vertices, GL3.GL_DYNAMIC_DRAW);
-        this.ebo = new EBO(gl, this.indices, GL3.GL_DYNAMIC_DRAW);
+        this.vbo = new VBO(gl, this.vertices.capacity(), GL3.GL_DYNAMIC_DRAW);
+        this.ebo = new EBO(gl, this.indices.capacity(), GL3.GL_DYNAMIC_DRAW);
         this.ebo.bind();
 
         linkAttributes();
@@ -89,8 +91,8 @@ public class Batch {
     }
 
     public void reset() {
-        Arrays.fill(this.vertices, 0);
-        Arrays.fill(this.indices, 0);
+        this.vertices.clear();
+        this.indices.clear();
 
         this.triangleCount = 0;
         this.pointCount = 0;
@@ -123,7 +125,7 @@ public class Batch {
         }
 
         for (int i = 0; i < parameters.length; i++) {
-            this.vertices[this.vertexIndex * vertexSize + i] = parameters[i];
+            this.vertices.put(this.vertexIndex * vertexSize + i, parameters[i]);
         }
 
         this.vertexIndex++;
@@ -133,20 +135,24 @@ public class Batch {
         if (!this.hasSpaceFor(count)) {
             this.capacity += SIZE;
 
-            float[] vertices = this.vertices;
-            this.vertices = new float[this.capacity * vertexSize * 3];
-            System.arraycopy(vertices, 0, this.vertices, 0, vertices.length);
+            FloatBuffer vertices = this.vertices;
+            this.vertices = BufferUtils.allocateDirectFloat(this.capacity * vertexSize * 3);
+            this.vertices.put(vertices);
 
-            int[] indices = this.indices;
-            this.indices = new int[this.capacity * 3];
-            System.arraycopy(indices, 0, this.indices, 0, indices.length);
+            this.vertices.clear();
+
+            IntBuffer indices = this.indices;
+            this.indices = BufferUtils.allocateDirectInt(this.capacity * 3);
+            this.indices.put(indices);
+
+            this.indices.clear();
 
             this.delete();
             this.init(Stage.getInstance().getGl());
         }
 
         for (int i = 0; i < triangles.length; i++) {
-            this.indices[this.triangleCount * 3 + i] = triangles[i] + this.pointCount;
+            this.indices.put(this.triangleCount * 3 + i, triangles[i] + this.pointCount);
         }
 
         this.triangleCount += count;

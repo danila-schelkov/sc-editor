@@ -2,6 +2,7 @@ package com.vorono4ka.utilities;
 
 import java.nio.*;
 
+@SuppressWarnings("unused")
 public final class BufferUtils {
     public static final ByteOrder NATIVE_ORDER = ByteOrder.nativeOrder();
 
@@ -42,5 +43,13 @@ public final class BufferUtils {
 
     public static ByteBuffer allocateDirect(int size) {
         return ByteBuffer.allocateDirect(size).order(NATIVE_ORDER);
+    }
+
+    public static FloatBuffer allocateDirectFloat(int size) {
+        return allocateDirect(size * Float.BYTES).asFloatBuffer();
+    }
+
+    public static IntBuffer allocateDirectInt(int size) {
+        return allocateDirect(size * Integer.BYTES).asIntBuffer();
     }
 }

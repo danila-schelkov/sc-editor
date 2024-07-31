@@ -1,27 +1,27 @@
 package com.vorono4ka.editor.renderer;
 
 import com.jogamp.opengl.GL3;
-import com.vorono4ka.utilities.BufferUtils;
+
+import java.nio.IntBuffer;
 
 public class EBO {
     private final GL3 gl;
     private final int id;
 
-    public EBO(GL3 gl, int[] indices, int usage) {
+    public EBO(GL3 gl, int capacity, int usage) {
         this.gl = gl;
 
         int[] EBOs = new int[1];
         this.gl.glGenBuffers(1, EBOs, 0);
         this.id = EBOs[0];
 
-        this.bind();
-        this.gl.glBufferData(GL3.GL_ELEMENT_ARRAY_BUFFER, (long) indices.length * Integer.BYTES, BufferUtils.wrapDirect(indices), usage);
-        this.unbind();
+        init(capacity, usage);
     }
 
-    public void subData(int offset, int[] indices) {
+    // Don't forget to prepare the buffer for reading by calling buffer.clear()
+    public void subData(int offset, IntBuffer buffer) {
         this.bind();
-        this.gl.glBufferSubData(GL3.GL_ELEMENT_ARRAY_BUFFER, offset, (long) indices.length * Integer.BYTES, BufferUtils.wrapDirect(indices));
+        this.gl.glBufferSubData(GL3.GL_ELEMENT_ARRAY_BUFFER, offset, (long) buffer.capacity() * Integer.BYTES, buffer);
         this.unbind();
     }
 
@@ -35,5 +35,11 @@ public class EBO {
 
     public void delete() {
         this.gl.glDeleteBuffers(1, new int[] {this.id}, 0);
+    }
+
+    private void init(int capacity, int usage) {
+        this.bind();
+        this.gl.glBufferData(GL3.GL_ELEMENT_ARRAY_BUFFER, (long) capacity * Integer.BYTES, null, usage);
+        this.unbind();
     }
 }
