@@ -11,7 +11,7 @@ public class ByteStream {
     public static final int DEFAULT_BUFFER_LENGTH = 16;
 
     private byte[] data;
-    private int offset;
+    private int position;
 
     public ByteStream() {
         this(new byte[ByteStream.DEFAULT_BUFFER_LENGTH]);
@@ -22,13 +22,13 @@ public class ByteStream {
     }
 
     public boolean isAtAnd() {
-        return this.offset >= this.data.length;
+        return this.position >= this.data.length;
     }
 
     public void ensureCapacity(int count) {
-        int capacity = this.offset + count;
+        int capacity = this.position + count;
         if (this.data.length < capacity) {
-            int newSize = (int)(this.data.length * 1.5f);
+            int newSize = (int) (this.data.length * 1.5f);
             if (newSize < capacity) {
                 newSize = capacity;
             }
@@ -40,27 +40,22 @@ public class ByteStream {
     public void write(byte[] data) {
         this.ensureCapacity(data.length);
 
-        System.arraycopy(data, 0, this.data, this.offset, data.length);
-        this.offset += data.length;
+        System.arraycopy(data, 0, this.data, this.position, data.length);
+        this.position += data.length;
     }
 
     public byte[] read(int length) {
         byte[] data = new byte[length];
-        if (length <= this.data.length - this.offset) {
-            System.arraycopy(this.data, this.offset, data, 0, length);
-            this.offset += length;
+        if (length <= this.data.length - this.position) {
+            System.arraycopy(this.data, this.position, data, 0, length);
+            this.position += length;
         }
 
         return data;
     }
 
     public void skip(int length) {
-        this.offset += length;
-    }
-
-
-    private void write(byte value) {
-        this.data[this.offset++] = value;
+        this.position += length;
     }
 
     public void writeUnsignedChar(int value) {
@@ -72,17 +67,17 @@ public class ByteStream {
     public void writeShort(int value) {
         this.ensureCapacity(2);
 
-        this.write((byte) ((value & 0x00FF)));
-        this.write((byte) ((value & 0xFF00) >> 8));
+        this.write((byte) (value & 0xFF));
+        this.write((byte) ((value >> 8) & 0xFF));
     }
 
     public void writeInt(int value) {
         this.ensureCapacity(4);
 
-        this.write((byte) ((value & 0x000000FF)));
-        this.write((byte) ((value & 0x0000FF00) >> 8));
-        this.write((byte) ((value & 0x00FF0000) >> 16));
-        this.write((byte) ((value & 0xFF000000) >> 24));
+        this.write((byte) (value & 0xFF));
+        this.write((byte) ((value >> 8) & 0xFF));
+        this.write((byte) ((value >> 16) & 0xFF));
+        this.write((byte) ((value >> 24) & 0xFF));
     }
 
     public void writeTwip(float value) {
@@ -116,19 +111,19 @@ public class ByteStream {
     }
 
     public int readUnsignedChar() {
-        return this.data[this.offset++] & 0xFF;
+        return this.data[this.position++] & 0xFF;
     }
 
     public int readShort() {
         return this.readUnsignedChar() |
-               this.readUnsignedChar() << 8;
+            this.readUnsignedChar() << 8;
     }
 
     public int readInt() {
         return this.readUnsignedChar() |
-               this.readUnsignedChar() << 8 |
-               this.readUnsignedChar() << 16 |
-               this.readUnsignedChar() << 24;
+            this.readUnsignedChar() << 8 |
+            this.readUnsignedChar() << 16 |
+            this.readUnsignedChar() << 24;
     }
 
     public boolean readBoolean() {
@@ -164,19 +159,23 @@ public class ByteStream {
 
 
     public byte[] getData() {
-        return ByteBuffer.allocate(this.offset).put(this.data, 0, this.offset).array();
+        return ByteBuffer.allocate(this.position).put(this.data, 0, this.position).array();
     }
 
-    public void setData(byte[] a2) {
-        this.data = a2;
-        this.offset = 0;
+    public void setData(byte[] data) {
+        this.data = data;
+        this.position = 0;
     }
 
-    public int getOffset() {
-        return this.offset;
+    public int getPosition() {
+        return this.position;
     }
 
-    public void setOffset(int offset) {
-        this.offset = offset;
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
+    private void write(byte value) {
+        this.data[this.position++] = value;
     }
 }
