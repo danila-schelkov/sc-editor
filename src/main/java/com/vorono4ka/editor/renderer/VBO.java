@@ -1,27 +1,27 @@
 package com.vorono4ka.editor.renderer;
 
 import com.jogamp.opengl.GL3;
-import com.vorono4ka.utilities.BufferUtils;
+
+import java.nio.FloatBuffer;
 
 public class VBO {
     private final GL3 gl;
     private final int id;
 
-    public VBO(GL3 gl, float[] vertices, int usage) {
+    public VBO(GL3 gl, int capacity, int usage) {
         this.gl = gl;
 
         int[] VBOs = new int[1];
         this.gl.glGenBuffers(1, VBOs, 0);
         this.id = VBOs[0];
 
-        this.bind();
-        this.gl.glBufferData(GL3.GL_ARRAY_BUFFER, (long) vertices.length * Float.BYTES, BufferUtils.wrapDirect(vertices), usage);
-        this.unbind();
+        init(capacity, usage);
     }
 
-    public void subData(int offset, float[] vertices) {
+    // Don't forget to prepare the buffer for reading by calling buffer.clear()
+    public void subData(int offset, FloatBuffer buffer) {
         this.bind();
-        this.gl.glBufferSubData(GL3.GL_ARRAY_BUFFER, offset, (long) vertices.length * Float.BYTES, BufferUtils.wrapDirect(vertices));
+        this.gl.glBufferSubData(GL3.GL_ARRAY_BUFFER, offset, (long) buffer.capacity() * Float.BYTES, buffer);
         this.unbind();
     }
 
@@ -35,5 +35,11 @@ public class VBO {
 
     public void delete() {
         this.gl.glDeleteBuffers(1, new int[] {this.id}, 0);
+    }
+
+    private void init(int capacity, int usage) {
+        this.bind();
+        this.gl.glBufferData(GL3.GL_ARRAY_BUFFER, (long) capacity * Float.BYTES, null, usage);
+        this.unbind();
     }
 }
