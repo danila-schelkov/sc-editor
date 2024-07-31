@@ -13,8 +13,8 @@ import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
 import com.vorono4ka.swf.displayObjects.StageSprite;
 import com.vorono4ka.utilities.BufferUtils;
+import com.vorono4ka.utilities.ImageUtils;
 import com.vorono4ka.utilities.MovieClipHelper;
-import com.vorono4ka.utilities.Utilities;
 
 import java.awt.image.BufferedImage;
 import java.nio.FloatBuffer;
@@ -41,6 +41,7 @@ public class Stage {
     private GL3 gl;
 
     private Batch currentBatch;
+    private Batch screenBatch;
     private GLImage gradientTexture;
     private Framebuffer framebuffer;
 
@@ -93,12 +94,14 @@ public class Stage {
             this.gradientTexture = new GLImage();
         }
 
-        this.gradientTexture.createWithFormat(null, true, 1, 256, 2, Utilities.getPixelBuffer(imageBuffer), GL3.GL_LUMINANCE_ALPHA, GL3.GL_UNSIGNED_BYTE);
+        this.gradientTexture.createWithFormat(null, true, 1, 256, 2, ImageUtils.getPixelBuffer(imageBuffer), GL3.GL_LUMINANCE_ALPHA, GL3.GL_UNSIGNED_BYTE);
 
         this.camera.init(width, height);
 
         gl.glViewport(x, y, width, height);
         this.framebuffer = new Framebuffer(gl, width, height);
+
+        this.screenBatch = initScreenBatch(screenShader, framebuffer.getTexture(), VIEWPORT_RECT);
 
         this.updatePMVMatrix();
 
@@ -118,7 +121,7 @@ public class Stage {
             try {
                 task.run();
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                System.err.println(e);
             }
 
             iterator.remove();
@@ -137,28 +140,12 @@ public class Stage {
         this.stageSprite.render(new Matrix2x3(), new ColorTransform(), 0, deltaTime);
 
         this.framebuffer.bind();
-        this.gl.glClearColor(0, 0, 0, 0);
-        this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
-
-        this.gl.glStencilMask(0xFF);
-        this.gl.glClearStencil(0);
-        this.gl.glStencilMask(0);
-
-        this.shader.bind();
-        this.renderBuckets();
-        this.shader.unbind();
+        renderDisplayObject();
         this.framebuffer.unbind();
 
         this.unloadBatchesToPool();
 
-        this.screenShader.bind();
-
-        this.gl.glClearColor(.5f, .5f, .5f, 1);
-        this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
-
-        renderScreen(VIEWPORT_RECT, this.framebuffer.getTexture());
-
-        this.screenShader.unbind();
+        renderScreen();
 
         this.unloadBatchesToPool();
     }
@@ -186,6 +173,9 @@ public class Stage {
             this.framebuffer.delete();
         }
 
+        this.screenBatch.delete();
+        this.screenBatch = null;
+
         if (this.gradientTexture != null && this.gradientTexture.getTexture() != null) {
             this.gradientTexture.getTexture().delete();
             this.gradientTexture = null;
@@ -202,27 +192,11 @@ public class Stage {
         this.gl.glDisable(GL3.GL_BLEND);
     }
 
-    private void renderBuckets() {
-        for (Batch batch : this.batches) {
-            setRenderStencilState(batch.getStencilRenderingState());
-            batch.render(this.gl);
-        }
-    }
-
     public void clearBatches() {
         for (Batch batch : this.batches) {
             batch.delete();
         }
 
-        this.batches.clear();
-    }
-
-    private void unloadBatchesToPool() {
-        for (Batch batch : this.batches) {
-            batch.reset();
-        }
-
-        this.batchPool.pullBatches(this.batches);
         this.batches.clear();
     }
 
@@ -264,12 +238,6 @@ public class Stage {
         if (this.currentBatch == null) return;
 
         this.currentBatch.addTriangles(count, indices);
-    }
-
-    public void addVertex(float x, float y, float u, float v) {
-        if (this.currentBatch == null) return;
-
-        this.currentBatch.addVertex(x, y, u, v);
     }
 
     public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float alpha, float redAdd, float greenAdd, float blueAdd) {
@@ -329,35 +297,6 @@ public class Stage {
         this.batches.add(this.batchPool.createOrPopBatch(gl, shader, null, state));
     }
 
-    private void setRenderStencilState(int state) {
-        switch (state) {
-            case 1 -> {
-                // scissors
-            }
-            case 2 -> {
-                this.gl.glEnable(GL3.GL_STENCIL_TEST);
-                this.gl.glStencilFunc(GL3.GL_ALWAYS, 1, 0xFF); // каждый фрагмент обновит трафаретный буфер
-                this.gl.glStencilOp(GL3.GL_KEEP, GL3.GL_KEEP, GL3.GL_REPLACE);
-                this.gl.glStencilMask(0xFF); // включить запись в трафаретный буфер
-                this.gl.glColorMask(false, false, false, false);
-
-                this.gl.glDepthMask(false);
-                this.gl.glClear(GL3.GL_STENCIL_BUFFER_BIT); // Clear stencil buffer (0 by default)
-            }
-            case 3 -> {
-                this.gl.glStencilFunc(GL3.GL_EQUAL, 1, 0xFF);
-                this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
-                this.gl.glColorMask(true, true, true, true);
-            }
-            case 4 -> this.gl.glDisable(GL3.GL_STENCIL_TEST);
-            case 5 -> {
-                this.gl.glStencilFunc(GL3.GL_NOTEQUAL, 1, 0xFF);
-                this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
-                this.gl.glColorMask(true, true, true, true);
-            }
-        }
-    }
-
     public Camera getCamera() {
         return camera;
     }
@@ -400,16 +339,86 @@ public class Stage {
         isAnimationPaused = false;
     }
 
-    private void renderScreen(Rect rect, Texture texture) {
-        if (this.startShape(screenShader, rect, texture, 0, null)) {
-            this.addTriangles(2, RECT_INDICES);
+    private void renderDisplayObject() {
+        this.gl.glClearColor(0, 0, 0, 0);
+        this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
 
-            this.addVertex(rect.getLeft(), rect.getTop(), 0, 0);
-            this.addVertex(rect.getLeft(), rect.getBottom(), 0, 1);
-            this.addVertex(rect.getRight(), rect.getBottom(), 1, 1);
-            this.addVertex(rect.getRight(), rect.getTop(), 1, 0);
+        this.gl.glStencilMask(0xFF);
+        this.gl.glClearStencil(0);
+        this.gl.glStencilMask(0);
+
+        this.shader.bind();
+        this.renderBuckets();
+        this.shader.unbind();
+    }
+
+    private void renderScreen() {
+        this.gl.glClearColor(.5f, .5f, .5f, 1);
+        this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
+
+        this.screenShader.bind();
+        this.screenBatch.render(this.gl);
+        this.screenShader.unbind();
+    }
+
+    private void renderBuckets() {
+        for (Batch batch : this.batches) {
+            setRenderStencilState(batch.getStencilRenderingState());
+            batch.render(this.gl);
+        }
+    }
+
+    private void unloadBatchesToPool() {
+        for (Batch batch : this.batches) {
+            batch.reset();
         }
 
-        this.renderBuckets();
+        this.batchPool.pullBatches(this.batches);
+        this.batches.clear();
+
+        this.currentBatch = null;
+    }
+
+    private void setRenderStencilState(int state) {
+        switch (state) {
+            case 1 -> {
+                // scissors
+            }
+            case 2 -> {
+                this.gl.glEnable(GL3.GL_STENCIL_TEST);
+                this.gl.glStencilFunc(GL3.GL_ALWAYS, 1, 0xFF); // каждый фрагмент обновит трафаретный буфер
+                this.gl.glStencilOp(GL3.GL_KEEP, GL3.GL_KEEP, GL3.GL_REPLACE);
+                this.gl.glStencilMask(0xFF); // включить запись в трафаретный буфер
+                this.gl.glColorMask(false, false, false, false);
+
+                this.gl.glDepthMask(false);
+                this.gl.glClear(GL3.GL_STENCIL_BUFFER_BIT); // Clear stencil buffer (0 by default)
+            }
+            case 3 -> {
+                this.gl.glStencilFunc(GL3.GL_EQUAL, 1, 0xFF);
+                this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
+                this.gl.glColorMask(true, true, true, true);
+            }
+            case 4 -> this.gl.glDisable(GL3.GL_STENCIL_TEST);
+            case 5 -> {
+                this.gl.glStencilFunc(GL3.GL_NOTEQUAL, 1, 0xFF);
+                this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
+                this.gl.glColorMask(true, true, true, true);
+            }
+        }
+    }
+
+    private Batch initScreenBatch(Shader shader, Texture texture, Rect rect) {
+        Batch screenBatch = new Batch(shader, texture, 0);
+        screenBatch.init(this.gl);
+
+        screenBatch.addTriangles(2, RECT_INDICES);
+
+        screenBatch.addVertex(rect.getLeft(), rect.getTop(), 0, 0);
+        screenBatch.addVertex(rect.getLeft(), rect.getBottom(), 0, 1);
+        screenBatch.addVertex(rect.getRight(), rect.getBottom(), 1, 1);
+        screenBatch.addVertex(rect.getRight(), rect.getTop(), 1, 0);
+
+        return screenBatch;
     }
 }

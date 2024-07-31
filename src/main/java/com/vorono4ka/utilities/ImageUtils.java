@@ -6,6 +6,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
 public final class ImageUtils {
@@ -84,5 +85,9 @@ public final class ImageUtils {
                 pixelArray[flippedIndex] = oldPixel;
             }
         }
+    }
+
+    public static ByteBuffer getPixelBuffer(BufferedImage image) {
+        return BufferUtils.wrapDirect(((DataBufferByte) image.getRaster().getDataBuffer()).getData());
     }
 }
