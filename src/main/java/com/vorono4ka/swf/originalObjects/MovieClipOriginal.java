@@ -33,26 +33,26 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
     private String exportName;
     private DisplayObjectOriginal[] children;
 
-    public int load(SupercellSWF swf, Tag tag) throws LoadingFaultException, UnsupportedCustomPropertyException {
+    public int load(ByteStream stream, Tag tag, String filename) throws LoadingFaultException, UnsupportedCustomPropertyException {
         this.tag = tag;
 
-        this.id = swf.readShort();
-        this.fps = swf.readUnsignedChar();
+        this.id = stream.readShort();
+        this.fps = stream.readUnsignedChar();
         // *(a1 + 54) = *(a1 + 54) & 0xFF80 | ZN12SupercellSWF16readUnsignedCharEv(a2) & 0x7F;
 
-        int framesCount = swf.readShort();
-        this.frames = new MovieClipFrame[framesCount];
+        int frameCount = stream.readShort();
+        this.frames = new MovieClipFrame[frameCount];
         for (int i = 0; i < this.frames.length; i++) {
             this.frames[i] = new MovieClipFrame();
         }
 
         if (tag.hasCustomProperties()) {
-            int propertyCount = swf.readUnsignedChar();
+            int propertyCount = stream.readUnsignedChar();
             for (int i = 0; i < propertyCount; i++) {
-                int propertyType = swf.readUnsignedChar();
+                int propertyType = stream.readUnsignedChar();
                 switch (propertyType) {
                     case 0 -> {
-                        boolean unknown = swf.readBoolean();
+                        boolean unknown = stream.readBoolean();
                         // *(a1 + 54) = *(a1 + 54) & 0xFF7F | (unknown ? 128 : 0);
                     }
                     default ->
@@ -72,16 +72,16 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
                 }
             }
             default -> {
-                int elementsCount = swf.readInt();
-                this.frameElements = swf.readShortArray(elementsCount * 3);
+                int elementCount = stream.readInt();
+                this.frameElements = stream.readShortArray(elementCount * 3);
             }
         }
 
-        this.childrenCount = swf.readShort();
-        this.childrenIds = swf.readShortArray(this.childrenCount);
+        this.childrenCount = stream.readShort();
+        this.childrenIds = stream.readShortArray(this.childrenCount);
 
         if (tag.hasBlendData()) {
-            this.childrenBlends = swf.readByteArray(this.childrenCount);
+            this.childrenBlends = stream.readByteArray(this.childrenCount);
         } else {
             this.childrenBlends = new byte[this.childrenCount];
             Arrays.fill(this.childrenBlends, (byte) 0);
@@ -89,18 +89,18 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
 
         this.childrenNames = new String[this.childrenCount];
         for (int i = 0; i < this.childrenCount; i++) {
-            this.childrenNames[i] = swf.readAscii();
+            this.childrenNames[i] = stream.readAscii();
         }
 
         int loadedCommands = 0;
         int usedElements = 0;
 
         while (true) {
-            int frameTag = swf.readUnsignedChar();
-            int length = swf.readInt();
+            int frameTag = stream.readUnsignedChar();
+            int length = stream.readInt();
 
             if (length < 0) {
-                throw new NegativeTagLengthException(String.format("Negative tag length in MovieClip. Tag %d, %s", frameTag, swf.getFilename()));
+                throw new NegativeTagLengthException(String.format("Negative tag length in MovieClip. Tag %d, %s", frameTag, filename));
             }
 
             Tag tagValue = Tag.values()[frameTag];
@@ -111,11 +111,11 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
                 case MOVIE_CLIP_FRAME,
                      MOVIE_CLIP_FRAME_2 -> {  // TAG_MOVIE_CLIP_FRAME no longer supported
                     MovieClipFrame frame = this.frames[loadedCommands++];
-                    int elementsCount = frame.load(swf, tagValue);
+                    int elementCount = frame.load(stream, tagValue);
 
                     if (tagValue != Tag.MOVIE_CLIP_FRAME) {
-                        MovieClipFrameElement[] elements = new MovieClipFrameElement[elementsCount];
-                        for (int i = 0; i < elementsCount; i++) {
+                        MovieClipFrameElement[] elements = new MovieClipFrameElement[elementCount];
+                        for (int i = 0; i < elementCount; i++) {
                             elements[i] = new MovieClipFrameElement(
                                 this.frameElements[usedElements * 3] & 0xFFFF,
                                 this.frameElements[usedElements * 3 + 1] & 0xFFFF,
@@ -132,10 +132,10 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
                         throw new LoadingFaultException("multiple scaling grids");
                     }
 
-                    float left = swf.readTwip();
-                    float top = swf.readTwip();
-                    float width = swf.readTwip();
-                    float height = swf.readTwip();
+                    float left = stream.readTwip();
+                    float top = stream.readTwip();
+                    float width = stream.readTwip();
+                    float height = stream.readTwip();
                     float right = MathHelper.round(left + width, 2);
                     float bottom = MathHelper.round(top + height, 2);
 
@@ -143,10 +143,10 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
                 }
                 case
                     MATRIX_BANK_INDEX -> // (a1 + 54) & 0x80FF | ((ZN12SupercellSWF16readUnsignedCharEv(a2) & 0x7F) << 8);
-                    this.matrixBankIndex = swf.readUnsignedChar();
+                    this.matrixBankIndex = stream.readUnsignedChar();
                 default -> {
                     try {
-                        throw new UnsupportedTagException(String.format("Unknown tag %d in MovieClip, %s", frameTag, swf.getFilename()));
+                        throw new UnsupportedTagException(String.format("Unknown tag %d in MovieClip, %s", frameTag, filename));
                     } catch (UnsupportedTagException exception) {
                         LOGGER.error(exception.getMessage(), exception);
                     }
@@ -206,8 +206,7 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
             stream.writeBlock(Tag.MATRIX_BANK_INDEX, blockStream -> blockStream.writeUnsignedChar(this.matrixBankIndex));
         }
 
-        stream.writeBlock(Tag.EOF, ignored -> {
-        });
+        stream.writeBlock(Tag.EOF, ignored -> {});
     }
 
     public DisplayObject clone(SupercellSWF swf, Rect scalingGrid) throws UnableToFindObjectException {

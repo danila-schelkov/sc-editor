@@ -7,21 +7,21 @@ public class MovieClipFrame {
     private String label;
     private MovieClipFrameElement[] elements;
 
-    public int load(SupercellSWF swf, Tag tag) {
-        int elementsCount = swf.readShort();
-        this.label = swf.readAscii();
+    public int load(ByteStream stream, Tag tag) {
+        int elementCount = stream.readShort();
+        this.label = stream.readAscii();
 
         if (tag == Tag.MOVIE_CLIP_FRAME) {
-            this.elements = new MovieClipFrameElement[elementsCount];
-            for (int i = 0; i < elementsCount; i++) {
-                int childIndex = swf.readShort() & 0xFFFF;
-                int matrixIndex = swf.readShort() & 0xFFFF;
-                int colorTransformIndex = swf.readShort() & 0xFFFF;
+            this.elements = new MovieClipFrameElement[elementCount];
+            for (int i = 0; i < elementCount; i++) {
+                int childIndex = stream.readShort() & 0xFFFF;
+                int matrixIndex = stream.readShort() & 0xFFFF;
+                int colorTransformIndex = stream.readShort() & 0xFFFF;
                 this.elements[i] = new MovieClipFrameElement(childIndex, matrixIndex, colorTransformIndex);
             }
         }
 
-        return elementsCount;
+        return elementCount;
     }
 
     public void save(ByteStream stream) {

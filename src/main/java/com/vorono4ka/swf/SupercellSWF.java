@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,8 +31,6 @@ public class SupercellSWF {
 
     private final List<String> fontsNames = new ArrayList<>();
     private final List<ScMatrixBank> matrixBanks = new ArrayList<>();
-
-    private ByteStream stream;
 
     private int shapeCount;
     private int movieClipCount;
@@ -99,32 +96,32 @@ public class SupercellSWF {
             return false;
         }
 
-        this.stream = new ByteStream(decompressedData);
+        ByteStream stream = new ByteStream(decompressedData);
 
         if (isTextureFile) {
-            return this.loadTags(true, path);
+            return this.loadTags(stream, true, path);
         }
 
-        this.shapeCount = this.readShort();
-        this.movieClipCount = this.readShort();
-        this.textureCount = this.readShort();
-        this.textFieldCount = this.readShort();
-        int matrixCount = this.readShort();
-        int colorTransformCount = this.readShort();
+        this.shapeCount = stream.readShort();
+        this.movieClipCount = stream.readShort();
+        this.textureCount = stream.readShort();
+        this.textFieldCount = stream.readShort();
+        int matrixCount = stream.readShort();
+        int colorTransformCount = stream.readShort();
 
         ScMatrixBank matrixBank = new ScMatrixBank();
         matrixBank.init(matrixCount, colorTransformCount);
         this.matrixBanks.add(matrixBank);
 
-        this.skip(5);
+        stream.skip(5);
 
-        int exportCount = this.readShort();
+        int exportCount = stream.readShort();
 
-        short[] exportIds = this.readShortArray(exportCount);
+        short[] exportIds = stream.readShortArray(exportCount);
 
         String[] exportNames = new String[exportCount];
         for (int i = 0; i < exportCount; i++) {
-            exportNames[i] = this.readAscii();
+            exportNames[i] = stream.readAscii();
         }
 
         this.exports = new Export[exportCount];
@@ -152,7 +149,7 @@ public class SupercellSWF {
             this.textFields[i] = new TextFieldOriginal();
         }
 
-        if (this.loadTags(false, path)) {
+        if (this.loadTags(stream, false, path)) {
             for (Export export : exports) {
                 MovieClipOriginal movieClip = this.getOriginalMovieClip(export.id() & 0xFFFF, export.name());
                 movieClip.setExportName(export.name());
@@ -164,7 +161,7 @@ public class SupercellSWF {
         return false;
     }
 
-    private boolean loadTags(boolean isTextureFile, String path) throws LoadingFaultException, UnsupportedCustomPropertyException, TextureFileNotFound {
+    private boolean loadTags(ByteStream stream, boolean isTextureFile, String path) throws LoadingFaultException, UnsupportedCustomPropertyException, TextureFileNotFound {
         String highresSuffix = "_highres";
         String lowresSuffix = "_lowres";
 
@@ -180,8 +177,8 @@ public class SupercellSWF {
         int loadedMovieClipsModifiers = 0;
 
         while (true) {
-            int tag = this.readUnsignedChar();
-            int length = this.readInt();
+            int tag = stream.readUnsignedChar();
+            int length = stream.readInt();
 
             if (length < 0) {
                 throw new NegativeTagLengthException(String.format("Negative tag length. Tag %d, %s", tag, this.filename));
@@ -195,7 +192,7 @@ public class SupercellSWF {
                 }
 
                 if (length > 0) {
-                    this.skip(length);
+                    stream.skip(length);
                     continue;
                 }
             }
@@ -219,36 +216,42 @@ public class SupercellSWF {
 
                     return true;
                 }
-                case TEXTURE, TEXTURE_2, TEXTURE_3, TEXTURE_4, TEXTURE_5, TEXTURE_6, TEXTURE_7, TEXTURE_8, KHRONOS_TEXTURE, COMPRESSED_KHRONOS_TEXTURE -> {
+                case TEXTURE, TEXTURE_2, TEXTURE_3, TEXTURE_4, TEXTURE_5, TEXTURE_6,
+                     TEXTURE_7, TEXTURE_8, KHRONOS_TEXTURE,
+                     COMPRESSED_KHRONOS_TEXTURE -> {
                     if (loadedTextures >= this.textureCount) {
                         throw new TooManyObjectsException("Trying to load too many textures from ");
                     }
                     this.textures[loadedTextures].setIndex(loadedTextures);
-                    this.textures[loadedTextures++].load(this, tagValue, !this.useExternalTexture || isTextureFile);
+                    this.textures[loadedTextures++].load(stream, tagValue, !this.useExternalTexture || isTextureFile, this.path.getParent());
                 }
                 case SHAPE, SHAPE_2 -> {
                     if (loadedShapes >= this.shapeCount) {
                         throw new TooManyObjectsException("Trying to load too many shapes from ");
                     }
 
-                    this.shapes[loadedShapes++].load(this, tagValue);
+                    this.shapes[loadedShapes++].load(stream, tagValue, this::getTexture, filename);
                 }
-                case MOVIE_CLIP, MOVIE_CLIP_2, MOVIE_CLIP_3, MOVIE_CLIP_4, MOVIE_CLIP_5, MOVIE_CLIP_6 -> {
+                case MOVIE_CLIP, MOVIE_CLIP_2, MOVIE_CLIP_3, MOVIE_CLIP_4, MOVIE_CLIP_5,
+                     MOVIE_CLIP_6 -> {
                     if (loadedMovieClips >= this.movieClipCount) {
                         throw new TooManyObjectsException("Trying to load too many MovieClips from ");
                     }
 
-                    this.movieClips[loadedMovieClips++].load(this, tagValue);
+                    this.movieClips[loadedMovieClips++].load(stream, tagValue, filename);
                 }
-                case TEXT_FIELD, TEXT_FIELD_2, TEXT_FIELD_3, TEXT_FIELD_4, TEXT_FIELD_5, TEXT_FIELD_6, TEXT_FIELD_7, TEXT_FIELD_8, TEXT_FIELD_9 -> {
+                case TEXT_FIELD, TEXT_FIELD_2, TEXT_FIELD_3, TEXT_FIELD_4, TEXT_FIELD_5,
+                     TEXT_FIELD_6, TEXT_FIELD_7, TEXT_FIELD_8, TEXT_FIELD_9 -> {
                     if (loadedTextFields >= this.textFieldCount) {
                         throw new TooManyObjectsException("Trying to load too many TextFields from ");
                     }
 
-                    this.textFields[loadedTextFields++].load(this, tagValue);
+                    this.textFields[loadedTextFields++].load(stream, tagValue, this::readFontName);
                 }
-                case MATRIX -> matrixBank.getMatrix(loadedMatrices++).load(this, false);
-                case COLOR_TRANSFORM -> matrixBank.getColorTransform(loadedColorTransforms++).read(this.stream);
+                case MATRIX ->
+                    matrixBank.getMatrix(loadedMatrices++).load(stream, false);
+                case COLOR_TRANSFORM ->
+                    matrixBank.getColorTransform(loadedColorTransforms++).read(stream);
                 case TAG_TIMELINE_INDEXES -> {
                     try {
                         throw new UnsupportedTagException("TAG_TIMELINE_INDEXES no longer in use");
@@ -256,8 +259,8 @@ public class SupercellSWF {
                         LOGGER.error("An error occurred while loading the file: {}", path, exception);
                     }
 
-                    int indicesLength = this.readInt();
-                    this.skip(indicesLength);
+                    int indicesLength = stream.readInt();
+                    stream.skip(indicesLength);
                 }
                 case HALF_SCALE_POSSIBLE -> this.isHalfScalePossible = true;
                 case USE_EXTERNAL_TEXTURE -> this.useExternalTexture = true;
@@ -279,22 +282,24 @@ public class SupercellSWF {
                     this.uncommonResolutionTexturePath = uncommonPath;
                 }
                 case EXTERNAL_FILES_SUFFIXES -> {
-                    highresSuffix = this.readAscii();
-                    lowresSuffix = this.readAscii();
+                    highresSuffix = stream.readAscii();
+                    lowresSuffix = stream.readAscii();
                 }
-                case MATRIX_PRECISE -> matrixBank.getMatrix(loadedMatrices++).load(this, true);
+                case MATRIX_PRECISE ->
+                    matrixBank.getMatrix(loadedMatrices++).load(stream, true);
                 case MOVIE_CLIP_MODIFIERS -> {
-                    int movieClipModifierCount = this.readShort();
+                    int movieClipModifierCount = stream.readShort();
                     this.movieClipModifiers = new MovieClipModifierOriginal[movieClipModifierCount];
 
                     for (int i = 0; i < movieClipModifierCount; i++) {
                         this.movieClipModifiers[i] = new MovieClipModifierOriginal();
                     }
                 }
-                case MODIFIER_STATE_2, MODIFIER_STATE_3, MODIFIER_STATE_4 -> this.movieClipModifiers[loadedMovieClipsModifiers++].load(this, tagValue);
+                case MODIFIER_STATE_2, MODIFIER_STATE_3, MODIFIER_STATE_4 ->
+                    this.movieClipModifiers[loadedMovieClipsModifiers++].load(stream, tagValue);
                 case EXTRA_MATRIX_BANK -> {
-                    int matrixCount = this.readShort();
-                    int colorTransformCount = this.readShort();
+                    int matrixCount = stream.readShort();
+                    int colorTransformCount = stream.readShort();
 
                     matrixBank = new ScMatrixBank();
                     matrixBank.init(matrixCount, colorTransformCount);
@@ -313,7 +318,7 @@ public class SupercellSWF {
                     }
 
                     if (length > 0) {
-                        this.skip(length);
+                        stream.skip(length);
                     }
                 }
             }
@@ -544,47 +549,8 @@ public class SupercellSWF {
         return path;
     }
 
-    public int readUnsignedChar() {
-        return this.stream.readUnsignedChar();
-    }
-
-    public int readShort() {
-        return this.stream.readShort();
-    }
-
-    public int readInt() {
-        return this.stream.readInt();
-    }
-
-    public float readTwip() {
-        return this.stream.readInt() / 20f;
-    }
-
-    public boolean readBoolean() {
-        return this.stream.readBoolean();
-    }
-
-    public byte[] readByteArray(int count) {
-        return this.stream.readByteArray(count);
-    }
-
-    public short[] readShortArray(int count) {
-        return this.stream.readShortArray(count);
-    }
-
-    public int[] readIntArray(int count) {
-        return this.stream.readIntArray(count);
-    }
-
-    public String readAscii() {
-        int length = this.readUnsignedChar() & 0xff;
-        if (length == 255) return null;
-
-        return new String(this.stream.read(length), StandardCharsets.UTF_8);
-    }
-
-    public String readFontName() {
-        String fontName = this.readAscii();
+    public String readFontName(ByteStream stream) {
+        String fontName = stream.readAscii();
         if (fontName != null) {
             if (!this.fontsNames.contains(fontName)) {
                 this.fontsNames.add(fontName);
@@ -592,10 +558,6 @@ public class SupercellSWF {
         }
 
         return fontName;
-    }
-
-    public void skip(int count) {
-        this.stream.skip(count);
     }
 
     public boolean isHalfScalePossible() {
@@ -607,7 +569,7 @@ public class SupercellSWF {
 
         for (ShapeOriginal shape : this.shapes) {
             for (ShapeDrawBitmapCommand command : shape.getCommands()) {
-                if (command.getTexture().getIndex() == textureIndex) {
+                if (command.getTextureIndex() == textureIndex) {
                     if (!bitmapCommands.contains(command)) {
                         bitmapCommands.add(command);
                     }

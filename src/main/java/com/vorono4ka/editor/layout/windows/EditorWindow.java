@@ -71,7 +71,7 @@ public class EditorWindow extends Window {
 
             for (int i = 0; i < shape.getCommandCount(); i++) {
                 ShapeDrawBitmapCommand command = shape.getCommand(i);
-                shapeInfoPanel.addCommandInfo(i, command.getTexture().getIndex(), command.getTag());
+                shapeInfoPanel.addCommandInfo(i, command.getTextureIndex(), command.getTag());
             }
 
             return shapeInfoPanel;

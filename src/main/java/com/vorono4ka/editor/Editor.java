@@ -266,9 +266,9 @@ public class Editor {
         Table texturesTable = this.window.getTexturesTable();
         StatusBar statusBar = this.window.getStatusBar();
 
-        int texturesCount = this.swf.getTextureCount();
-        try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Loading textures table...", 0, texturesCount)) {
-            for (int i = 0; i < texturesCount; i++) {
+        int textureCount = this.swf.getTextureCount();
+        try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Loading textures table...", 0, textureCount)) {
+            for (int i = 0; i < textureCount; i++) {
                 SWFTexture texture = this.swf.getTexture(i);
                 texturesTable.addRow(i, texture.getWidth(), texture.getHeight(), texture.getPixelFormat());
 

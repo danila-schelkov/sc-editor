@@ -8,10 +8,9 @@ import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClipModifier;
 
 public class MovieClipModifierOriginal extends DisplayObjectOriginal {
-    public int load(SupercellSWF swf, Tag tag) {
+    public int load(ByteStream stream, Tag tag) {
         this.tag = tag;
-        this.id = swf.readShort();
-
+        this.id = stream.readShort();
         return this.id;
     }
 
@@ -23,7 +22,6 @@ public class MovieClipModifierOriginal extends DisplayObjectOriginal {
     public DisplayObject clone(SupercellSWF swf, Rect scalingGrid) {
         MovieClipModifier modifier = new MovieClipModifier(this.tag);
         modifier.setId(this.id);
-
         return modifier;
     }
 }

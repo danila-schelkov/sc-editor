@@ -4,7 +4,6 @@ import com.jogamp.opengl.GL3;
 import com.vorono4ka.compression.Decompressor;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.GLImage;
-import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.TextureFileNotFound;
@@ -38,8 +37,8 @@ public class SWFTexture extends GLImage implements Savable {
         this.index = -1;
     }
 
-    private static byte[] getTextureFileBytes(SupercellSWF swf, String compressedTextureFilename) throws TextureFileNotFound {
-        Path compressedTextureFilepath = swf.getPath().getParent().resolve(compressedTextureFilename);
+    private static byte[] getTextureFileBytes(Path directory, String compressedTextureFilename) throws TextureFileNotFound {
+        Path compressedTextureFilepath = directory.resolve(compressedTextureFilename);
         File file = new File(compressedTextureFilepath.toUri());
 
         byte[] compressedData;
@@ -89,26 +88,26 @@ public class SWFTexture extends GLImage implements Savable {
         return tag == Tag.TEXTURE_5 || tag == Tag.TEXTURE_6 || tag == Tag.TEXTURE_7;
     }
 
-    public void load(SupercellSWF swf, Tag tag, boolean hasTexture) throws LoadingFaultException, TextureFileNotFound {
+    public void load(ByteStream stream, Tag tag, boolean hasTexture, Path directory) throws LoadingFaultException, TextureFileNotFound {
         this.tag = tag;
 
         int khronosTextureLength = 0;
         if (tag == Tag.KHRONOS_TEXTURE) {
-            khronosTextureLength = swf.readInt();
+            khronosTextureLength = stream.readInt();
             assert khronosTextureLength > 0;
         }
 
         String compressedTextureFilename = null;
         if (tag == Tag.COMPRESSED_KHRONOS_TEXTURE) {
-            compressedTextureFilename = swf.readAscii();
+            compressedTextureFilename = stream.readAscii();
             if (compressedTextureFilename == null) {
                 throw new LoadingFaultException("Compressed texture filename cannot be null.");
             }
         }
 
-        int type = swf.readUnsignedChar();
-        this.width = swf.readShort();
-        this.height = swf.readShort();
+        int type = stream.readUnsignedChar();
+        this.width = stream.readShort();
+        this.height = stream.readShort();
 
         if (!hasTexture) return;
 
@@ -118,16 +117,16 @@ public class SWFTexture extends GLImage implements Savable {
         Buffer pixels = null;
         switch (tag) {
             case KHRONOS_TEXTURE -> {
-                byte[] bytes = swf.readByteArray(khronosTextureLength);
+                byte[] bytes = stream.readByteArray(khronosTextureLength);
                 ktx = KhronosTextureDataLoader.decodeKtx(BufferUtils.wrapDirect(bytes));
             }
             case COMPRESSED_KHRONOS_TEXTURE -> {
-                byte[] compressedData = getTextureFileBytes(swf, compressedTextureFilename);
+                byte[] compressedData = getTextureFileBytes(directory, compressedTextureFilename);
                 byte[] decompressed = Decompressor.decompressZstd(compressedData, 0);
                 ktx = KhronosTextureDataLoader.decodeKtx(BufferUtils.wrapDirect(decompressed));
             }
             default ->
-                pixels = this.loadTexture(swf, this.width, this.height, textureInfo.pixelBytes(), isSeparatedByTiles(tag));
+                pixels = this.loadTexture(stream, this.width, this.height, textureInfo.pixelBytes(), isSeparatedByTiles(tag));
         }
 
         this.createWithFormat(ktx, false, tag.getTextureFilter(), this.width, this.height, pixels, textureInfo.pixelFormat(), textureInfo.pixelType());
@@ -156,29 +155,29 @@ public class SWFTexture extends GLImage implements Savable {
         this.tag = tag;
     }
 
-    private Buffer loadTexture(SupercellSWF swf, int width, int height, int pixelBytes, boolean separatedByTiles) {
+    private Buffer loadTexture(ByteStream stream, int width, int height, int pixelBytes, boolean separatedByTiles) {
         return switch (pixelBytes) {
-            case 1 -> this.loadTextureAsChar(swf, width, height, separatedByTiles);
-            case 2 -> this.loadTextureAsShort(swf, width, height, separatedByTiles);
-            case 4 -> this.loadTextureAsInt(swf, width, height, separatedByTiles);
+            case 1 -> this.loadTextureAsChar(stream, width, height, separatedByTiles);
+            case 2 -> this.loadTextureAsShort(stream, width, height, separatedByTiles);
+            case 4 -> this.loadTextureAsInt(stream, width, height, separatedByTiles);
             default ->
                 throw new IllegalStateException("Unexpected value: " + pixelBytes);
         };
     }
 
-    private ByteBuffer loadTextureAsChar(SupercellSWF swf, int width, int height, boolean separatedByTiles) {
+    private ByteBuffer loadTextureAsChar(ByteStream stream, int width, int height, boolean separatedByTiles) {
         if (separatedByTiles) {
-            int xChunksCount = width / TILE_SIZE;
-            int yChunksCount = height / TILE_SIZE;
+            int xTileCount = width / TILE_SIZE;
+            int yTileCount = height / TILE_SIZE;
 
             ByteBuffer pixels = BufferUtils.allocateDirect(width * height);
 
-            for (int tileY = 0; tileY < yChunksCount + 1; tileY++) {
-                for (int tileX = 0; tileX < xChunksCount + 1; tileX++) {
+            for (int tileY = 0; tileY < yTileCount + 1; tileY++) {
+                for (int tileX = 0; tileX < xTileCount + 1; tileX++) {
                     int tileWidth = Math.min(width - (tileX * TILE_SIZE), TILE_SIZE);
                     int tileHeight = Math.min(height - (tileY * TILE_SIZE), TILE_SIZE);
 
-                    byte[] tilePixels = readTileAsChar(swf, tileWidth, tileHeight);
+                    byte[] tilePixels = readTileAsChar(stream, tileWidth, tileHeight);
 
                     for (int y = 0; y < tileHeight; y++) {
                         int pixelY = (tileY * TILE_SIZE) + y;
@@ -194,23 +193,23 @@ public class SWFTexture extends GLImage implements Savable {
 
             return pixels;
         } else {
-            return BufferUtils.wrapDirect(swf.readByteArray(width * height));
+            return BufferUtils.wrapDirect(stream.readByteArray(width * height));
         }
     }
 
-    private ShortBuffer loadTextureAsShort(SupercellSWF swf, int width, int height, boolean separatedByTiles) {
+    private ShortBuffer loadTextureAsShort(ByteStream stream, int width, int height, boolean separatedByTiles) {
         if (separatedByTiles) {
-            int xChunksCount = width / TILE_SIZE;
-            int yChunksCount = height / TILE_SIZE;
+            int xTileCount = width / TILE_SIZE;
+            int yTileCount = height / TILE_SIZE;
 
             ShortBuffer pixels = BufferUtils.allocateDirect(width * height * Short.BYTES).asShortBuffer();
 
-            for (int tileY = 0; tileY < yChunksCount + 1; tileY++) {
-                for (int tileX = 0; tileX < xChunksCount + 1; tileX++) {
+            for (int tileY = 0; tileY < yTileCount + 1; tileY++) {
+                for (int tileX = 0; tileX < xTileCount + 1; tileX++) {
                     int tileWidth = Math.min(width - (tileX * TILE_SIZE), TILE_SIZE);
                     int tileHeight = Math.min(height - (tileY * TILE_SIZE), TILE_SIZE);
 
-                    short[] tilePixels = readTileAsShort(swf, tileWidth, tileHeight);
+                    short[] tilePixels = readTileAsShort(stream, tileWidth, tileHeight);
 
                     for (int y = 0; y < tileHeight; y++) {
                         int pixelY = (tileY * TILE_SIZE) + y;
@@ -226,23 +225,23 @@ public class SWFTexture extends GLImage implements Savable {
 
             return pixels;
         } else {
-            return BufferUtils.wrapDirect(swf.readShortArray(width * height));
+            return BufferUtils.wrapDirect(stream.readShortArray(width * height));
         }
     }
 
-    private IntBuffer loadTextureAsInt(SupercellSWF swf, int width, int height, boolean separatedByTiles) {
+    private IntBuffer loadTextureAsInt(ByteStream stream, int width, int height, boolean separatedByTiles) {
         if (separatedByTiles) {
-            int xChunksCount = width / TILE_SIZE;
-            int yChunksCount = height / TILE_SIZE;
+            int xTileCount = width / TILE_SIZE;
+            int yTileCount = height / TILE_SIZE;
 
             IntBuffer pixels = BufferUtils.allocateDirect(width * height * Integer.BYTES).asIntBuffer();
 
-            for (int tileY = 0; tileY < yChunksCount + 1; tileY++) {
-                for (int tileX = 0; tileX < xChunksCount + 1; tileX++) {
+            for (int tileY = 0; tileY < yTileCount + 1; tileY++) {
+                for (int tileX = 0; tileX < xTileCount + 1; tileX++) {
                     int tileWidth = Math.min(width - (tileX * TILE_SIZE), TILE_SIZE);
                     int tileHeight = Math.min(height - (tileY * TILE_SIZE), TILE_SIZE);
 
-                    int[] tilePixels = readTileAsInt(swf, tileWidth, tileHeight);
+                    int[] tilePixels = readTileAsInt(stream, tileWidth, tileHeight);
 
                     for (int y = 0; y < tileHeight; y++) {
                         int pixelY = (tileY * TILE_SIZE) + y;
@@ -258,20 +257,20 @@ public class SWFTexture extends GLImage implements Savable {
 
             return pixels;
         } else {
-            return BufferUtils.wrapDirect(swf.readIntArray(width * height));
+            return BufferUtils.wrapDirect(stream.readIntArray(width * height));
         }
     }
 
-    private byte[] readTileAsChar(SupercellSWF swf, int width, int height) {
-        return swf.readByteArray(width * height);
+    private byte[] readTileAsChar(ByteStream stream, int width, int height) {
+        return stream.readByteArray(width * height);
     }
 
-    private short[] readTileAsShort(SupercellSWF swf, int width, int height) {
-        return swf.readShortArray(width * height);
+    private short[] readTileAsShort(ByteStream stream, int width, int height) {
+        return stream.readShortArray(width * height);
     }
 
-    private int[] readTileAsInt(SupercellSWF swf, int width, int height) {
-        return swf.readIntArray(width * height);
+    private int[] readTileAsInt(ByteStream stream, int width, int height) {
+        return stream.readIntArray(width * height);
     }
 
     private record TextureInfo(int pixelFormat, int pixelType, int pixelBytes) {

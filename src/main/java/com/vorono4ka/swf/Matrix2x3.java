@@ -30,15 +30,15 @@ public class Matrix2x3 implements Savable {
         this.y = matrix.y;
     }
 
-    public void load(SupercellSWF swf, boolean isPrecise) {
+    public void load(ByteStream stream, boolean isPrecise) {
         float divider = isPrecise ? PRECISE_MULTIPLIER : DEFAULT_MULTIPLIER;
 
-        this.scaleX = swf.readInt() / divider;
-        this.shearX = swf.readInt() / divider;
-        this.shearY = swf.readInt() / divider;
-        this.scaleY = swf.readInt() / divider;
-        this.x = swf.readTwip();
-        this.y = swf.readTwip();
+        this.scaleX = stream.readInt() / divider;
+        this.shearX = stream.readInt() / divider;
+        this.shearY = stream.readInt() / divider;
+        this.scaleY = stream.readInt() / divider;
+        this.x = stream.readTwip();
+        this.y = stream.readTwip();
     }
 
     @Override

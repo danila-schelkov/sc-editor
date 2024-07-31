@@ -80,12 +80,12 @@ public class ByteStream {
         this.write((byte) ((value >> 24) & 0xFF));
     }
 
-    public void writeTwip(float value) {
-        this.writeInt((int) (value * 20f));
-    }
-
     public void writeBoolean(boolean value) {
         this.writeUnsignedChar(value ? 1 : 0);
+    }
+
+    public void writeTwip(float value) {
+        this.writeInt((int) (value * 20f));
     }
 
     public void writeAscii(String string) {
@@ -128,6 +128,17 @@ public class ByteStream {
 
     public boolean readBoolean() {
         return this.readUnsignedChar() == 1;
+    }
+
+    public float readTwip() {
+        return this.readInt() / 20f;
+    }
+
+    public String readAscii() {
+        int length = this.readUnsignedChar() & 0xff;
+        if (length == 255) return null;
+
+        return new String(this.read(length), StandardCharsets.UTF_8);
     }
 
     public byte[] readByteArray(int count) {

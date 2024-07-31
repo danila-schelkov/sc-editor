@@ -7,45 +7,54 @@ import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.Matrix2x3;
-import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
-import com.vorono4ka.swf.originalObjects.SWFTexture;
 
 import java.util.Arrays;
+import java.util.function.Function;
 
 public class ShapeDrawBitmapCommand {
     private Tag tag;
 
+    private int textureIndex;
     private int vertexCount;
     private Point[] shapePoints;
     private Point[] sheetPoints;
 
     private GLImage image;
 
-    public void load(SupercellSWF swf, Tag tag) {
+    private static int[] createTriangleIndices(int triangleCount) {
+        int[] indices = new int[triangleCount * 3];
+        for (int i = 0; i < triangleCount; i++) {
+            indices[i * 3] = 0;
+            indices[i * 3 + 1] = i + 1;
+            indices[i * 3 + 2] = i + 2;
+        }
+        return indices;
+    }
+
+    public void load(ByteStream stream, Tag tag, Function<Integer, GLImage> imageFunction) {
         this.tag = tag;
 
-        int textureId = swf.readUnsignedChar();
+        this.textureIndex = stream.readUnsignedChar();
+        this.image = imageFunction.apply(textureIndex);
 
         this.vertexCount = 4;
         if (tag != Tag.SHAPE_DRAW_BITMAP_COMMAND) {
-            this.vertexCount = swf.readUnsignedChar();
+            this.vertexCount = stream.readUnsignedChar();
         }
-
-        this.image = swf.getTexture(textureId);
 
         this.shapePoints = new Point[this.vertexCount];
         for (int i = 0; i < this.vertexCount; i++) {
-            float x = swf.readTwip();
-            float y = swf.readTwip();
+            float x = stream.readTwip();
+            float y = stream.readTwip();
 
             this.shapePoints[i] = new Point(x, y);
         }
 
         this.sheetPoints = new Point[this.vertexCount];
         for (int i = 0; i < this.vertexCount; i++) {
-            float u = swf.readShort();
-            float v = swf.readShort();
+            float u = stream.readShort();
+            float v = stream.readShort();
 
             if (tag == Tag.SHAPE_DRAW_BITMAP_COMMAND) {
                 u *= 65535f / this.image.getWidth();
@@ -60,7 +69,7 @@ public class ShapeDrawBitmapCommand {
     }
 
     public void save(ByteStream stream) {
-        stream.writeUnsignedChar(((SWFTexture) this.image).getIndex());
+        stream.writeUnsignedChar(this.textureIndex);
 
         if (this.tag != Tag.SHAPE_DRAW_BITMAP_COMMAND) {
             stream.writeUnsignedChar(this.vertexCount);
@@ -104,11 +113,11 @@ public class ShapeDrawBitmapCommand {
             bounds.addPoint(x, y);
         }
 
-        int trianglesCount = this.vertexCount - 2;
-        int[] indices = getIndices(trianglesCount);
+        int triangleCount = this.vertexCount - 2;
+        int[] indices = createTriangleIndices(triangleCount);
 
         if (stage.startShape(bounds, this.image.getTexture(), renderConfigBits)) {
-            stage.addTriangles(trianglesCount, indices);
+            stage.addTriangles(triangleCount, indices);
 
             float redMultiplier = colorTransform.getRedMultiplier() / 255f;
             float greenMultiplier = colorTransform.getGreenMultiplier() / 255f;
@@ -173,11 +182,11 @@ public class ShapeDrawBitmapCommand {
             bounds.addPoint(appliedX, appliedY);
         }
 
-        int trianglesCount = this.vertexCount - 2;
-        int[] indices = getIndices(trianglesCount);
+        int triangleCount = this.vertexCount - 2;
+        int[] indices = createTriangleIndices(triangleCount);
 
         if (stage.startShape(bounds, this.image.getTexture(), renderConfigBits)) {
-            stage.addTriangles(trianglesCount, indices);
+            stage.addTriangles(triangleCount, indices);
 
             float redMultiplier = colorTransform.getRedMultiplier() / 255f;
             float greenMultiplier = colorTransform.getGreenMultiplier() / 255f;
@@ -233,11 +242,11 @@ public class ShapeDrawBitmapCommand {
             bounds.addPoint(x, y);
         }
 
-        int trianglesCount = this.vertexCount - 2;
-        int[] indices = getIndices(trianglesCount);
+        int triangleCount = this.vertexCount - 2;
+        int[] indices = createTriangleIndices(triangleCount);
 
         if (stage.startShape(bounds, stage.getGradientTexture().getTexture(), renderConfigBits)) {
-            stage.addTriangles(trianglesCount, indices);
+            stage.addTriangles(triangleCount, indices);
 
             for (int i = 0; i < this.vertexCount; i++) {
                 stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], 1f, 0, 1, 0, 0, 0.5f, 0, 0, 0);
@@ -279,16 +288,16 @@ public class ShapeDrawBitmapCommand {
         point.setY(v * 65535f);
     }
 
-    public SWFTexture getTexture() {
-        return (SWFTexture) image;
-    }
-
     public Tag getTag() {
         return tag;
     }
 
     public void setTag(Tag tag) {
         this.tag = tag;
+    }
+
+    public int getTextureIndex() {
+        return textureIndex;
     }
 
     public int getVertexCount() {
@@ -306,15 +315,5 @@ public class ShapeDrawBitmapCommand {
         }
 
         return false;
-    }
-
-    private static int[] getIndices(int trianglesCount) {
-        int[] indices = new int[trianglesCount * 3];
-        for (int i = 0; i < trianglesCount; i++) {
-            indices[i * 3] = 0;
-            indices[i * 3 + 1] = i + 1;
-            indices[i * 3 + 2] = i + 2;
-        }
-        return indices;
     }
 }
