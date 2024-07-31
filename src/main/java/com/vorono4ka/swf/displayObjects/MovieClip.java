@@ -164,11 +164,6 @@ public class MovieClip extends Sprite {
         this.frameTime = 0;
     }
 
-    private void interpolateFrames() {
-        System.out.println("MovieClip.interpolateFrames");
-        System.out.println("Isn't implemented yet");
-    }
-
     public void reset() {
         this.loopFrame = -1;
         this.setFrame(0);
@@ -220,19 +215,6 @@ public class MovieClip extends Sprite {
         int loopFrameIndex = getFrameIndex(loopFrameLabel);
 
         this.gotoAndPlayFrameIndex(frameIndex, loopFrameIndex);
-    }
-
-    private int getFrameIndex(String frameLabel) {
-        if (frameLabel != null) {
-            for (int i = 0; i < this.frames.length; i++) {
-                String label = this.frames[i].getLabel();
-                if (label != null && label.equals(frameLabel)) {
-                    return i;
-                }
-            }
-        }
-
-        return -1;
     }
 
     public void gotoAndStopFrameIndex(int frame) {
@@ -308,5 +290,22 @@ public class MovieClip extends Sprite {
 
     public String getFrameLabel(int index) {
         return frames[index].getLabel();
+    }
+
+    private int getFrameIndex(String frameLabel) {
+        if (frameLabel != null) {
+            for (int i = 0; i < this.frames.length; i++) {
+                String label = this.frames[i].getLabel();
+                if (label != null && label.equals(frameLabel)) {
+                    return i;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    private void interpolateFrames() {
+        throw new RuntimeException("Not implemented yet");
     }
 }

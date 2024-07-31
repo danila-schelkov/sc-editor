@@ -21,12 +21,16 @@ import com.vorono4ka.swf.exceptions.UnsupportedCustomPropertyException;
 import com.vorono4ka.swf.originalObjects.MovieClipOriginal;
 import com.vorono4ka.swf.originalObjects.SWFTexture;
 import com.vorono4ka.utilities.ArrayUtilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Editor {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Editor.class);
+
     private final EditorWindow window = new EditorWindow();
 
     private final List<UsagesWindow> usagesWindows = new ArrayList<>();
@@ -50,8 +54,8 @@ public class Editor {
             this.swf = new SupercellSWF();
             this.swf.load(path, path.substring(path.lastIndexOf("\\") + 1));
         } catch (LoadingFaultException | UnableToFindObjectException |
-                 UnsupportedCustomPropertyException e) {
-            e.printStackTrace();
+                 UnsupportedCustomPropertyException exception) {
+            LOGGER.error("An error occurred while loading the file: {}", path, exception);
             return;
         } catch (TextureFileNotFound e) {
             this.window.showErrorDialog(e.getMessage());
@@ -290,7 +294,7 @@ public class Editor {
                     MovieClipOriginal movieClipOriginal = this.swf.getOriginalMovieClip(movieClipId, null);
                     rowDataList.add(new Object[]{movieClipId, movieClipOriginal.getExportName(), "MovieClip"});
                 } catch (UnableToFindObjectException e) {
-                    e.printStackTrace();
+                    LOGGER.error(e.getMessage(), e);
                 }
 
                 taskTracker.setValue(i);

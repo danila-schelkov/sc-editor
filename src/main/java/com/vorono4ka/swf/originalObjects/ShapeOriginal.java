@@ -10,8 +10,12 @@ import com.vorono4ka.swf.displayObjects.Shape9Slice;
 import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
 import com.vorono4ka.swf.exceptions.UnsupportedTagException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ShapeOriginal extends DisplayObjectOriginal {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ShapeOriginal.class);
+
     private ShapeDrawBitmapCommand[] commands;
 
     public int load(SupercellSWF swf, Tag tag) throws NegativeTagLengthException {
@@ -25,9 +29,10 @@ public class ShapeOriginal extends DisplayObjectOriginal {
             this.commands[i] = new ShapeDrawBitmapCommand();
         }
 
-        int pointsCount = 4 * this.commands.length;
+        // Used for allocating memory for points
+        int pointCount = 4 * this.commands.length;
         if (tag == Tag.SHAPE_2) {
-            pointsCount = swf.readShort();
+            pointCount = swf.readShort();
         }
 
         int loadedCommands = 0;
@@ -52,14 +57,14 @@ public class ShapeOriginal extends DisplayObjectOriginal {
                     try {
                         throw new UnsupportedTagException(String.format("SupercellSWF::TAG_SHAPE_DRAW_COLOR_FILL_COMMAND not supported, %s", swf.getFilename()));
                     } catch (UnsupportedTagException exception) {
-                        exception.printStackTrace();
+                        LOGGER.error(exception.getMessage(), exception);
                     }
                 }
                 default -> {
                     try {
                         throw new UnsupportedTagException(String.format("Unknown tag %d in Shape, %s", commandTag, swf.getFilename()));
                     } catch (UnsupportedTagException exception) {
-                        exception.printStackTrace();
+                        LOGGER.error(exception.getMessage(), exception);
                     }
 
                     if (length > 0) {

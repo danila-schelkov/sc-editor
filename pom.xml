@@ -83,6 +83,11 @@
 <!--            <classifier>win_amd64</classifier>  &lt;!&ndash; TODO: build for each platform &ndash;&gt;-->
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.13</version>
+        </dependency>
+        <dependency>
             <groupId>com.formdev</groupId>
             <artifactId>flatlaf</artifactId>
             <version>3.5</version>

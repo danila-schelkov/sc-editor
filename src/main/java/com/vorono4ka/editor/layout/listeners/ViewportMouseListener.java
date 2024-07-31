@@ -5,11 +5,15 @@ import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.StageSprite;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class ViewportMouseListener extends MouseAdapter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ViewportMouseListener.class);
+
     @Override
     public void mouseClicked(MouseEvent e) {
         int x = e.getX();
@@ -36,6 +40,8 @@ public class ViewportMouseListener extends MouseAdapter {
             }
         }
 
-        System.out.println(touchedObject);
+        if (touchedObject == null) return;
+
+        LOGGER.info("{} ({}) touched at ({}, {}).", touchedObject.getClass().getSimpleName(), touchedObject.getIndexInParent(), x, y);
     }
 }
