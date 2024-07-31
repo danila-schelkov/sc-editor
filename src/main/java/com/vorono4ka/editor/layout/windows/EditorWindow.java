@@ -49,7 +49,7 @@ public class EditorWindow extends Window {
             DisplayObject[] timelineChildren = movieClip.getTimelineChildren();
             String[] timelineChildrenNames = movieClip.getTimelineChildrenNames();
             for (int i = 0; i < timelineChildren.length; i++) {
-                movieClipInfoPanel.addTimelineChild(String.format("%d (%s)", i, timelineChildren[i].getClass().getSimpleName()), timelineChildren[i].getId(), timelineChildrenNames[i]);
+                movieClipInfoPanel.addTimelineChild(i, timelineChildren[i].getId(), timelineChildren[i].getClass().getSimpleName(), timelineChildrenNames[i], true);
             }
 
             MovieClipFrame[] frames = movieClip.getFrames();

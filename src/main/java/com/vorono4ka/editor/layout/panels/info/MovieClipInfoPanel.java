@@ -1,5 +1,6 @@
 package com.vorono4ka.editor.layout.panels.info;
 
+import com.vorono4ka.editor.layout.components.ChildrenTableContextMenu;
 import com.vorono4ka.editor.layout.components.FrameTableContextMenu;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.listeners.ChildrenListMouseListener;
@@ -17,14 +18,18 @@ public class MovieClipInfoPanel extends JPanel {
     public MovieClipInfoPanel() {
         this.setLayout(new GridLayout(0, 1));
 
-        this.timelineChildrenTable = new Table("#", "Id", "Name");
+        this.timelineChildrenTable = new Table("#", "Id", "Type", "Name", "Visible");
+        this.timelineChildrenTable.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        this.timelineChildrenTable.addMouseListener(new ChildrenListMouseListener(this.timelineChildrenTable));
+        new ChildrenTableContextMenu(this.timelineChildrenTable);
+
         this.framesTable = new Table("#", "Name");
+        this.framesTable.addSelectionListener(new FrameSelectionListener(this.framesTable));
+        new FrameTableContextMenu(this.framesTable);
+
         this.frameElementsTable = new Table("#", "Child #", "Matrix", "Color Transform");
         this.textInfoPanel = new JPanel();
 
-        new FrameTableContextMenu(this.framesTable);
-        this.timelineChildrenTable.addMouseListener(new ChildrenListMouseListener(this.timelineChildrenTable));
-        this.framesTable.addSelectionListener(new FrameSelectionListener(this.framesTable));
         this.textInfoPanel.setLayout(new BoxLayout(this.textInfoPanel, BoxLayout.Y_AXIS));
 
         this.add(new JScrollPane(this.timelineChildrenTable), "Children");

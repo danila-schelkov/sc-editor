@@ -35,7 +35,9 @@ public abstract class Sprite extends DisplayObject {
         boolean result = false;
         int spriteRenderConfigBits = (this.getRenderConfigBits() & 0x3FF) | v45;
         for (DisplayObject displayObject : this.children) {
-            result |= displayObject.render(matrixApplied, colorTransformApplied, spriteRenderConfigBits, deltaTime);
+            if (displayObject.isVisible()) {
+                result |= displayObject.render(matrixApplied, colorTransformApplied, spriteRenderConfigBits, deltaTime);
+            }
         }
 
         return result;
