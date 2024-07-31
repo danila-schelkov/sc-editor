@@ -10,10 +10,14 @@ import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
 import com.vorono4ka.swf.exceptions.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class MovieClipOriginal extends DisplayObjectOriginal {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MovieClipOriginal.class);
+
     private int fps;
     private short[] frameElements;
     private MovieClipFrame[] frames;
@@ -51,18 +55,20 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
                         boolean unknown = swf.readBoolean();
                         // *(a1 + 54) = *(a1 + 54) & 0xFF7F | (unknown ? 128 : 0);
                     }
-                    default -> throw new UnsupportedCustomPropertyException("Unsupported custom property type: " + propertyType);
+                    default ->
+                        throw new UnsupportedCustomPropertyException("Unsupported custom property type: " + propertyType);
                 }
             }
         }
 
         switch (Objects.requireNonNull(tag)) {
-            case MOVIE_CLIP -> {}  // TAG_MOVIE_CLIP no longer supported
+            case MOVIE_CLIP -> {
+            }  // TAG_MOVIE_CLIP no longer supported
             case MOVIE_CLIP_4 -> {
                 try {
                     throw new UnsupportedTagException("TAG_MOVIE_CLIP_4 no longer supported\n");
-                } catch (UnsupportedTagException e) {
-                    e.printStackTrace();
+                } catch (UnsupportedTagException exception) {
+                    LOGGER.error(exception.getMessage(), exception);
                 }
             }
             default -> {
@@ -102,7 +108,8 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
                 case EOF -> {
                     return this.id;
                 }
-                case MOVIE_CLIP_FRAME, MOVIE_CLIP_FRAME_2 -> {  // TAG_MOVIE_CLIP_FRAME no longer supported
+                case MOVIE_CLIP_FRAME,
+                     MOVIE_CLIP_FRAME_2 -> {  // TAG_MOVIE_CLIP_FRAME no longer supported
                     MovieClipFrame frame = this.frames[loadedCommands++];
                     int elementsCount = frame.load(swf, tagValue);
 
@@ -134,13 +141,14 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
 
                     this.scalingGrid = new Rect(left, top, right, bottom);
                 }
-                case MATRIX_BANK_INDEX -> // (a1 + 54) & 0x80FF | ((ZN12SupercellSWF16readUnsignedCharEv(a2) & 0x7F) << 8);
+                case
+                    MATRIX_BANK_INDEX -> // (a1 + 54) & 0x80FF | ((ZN12SupercellSWF16readUnsignedCharEv(a2) & 0x7F) << 8);
                     this.matrixBankIndex = swf.readUnsignedChar();
                 default -> {
                     try {
                         throw new UnsupportedTagException(String.format("Unknown tag %d in MovieClip, %s", frameTag, swf.getFilename()));
                     } catch (UnsupportedTagException exception) {
-                        exception.printStackTrace();
+                        LOGGER.error(exception.getMessage(), exception);
                     }
                 }
             }
@@ -198,7 +206,8 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
             stream.writeBlock(Tag.MATRIX_BANK_INDEX, blockStream -> blockStream.writeUnsignedChar(this.matrixBankIndex));
         }
 
-        stream.writeBlock(Tag.EOF, ignored -> {});
+        stream.writeBlock(Tag.EOF, ignored -> {
+        });
     }
 
     public DisplayObject clone(SupercellSWF swf, Rect scalingGrid) throws UnableToFindObjectException {

@@ -3,6 +3,8 @@ package com.vorono4ka.resources;
 import com.jogamp.opengl.GL3;
 import com.vorono4ka.editor.renderer.Attribute;
 import com.vorono4ka.editor.renderer.Shader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -11,6 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Assets {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Assets.class);
+
     private static final Map<String, Shader> shaders = new HashMap<>();
     private static final Map<String, BufferedImage> images = new HashMap<>();
 
@@ -34,8 +38,8 @@ public class Assets {
         try {
             bufferedImage = ImageIO.read(ResourceManager.loadStream(imageFile));
             if (bufferedImage == null) return null;
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException exception) {
+            LOGGER.error("Cannot load image {}", imageFile, exception);
             return null;
         }
 

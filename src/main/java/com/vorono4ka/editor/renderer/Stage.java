@@ -15,6 +15,8 @@ import com.vorono4ka.swf.displayObjects.StageSprite;
 import com.vorono4ka.utilities.BufferUtils;
 import com.vorono4ka.utilities.ImageUtils;
 import com.vorono4ka.utilities.MovieClipHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.nio.FloatBuffer;
@@ -24,6 +26,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Stage {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Stage.class);
+
     private static final Rect VIEWPORT_RECT = new Rect(-1, -1, 1, 1);
     private static final int[] RECT_INDICES = {0, 1, 2, 0, 2, 3};
 
@@ -121,7 +125,7 @@ public class Stage {
             try {
                 task.run();
             } catch (Exception e) {
-                System.err.println(e);
+                LOGGER.error("An error occurred in the Render Thread", e);
             }
 
             iterator.remove();

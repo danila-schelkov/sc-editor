@@ -11,6 +11,8 @@ import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.exceptions.*;
 import com.vorono4ka.swf.originalObjects.*;
 import com.vorono4ka.utilities.ArrayUtilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,6 +27,8 @@ import java.util.List;
 public class SupercellSWF {
     public static final String TEXTURE_EXTENSION = "_tex.sc";
     public static final byte[] START_SECTION_BYTES = {'S', 'T', 'A', 'R', 'T'};
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SupercellSWF.class);
 
     private final List<String> fontsNames = new ArrayList<>();
     private final List<ScMatrixBank> matrixBanks = new ArrayList<>();
@@ -94,8 +98,9 @@ public class SupercellSWF {
 
         try {
             decompressedData = Decompressor.decompress(data);
-        } catch (UnknownFileMagicException | UnknownFileVersionException | IOException e) {
-            e.printStackTrace();
+        } catch (UnknownFileMagicException | UnknownFileVersionException |
+                 IOException exception) {
+            LOGGER.error("An error occurred while decompressing the file: {}", path, exception);
             return false;
         }
 
@@ -189,7 +194,7 @@ public class SupercellSWF {
                 try {
                     throw new UnsupportedTagException(String.format("Encountered unknown tag %d, %s", tag, this.filename));
                 } catch (UnsupportedTagException exception) {
-                    exception.printStackTrace();
+                    LOGGER.error("An error occurred while loading the file: {}", path, exception);
                 }
 
                 if (length > 0) {
@@ -217,7 +222,9 @@ public class SupercellSWF {
 
                     return true;
                 }
-                case TEXTURE, TEXTURE_2, TEXTURE_3, TEXTURE_4, TEXTURE_5, TEXTURE_6, TEXTURE_7, TEXTURE_8, KHRONOS_TEXTURE, COMPRESSED_KHRONOS_TEXTURE -> {
+                case TEXTURE, TEXTURE_2, TEXTURE_3, TEXTURE_4, TEXTURE_5, TEXTURE_6,
+                     TEXTURE_7, TEXTURE_8, KHRONOS_TEXTURE,
+                     COMPRESSED_KHRONOS_TEXTURE -> {
                     if (loadedTextures >= this.texturesCount) {
                         throw new TooManyObjectsException("Trying to load too many textures from ");
                     }
@@ -230,29 +237,32 @@ public class SupercellSWF {
                     }
                     this.shapesIds[loadedShapes] = this.shapes[loadedShapes++].load(this, tagValue);
                 }
-                case MOVIE_CLIP, MOVIE_CLIP_2, MOVIE_CLIP_3, MOVIE_CLIP_4, MOVIE_CLIP_5, MOVIE_CLIP_6 -> {
+                case MOVIE_CLIP, MOVIE_CLIP_2, MOVIE_CLIP_3, MOVIE_CLIP_4, MOVIE_CLIP_5,
+                     MOVIE_CLIP_6 -> {
                     if (loadedMovieClips >= this.movieClipsCount) {
                         throw new TooManyObjectsException("Trying to load too many MovieClips from ");
                     }
                     this.movieClipsIds[loadedMovieClips] = this.movieClips[loadedMovieClips++].load(this, tagValue);
                 }
-                case TEXT_FIELD, TEXT_FIELD_2, TEXT_FIELD_3, TEXT_FIELD_4, TEXT_FIELD_5, TEXT_FIELD_6, TEXT_FIELD_7, TEXT_FIELD_8, TEXT_FIELD_9 -> {
+                case TEXT_FIELD, TEXT_FIELD_2, TEXT_FIELD_3, TEXT_FIELD_4, TEXT_FIELD_5,
+                     TEXT_FIELD_6, TEXT_FIELD_7, TEXT_FIELD_8, TEXT_FIELD_9 -> {
                     if (loadedTextFields >= this.textFieldsCount) {
                         throw new TooManyObjectsException("Trying to load too many TextFields from ");
                     }
                     this.textFieldsIds[loadedTextFields] = this.textFields[loadedTextFields++].load(this, tagValue);
                 }
                 case MATRIX -> matrixBank.getMatrix(loadedMatrices++).load(this, false);
-                case COLOR_TRANSFORM -> matrixBank.getColorTransforms(loadedColorTransforms++).read(this.stream);
+                case COLOR_TRANSFORM ->
+                    matrixBank.getColorTransforms(loadedColorTransforms++).read(this.stream);
                 case TAG_TIMELINE_INDEXES -> {
                     try {
                         throw new UnsupportedTagException("TAG_TIMELINE_INDEXES no longer in use");
-                    } catch (UnsupportedTagException e) {
-                        e.printStackTrace();
+                    } catch (UnsupportedTagException exception) {
+                        LOGGER.error("An error occurred while loading the file: {}", path, exception);
                     }
 
-                    int indexesLength = this.readInt();
-                    this.skip(indexesLength);
+                    int indicesLength = this.readInt();
+                    this.skip(indicesLength);
                 }
                 case HALF_SCALE_POSSIBLE -> this.isHalfScalePossible = true;
                 case USE_EXTERNAL_TEXTURE -> this.useExternalTexture = true;
@@ -277,7 +287,8 @@ public class SupercellSWF {
                     highresSuffix = this.readAscii();
                     lowresSuffix = this.readAscii();
                 }
-                case MATRIX_PRECISE -> matrixBank.getMatrix(loadedMatrices++).load(this, true);
+                case MATRIX_PRECISE ->
+                    matrixBank.getMatrix(loadedMatrices++).load(this, true);
                 case MOVIE_CLIP_MODIFIERS -> {
                     this.movieClipModifiersCount = this.readShort();
                     this.movieClipModifiers = new MovieClipModifierOriginal[this.movieClipModifiersCount];
@@ -286,7 +297,8 @@ public class SupercellSWF {
                         this.movieClipModifiers[i] = new MovieClipModifierOriginal();
                     }
                 }
-                case MODIFIER_STATE_2, MODIFIER_STATE_3, MODIFIER_STATE_4 -> this.movieClipModifiers[loadedMovieClipsModifiers++].load(this, tagValue);
+                case MODIFIER_STATE_2, MODIFIER_STATE_3, MODIFIER_STATE_4 ->
+                    this.movieClipModifiers[loadedMovieClipsModifiers++].load(this, tagValue);
                 case EXTRA_MATRIX_BANK -> {
                     int matricesCount = this.readShort();
                     int colorTransformsCount = this.readShort();
@@ -304,7 +316,7 @@ public class SupercellSWF {
                     try {
                         throw new UnsupportedTagException(String.format("Encountered unknown tag %d, %s", tag, this.filename));
                     } catch (UnsupportedTagException exception) {
-                        exception.printStackTrace();
+                        LOGGER.error("An error occurred while loading the file: {}", path, exception);
                     }
 
                     if (length > 0) {
@@ -341,8 +353,8 @@ public class SupercellSWF {
 
         try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(data);
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException exception) {
+            LOGGER.error("An error occurred while saving the file: {}", path, exception);
         }
     }
 
@@ -373,7 +385,8 @@ public class SupercellSWF {
             stream.writeBlock(object.getTag(), object::save);
         }
 
-        stream.writeBlock(Tag.EOF, (ignored) -> {});
+        stream.writeBlock(Tag.EOF, (ignored) -> {
+        });
     }
 
     private List<Savable> getSavableObjects() {

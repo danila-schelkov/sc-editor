@@ -5,12 +5,16 @@ import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.originalObjects.DisplayObjectOriginal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class DisplayObjectListMouseListener extends MouseAdapter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DisplayObjectListMouseListener.class);
+
     private final JTable table;
 
     public DisplayObjectListMouseListener(JTable table) {
@@ -36,7 +40,7 @@ public class DisplayObjectListMouseListener extends MouseAdapter {
             Main.editor.selectObject(displayObject);
             Main.editor.selectObjectInTable(Main.editor.getSelectedObject());
         } catch (UnableToFindObjectException exception) {
-            exception.printStackTrace();
+            LOGGER.error(exception.getMessage(), exception);
         }
     }
 }
