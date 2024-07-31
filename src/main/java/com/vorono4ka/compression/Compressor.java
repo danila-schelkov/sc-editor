@@ -1,21 +1,23 @@
 package com.vorono4ka.compression;
 
 import com.github.luben.zstd.Zstd;
-import com.vorono4ka.compression.exceptions.UnknownFileMagicException;
 import com.vorono4ka.compression.exceptions.UnknownFileVersionException;
 import org.sevenzip.compression.LZMA.Encoder;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 
 public class Compressor {
-    private static final byte[] LZMA_PROPERTIES = new byte[] {
+    private static final byte[] LZMA_PROPERTIES = new byte[]{
         0x5d, 0x00, 0x00, 0x04, 0x00
     };
 
     private static final MessageDigest MD5;
+    private static final int SC_MAGIC = 0x5343;
 
     static {
         try {
@@ -29,7 +31,7 @@ public class Compressor {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(byteArrayOutputStream);
 
-        dos.writeShort(0x5343);  // MAGIC
+        dos.writeShort(SC_MAGIC);
 
         dos.writeInt(compressionVersion);
         if (compressionVersion == 4) {
@@ -44,50 +46,28 @@ public class Compressor {
 
         switch (compressionVersion) {
             case 1 -> {
-                Encoder encoder = new Encoder();
-
                 dos.write(LZMA_PROPERTIES);
                 for (int i = 0; i < 4; i++) {
                     dos.writeByte((data.length >> (8 * i)) & 0xFF);
                 }
 
-                ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
-                ByteArrayOutputStream outputArray = new ByteArrayOutputStream();
-
-                encoder.code(byteArrayInputStream, outputArray, null);
-
-                dos.write(outputArray.toByteArray());
+                dos.write(compressLzma(data));
             }
-            case 2, 3 -> {  // TODO: fix
-                byte[] compressed = new byte[(int) Zstd.compressBound(data.length)];
-
-                int compressedLength = (int) Zstd.compress(
-                    data,
-                    compressed,
-                    Zstd.defaultCompressionLevel()
-                );
-
-                dos.write(compressed, 0, compressedLength);
-            }
-            default -> throw new UnknownFileVersionException("Unknown file version: " + compressionVersion);
+            case 2, 3 -> dos.write(Zstd.compress(data));
+            default ->
+                throw new UnknownFileVersionException("Unknown file version: " + compressionVersion);
         }
 
         return byteArrayOutputStream.toByteArray();
     }
 
-    public static void main(String[] args) throws UnknownFileVersionException, IOException {
-        byte[] compressed = compress(new byte[]{'t', 'e', 's', 't'}, 1);
+    private static byte[] compressLzma(byte[] data) throws IOException {
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
+        ByteArrayOutputStream outputArray = new ByteArrayOutputStream();
 
-        File file = new File("D:\\Projects\\GitHub\\sc-compression\\examples\\compressor\\out\\test.sc");
-        try (FileOutputStream fos = new FileOutputStream(file)) {
-            fos.write(compressed);
-        }
+        Encoder encoder = new Encoder();
+        encoder.code(byteArrayInputStream, outputArray, null);
 
-        try {
-            byte[] decompress = Decompressor.decompress(compressed);
-            System.out.println(Arrays.toString(decompress));
-        } catch (UnknownFileMagicException e) {
-            throw new RuntimeException(e);
-        }
+        return outputArray.toByteArray();
     }
 }

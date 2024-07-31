@@ -16,9 +16,9 @@ public class Decompressor {
     public static byte[] decompress(byte[] compressedData) throws UnknownFileMagicException, UnknownFileVersionException, IOException {
         DataInputStream stream = createDataInputStreamFromBytes(compressedData);
 
-        int MAGIC = stream.readShort();
-        if (MAGIC != SC_MAGIC) {
-            throw new UnknownFileMagicException("Unknown file magic: " + MAGIC);
+        int magic = stream.readShort();
+        if (magic != SC_MAGIC) {
+            throw new UnknownFileMagicException("Unknown file magic: " + magic);
         }
 
         int version = stream.readInt();
