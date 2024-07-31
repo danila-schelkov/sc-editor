@@ -1,6 +1,6 @@
 package com.vorono4ka.editor.layout.components;
 
-import com.vorono4ka.utilities.ArrayUtilities;
+import com.vorono4ka.utilities.ArrayUtils;
 
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
@@ -52,7 +52,7 @@ public class TablePopupMenuListener implements PopupMenuListener {
         int selectionMode = table.getSelectionModel().getSelectionMode();
         if (selectionMode == ListSelectionModel.SINGLE_INTERVAL_SELECTION) {
             int[] selectedRows = table.getSelectedRows();
-            if (ArrayUtilities.contains(selectedRows, rowAtPoint)) {
+            if (ArrayUtils.contains(selectedRows, rowAtPoint)) {
                 shouldUpdateValue = false;
             }
         }

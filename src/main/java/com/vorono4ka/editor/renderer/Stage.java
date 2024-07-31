@@ -12,6 +12,7 @@ import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
 import com.vorono4ka.swf.displayObjects.StageSprite;
+import com.vorono4ka.swf.originalObjects.SWFTexture;
 import com.vorono4ka.utilities.BufferUtils;
 import com.vorono4ka.utilities.ImageUtils;
 import com.vorono4ka.utilities.MovieClipHelper;
@@ -20,9 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.nio.FloatBuffer;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Stage {
@@ -35,6 +34,7 @@ public class Stage {
     private static Stage INSTANCE;
 
     private final ConcurrentLinkedQueue<Runnable> tasks = new ConcurrentLinkedQueue<>();
+    private final Map<Integer, GLImage> images = new HashMap<>();
     private final List<Batch> batches = new ArrayList<>();
     private final Camera camera = new Camera();
     private final BatchPool batchPool = new BatchPool();
@@ -319,6 +319,18 @@ public class Stage {
 
     public StageSprite getStageSprite() {
         return stageSprite;
+    }
+
+    public GLImage getImageByIndex(int index) {
+        return this.images.get(index);
+    }
+
+    public GLImage createGLImage(SWFTexture texture) {
+        GLImage image = new GLImage();
+        image.createWithFormat(texture.getKhronosTexture(), false, texture.getTag().getTextureFilter(), texture.getWidth(), texture.getHeight(), texture.getPixels(), texture.getTextureInfo().pixelFormat(), texture.getTextureInfo().pixelType());
+        this.images.put(texture.getIndex(), image);
+
+        return image;
     }
 
     public Rect getDisplayObjectBounds(DisplayObject displayObject) {

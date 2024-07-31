@@ -4,6 +4,7 @@ import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
+import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.originalObjects.ShapeOriginal;
 import com.vorono4ka.utilities.RenderConfig;
 
@@ -70,7 +71,7 @@ public class Shape9Slice extends Shape {
 
         Stage stage = this.getStage();
         for (ShapeDrawBitmapCommand command : this.commands) {
-            result |= command.render9Slice(stage, matrixApplied, colorTransformApplied, renderConfigBits, movedGrid, bounds, scaledWidth, scaledHeight);
+            result |= ShapeDrawBitmapCommandRenderer.render9Slice(command, stage, matrixApplied, colorTransformApplied, renderConfigBits, movedGrid, bounds, scaledWidth, scaledHeight);
         }
 
         return result;

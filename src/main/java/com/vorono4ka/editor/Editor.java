@@ -11,6 +11,7 @@ import com.vorono4ka.editor.layout.windows.EditorWindow;
 import com.vorono4ka.editor.layout.windows.UsagesWindow;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.exporter.ImageExporter;
+import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
@@ -20,7 +21,7 @@ import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.exceptions.UnsupportedCustomPropertyException;
 import com.vorono4ka.swf.originalObjects.MovieClipOriginal;
 import com.vorono4ka.swf.originalObjects.SWFTexture;
-import com.vorono4ka.utilities.ArrayUtilities;
+import com.vorono4ka.utilities.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,8 +65,10 @@ public class Editor {
 
         this.window.setTitle(Main.TITLE + " - " + this.swf.getFilename());
 
+        List<GLImage> images = uploadImagesToOpenGl();
+
         SwingUtilities.invokeLater(this::updateObjectTable);
-        SwingUtilities.invokeLater(this::updateTextureTable);
+        SwingUtilities.invokeLater(() -> this.updateTextureTable(images));
 
         FileMenu fileMenu = this.window.getMenubar().getFileMenu();
         fileMenu.checkCanSave();
@@ -105,12 +108,13 @@ public class Editor {
         editMenu.checkNextAvailable();
 
         if (this.swf != null) {
+            Stage stage = Stage.getInstance();
+
             int[] textureIds = new int[this.swf.getTextureCount()];
             for (int i = 0; i < this.swf.getTextureCount(); i++) {
-                textureIds[i] = this.swf.getTexture(i).getTextureId();
+                textureIds[i] = stage.getImageByIndex(this.swf.getTexture(i).getIndex()).getTextureId();
             }
 
-            Stage stage = Stage.getInstance();
             stage.doInRenderThread(() -> stage.getGl().glDeleteTextures(textureIds.length, textureIds, 0));
             stage.clearBatches();
             stage.removeAllChildren();
@@ -203,7 +207,7 @@ public class Editor {
                 int movieClipId = ids[i];
 
                 MovieClipOriginal movieClipOriginal = this.swf.getOriginalMovieClip(movieClipId, null);
-                if (ArrayUtilities.contains(movieClipOriginal.getChildrenIds(), (short) displayObjectId)) {
+                if (ArrayUtils.contains(movieClipOriginal.getChildrenIds(), (short) displayObjectId)) {
                     objectsTable.addRow(movieClipId, movieClipOriginal.getExportName(), "MovieClip");
                 }
             }
@@ -262,17 +266,29 @@ public class Editor {
         }
     }
 
-    private void updateTextureTable() {
+    private List<GLImage> uploadImagesToOpenGl() {
+        List<GLImage> images = new ArrayList<>();
+
+        Stage stage = Stage.getInstance();
+        for (int i = 0; i < this.swf.getTextureCount(); i++) {
+            SWFTexture texture = this.swf.getTexture(i);
+            GLImage image = stage.createGLImage(texture);
+            images.add(image);
+        }
+
+        return images;
+    }
+
+    private void updateTextureTable(List<GLImage> images) {
         Table texturesTable = this.window.getTexturesTable();
         StatusBar statusBar = this.window.getStatusBar();
 
-        int textureCount = this.swf.getTextureCount();
-        try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Loading textures table...", 0, textureCount)) {
-            for (int i = 0; i < textureCount; i++) {
-                SWFTexture texture = this.swf.getTexture(i);
-                texturesTable.addRow(i, texture.getWidth(), texture.getHeight(), texture.getPixelFormat());
+        try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Loading textures table...", 0, images.size())) {
+            for (int i = 0; i < images.size(); i++) {
+                GLImage image = images.get(i);
+                texturesTable.addRow(i, image.getWidth(), image.getHeight(), image.getPixelFormat());
 
-                SpriteSheet spriteSheet = new SpriteSheet(texture, swf.getDrawBitmapsOfTexture(i));
+                SpriteSheet spriteSheet = new SpriteSheet(image, swf.getDrawBitmapsOfTexture(i));
                 this.spriteSheets.add(spriteSheet);
 
                 taskTracker.setValue(i);

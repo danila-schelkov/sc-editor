@@ -7,7 +7,8 @@ import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
+import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommandRenderer;
+import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;
 
 import java.util.List;
 
@@ -40,8 +41,8 @@ public class SpriteSheet extends DisplayObject {
             stage.addVertex(this.bounds.getRight(), this.bounds.getTop(), 1, 0, 1, 1, 1, 1, 0, 0, 0);
 
             if (Main.editor.shouldDisplayPolygons()) {
-                for (ShapeDrawBitmapCommand drawBitmapCommand : this.drawBitmapCommands) {
-                    drawBitmapCommand.renderUV(stage, 0);
+                for (ShapeDrawBitmapCommand command : this.drawBitmapCommands) {
+                    ShapeDrawBitmapCommandRenderer.renderUV(command, stage, 0);
                 }
             }
 

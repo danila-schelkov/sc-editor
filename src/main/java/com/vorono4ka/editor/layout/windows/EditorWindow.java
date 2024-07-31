@@ -18,7 +18,7 @@ import com.vorono4ka.swf.MovieClipFrame;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
 import com.vorono4ka.swf.displayObjects.Shape;
-import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
+import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;
 
 import javax.swing.*;
 import java.awt.*;

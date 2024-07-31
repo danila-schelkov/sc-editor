@@ -7,10 +7,10 @@ import com.vorono4ka.compression.exceptions.UnknownFileVersionException;
 import com.vorono4ka.resources.ResourceManager;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.constants.Tag;
-import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
+import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.exceptions.*;
 import com.vorono4ka.swf.originalObjects.*;
-import com.vorono4ka.utilities.ArrayUtilities;
+import com.vorono4ka.utilities.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +78,7 @@ public class SupercellSWF {
 
         try (FileInputStream fis = new FileInputStream(path)) {
             data = fis.readAllBytes();
-            int startSectionIndex = ArrayUtilities.indexOf(data, START_SECTION_BYTES);
+            int startSectionIndex = ArrayUtils.indexOf(data, START_SECTION_BYTES);
             if (startSectionIndex != -1) {
                 data = Arrays.copyOf(data, startSectionIndex);
             }
@@ -534,8 +534,8 @@ public class SupercellSWF {
         return this.matrixBanks.get(index);
     }
 
-    public SWFTexture getTexture(int textureId) {
-        return this.textures[textureId];
+    public SWFTexture getTexture(int textureIndex) {
+        return this.textures[textureIndex];
     }
 
     public String getFilename() {

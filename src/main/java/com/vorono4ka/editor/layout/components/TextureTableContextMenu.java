@@ -49,7 +49,7 @@ public class TextureTableContextMenu extends ContextMenu {
                 for (int selectedRow : selectedRows) {
                     int textureIndex = (int) this.table.getValueAt(selectedRow, 0);
 
-                    Texture texture = swf.getTexture(textureIndex).getTexture();
+                    Texture texture = stage.getImageByIndex(swf.getTexture(textureIndex).getIndex()).getTexture();
                     texture.bind();
                     IntBuffer pixels = texture.getPixels(0);
                     texture.unbind();

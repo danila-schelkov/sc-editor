@@ -2,14 +2,11 @@ package com.vorono4ka.swf.originalObjects;
 
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.streams.ByteStream;
-import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.SupercellSWF;
-import com.vorono4ka.swf.SwfByteStream;
 import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.Shape;
 import com.vorono4ka.swf.displayObjects.Shape9Slice;
-import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
 import com.vorono4ka.swf.exceptions.UnsupportedTagException;
 import org.slf4j.Logger;
@@ -22,7 +19,7 @@ public class ShapeOriginal extends DisplayObjectOriginal {
 
     private ShapeDrawBitmapCommand[] commands;
 
-    public int load(ByteStream stream, Tag tag, Function<Integer, GLImage> imageFunction, String filename) throws NegativeTagLengthException {
+    public int load(ByteStream stream, Tag tag, Function<Integer, SWFTexture> imageFunction, String filename) throws NegativeTagLengthException {
         this.tag = tag;
 
         this.id = stream.readShort();

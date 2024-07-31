@@ -29,7 +29,7 @@ public enum Tag {
     TEXTURE_4,
     TEXT_FIELD_5,
     USE_EXTERNAL_TEXTURE,
-    // Textures separated by tales
+    // Textures separated by tiles (interlaced)
     TEXTURE_5,
     TEXTURE_6,
     TEXTURE_7,  // TEXTURE_6 with mipmaps

@@ -3,6 +3,7 @@ package com.vorono4ka.swf.displayObjects;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
+import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.originalObjects.ShapeOriginal;
 import com.vorono4ka.utilities.RenderConfig;
 
@@ -36,7 +37,7 @@ public class Shape extends DisplayObject {
 
         boolean result = false;
         for (ShapeDrawBitmapCommand command : this.commands) {
-            result |= command.render(stage, matrixApplied, colorTransformApplied, renderConfigBits);
+            result |= ShapeDrawBitmapCommandRenderer.render(command, stage, matrixApplied, colorTransformApplied, renderConfigBits);
         }
 
         return result;
@@ -54,7 +55,7 @@ public class Shape extends DisplayObject {
         boolean result = false;
 
         for (ShapeDrawBitmapCommand command : this.commands) {
-            result |= command.collisionRender(stage, matrixApplied, this.getColorTransform());
+            result |= ShapeDrawBitmapCommandRenderer.collisionRender(command, stage, matrixApplied, this.getColorTransform());
         }
 
         return result;
