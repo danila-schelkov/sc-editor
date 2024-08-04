@@ -7,8 +7,6 @@ import com.vorono4ka.swf.MovieClipFrame;
 import com.vorono4ka.swf.MovieClipFrameElement;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
-import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.MovieClip;
 import com.vorono4ka.swf.exceptions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -206,11 +204,8 @@ public class MovieClipOriginal extends DisplayObjectOriginal {
             stream.writeBlock(Tag.MATRIX_BANK_INDEX, blockStream -> blockStream.writeUnsignedChar(this.matrixBankIndex));
         }
 
-        stream.writeBlock(Tag.EOF, ignored -> {});
-    }
-
-    public DisplayObject clone(SupercellSWF swf, Rect scalingGrid) throws UnableToFindObjectException {
-        return MovieClip.createMovieClip(this, swf, scalingGrid);
+        stream.writeBlock(Tag.EOF, ignored -> {
+        });
     }
 
     public void createTimelineChildren(SupercellSWF swf) throws UnableToFindObjectException {

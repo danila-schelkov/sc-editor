@@ -9,6 +9,7 @@ import com.vorono4ka.math.Rect;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
+import com.vorono4ka.swf.displayObjects.DisplayObjectFactory;
 import com.vorono4ka.swf.displayObjects.MovieClip;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.originalObjects.DisplayObjectOriginal;
@@ -159,7 +160,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         try {
             DisplayObjectOriginal displayObjectOriginal = swf.getOriginalDisplayObject(displayObjectId, null);
-            DisplayObject displayObject = displayObjectOriginal.clone(swf, null);
+            DisplayObject displayObject = DisplayObjectFactory.createFromOriginal(displayObjectOriginal, swf, null);
 
             Rect bounds = stage.calculateBoundsForAllFrames(displayObject);
             stage.getCamera().zoomToFit(bounds);
@@ -191,7 +192,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         try {
             DisplayObjectOriginal displayObjectOriginal = swf.getOriginalDisplayObject(displayObjectId, null);
-            DisplayObject displayObject = displayObjectOriginal.clone(swf, null);
+            DisplayObject displayObject = DisplayObjectFactory.createFromOriginal(displayObjectOriginal, swf, null);
             if (!displayObject.isMovieClip()) return;
 
             MovieClip movieClip = ((MovieClip) displayObject);

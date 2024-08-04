@@ -1,12 +1,7 @@
 package com.vorono4ka.swf.originalObjects;
 
-import com.vorono4ka.math.Rect;
 import com.vorono4ka.streams.ByteStream;
-import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
-import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.Shape;
-import com.vorono4ka.swf.displayObjects.Shape9Slice;
 import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
 import com.vorono4ka.swf.exceptions.UnsupportedTagException;
 import org.slf4j.Logger;
@@ -51,7 +46,8 @@ public class ShapeOriginal extends DisplayObjectOriginal {
                 case EOF -> {
                     return this.id;
                 }
-                case SHAPE_DRAW_BITMAP_COMMAND, SHAPE_DRAW_BITMAP_COMMAND_2, SHAPE_DRAW_BITMAP_COMMAND_3 ->
+                case SHAPE_DRAW_BITMAP_COMMAND, SHAPE_DRAW_BITMAP_COMMAND_2,
+                     SHAPE_DRAW_BITMAP_COMMAND_3 ->
                     this.commands[loadedCommands++].load(stream, tagValue, imageFunction);
                 case SHAPE_DRAW_COLOR_FILL_COMMAND -> {
                     try {
@@ -88,16 +84,8 @@ public class ShapeOriginal extends DisplayObjectOriginal {
             stream.writeBlock(command.getTag(), command::save);
         }
 
-        stream.writeBlock(Tag.EOF, ignored -> {});
-    }
-
-    @Override
-    public DisplayObject clone(SupercellSWF swf, Rect scalingGrid) {
-        if (scalingGrid != null) {
-            return Shape9Slice.createShape(this, scalingGrid);
-        }
-
-        return Shape.createShape(this);
+        stream.writeBlock(Tag.EOF, ignored -> {
+        });
     }
 
     public ShapeDrawBitmapCommand[] getCommands() {

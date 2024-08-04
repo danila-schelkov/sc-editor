@@ -4,12 +4,19 @@ import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
+import com.vorono4ka.swf.originalObjects.TextFieldOriginal;
 import com.vorono4ka.utilities.RenderConfig;
 
 public class TextField extends DisplayObject {
     private boolean isInteractive;
     private float cursorBlinkTime;
     private Rect bounds;
+
+    public static DisplayObject createTextField(TextFieldOriginal original) {
+        TextField textField = new TextField();
+        textField.id = original.getId();
+        return textField;
+    }
 
     @Override
     public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {

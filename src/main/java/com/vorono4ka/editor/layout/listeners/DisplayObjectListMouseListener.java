@@ -3,6 +3,7 @@ package com.vorono4ka.editor.layout.listeners;
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
+import com.vorono4ka.swf.displayObjects.DisplayObjectFactory;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.originalObjects.DisplayObjectOriginal;
 import org.slf4j.Logger;
@@ -35,7 +36,7 @@ public class DisplayObjectListMouseListener extends MouseAdapter {
         SupercellSWF swf = Main.editor.getSwf();
         try {
             DisplayObjectOriginal displayObjectOriginal = swf.getOriginalDisplayObject(id, name);
-            DisplayObject displayObject = displayObjectOriginal.clone(swf, null);
+            DisplayObject displayObject = DisplayObjectFactory.createFromOriginal(displayObjectOriginal, swf, null);
 
             Main.editor.selectObject(displayObject);
             Main.editor.selectObjectInTable(Main.editor.getSelectedObject());

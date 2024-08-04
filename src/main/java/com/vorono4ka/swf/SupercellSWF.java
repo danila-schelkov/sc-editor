@@ -7,7 +7,6 @@ import com.vorono4ka.compression.exceptions.UnknownFileVersionException;
 import com.vorono4ka.resources.ResourceManager;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.constants.Tag;
-import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.exceptions.*;
 import com.vorono4ka.swf.originalObjects.*;
 import com.vorono4ka.utilities.ArrayUtils;
@@ -125,29 +124,21 @@ public class SupercellSWF {
         }
 
         this.exports = new Export[exportCount];
-        for (int i = 0; i < exportCount; i++) {
+        for (int i = 0; i < exports.length; i++) {
             exports[i] = new Export(exportIds[i], exportNames[i]);
         }
 
         this.shapes = new ShapeOriginal[this.shapeCount];
-        for (int i = 0; i < this.shapeCount; i++) {
-            this.shapes[i] = new ShapeOriginal();
-        }
+        ArrayUtils.fill(this.shapes, ShapeOriginal::new);
 
         this.movieClips = new MovieClipOriginal[this.movieClipCount];
-        for (int i = 0; i < this.movieClipCount; i++) {
-            this.movieClips[i] = new MovieClipOriginal();
-        }
+        ArrayUtils.fill(this.movieClips, MovieClipOriginal::new);
 
         this.textures = new SWFTexture[this.textureCount];
-        for (int i = 0; i < this.textureCount; i++) {
-            this.textures[i] = new SWFTexture();
-        }
+        ArrayUtils.fill(this.textures, SWFTexture::new);
 
         this.textFields = new TextFieldOriginal[this.textFieldCount];
-        for (int i = 0; i < this.textFieldCount; i++) {
-            this.textFields[i] = new TextFieldOriginal();
-        }
+        ArrayUtils.fill(this.textFields, TextFieldOriginal::new);
 
         if (this.loadTags(stream, false, path)) {
             for (Export export : exports) {
@@ -290,10 +281,7 @@ public class SupercellSWF {
                 case MOVIE_CLIP_MODIFIERS -> {
                     int movieClipModifierCount = stream.readShort();
                     this.movieClipModifiers = new MovieClipModifierOriginal[movieClipModifierCount];
-
-                    for (int i = 0; i < movieClipModifierCount; i++) {
-                        this.movieClipModifiers[i] = new MovieClipModifierOriginal();
-                    }
+                    ArrayUtils.fill(this.movieClipModifiers, MovieClipModifierOriginal::new);
                 }
                 case MODIFIER_STATE_2, MODIFIER_STATE_3, MODIFIER_STATE_4 ->
                     this.movieClipModifiers[loadedMovieClipsModifiers++].load(stream, tagValue);

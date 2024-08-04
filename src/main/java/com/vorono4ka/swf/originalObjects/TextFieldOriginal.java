@@ -1,12 +1,7 @@
 package com.vorono4ka.swf.originalObjects;
 
-import com.vorono4ka.math.Rect;
 import com.vorono4ka.streams.ByteStream;
-import com.vorono4ka.swf.SupercellSWF;
-import com.vorono4ka.swf.SwfByteStream;
 import com.vorono4ka.swf.constants.Tag;
-import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.TextField;
 
 import java.util.function.Function;
 
@@ -157,13 +152,5 @@ public class TextFieldOriginal extends DisplayObjectOriginal {
         if (this.tag == Tag.TEXT_FIELD_7) return;
 
         stream.writeBoolean(this.autoAdjustFontSize);
-    }
-
-    @Override
-    public DisplayObject clone(SupercellSWF swf, Rect scalingGrid) {
-        TextField textField = new TextField();
-        textField.setId(this.id);
-
-        return textField;
     }
 }

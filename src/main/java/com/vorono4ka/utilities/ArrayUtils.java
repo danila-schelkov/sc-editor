@@ -1,5 +1,7 @@
 package com.vorono4ka.utilities;
 
+import java.util.function.Supplier;
+
 public final class ArrayUtils {
     public static int indexOf(byte[] array, byte[] bytesToFind) {
         for (int i = 0; i < array.length; i++) {
@@ -113,5 +115,11 @@ public final class ArrayUtils {
         }
 
         return result;
+    }
+
+    public static <T> void fill(T[] array, Supplier<T> objectSupplier) {
+        for (int i = 0; i < array.length; i++) {
+            array[i] = objectSupplier.get();
+        }
     }
 }
