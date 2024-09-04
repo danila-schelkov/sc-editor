@@ -158,27 +158,31 @@ public class DisplayObjectContextMenu extends ContextMenu {
         SupercellSWF swf = Main.editor.getSwf();
         ImageExporter imageExporter = Main.editor.getImageExporter();
 
-        try {
-            DisplayObjectOriginal displayObjectOriginal = swf.getOriginalDisplayObject(displayObjectId, null);
-            DisplayObject displayObject = DisplayObjectFactory.createFromOriginal(displayObjectOriginal, swf, null);
-
-            Rect bounds = stage.calculateBoundsForAllFrames(displayObject);
-            stage.getCamera().zoomToFit(bounds);
-
-            stage.doInRenderThread(() -> {
-                stage.clearBatches();
-                stage.removeAllChildren();
-                stage.addChild(displayObject);
-                stage.updatePMVMatrix();
-
-                stage.render(0);
-
-                BufferedImage screenshot = imageExporter.takeScreenshot(displayObject);
-                imageExporter.saveScreenshot(displayObject, screenshot);
-            });
-        } catch (UnableToFindObjectException e) {
-            throw new RuntimeException(e);
+        DisplayObject displayObject;
+        DisplayObject selectedObject = Main.editor.getSelectedObject();
+        if (selectedObject == null || selectedObject.getId() != displayObjectId) {
+            try {
+                DisplayObjectOriginal displayObjectOriginal = swf.getOriginalDisplayObject(displayObjectId, null);
+                displayObject = DisplayObjectFactory.createFromOriginal(displayObjectOriginal, swf, null);
+            } catch (UnableToFindObjectException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            displayObject = selectedObject;
         }
+
+        Rect bounds = stage.calculateBoundsForAllFrames(displayObject);
+        stage.getCamera().zoomToFit(bounds);
+
+        stage.doInRenderThread(() -> {
+            Main.editor.selectObject(displayObject);
+            stage.updatePMVMatrix();
+
+            stage.render(0);
+
+            BufferedImage screenshot = imageExporter.takeScreenshot(displayObject);
+            imageExporter.saveScreenshot(displayObject, screenshot);
+        });
     }
 
     private void exportAsVideo(ActionEvent actionEvent) {
@@ -201,9 +205,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
             stage.getCamera().zoomToFit(bounds);
 
             stage.doInRenderThread(() -> {
-                stage.clearBatches();
-                stage.removeAllChildren();
-                stage.addChild(displayObject);
+                Main.editor.selectObject(displayObject);
                 stage.updatePMVMatrix();
 
                 String filename = movieClip.getExportName();

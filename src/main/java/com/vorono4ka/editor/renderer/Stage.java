@@ -9,6 +9,7 @@ import com.vorono4ka.resources.Assets;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.Matrix2x3;
+import com.vorono4ka.swf.constants.MovieClipState;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
 import com.vorono4ka.swf.displayObjects.StageSprite;
@@ -160,9 +161,19 @@ public class Stage {
 
             if (movieClip.getFrames().length > 1) {
                 Rect bounds = new Rect();
+
+                // Saving last movie clip state
+                int loopFrame = movieClip.getLoopFrame();
                 int currentFrame = movieClip.getCurrentFrame();
+                MovieClipState state = movieClip.getState();
+
+                // Calculating bounds for all frames
                 MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> bounds.mergeBounds(getDisplayObjectBounds(movieClip)));
+
+                // Rolling movie clip state back
                 movieClip.gotoAbsoluteTimeRecursive(currentFrame * movieClip.getMsPerFrame());
+                movieClip.gotoAndPlayFrameIndex(currentFrame, loopFrame, state);
+
                 return bounds;
             }
         }
