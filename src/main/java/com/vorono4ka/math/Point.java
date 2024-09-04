@@ -14,6 +14,11 @@ public class Point {
         this.y = y;
     }
 
+    public void scale(float factor) {
+        x *= factor;
+        y *= factor;
+    }
+
     public float getX() {
         return x;
     }

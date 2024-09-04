@@ -18,7 +18,7 @@ import com.vorono4ka.swf.MovieClipFrame;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.MovieClip;
 import com.vorono4ka.swf.displayObjects.Shape;
-import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommand;
+import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;
 
 import javax.swing.*;
 import java.awt.*;
@@ -71,7 +71,7 @@ public class EditorWindow extends Window {
 
             for (int i = 0; i < shape.getCommandCount(); i++) {
                 ShapeDrawBitmapCommand command = shape.getCommand(i);
-                shapeInfoPanel.addCommandInfo(i, command.getTexture().getIndex(), command.getTag());
+                shapeInfoPanel.addCommandInfo(i, command.getTextureIndex(), command.getTag());
             }
 
             return shapeInfoPanel;

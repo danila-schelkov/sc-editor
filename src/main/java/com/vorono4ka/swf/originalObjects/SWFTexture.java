@@ -1,13 +1,12 @@
 package com.vorono4ka.swf.originalObjects;
 
-import com.jogamp.opengl.GL3;
 import com.vorono4ka.compression.Decompressor;
 import com.vorono4ka.streams.ByteStream;
-import com.vorono4ka.swf.GLImage;
-import com.vorono4ka.swf.SupercellSWF;
+import com.vorono4ka.swf.TextureInfo;
 import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.TextureFileNotFound;
+import com.vorono4ka.utilities.ArrayUtils;
 import com.vorono4ka.utilities.BufferUtils;
 import team.nulls.ntengine.assets.KhronosTexture;
 import team.nulls.ntengine.assets.KhronosTextureDataLoader;
@@ -21,25 +20,26 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
 import java.nio.file.Path;
+import java.util.function.BiConsumer;
 
-public class SWFTexture extends GLImage implements Savable {
+public class SWFTexture implements Savable {
     public static final int TILE_SIZE = 32;
-
-    private int index;
 
     private Tag tag;
 
+    private int type;
+    private int width, height;
+    private KhronosTexture khronosTexture;
+    private Buffer pixels;
+
+    private int index = -1;
+    private TextureInfo textureInfo;
+
     public SWFTexture() {
-        this.index = -1;
     }
 
-    public SWFTexture(Tag tag) {
-        this.tag = tag;
-        this.index = -1;
-    }
-
-    private static byte[] getTextureFileBytes(SupercellSWF swf, String compressedTextureFilename) throws TextureFileNotFound {
-        Path compressedTextureFilepath = swf.getPath().getParent().resolve(compressedTextureFilename);
+    private static byte[] getTextureFileBytes(Path directory, String compressedTextureFilename) throws TextureFileNotFound {
+        Path compressedTextureFilepath = directory.resolve(compressedTextureFilename);
         File file = new File(compressedTextureFilepath.toUri());
 
         byte[] compressedData;
@@ -53,95 +53,59 @@ public class SWFTexture extends GLImage implements Savable {
         return compressedData;
     }
 
-    private static TextureInfo getTextureInfoByType(int type) {
-        int pixelFormat = GL3.GL_RGBA;
-        int pixelType = GL3.GL_UNSIGNED_BYTE;
-        int pixelBytes = 4;
-
-        switch (type) {
-            case 2, 8 -> {
-                pixelType = GL3.GL_UNSIGNED_SHORT_4_4_4_4;
-                pixelBytes = 2;
-            }
-            case 3 -> {
-                pixelType = GL3.GL_UNSIGNED_SHORT_5_5_5_1;
-                pixelBytes = 2;
-            }
-            case 4 -> {
-                pixelType = GL3.GL_UNSIGNED_SHORT_5_6_5;
-                pixelFormat = GL3.GL_RGB;
-                pixelBytes = 2;
-            }
-            case 6 -> {
-                pixelFormat = GL3.GL_LUMINANCE_ALPHA;
-                pixelBytes = 2;
-            }
-            case 10 -> {
-                pixelFormat = GL3.GL_LUMINANCE;
-                pixelBytes = 1;
-            }
-        }
-
-        return new TextureInfo(pixelFormat, pixelType, pixelBytes);
-    }
-
-    private static boolean isSeparatedByTiles(Tag tag) {
+    private static boolean hasInterlacing(Tag tag) {
         return tag == Tag.TEXTURE_5 || tag == Tag.TEXTURE_6 || tag == Tag.TEXTURE_7;
     }
 
-    public void load(SupercellSWF swf, Tag tag, boolean hasTexture) throws LoadingFaultException, TextureFileNotFound {
+    public void load(ByteStream stream, Tag tag, boolean hasTexture, Path directory) throws LoadingFaultException, TextureFileNotFound {
         this.tag = tag;
 
         int khronosTextureLength = 0;
         if (tag == Tag.KHRONOS_TEXTURE) {
-            khronosTextureLength = swf.readInt();
+            khronosTextureLength = stream.readInt();
             assert khronosTextureLength > 0;
         }
 
         String compressedTextureFilename = null;
         if (tag == Tag.COMPRESSED_KHRONOS_TEXTURE) {
-            compressedTextureFilename = swf.readAscii();
+            compressedTextureFilename = stream.readAscii();
             if (compressedTextureFilename == null) {
                 throw new LoadingFaultException("Compressed texture filename cannot be null.");
             }
         }
 
-        int type = swf.readUnsignedChar();
-        this.width = swf.readShort();
-        this.height = swf.readShort();
+        type = stream.readUnsignedChar();
+        width = stream.readShort();
+        height = stream.readShort();
 
         if (!hasTexture) return;
 
-        TextureInfo textureInfo = getTextureInfoByType(type);
+        textureInfo = TextureInfo.getTextureInfoByType(type);
 
-        KhronosTexture ktx = null;
-        Buffer pixels = null;
         switch (tag) {
             case KHRONOS_TEXTURE -> {
-                byte[] bytes = swf.readByteArray(khronosTextureLength);
-                ktx = KhronosTextureDataLoader.decodeKtx(BufferUtils.wrapDirect(bytes));
+                byte[] bytes = stream.readByteArray(khronosTextureLength);
+                khronosTexture = KhronosTextureDataLoader.decodeKtx(BufferUtils.wrapDirect(bytes));
             }
             case COMPRESSED_KHRONOS_TEXTURE -> {
-                byte[] compressedData = getTextureFileBytes(swf, compressedTextureFilename);
+                byte[] compressedData = getTextureFileBytes(directory, compressedTextureFilename);
                 byte[] decompressed = Decompressor.decompressZstd(compressedData, 0);
-                ktx = KhronosTextureDataLoader.decodeKtx(BufferUtils.wrapDirect(decompressed));
+                khronosTexture = KhronosTextureDataLoader.decodeKtx(BufferUtils.wrapDirect(decompressed));
             }
             default ->
-                pixels = this.loadTexture(swf, this.width, this.height, textureInfo.pixelBytes(), isSeparatedByTiles(tag));
+                pixels = loadTexture(stream, width, height, textureInfo.pixelBytes(), hasInterlacing(tag));
         }
-
-        this.createWithFormat(ktx, false, tag.getTextureFilter(), this.width, this.height, pixels, textureInfo.pixelFormat(), textureInfo.pixelType());
     }
 
     @Override
     public void save(ByteStream stream) {
-        stream.writeUnsignedChar(0);  // TODO: calculate type
-        stream.writeShort(this.width);
-        stream.writeShort(this.height);
+        stream.writeUnsignedChar(type);  // TODO: calculate type
+        stream.writeShort(width);
+        stream.writeShort(height);
     }
 
     public int getIndex() {
-        return this.index;
+        return index;
     }
 
     public void setIndex(int index) {
@@ -156,124 +120,116 @@ public class SWFTexture extends GLImage implements Savable {
         this.tag = tag;
     }
 
-    private Buffer loadTexture(SupercellSWF swf, int width, int height, int pixelBytes, boolean separatedByTiles) {
+    public int getType() {
+        return type;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public TextureInfo getTextureInfo() {
+        return textureInfo;
+    }
+
+    public KhronosTexture getKhronosTexture() {
+        return khronosTexture;
+    }
+
+    public Buffer getPixels() {
+        return pixels;
+    }
+
+    private Buffer loadTexture(ByteStream stream, int width, int height, int pixelBytes, boolean hasInterlacing) {
         return switch (pixelBytes) {
-            case 1 -> this.loadTextureAsChar(swf, width, height, separatedByTiles);
-            case 2 -> this.loadTextureAsShort(swf, width, height, separatedByTiles);
-            case 4 -> this.loadTextureAsInt(swf, width, height, separatedByTiles);
-            default ->
-                throw new IllegalStateException("Unexpected value: " + pixelBytes);
+            case 1 -> loadTextureAsChar(stream, width, height, hasInterlacing);
+            case 2 -> loadTextureAsShort(stream, width, height, hasInterlacing);
+            case 4 -> loadTextureAsInt(stream, width, height, hasInterlacing);
+            default -> throw new IllegalStateException("Unexpected value: " + pixelBytes);
         };
     }
 
-    private ByteBuffer loadTextureAsChar(SupercellSWF swf, int width, int height, boolean separatedByTiles) {
+    private ByteBuffer loadTextureAsChar(ByteStream stream, int width, int height, boolean separatedByTiles) {
         if (separatedByTiles) {
-            int xChunksCount = width / TILE_SIZE;
-            int yChunksCount = height / TILE_SIZE;
-
             ByteBuffer pixels = BufferUtils.allocateDirect(width * height);
 
-            for (int tileY = 0; tileY < yChunksCount + 1; tileY++) {
-                for (int tileX = 0; tileX < xChunksCount + 1; tileX++) {
-                    int tileWidth = Math.min(width - (tileX * TILE_SIZE), TILE_SIZE);
-                    int tileHeight = Math.min(height - (tileY * TILE_SIZE), TILE_SIZE);
-
-                    byte[] tilePixels = readTileAsChar(swf, tileWidth, tileHeight);
-
-                    for (int y = 0; y < tileHeight; y++) {
-                        int pixelY = (tileY * TILE_SIZE) + y;
-
-                        for (int x = 0; x < tileWidth; x++) {
-                            int pixelX = (tileX * TILE_SIZE) + x;
-
-                            pixels.put(pixelY * width + pixelX, tilePixels[y * tileWidth + x]);
-                        }
-                    }
-                }
-            }
+            loadInterlacedTexture(stream, width, height, this::readTileAsChar, pixels::put);
 
             return pixels;
         } else {
-            return BufferUtils.wrapDirect(swf.readByteArray(width * height));
+            return BufferUtils.wrapDirect(stream.readByteArray(width * height));
         }
     }
 
-    private ShortBuffer loadTextureAsShort(SupercellSWF swf, int width, int height, boolean separatedByTiles) {
+    private ShortBuffer loadTextureAsShort(ByteStream stream, int width, int height, boolean separatedByTiles) {
         if (separatedByTiles) {
-            int xChunksCount = width / TILE_SIZE;
-            int yChunksCount = height / TILE_SIZE;
-
             ShortBuffer pixels = BufferUtils.allocateDirect(width * height * Short.BYTES).asShortBuffer();
 
-            for (int tileY = 0; tileY < yChunksCount + 1; tileY++) {
-                for (int tileX = 0; tileX < xChunksCount + 1; tileX++) {
-                    int tileWidth = Math.min(width - (tileX * TILE_SIZE), TILE_SIZE);
-                    int tileHeight = Math.min(height - (tileY * TILE_SIZE), TILE_SIZE);
-
-                    short[] tilePixels = readTileAsShort(swf, tileWidth, tileHeight);
-
-                    for (int y = 0; y < tileHeight; y++) {
-                        int pixelY = (tileY * TILE_SIZE) + y;
-
-                        for (int x = 0; x < tileWidth; x++) {
-                            int pixelX = (tileX * TILE_SIZE) + x;
-
-                            pixels.put(pixelY * width + pixelX, tilePixels[y * tileWidth + x]);
-                        }
-                    }
-                }
-            }
+            loadInterlacedTexture(stream, width, height, this::readTileAsShort, pixels::put);
 
             return pixels;
         } else {
-            return BufferUtils.wrapDirect(swf.readShortArray(width * height));
+            return BufferUtils.wrapDirect(stream.readShortArray(width * height));
         }
     }
 
-    private IntBuffer loadTextureAsInt(SupercellSWF swf, int width, int height, boolean separatedByTiles) {
+    private IntBuffer loadTextureAsInt(ByteStream stream, int width, int height, boolean separatedByTiles) {
         if (separatedByTiles) {
-            int xChunksCount = width / TILE_SIZE;
-            int yChunksCount = height / TILE_SIZE;
-
             IntBuffer pixels = BufferUtils.allocateDirect(width * height * Integer.BYTES).asIntBuffer();
 
-            for (int tileY = 0; tileY < yChunksCount + 1; tileY++) {
-                for (int tileX = 0; tileX < xChunksCount + 1; tileX++) {
-                    int tileWidth = Math.min(width - (tileX * TILE_SIZE), TILE_SIZE);
-                    int tileHeight = Math.min(height - (tileY * TILE_SIZE), TILE_SIZE);
-
-                    int[] tilePixels = readTileAsInt(swf, tileWidth, tileHeight);
-
-                    for (int y = 0; y < tileHeight; y++) {
-                        int pixelY = (tileY * TILE_SIZE) + y;
-
-                        for (int x = 0; x < tileWidth; x++) {
-                            int pixelX = (tileX * TILE_SIZE) + x;
-
-                            pixels.put(pixelY * width + pixelX, tilePixels[y * tileWidth + x]);
-                        }
-                    }
-                }
-            }
+            loadInterlacedTexture(stream, width, height, this::readTileAsInt, pixels::put);
 
             return pixels;
         } else {
-            return BufferUtils.wrapDirect(swf.readIntArray(width * height));
+            return BufferUtils.wrapDirect(stream.readIntArray(width * height));
         }
     }
 
-    private byte[] readTileAsChar(SupercellSWF swf, int width, int height) {
-        return swf.readByteArray(width * height);
+    private Byte[] readTileAsChar(ByteStream stream, int width, int height) {
+        return ArrayUtils.toObject(stream.readByteArray(width * height));
     }
 
-    private short[] readTileAsShort(SupercellSWF swf, int width, int height) {
-        return swf.readShortArray(width * height);
+    private Short[] readTileAsShort(ByteStream stream, int width, int height) {
+        return ArrayUtils.toObject(stream.readShortArray(width * height));
     }
 
-    private int[] readTileAsInt(SupercellSWF swf, int width, int height) {
-        return swf.readIntArray(width * height);
+    private Integer[] readTileAsInt(ByteStream stream, int width, int height) {
+        return ArrayUtils.toObject(stream.readIntArray(width * height));
     }
 
-    private record TextureInfo(int pixelFormat, int pixelType, int pixelBytes) {
+    private <T> void loadInterlacedTexture(ByteStream stream, int width, int height, TileReader<T> tileReader, BiConsumer<Integer, T> pixelConsumer) {
+        int xTileCount = width / TILE_SIZE;
+        int yTileCount = height / TILE_SIZE;
+
+        for (int tileY = 0; tileY < yTileCount + 1; tileY++) {
+            for (int tileX = 0; tileX < xTileCount + 1; tileX++) {
+                int tileWidth = Math.min(width - (tileX * TILE_SIZE), TILE_SIZE);
+                int tileHeight = Math.min(height - (tileY * TILE_SIZE), TILE_SIZE);
+
+                T[] tilePixels = tileReader.readTile(stream, tileWidth, tileHeight);
+
+                for (int y = 0; y < tileHeight; y++) {
+                    int pixelY = (tileY * TILE_SIZE) + y;
+
+                    for (int x = 0; x < tileWidth; x++) {
+                        int pixelX = (tileX * TILE_SIZE) + x;
+
+                        int index = pixelY * width + pixelX;
+                        int tilePixelIndex = y * tileWidth + x;
+                        T tilePixel = tilePixels[tilePixelIndex];
+                        pixelConsumer.accept(index, tilePixel);
+                    }
+                }
+            }
+        }
+    }
+
+    @FunctionalInterface
+    private interface TileReader<T> {
+        T[] readTile(ByteStream stream, int tileWidth, int tileHeight);
     }
 }

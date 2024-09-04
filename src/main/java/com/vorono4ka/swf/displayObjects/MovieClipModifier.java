@@ -4,12 +4,19 @@ import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.constants.Tag;
+import com.vorono4ka.swf.originalObjects.MovieClipModifierOriginal;
 
 public class MovieClipModifier extends DisplayObject {
     private final Tag tag;
 
     public MovieClipModifier(Tag tag) {
         this.tag = tag;
+    }
+
+    public static DisplayObject createModifier(MovieClipModifierOriginal original) {
+        MovieClipModifier modifier = new MovieClipModifier(original.getTag());
+        modifier.id = original.getId();
+        return modifier;
     }
 
     @Override
@@ -39,9 +46,5 @@ public class MovieClipModifier extends DisplayObject {
     @Override
     public boolean isMovieClipModifier() {
         return true;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 }

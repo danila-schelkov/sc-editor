@@ -1,6 +1,5 @@
 package com.vorono4ka.swf.displayObjects;
 
-import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.*;
 import com.vorono4ka.swf.constants.MovieClipState;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
@@ -24,7 +23,7 @@ public class MovieClip extends Sprite {
         this.loopFrame = -1;
     }
 
-    public static MovieClip createMovieClip(MovieClipOriginal original, SupercellSWF swf, Rect scalingGrid) throws UnableToFindObjectException {
+    public static MovieClip createMovieClip(MovieClipOriginal original, SupercellSWF swf) throws UnableToFindObjectException {
         original.createTimelineChildren(swf);
 
         MovieClip movieClip = new MovieClip();
@@ -35,13 +34,14 @@ public class MovieClip extends Sprite {
         DisplayObject[] childrenArray = new DisplayObject[original.getChildrenCount()];
         for (int i = 0; i < childrenArray.length; i++) {
             DisplayObjectOriginal child = children[i];
-            DisplayObject displayObject = child.clone(swf, original.getScalingGrid());
+            DisplayObject displayObject = DisplayObjectFactory.createFromOriginal(child, swf, original.getScalingGrid());
 
             displayObject.setVisibleRecursive((original.getChildrenBlends()[i] & 64) == 0);
             displayObject.setInteractiveRecursive(true);
 
             childrenArray[i] = displayObject;
         }
+
         movieClip.timelineChildren = childrenArray;
         movieClip.timelineChildrenNames = original.getChildrenNames();
         movieClip.frames = original.getFrames();
@@ -142,7 +142,7 @@ public class MovieClip extends Sprite {
 
             int colorTransformIndex = element.getColorTransformIndex();
             if (colorTransformIndex != 0xFFFF) {
-                ColorTransform colorTransform = this.matrixBank.getColorTransforms(colorTransformIndex);
+                ColorTransform colorTransform = this.matrixBank.getColorTransform(colorTransformIndex);
                 child.setColorTransform(new ColorTransform(colorTransform));
             } else {
                 child.setColorTransform(new ColorTransform());

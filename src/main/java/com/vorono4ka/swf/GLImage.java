@@ -3,6 +3,7 @@ package com.vorono4ka.swf;
 import com.jogamp.opengl.GL3;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.editor.renderer.Texture;
+import com.vorono4ka.swf.originalObjects.SWFTexture;
 import com.vorono4ka.utilities.BufferUtils;
 import team.nulls.ntengine.assets.KhronosTexture;
 

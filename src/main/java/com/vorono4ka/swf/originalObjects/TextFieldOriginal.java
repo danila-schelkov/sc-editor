@@ -1,11 +1,9 @@
 package com.vorono4ka.swf.originalObjects;
 
-import com.vorono4ka.math.Rect;
 import com.vorono4ka.streams.ByteStream;
-import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.constants.Tag;
-import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.TextField;
+
+import java.util.function.Function;
 
 public class TextFieldOriginal extends DisplayObjectOriginal {
     private String fontName;
@@ -30,36 +28,36 @@ public class TextFieldOriginal extends DisplayObjectOriginal {
     private int unk32;
     private float bendAngle;
 
-    public int load(SupercellSWF swf, Tag tag) {
+    public int load(ByteStream stream, Tag tag, Function<ByteStream, String> fontNameReader) {
         this.tag = tag;
 
-        this.id = swf.readShort();
-        this.fontName = swf.readFontName();
-        this.color = swf.readInt();
+        this.id = stream.readShort();
+        this.fontName = fontNameReader.apply(stream);
+        this.color = stream.readInt();
 
-        this.isBold = swf.readBoolean();
-        this.isItalic = swf.readBoolean();
-        this.isMultiline = swf.readBoolean();
+        this.isBold = stream.readBoolean();
+        this.isItalic = stream.readBoolean();
+        this.isMultiline = stream.readBoolean();
 
-        swf.readBoolean();  // unused
+        stream.readBoolean();  // unused
 
-        this.align = swf.readUnsignedChar();
-        this.fontSize = swf.readUnsignedChar();
+        this.align = stream.readUnsignedChar();
+        this.fontSize = stream.readUnsignedChar();
 
-        this.left = swf.readShort();
-        this.top = swf.readShort();
-        this.right = swf.readShort();
-        this.bottom = swf.readShort();
+        this.left = stream.readShort();
+        this.top = stream.readShort();
+        this.right = stream.readShort();
+        this.bottom = stream.readShort();
 
-        this.isOutlineEnabled = swf.readBoolean();
+        this.isOutlineEnabled = stream.readBoolean();
 
-        this.defaultText = swf.readAscii();
+        this.defaultText = stream.readAscii();
 
         if (tag == Tag.TEXT_FIELD) {
             return this.id;
         }
 
-        this.useDeviceFont = swf.readBoolean();
+        this.useDeviceFont = stream.readBoolean();
 
         switch (tag) {
             case TEXT_FIELD_2 -> {
@@ -71,17 +69,17 @@ public class TextFieldOriginal extends DisplayObjectOriginal {
             }
             case TEXT_FIELD_4 -> {
                 this.unkBoolean = true;
-                this.outlineColor = swf.readInt();
+                this.outlineColor = stream.readInt();
                 return this.id;
             }
             case TEXT_FIELD_5 -> {
-                this.outlineColor = swf.readInt();
+                this.outlineColor = stream.readInt();
                 return this.id;
             }
             case TEXT_FIELD_6, TEXT_FIELD_7, TEXT_FIELD_8, TEXT_FIELD_9 -> {
-                this.outlineColor = swf.readInt();
-                this.unk32 = swf.readShort();
-                swf.readShort();  // unused
+                this.outlineColor = stream.readInt();
+                this.unk32 = stream.readShort();
+                stream.readShort();  // unused
 
                 this.unkBoolean = true;
 
@@ -89,19 +87,19 @@ public class TextFieldOriginal extends DisplayObjectOriginal {
                     return this.id;
                 }
 
-                this.bendAngle = swf.readShort() * 91.019f;
+                this.bendAngle = stream.readShort() * 91.019f;
 
                 if (tag == Tag.TEXT_FIELD_7) {
                     return this.id;
                 }
 
-                this.autoAdjustFontSize = swf.readBoolean();
+                this.autoAdjustFontSize = stream.readBoolean();
 
                 if (tag == Tag.TEXT_FIELD_8) {
                     return this.id;
                 }
 
-                boolean unk = swf.readBoolean();
+                boolean unk = stream.readBoolean();
 
                 return this.id;
             }
@@ -154,13 +152,5 @@ public class TextFieldOriginal extends DisplayObjectOriginal {
         if (this.tag == Tag.TEXT_FIELD_7) return;
 
         stream.writeBoolean(this.autoAdjustFontSize);
-    }
-
-    @Override
-    public DisplayObject clone(SupercellSWF swf, Rect scalingGrid) {
-        TextField textField = new TextField();
-        textField.setId(this.id);
-
-        return textField;
     }
 }

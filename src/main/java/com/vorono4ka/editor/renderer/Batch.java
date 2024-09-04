@@ -159,8 +159,8 @@ public class Batch {
         this.pointCount += count + 2;
     }
 
-    public boolean hasSpaceFor(int trianglesCount) {
-        return this.triangleCount + trianglesCount <= this.capacity;
+    public boolean hasSpaceFor(int triangleCount) {
+        return this.triangleCount + triangleCount <= this.capacity;
     }
 
     public boolean hasSame(Shader shader, Texture texture) {
