@@ -128,6 +128,11 @@ public class Editor {
         return this.clonedObjects.get(this.selectedIndices.get(this.selectedIndex));
     }
 
+    /**
+     * Adds display object to the Stage and to the object history and updates the info panel.
+     *
+     * @param displayObject selected display object
+     */
     public void selectObject(DisplayObject displayObject) {
         if (!this.clonedObjects.contains(displayObject)) {
             this.clonedObjects.add(displayObject);
