@@ -1,9 +1,9 @@
 package com.vorono4ka.swf.displayObjects;
 
 import com.vorono4ka.editor.renderer.Stage;
+import com.vorono4ka.editor.renderer.texture.GLImage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
-import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.originalObjects.SWFTexture;
 import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;

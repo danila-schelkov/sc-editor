@@ -8,8 +8,6 @@ import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.TextureFileNotFound;
 import com.vorono4ka.utilities.ArrayUtils;
 import com.vorono4ka.utilities.BufferUtils;
-import team.nulls.ntengine.assets.KhronosTexture;
-import team.nulls.ntengine.assets.KhronosTextureDataLoader;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,7 +27,7 @@ public class SWFTexture implements Savable {
 
     private int type;
     private int width, height;
-    private KhronosTexture khronosTexture;
+    private ByteBuffer ktxData;
     private Buffer pixels;
 
     private int index = -1;
@@ -85,12 +83,12 @@ public class SWFTexture implements Savable {
         switch (tag) {
             case KHRONOS_TEXTURE -> {
                 byte[] bytes = stream.readByteArray(khronosTextureLength);
-                khronosTexture = KhronosTextureDataLoader.decodeKtx(BufferUtils.wrapDirect(bytes));
+                ktxData = BufferUtils.wrapDirect(bytes);
             }
             case COMPRESSED_KHRONOS_TEXTURE -> {
                 byte[] compressedData = getTextureFileBytes(directory, compressedTextureFilename);
                 byte[] decompressed = Decompressor.decompressZstd(compressedData, 0);
-                khronosTexture = KhronosTextureDataLoader.decodeKtx(BufferUtils.wrapDirect(decompressed));
+                ktxData = BufferUtils.wrapDirect(decompressed);
             }
             default ->
                 pixels = loadTexture(stream, width, height, textureInfo.pixelBytes(), hasInterlacing(tag));
@@ -136,8 +134,8 @@ public class SWFTexture implements Savable {
         return textureInfo;
     }
 
-    public KhronosTexture getKhronosTexture() {
-        return khronosTexture;
+    public ByteBuffer getKtxData() {
+        return ktxData;
     }
 
     public Buffer getPixels() {

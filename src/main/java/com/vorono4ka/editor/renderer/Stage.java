@@ -3,11 +3,12 @@ package com.vorono4ka.editor.renderer;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.renderer.texture.GLImage;
+import com.vorono4ka.editor.renderer.texture.Texture;
 import com.vorono4ka.math.ReadonlyRect;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.resources.Assets;
 import com.vorono4ka.swf.ColorTransform;
-import com.vorono4ka.swf.GLImage;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.constants.MovieClipState;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
@@ -338,7 +339,7 @@ public class Stage {
 
     public GLImage createGLImage(SWFTexture texture) {
         GLImage image = new GLImage();
-        image.createWithFormat(texture.getKhronosTexture(), false, texture.getTag().getTextureFilter(), texture.getWidth(), texture.getHeight(), texture.getPixels(), texture.getTextureInfo().pixelFormat(), texture.getTextureInfo().pixelType());
+        image.createWithFormat(texture.getKtxData(), false, texture.getTag().getTextureFilter(), texture.getWidth(), texture.getHeight(), texture.getPixels(), texture.getTextureInfo().pixelFormat(), texture.getTextureInfo().pixelType());
         this.images.put(texture.getIndex(), image);
 
         return image;

@@ -1,4 +1,4 @@
-package com.vorono4ka.editor.renderer;
+package com.vorono4ka.editor.renderer.texture;
 
 import com.jogamp.opengl.GL3;
 import com.vorono4ka.utilities.BufferUtils;

@@ -4,7 +4,7 @@ import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
-import com.vorono4ka.swf.GLImage;
+import com.vorono4ka.editor.renderer.texture.GLImage;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.displayObjects.DisplayObject;
 import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommandRenderer;
