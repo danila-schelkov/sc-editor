@@ -1,25 +1,11 @@
 package com.vorono4ka.swf;
 
-public class MovieClipFrameElement {
-    private final int childIndex;
-    private final int matrixIndex;
-    private final int colorTransformIndex;
+import com.vorono4ka.flatloader.SerializeType;
+import com.vorono4ka.flatloader.annotations.FlatType;
 
-    public MovieClipFrameElement(int childIndex, int matrixIndex, int colorTransformIndex) {
-        this.childIndex = childIndex;
-        this.matrixIndex = matrixIndex;
-        this.colorTransformIndex = colorTransformIndex;
-    }
-
-    public int getChildIndex() {
-        return childIndex;
-    }
-
-    public int getMatrixIndex() {
-        return matrixIndex;
-    }
-
-    public int getColorTransformIndex() {
-        return colorTransformIndex;
-    }
+public record MovieClipFrameElement(
+    @FlatType(value = SerializeType.INT16, isUnsigned = true) int childIndex,
+    @FlatType(value = SerializeType.INT16, isUnsigned = true) int matrixIndex,
+    @FlatType(value = SerializeType.INT16, isUnsigned = true) int colorTransformIndex
+) {
 }

@@ -13,33 +13,45 @@ import java.io.IOException;
 public class Decompressor {
     public static final int SC_MAGIC = 0x5343;
 
-    public static byte[] decompress(byte[] compressedData) throws UnknownFileMagicException, UnknownFileVersionException, IOException {
-        DataInputStream stream = createDataInputStreamFromBytes(compressedData);
-
-        int magic = stream.readShort();
-        if (magic != SC_MAGIC) {
-            throw new UnknownFileMagicException("Unknown file magic: " + magic);
+    public static byte[] decompress(DataInputStream stream, byte[] compressedData, int version) throws UnknownFileMagicException, UnknownFileVersionException, IOException {
+        switch (version) {
+            case 1, 2, 3 -> {
+                int hashLength = stream.readInt();
+                stream.skip(hashLength);
+            }
+            case 0x05000000 -> {
+                int metadataRootTableOffset = stream.readInt();
+                int littleEndian = swapEndian32(metadataRootTableOffset);
+                stream.skip(littleEndian);
+            }
         }
-
-        int version = stream.readInt();
-        if (version == 4) {
-            version = stream.readInt();
-        }
-
-        int hashLength = stream.readInt();
-        stream.skip(hashLength);
 
         byte[] decompressed;
 
         switch (version) {
             case 1 -> decompressed = decompressLzma(stream);
-            case 2, 3 ->
+            case 2, 3, 0x05000000 ->
                 decompressed = decompressZstd(compressedData, compressedData.length - stream.available());
             default ->
                 throw new UnknownFileVersionException("Unknown file version: " + version);
         }
 
         return decompressed;
+    }
+
+    public static int parseVersion(DataInputStream stream) throws IOException {
+        int version = stream.readInt();
+        if (version == 4) {
+            version = stream.readInt();
+        }
+        return version;
+    }
+
+    public static void checkMagic(DataInputStream stream) throws IOException, UnknownFileMagicException {
+        int magic = stream.readShort();
+        if (magic != SC_MAGIC) {
+            throw new UnknownFileMagicException("Unknown file magic: " + magic);
+        }
     }
 
     public static byte[] decompressZstd(byte[] compressedData, int offset) {
@@ -59,6 +71,10 @@ public class Decompressor {
         );
     }
 
+    public static DataInputStream createDataInputStreamFromBytes(byte[] compressedData) {
+        return new DataInputStream(new ByteArrayInputStream(compressedData));
+    }
+
     private static byte[] decompressLzma(DataInputStream stream) throws IOException {
         Decoder decoder = new Decoder();
 
@@ -76,7 +92,7 @@ public class Decompressor {
         return outputArray.toByteArray();
     }
 
-    private static DataInputStream createDataInputStreamFromBytes(byte[] compressedData) {
-        return new DataInputStream(new ByteArrayInputStream(compressedData));
+    private static int swapEndian32(int metadataRootTableOffset) {
+        return (metadataRootTableOffset >> 24) & 0xFF | (((metadataRootTableOffset >> 16) & 0xFF) << 8) | (((metadataRootTableOffset >> 8) & 0xFF) << 16) | ((metadataRootTableOffset & 0xFF) << 24);
     }
 }

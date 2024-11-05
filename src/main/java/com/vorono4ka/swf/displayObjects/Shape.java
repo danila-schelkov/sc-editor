@@ -16,7 +16,7 @@ public class Shape extends DisplayObject {
         Shape shape = new Shape();
 
         shape.id = original.getId();
-        shape.commands = List.of(original.getCommands());
+        shape.commands = original.getCommands();
 
         return shape;
     }

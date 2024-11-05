@@ -41,6 +41,9 @@ public class KhronosToolTextureLoader implements KhronosTextureLoader {
             data[i + 2] = b;
         }
 
+        // Note: here is a bug, if the texture is grayscale or kind of this,
+        // you have to convert it by yourself, otherwise there won't be any images.
+
         ByteBuffer pixelBuffer = ImageUtils.getPixelBuffer(bufferedImage);
         GLImage.loadImage(texture, pixelBuffer, texture.getFormat(), texture.getPixelType());
     }

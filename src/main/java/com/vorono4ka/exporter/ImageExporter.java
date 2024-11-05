@@ -101,7 +101,7 @@ public class ImageExporter {
         if (child.isMovieClip()) {
             MovieClip movieClip = (MovieClip) child;
 
-            if (movieClip.getFrames().length > 1) {
+            if (movieClip.getFrames().size() > 1) {
                 int currentFrame = movieClip.getCurrentFrame();
                 String frameLabel = movieClip.getFrameLabel(currentFrame);
                 String frameName = String.valueOf(currentFrame);

@@ -1,21 +1,22 @@
 package com.vorono4ka.swf.originalObjects;
 
-import com.vorono4ka.math.Point;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.constants.Tag;
 
-import java.util.Arrays;
 import java.util.function.Function;
 
 public class ShapeDrawBitmapCommand {
-    private Tag tag;
+    private transient Tag tag;
 
+    private int unk;
     private int textureIndex;
-    private int vertexCount;
-    private Point[] shapePoints;
-    private Point[] sheetPoints;
+    private int pointCount;
+    private int startingPointIndex;
 
-    private SWFTexture texture;
+    private transient int vertexCount;
+    private transient ShapePoint[] shapePoints;
+
+    private transient SWFTexture texture;
 
     public void load(ByteStream stream, Tag tag, Function<Integer, SWFTexture> imageFunction) {
         this.tag = tag;
@@ -28,28 +29,21 @@ public class ShapeDrawBitmapCommand {
             this.vertexCount = stream.readUnsignedChar();
         }
 
-        this.shapePoints = new Point[this.vertexCount];
-        for (int i = 0; i < this.vertexCount; i++) {
-            float x = stream.readTwip();
-            float y = stream.readTwip();
-
-            this.shapePoints[i] = new Point(x, y);
+        this.shapePoints = new ShapePoint[this.vertexCount];
+        for (int i = 0; i < this.shapePoints.length; i++) {
+            this.shapePoints[i] = new ShapePoint();
         }
 
-        this.sheetPoints = new Point[this.vertexCount];
         for (int i = 0; i < this.vertexCount; i++) {
-            float u = stream.readShort();
-            float v = stream.readShort();
+            ShapePoint shapePoint = this.shapePoints[i];
+            shapePoint.setX(stream.readTwip());
+            shapePoint.setY(stream.readTwip());
+        }
 
-            if (tag == Tag.SHAPE_DRAW_BITMAP_COMMAND) {
-                u *= 65535f / this.texture.getWidth();
-                v *= 65535f / this.texture.getHeight();
-            } else if (tag != Tag.SHAPE_DRAW_BITMAP_COMMAND_3) {
-                u /= 65535f * this.texture.getWidth();
-                v /= 65535f * this.texture.getHeight();
-            }
-
-            this.sheetPoints[i] = new Point(u, v);
+        for (int i = 0; i < this.vertexCount; i++) {
+            ShapePoint shapePoint = this.shapePoints[i];
+            shapePoint.setU(stream.readShort());
+            shapePoint.setV(stream.readShort());
         }
     }
 
@@ -60,22 +54,14 @@ public class ShapeDrawBitmapCommand {
             stream.writeUnsignedChar(this.vertexCount);
         }
 
-        for (Point point : this.shapePoints) {
+        for (ShapePoint point : this.shapePoints) {
             stream.writeTwip(point.getX());
             stream.writeTwip(point.getY());
         }
 
-        for (Point point : this.sheetPoints) {
-            float u = point.getX();
-            float v = point.getY();
-
-            if (this.tag != Tag.SHAPE_DRAW_BITMAP_COMMAND_3) {
-                u *= 65535f / this.texture.getWidth();
-                v *= 65535f / this.texture.getHeight();
-            }
-
-            stream.writeShort((int) u);
-            stream.writeShort((int) v);
+        for (ShapePoint point : this.shapePoints) {
+            stream.writeShort(point.getU());
+            stream.writeShort(point.getV());
         }
     }
 
@@ -88,25 +74,25 @@ public class ShapeDrawBitmapCommand {
     }
 
     public void setXY(int pointIndex, float x, float y) {
-        Point point = this.shapePoints[pointIndex];
+        ShapePoint point = this.shapePoints[pointIndex];
 
         point.setX(x);
         point.setY(y);
     }
 
     public float getU(int pointIndex) {
-        return this.sheetPoints[pointIndex].getX() / 65535f;
+        return this.shapePoints[pointIndex].getU() / 65535f;
     }
 
     public float getV(int pointIndex) {
-        return this.sheetPoints[pointIndex].getY() / 65535f;
+        return this.shapePoints[pointIndex].getV() / 65535f;
     }
 
     public void setUV(int pointIndex, float u, float v) {
-        Point point = this.sheetPoints[pointIndex];
+        ShapePoint point = this.shapePoints[pointIndex];
 
-        point.setX(u * 65535f);
-        point.setY(v * 65535f);
+        point.setU((int) (u * 65535f));
+        point.setV((int) (v * 65535f));
     }
 
     public Tag getTag() {
@@ -121,24 +107,23 @@ public class ShapeDrawBitmapCommand {
         return textureIndex;
     }
 
+    public int getPointCount() {
+        return pointCount;
+    }
+
+    public int getStartingPointIndex() {
+        return startingPointIndex;
+    }
+
+    public void setPoints(ShapePoint[] points) {
+        this.shapePoints = points;
+    }
+
     public SWFTexture getTexture() {
         return texture;
     }
 
     public int getVertexCount() {
-        return vertexCount;
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        if (other == this) return true;
-
-        if (other instanceof ShapeDrawBitmapCommand command) {
-
-            return Arrays.equals(command.shapePoints, this.shapePoints) &&
-                Arrays.equals(command.sheetPoints, this.sheetPoints);
-        }
-
-        return false;
+        return shapePoints.length;
     }
 }

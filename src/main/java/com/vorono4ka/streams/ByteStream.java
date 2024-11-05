@@ -115,15 +115,14 @@ public class ByteStream {
     }
 
     public int readShort() {
-        return this.readUnsignedChar() |
-            this.readUnsignedChar() << 8;
+        return (this.readUnsignedChar() & 0xFF) | (this.readUnsignedChar() & 0xFF) << 8;
     }
 
     public int readInt() {
-        return this.readUnsignedChar() |
-            this.readUnsignedChar() << 8 |
-            this.readUnsignedChar() << 16 |
-            this.readUnsignedChar() << 24;
+        return (this.readUnsignedChar() & 0xFF) |
+            (this.readUnsignedChar() & 0xFF) << 8 |
+            (this.readUnsignedChar() & 0xFF) << 16 |
+            (this.readUnsignedChar() & 0xFF) << 24;
     }
 
     public boolean readBoolean() {
@@ -136,7 +135,7 @@ public class ByteStream {
 
     public String readAscii() {
         int length = this.readUnsignedChar() & 0xff;
-        if (length == 255) return null;
+        if (length == 0xFF) return null;
 
         return new String(this.read(length), StandardCharsets.UTF_8);
     }

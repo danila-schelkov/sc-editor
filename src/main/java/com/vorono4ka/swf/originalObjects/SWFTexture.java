@@ -1,6 +1,9 @@
 package com.vorono4ka.swf.originalObjects;
 
-import com.vorono4ka.compression.Decompressor;
+import com.vorono4ka.flatloader.SerializeType;
+import com.vorono4ka.flatloader.annotations.FlatType;
+import com.vorono4ka.flatloader.annotations.VTableClass;
+import com.vorono4ka.flatloader.annotations.VTableField;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.TextureInfo;
 import com.vorono4ka.swf.constants.Tag;
@@ -9,53 +12,46 @@ import com.vorono4ka.swf.exceptions.TextureFileNotFound;
 import com.vorono4ka.utilities.ArrayUtils;
 import com.vorono4ka.utilities.BufferUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import java.nio.file.Path;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
+@VTableClass
 public class SWFTexture implements Savable {
     public static final int TILE_SIZE = 32;
 
-    private Tag tag;
+    private transient Tag tag;
 
-    private int type;
-    private int width, height;
-    private ByteBuffer ktxData;
-    private Buffer pixels;
+    @VTableField(0)
+    private int flags;
+    @VTableField(1)
+    private byte type;
+    @VTableField(2)
+    @FlatType(value = SerializeType.INT16, isUnsigned = true)
+    private int width;
+    @VTableField(3)
+    @FlatType(value = SerializeType.INT16, isUnsigned = true)
+    private int height;
+    @VTableField(4)
+    private Byte[] ktxData;
+    @VTableField(5)
+    private int textureFilenameReferenceId;
+    private transient String textureFilename;
 
-    private int index = -1;
-    private TextureInfo textureInfo;
+    private transient Buffer pixels;
 
-    public SWFTexture() {
-    }
-
-    private static byte[] getTextureFileBytes(Path directory, String compressedTextureFilename) throws TextureFileNotFound {
-        Path compressedTextureFilepath = directory.resolve(compressedTextureFilename);
-        File file = new File(compressedTextureFilepath.toUri());
-
-        byte[] compressedData;
-        try (FileInputStream fis = new FileInputStream(file)) {
-            compressedData = fis.readAllBytes();
-        } catch (FileNotFoundException e) {
-            throw new TextureFileNotFound(compressedTextureFilepath.toString());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return compressedData;
-    }
+    private transient int index = -1;
+    private transient TextureInfo textureInfo;
 
     private static boolean hasInterlacing(Tag tag) {
         return tag == Tag.TEXTURE_5 || tag == Tag.TEXTURE_6 || tag == Tag.TEXTURE_7;
     }
 
-    public void load(ByteStream stream, Tag tag, boolean hasTexture, Path directory) throws LoadingFaultException, TextureFileNotFound {
+    public void load(ByteStream stream, Tag tag, boolean hasTexture) throws LoadingFaultException, TextureFileNotFound {
         this.tag = tag;
 
         int khronosTextureLength = 0;
@@ -64,15 +60,16 @@ public class SWFTexture implements Savable {
             assert khronosTextureLength > 0;
         }
 
-        String compressedTextureFilename = null;
         if (tag == Tag.COMPRESSED_KHRONOS_TEXTURE) {
-            compressedTextureFilename = stream.readAscii();
-            if (compressedTextureFilename == null) {
+            textureFilename = stream.readAscii();
+            if (textureFilename == null) {
                 throw new LoadingFaultException("Compressed texture filename cannot be null.");
             }
+        } else {
+            textureFilename = null;
         }
 
-        type = stream.readUnsignedChar();
+        type = (byte) stream.readUnsignedChar();
         width = stream.readShort();
         height = stream.readShort();
 
@@ -80,18 +77,10 @@ public class SWFTexture implements Savable {
 
         textureInfo = TextureInfo.getTextureInfoByType(type);
 
-        switch (tag) {
-            case KHRONOS_TEXTURE -> {
-                byte[] bytes = stream.readByteArray(khronosTextureLength);
-                ktxData = BufferUtils.wrapDirect(bytes);
-            }
-            case COMPRESSED_KHRONOS_TEXTURE -> {
-                byte[] compressedData = getTextureFileBytes(directory, compressedTextureFilename);
-                byte[] decompressed = Decompressor.decompressZstd(compressedData, 0);
-                ktxData = BufferUtils.wrapDirect(decompressed);
-            }
-            default ->
-                pixels = loadTexture(stream, width, height, textureInfo.pixelBytes(), hasInterlacing(tag));
+        if (Objects.requireNonNull(tag) == Tag.KHRONOS_TEXTURE) {
+            ktxData = ArrayUtils.toObject(stream.readByteArray(khronosTextureLength));
+        } else {
+            pixels = loadTexture(stream, width, height, textureInfo.pixelBytes(), hasInterlacing(tag));
         }
     }
 
@@ -134,12 +123,25 @@ public class SWFTexture implements Savable {
         return textureInfo;
     }
 
-    public ByteBuffer getKtxData() {
-        return ktxData;
+    public byte[] getKtxData() {
+        return ktxData != null ? ArrayUtils.toPrimitive(ktxData) : null;
+    }
+
+    public String getTextureFilename() {
+        return textureFilename;
     }
 
     public Buffer getPixels() {
         return pixels;
+    }
+
+    public void resolve() {
+        tag = Tag.KHRONOS_TEXTURE;
+        textureInfo = TextureInfo.getTextureInfoByType(type);
+    }
+
+    public void resolveStrings(List<String> strings) {
+        textureFilename = strings.get(textureFilenameReferenceId);
     }
 
     private Buffer loadTexture(ByteStream stream, int width, int height, int pixelBytes, boolean hasInterlacing) {

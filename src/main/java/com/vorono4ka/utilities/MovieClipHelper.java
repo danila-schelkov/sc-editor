@@ -5,7 +5,7 @@ import com.vorono4ka.swf.displayObjects.MovieClip;
 
 public final class MovieClipHelper {
     public static void doForAllFrames(MovieClip movieClip, MovieClipFrameIndexConsumer consumer) {
-        int maxFrames = movieClip.getFrames().length;
+        int maxFrames = movieClip.getFrames().size();
 
         int currentFrame = movieClip.getCurrentFrame();
         int loopFrame = movieClip.getLoopFrame();

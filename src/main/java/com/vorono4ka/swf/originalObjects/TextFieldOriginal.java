@@ -1,32 +1,64 @@
 package com.vorono4ka.swf.originalObjects;
 
+import com.vorono4ka.flatloader.SerializeType;
+import com.vorono4ka.flatloader.annotations.FlatType;
+import com.vorono4ka.flatloader.annotations.Offset;
+import com.vorono4ka.flatloader.annotations.StructureSize;
+import com.vorono4ka.math.ShortRect;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.constants.Tag;
 
+import java.util.List;
 import java.util.function.Function;
 
+@StructureSize(40)
 public class TextFieldOriginal extends DisplayObjectOriginal {
-    private String fontName;
+    private transient Tag tag;
+
+    @Offset(0)
+    @FlatType(value = SerializeType.INT16, isUnsigned = true)
+    private int id;
+
+    @Offset(4)
+    private int fontNameReferenceId;
+    private transient String fontName;
+
+    @Offset(8)
+    private ShortRect bounds;
+
+    @Offset(16)
     private int color;
-    private boolean useDeviceFont;  // styles | 1
-    private boolean isOutlineEnabled;  // styles | 2
-    private boolean isBold;  // styles | 4
-    private boolean isItalic;  // styles | 8
-    private boolean isMultiline;  // styles | 16
-    private boolean unkBoolean;  // styles | 32
-    private boolean autoAdjustFontSize;  // styles | 64
-    private int align;
-    private int fontSize;
-
-    private int left;
-    private int top;
-    private int right;
-    private int bottom;
-
-    private String defaultText;
+    @Offset(20)
     private int outlineColor;
+
+    @Offset(24)
+    private int textReferenceId;
+    private transient String defaultText;
+    @Offset(28)
+    private int anotherTextReferenceId;
+    private transient String anotherText;
+
+    @Offset(32)
+    private byte styles;
+
+    // TODO: add ability to read shifted values and apply it here
+    private transient boolean useDeviceFont;  // styles | 1
+    private transient boolean isOutlineEnabled;  // styles | 2
+    private transient boolean isBold;  // styles | 4
+    private transient boolean isItalic;  // styles | 8
+    private transient boolean isMultiline;  // styles | 16
+    private transient boolean unkBoolean;  // styles | 32
+    private transient boolean autoAdjustFontSize;  // styles | 64
+
+    @Offset(33)
+    private byte align;
+    @Offset(34)
+    private byte fontSize;
+
+    @Offset(36)
     private int unk32;
-    private float bendAngle;
+    @Offset(38)
+    private short bendAngle;
 
     public int load(ByteStream stream, Tag tag, Function<ByteStream, String> fontNameReader) {
         this.tag = tag;
@@ -37,17 +69,19 @@ public class TextFieldOriginal extends DisplayObjectOriginal {
 
         this.isBold = stream.readBoolean();
         this.isItalic = stream.readBoolean();
-        this.isMultiline = stream.readBoolean();
+        this.isMultiline = stream.readBoolean();  // unused since BS v58
 
         stream.readBoolean();  // unused
 
-        this.align = stream.readUnsignedChar();
-        this.fontSize = stream.readUnsignedChar();
+        this.align = (byte) stream.readUnsignedChar();
+        this.fontSize = (byte) stream.readUnsignedChar();
 
-        this.left = stream.readShort();
-        this.top = stream.readShort();
-        this.right = stream.readShort();
-        this.bottom = stream.readShort();
+        this.bounds = new ShortRect(
+            (short) stream.readShort(),
+            (short) stream.readShort(),
+            (short) stream.readShort(),
+            (short) stream.readShort()
+        );
 
         this.isOutlineEnabled = stream.readBoolean();
 
@@ -87,7 +121,7 @@ public class TextFieldOriginal extends DisplayObjectOriginal {
                     return this.id;
                 }
 
-                this.bendAngle = stream.readShort() * 91.019f;
+                this.bendAngle = (short) stream.readShort();
 
                 if (tag == Tag.TEXT_FIELD_7) {
                     return this.id;
@@ -99,7 +133,7 @@ public class TextFieldOriginal extends DisplayObjectOriginal {
                     return this.id;
                 }
 
-                boolean unk = stream.readBoolean();
+                this.anotherText = stream.readAscii();
 
                 return this.id;
             }
@@ -123,10 +157,10 @@ public class TextFieldOriginal extends DisplayObjectOriginal {
         stream.writeUnsignedChar(this.align);
         stream.writeUnsignedChar(this.fontSize);
 
-        stream.writeShort(this.left);
-        stream.writeShort(this.top);
-        stream.writeShort(this.right);
-        stream.writeShort(this.bottom);
+        stream.writeShort(this.bounds.left());
+        stream.writeShort(this.bounds.top());
+        stream.writeShort(this.bounds.right());
+        stream.writeShort(this.bounds.bottom());
 
         stream.writeBoolean(this.isOutlineEnabled);
 
@@ -147,10 +181,38 @@ public class TextFieldOriginal extends DisplayObjectOriginal {
 
         if (this.tag == Tag.TEXT_FIELD_6) return;
 
-        stream.writeShort((int) (this.bendAngle / 91.019f));
+        stream.writeShort(this.bendAngle);
 
         if (this.tag == Tag.TEXT_FIELD_7) return;
 
         stream.writeBoolean(this.autoAdjustFontSize);
+
+        if (this.tag == Tag.TEXT_FIELD_8) return;
+
+        stream.writeAscii(this.anotherText);
+    }
+
+    @Override
+    public int getId() {
+        return id;
+    }
+
+    @Override
+    public Tag getTag() {
+        return tag;
+    }
+
+    public float getBendAngle() {
+        return (float) bendAngle / Short.MAX_VALUE * 360f;
+    }
+
+    public void getBendAngle(float bendAngle) {
+        this.bendAngle = (short) (bendAngle * Short.MAX_VALUE / 360f);
+    }
+
+    public void resolveStrings(List<String> strings) {
+        this.fontName = strings.get(this.fontNameReferenceId);
+        this.defaultText = strings.get(this.textReferenceId);
+        this.anotherText = strings.get(this.anotherTextReferenceId);
     }
 }

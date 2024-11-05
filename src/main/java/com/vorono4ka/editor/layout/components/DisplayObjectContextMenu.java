@@ -85,7 +85,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
             DisplayObjectOriginal displayObject = swf.getOriginalDisplayObject(displayObjectId, null);
             exportAsMenu.setEnabled(!(displayObject instanceof TextFieldOriginal));
             if (displayObject instanceof MovieClipOriginal movieClipOriginal) {
-                boolean hasMoreThanOneFrame = movieClipOriginal.getFrames().length > 1;
+                boolean hasMoreThanOneFrame = movieClipOriginal.getFrames().size() > 1;
                 exportAsVideoButton.setEnabled(hasMoreThanOneFrame);
             } else {
                 exportAsVideoButton.setEnabled(false);

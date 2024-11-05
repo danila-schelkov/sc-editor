@@ -6,6 +6,8 @@ import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.originalObjects.DisplayObjectOriginal;
 import com.vorono4ka.swf.originalObjects.MovieClipOriginal;
 
+import java.util.List;
+
 public class MovieClip extends Sprite {
     private String exportName;
     private float frameTime;
@@ -13,7 +15,7 @@ public class MovieClip extends Sprite {
     private float msPerFrame;
     private DisplayObject[] timelineChildren;
     private String[] timelineChildrenNames;
-    private MovieClipFrame[] frames;
+    private List<MovieClipFrame> frames;
     private ScMatrixBank matrixBank;
     private int currentFrame;
     private int loopFrame;
@@ -30,20 +32,25 @@ public class MovieClip extends Sprite {
         movieClip.id = original.getId();
         movieClip.matrixBank = swf.getMatrixBank(original.getMatrixBankIndex());
 
+        Byte[] childBlends = original.getChildBlends();
+
         DisplayObjectOriginal[] children = original.getChildren();
-        DisplayObject[] childrenArray = new DisplayObject[original.getChildrenCount()];
+        DisplayObject[] childrenArray = new DisplayObject[original.getChildCount()];
         for (int i = 0; i < childrenArray.length; i++) {
             DisplayObjectOriginal child = children[i];
             DisplayObject displayObject = DisplayObjectFactory.createFromOriginal(child, swf, original.getScalingGrid());
 
-            displayObject.setVisibleRecursive((original.getChildrenBlends()[i] & 64) == 0);
+            if (childBlends != null && childBlends.length != 0) {
+                displayObject.setVisibleRecursive((childBlends[i] & 64) == 0);
+            }
+
             displayObject.setInteractiveRecursive(true);
 
             childrenArray[i] = displayObject;
         }
 
         movieClip.timelineChildren = childrenArray;
-        movieClip.timelineChildrenNames = original.getChildrenNames();
+        movieClip.timelineChildrenNames = original.getChildNames();
         movieClip.frames = original.getFrames();
         movieClip.setFps(original.getFps());
         movieClip.exportName = original.getExportName();
@@ -79,7 +86,7 @@ public class MovieClip extends Sprite {
                 } else {
                     int framesSkipped = 1;
                     if (this.loopFrame < this.currentFrame)
-                        framesSkipped = this.frames.length - 1;
+                        framesSkipped = this.frames.size() - 1;
                     nextFrame = this.currentFrame + framesSkipped;
                 }
             } else {
@@ -93,7 +100,7 @@ public class MovieClip extends Sprite {
                 }
             }
 
-            this.setFrame(nextFrame % this.frames.length);
+            this.setFrame(nextFrame % this.frames.size());
         }
 
         if (this.frameSkippingType == 2) {
@@ -125,14 +132,14 @@ public class MovieClip extends Sprite {
         if (this.currentFrame == index) return;
         this.currentFrame = index;
 
-        MovieClipFrame frame = this.frames[index];
+        MovieClipFrame frame = this.frames.get(index);
         int childIndex = 0;
 
         for (MovieClipFrameElement element : frame.getElements()) {
-            DisplayObject child = this.timelineChildren[element.getChildIndex()];
+            DisplayObject child = this.timelineChildren[element.childIndex()];
             if (child == null) continue;
 
-            int matrixIndex = element.getMatrixIndex();
+            int matrixIndex = element.matrixIndex();
             if (matrixIndex != 0xFFFF) {
                 Matrix2x3 matrix = this.matrixBank.getMatrix(matrixIndex);
                 child.setMatrix(new Matrix2x3(matrix));
@@ -140,7 +147,7 @@ public class MovieClip extends Sprite {
                 child.setMatrix(new Matrix2x3());
             }
 
-            int colorTransformIndex = element.getColorTransformIndex();
+            int colorTransformIndex = element.colorTransformIndex();
             if (colorTransformIndex != 0xFFFF) {
                 ColorTransform colorTransform = this.matrixBank.getColorTransform(colorTransformIndex);
                 child.setColorTransform(new ColorTransform(colorTransform));
@@ -190,7 +197,7 @@ public class MovieClip extends Sprite {
 
     public void gotoAbsoluteTimeRecursive(float time) {  // time in milliseconds
         int passedFrames = (int) (time / this.msPerFrame);
-        int frameIndex = passedFrames % this.frames.length;
+        int frameIndex = passedFrames % this.frames.size();
         this.gotoAndPlayFrameIndex(frameIndex, -1);
 
         for (DisplayObject child : this.timelineChildren) {
@@ -235,7 +242,7 @@ public class MovieClip extends Sprite {
 
     public void gotoAndPlayFrameIndex(int frame, int loopFrame, MovieClipState state) {
         this.loopFrame = loopFrame;
-        if (frame >= 0 && this.frames.length > frame) {
+        if (frame >= 0 && this.frames.size() > frame) {
             this.setFrame(frame);
         }
 
@@ -273,7 +280,7 @@ public class MovieClip extends Sprite {
     }
 
     public float getDuration() {
-        return this.msPerFrame * this.frames.length;
+        return this.msPerFrame * this.frames.size();
     }
 
     public DisplayObject[] getTimelineChildren() {
@@ -284,18 +291,18 @@ public class MovieClip extends Sprite {
         return timelineChildrenNames;
     }
 
-    public MovieClipFrame[] getFrames() {
+    public List<MovieClipFrame> getFrames() {
         return frames;
     }
 
     public String getFrameLabel(int index) {
-        return frames[index].getLabel();
+        return frames.get(index).getLabel();
     }
 
     private int getFrameIndex(String frameLabel) {
         if (frameLabel != null) {
-            for (int i = 0; i < this.frames.length; i++) {
-                String label = this.frames[i].getLabel();
+            for (int i = 0; i < this.frames.size(); i++) {
+                String label = this.frames.get(i).getLabel();
                 if (label != null && label.equals(frameLabel)) {
                     return i;
                 }

@@ -8,6 +8,16 @@
     <artifactId>sc-editor</artifactId>
     <version>1.0</version>
 
+    <repositories>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/danila-schelkov/*</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <build>
         <plugins>
             <plugin>
@@ -96,6 +106,11 @@
             <groupId>io.humble</groupId>
             <artifactId>humble-video-all</artifactId>
             <version>0.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vorono4ka</groupId>
+            <artifactId>flatloader</artifactId>
+            <version>1.3-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

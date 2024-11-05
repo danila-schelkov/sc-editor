@@ -51,9 +51,13 @@ public class Editor {
     private boolean shouldDisplayPolygons;
 
     public void openFile(String path) {
+        List<GLImage> images;
+
         try {
             this.swf = new SupercellSWF();
             this.swf.load(path, path.substring(path.lastIndexOf("\\") + 1));
+
+            images = uploadTexturesToOpenGl();
         } catch (LoadingFaultException | UnableToFindObjectException |
                  UnsupportedCustomPropertyException exception) {
             LOGGER.error("An error occurred while loading the file: {}", path, exception);
@@ -64,8 +68,6 @@ public class Editor {
         }
 
         this.window.setTitle(Main.TITLE + " - " + this.swf.getFilename());
-
-        List<GLImage> images = uploadImagesToOpenGl();
 
         SwingUtilities.invokeLater(this::updateObjectTable);
         SwingUtilities.invokeLater(() -> this.updateTextureTable(images));
@@ -110,12 +112,19 @@ public class Editor {
         if (this.swf != null) {
             Stage stage = Stage.getInstance();
 
-            int[] textureIds = new int[this.swf.getTextureCount()];
-            for (int i = 0; i < this.swf.getTextureCount(); i++) {
-                textureIds[i] = stage.getImageByIndex(this.swf.getTexture(i).getIndex()).getTextureId();
+            int textureCount = this.swf.getTextureCount();
+            if (textureCount > 0) {
+                int[] textureIds = new int[textureCount];
+                for (int i = 0; i < textureCount; i++) {
+                    GLImage image = stage.getImageByIndex(this.swf.getTexture(i).getIndex());
+                    if (image == null) continue;
+
+                    textureIds[i] = image.getTextureId();
+                }
+
+                stage.doInRenderThread(() -> stage.getGl().glDeleteTextures(textureIds.length, textureIds, 0));
             }
 
-            stage.doInRenderThread(() -> stage.getGl().glDeleteTextures(textureIds.length, textureIds, 0));
             stage.clearBatches();
             stage.removeAllChildren();
 
@@ -129,7 +138,7 @@ public class Editor {
     }
 
     /**
-     * Adds display object to the Stage and to the object history and updates the info panel.
+     * Adds a display object to the Stage and to the object history and updates the info panel.
      *
      * @param displayObject selected display object
      */
@@ -212,7 +221,8 @@ public class Editor {
                 int movieClipId = ids[i];
 
                 MovieClipOriginal movieClipOriginal = this.swf.getOriginalMovieClip(movieClipId, null);
-                if (ArrayUtils.contains(movieClipOriginal.getChildrenIds(), (short) displayObjectId)) {
+                Short[] childIds = movieClipOriginal.getChildIds();
+                if (childIds != null && ArrayUtils.contains(childIds, (short) displayObjectId)) {
                     objectsTable.addRow(movieClipId, movieClipOriginal.getExportName(), "MovieClip");
                 }
             }
@@ -271,13 +281,13 @@ public class Editor {
         }
     }
 
-    private List<GLImage> uploadImagesToOpenGl() {
+    private List<GLImage> uploadTexturesToOpenGl() throws TextureFileNotFound {
         List<GLImage> images = new ArrayList<>();
 
         Stage stage = Stage.getInstance();
         for (int i = 0; i < this.swf.getTextureCount(); i++) {
             SWFTexture texture = this.swf.getTexture(i);
-            GLImage image = stage.createGLImage(texture);
+            GLImage image = stage.createGLImage(texture, this.swf.getPath().getParent());
             images.add(image);
         }
 

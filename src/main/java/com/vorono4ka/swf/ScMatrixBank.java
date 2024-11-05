@@ -1,21 +1,27 @@
 package com.vorono4ka.swf;
 
+import com.vorono4ka.flatloader.annotations.VTableClass;
+import com.vorono4ka.flatloader.annotations.VTableField;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@VTableClass
 public class ScMatrixBank {
-    private List<Matrix2x3> matrices;
-    private List<ColorTransform> colorTransforms;
+    @VTableField(0)
+    private ArrayList<Matrix2x3> matrices;
+    @VTableField(1)
+    private ArrayList<ColorTransform> colorTransforms;
 
     public void init(int matrixCount, int colorTransformCount) {
         this.matrices = new ArrayList<>(matrixCount);
         for (int i = 0; i < matrixCount; i++) {
-            this.matrices.add(i, new Matrix2x3());
+            this.matrices.add(new Matrix2x3());
         }
 
         this.colorTransforms = new ArrayList<>(colorTransformCount);
         for (int i = 0; i < colorTransformCount; i++) {
-            this.colorTransforms.add(i, new ColorTransform());
+            this.colorTransforms.add(new ColorTransform());
         }
     }
 

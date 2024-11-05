@@ -4,18 +4,20 @@ import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.originalObjects.Savable;
 
+/**
+ * Affine transformation matrix 2x3. <br>
+ *
+ * a b x <br>
+ * c d y
+ * */
 public class Matrix2x3 implements Savable {
     public static final float PRECISE_MULTIPLIER = 65535f;
     public static final float DEFAULT_MULTIPLIER = 1024f;
 
-    /*
-    * a b x
-    * c d y
-    * */
-    private float a;  // m00  // previous name: scaleX
-    private float b;  // m01  // previous name: shearX
-    private float c;  // m10  // previous name: shearY
-    private float d;  // m11  // previous name: scaleY
+    private float a;  // m00
+    private float b;  // m01
+    private float c;  // m10
+    private float d;  // m11
     private float x;  // m02
     private float y;  // m12
 

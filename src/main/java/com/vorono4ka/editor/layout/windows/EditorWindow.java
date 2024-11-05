@@ -23,6 +23,8 @@ import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;
 import javax.swing.*;
 import java.awt.*;
 
+import java.util.List;
+
 public class EditorWindow extends Window {
     public static final Dimension CANVAS_SIZE = new Dimension(680, 640);
     public static final Dimension SIDE_PANEL_SIZE = new Dimension(300, 0);
@@ -52,8 +54,8 @@ public class EditorWindow extends Window {
                 movieClipInfoPanel.addTimelineChild(i, timelineChildren[i].getId(), timelineChildren[i].getClass().getSimpleName(), timelineChildrenNames[i], true);
             }
 
-            MovieClipFrame[] frames = movieClip.getFrames();
-            for (int i = 0; i < frames.length; i++) {
+            List<MovieClipFrame> frames = movieClip.getFrames();
+            for (int i = 0; i < frames.size(); i++) {
                 movieClipInfoPanel.addFrame(i, movieClip.getFrameLabel(i));
             }
 

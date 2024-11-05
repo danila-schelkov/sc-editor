@@ -1,5 +1,9 @@
 package com.vorono4ka.swf.originalObjects;
 
+import com.vorono4ka.flatloader.SerializeType;
+import com.vorono4ka.flatloader.annotations.FlatType;
+import com.vorono4ka.flatloader.annotations.VTableClass;
+import com.vorono4ka.flatloader.annotations.VTableField;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.constants.Tag;
 import com.vorono4ka.swf.exceptions.NegativeTagLengthException;
@@ -7,12 +11,21 @@ import com.vorono4ka.swf.exceptions.UnsupportedTagException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
+@VTableClass
 public class ShapeOriginal extends DisplayObjectOriginal {
     private static final Logger LOGGER = LoggerFactory.getLogger(ShapeOriginal.class);
 
-    private ShapeDrawBitmapCommand[] commands;
+    private transient Tag tag;
+
+    @VTableField(0)
+    @FlatType(value = SerializeType.INT16, isUnsigned = true)
+    private int id;
+    @VTableField(1)
+    private ArrayList<ShapeDrawBitmapCommand> commands;
 
     public int load(ByteStream stream, Tag tag, Function<Integer, SWFTexture> imageFunction, String filename) throws NegativeTagLengthException {
         this.tag = tag;
@@ -20,13 +33,13 @@ public class ShapeOriginal extends DisplayObjectOriginal {
         this.id = stream.readShort();
         int commandCount = stream.readShort();
 
-        this.commands = new ShapeDrawBitmapCommand[commandCount];
-        for (int i = 0; i < this.commands.length; i++) {
-            this.commands[i] = new ShapeDrawBitmapCommand();
+        this.commands = new ArrayList<>(commandCount);
+        for (int i = 0; i < commandCount; i++) {
+            this.commands.add(new ShapeDrawBitmapCommand());
         }
 
         // Used for allocating memory for points
-        int pointCount = 4 * this.commands.length;
+        int pointCount = 4 * commandCount;
         if (tag == Tag.SHAPE_2) {
             pointCount = stream.readShort();
         }
@@ -48,7 +61,7 @@ public class ShapeOriginal extends DisplayObjectOriginal {
                 }
                 case SHAPE_DRAW_BITMAP_COMMAND, SHAPE_DRAW_BITMAP_COMMAND_2,
                      SHAPE_DRAW_BITMAP_COMMAND_3 ->
-                    this.commands[loadedCommands++].load(stream, tagValue, imageFunction);
+                    this.commands.get(loadedCommands++).load(stream, tagValue, imageFunction);
                 case SHAPE_DRAW_COLOR_FILL_COMMAND -> {
                     try {
                         throw new UnsupportedTagException(String.format("SupercellSWF::TAG_SHAPE_DRAW_COLOR_FILL_COMMAND not supported, %s", filename));
@@ -74,7 +87,7 @@ public class ShapeOriginal extends DisplayObjectOriginal {
     @Override
     public void save(ByteStream stream) {
         stream.writeShort(this.id);
-        stream.writeShort(this.commands.length);
+        stream.writeShort(this.commands.size());
 
         if (this.tag != Tag.SHAPE) {
             stream.writeShort(calculatePointCount());
@@ -88,8 +101,18 @@ public class ShapeOriginal extends DisplayObjectOriginal {
         });
     }
 
-    public ShapeDrawBitmapCommand[] getCommands() {
+    @Override
+    public int getId() {
+        return this.id;
+    }
+
+    public List<ShapeDrawBitmapCommand> getCommands() {
         return this.commands;
+    }
+
+    @Override
+    public Tag getTag() {
+        return tag;
     }
 
     private int calculatePointCount() {

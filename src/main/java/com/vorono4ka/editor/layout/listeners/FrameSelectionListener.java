@@ -34,10 +34,10 @@ public class FrameSelectionListener implements ListSelectionListener {
 
         int index = (int) this.table.getValueAt(selectedRow, 0);
 
-        MovieClipFrameElement[] frameElements = movieClip.getFrames()[index].getElements();
+        MovieClipFrameElement[] frameElements = movieClip.getFrames().get(index).getElements();
         for (int i = 0; i < frameElements.length; i++) {
             MovieClipFrameElement frameElement = frameElements[i];
-            panel.addFrameElement(i, frameElement.getChildIndex(), frameElement.getMatrixIndex(), frameElement.getColorTransformIndex());
+            panel.addFrameElement(i, frameElement.childIndex(), frameElement.matrixIndex(), frameElement.colorTransformIndex());
         }
     }
 }

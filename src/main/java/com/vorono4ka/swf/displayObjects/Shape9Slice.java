@@ -8,8 +8,6 @@ import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.originalObjects.ShapeOriginal;
 import com.vorono4ka.utilities.RenderConfig;
 
-import java.util.List;
-
 public class Shape9Slice extends Shape {
     private final Rect scalingGrid;
 
@@ -21,7 +19,7 @@ public class Shape9Slice extends Shape {
         Shape9Slice shape9Slice = new Shape9Slice(scalingGrid);
 
         shape9Slice.id = original.getId();
-        shape9Slice.commands = List.of(original.getCommands());
+        shape9Slice.commands = original.getCommands();
 
         return shape9Slice;
     }
