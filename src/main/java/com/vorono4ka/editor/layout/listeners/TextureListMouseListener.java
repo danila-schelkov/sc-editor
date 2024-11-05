@@ -1,7 +1,7 @@
 package com.vorono4ka.editor.layout.listeners;
 
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.swf.displayObjects.DisplayObject;
+import com.vorono4ka.swf.displayobjects.DisplayObject;
 
 import javax.swing.*;
 import java.awt.event.MouseAdapter;

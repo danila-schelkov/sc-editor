@@ -1,10 +1,10 @@
-package com.vorono4ka.swf.displayObjects;
+package com.vorono4ka.swf.displayobjects;
 
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
-import com.vorono4ka.swf.constants.Tag;
-import com.vorono4ka.swf.originalObjects.MovieClipModifierOriginal;
+import com.vorono4ka.swf.Tag;
+import com.vorono4ka.swf.movieclips.MovieClipModifierOriginal;
 
 public class MovieClipModifier extends DisplayObject {
     private final Tag tag;

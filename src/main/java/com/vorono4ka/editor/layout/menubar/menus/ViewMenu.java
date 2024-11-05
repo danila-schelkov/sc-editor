@@ -6,7 +6,7 @@ import com.vorono4ka.editor.layout.windows.EditorWindow;
 import com.vorono4ka.editor.renderer.Camera;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Rect;
-import com.vorono4ka.swf.displayObjects.StageSprite;
+import com.vorono4ka.swf.displayobjects.StageSprite;
 
 import javax.swing.*;
 import java.awt.*;

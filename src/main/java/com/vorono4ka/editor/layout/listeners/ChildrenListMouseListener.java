@@ -1,11 +1,11 @@
 package com.vorono4ka.editor.layout.listeners;
 
 import com.vorono4ka.editor.Main;
+import com.vorono4ka.swf.DisplayObjectOriginal;
 import com.vorono4ka.swf.SupercellSWF;
-import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.DisplayObjectFactory;
+import com.vorono4ka.swf.displayobjects.DisplayObject;
+import com.vorono4ka.swf.displayobjects.DisplayObjectFactory;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
-import com.vorono4ka.swf.originalObjects.DisplayObjectOriginal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

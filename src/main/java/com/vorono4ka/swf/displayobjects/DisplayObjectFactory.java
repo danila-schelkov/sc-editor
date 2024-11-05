@@ -1,9 +1,13 @@
-package com.vorono4ka.swf.displayObjects;
+package com.vorono4ka.swf.displayobjects;
 
 import com.vorono4ka.math.Rect;
+import com.vorono4ka.swf.DisplayObjectOriginal;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
-import com.vorono4ka.swf.originalObjects.*;
+import com.vorono4ka.swf.movieclips.MovieClipModifierOriginal;
+import com.vorono4ka.swf.movieclips.MovieClipOriginal;
+import com.vorono4ka.swf.shapes.ShapeOriginal;
+import com.vorono4ka.swf.textfields.TextFieldOriginal;
 
 public class DisplayObjectFactory {
     public static DisplayObject createFromOriginal(DisplayObjectOriginal original, SupercellSWF swf, Rect scalingGrid) throws UnableToFindObjectException {

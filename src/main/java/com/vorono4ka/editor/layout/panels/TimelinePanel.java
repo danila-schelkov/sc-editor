@@ -3,8 +3,8 @@ package com.vorono4ka.editor.layout.panels;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.renderer.Stage;
-import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.MovieClip;
+import com.vorono4ka.swf.displayobjects.DisplayObject;
+import com.vorono4ka.swf.displayobjects.MovieClip;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;

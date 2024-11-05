@@ -1,11 +1,11 @@
 package com.vorono4ka.utilities;
 
-import com.vorono4ka.swf.constants.MovieClipState;
-import com.vorono4ka.swf.displayObjects.MovieClip;
+import com.vorono4ka.swf.displayobjects.MovieClip;
+import com.vorono4ka.swf.movieclips.MovieClipState;
 
 public final class MovieClipHelper {
     public static void doForAllFrames(MovieClip movieClip, MovieClipFrameIndexConsumer consumer) {
-        int maxFrames = movieClip.getFrames().length;
+        int maxFrames = movieClip.getFrames().size();
 
         int currentFrame = movieClip.getCurrentFrame();
         int loopFrame = movieClip.getLoopFrame();

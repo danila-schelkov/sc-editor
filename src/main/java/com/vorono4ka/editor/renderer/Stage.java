@@ -10,11 +10,13 @@ import com.vorono4ka.math.Rect;
 import com.vorono4ka.resources.Assets;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
-import com.vorono4ka.swf.constants.MovieClipState;
-import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.MovieClip;
-import com.vorono4ka.swf.displayObjects.StageSprite;
-import com.vorono4ka.swf.originalObjects.SWFTexture;
+import com.vorono4ka.swf.displayobjects.DisplayObject;
+import com.vorono4ka.swf.displayobjects.MovieClip;
+import com.vorono4ka.swf.displayobjects.StageSprite;
+import com.vorono4ka.swf.exceptions.TextureFileNotFound;
+import com.vorono4ka.swf.file.compression.Zstandard;
+import com.vorono4ka.swf.movieclips.MovieClipState;
+import com.vorono4ka.swf.textures.SWFTexture;
 import com.vorono4ka.utilities.BufferUtils;
 import com.vorono4ka.utilities.ImageUtils;
 import com.vorono4ka.utilities.MovieClipHelper;
@@ -22,7 +24,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -71,6 +78,21 @@ public class Stage {
 
     public static int getStageCount() {
         return STAGE_COUNT;
+    }
+
+    private static byte[] getTextureFileBytes(Path directory, String compressedTextureFilename) throws TextureFileNotFound {
+        Path compressedTextureFilepath = directory.resolve(compressedTextureFilename);
+        File file = new File(compressedTextureFilepath.toUri());
+
+        byte[] compressedData;
+        try (FileInputStream fis = new FileInputStream(file)) {
+            compressedData = fis.readAllBytes();
+        } catch (FileNotFoundException e) {
+            throw new TextureFileNotFound(compressedTextureFilepath.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return compressedData;
     }
 
     public void init(GL3 gl, int x, int y, int width, int height) {
@@ -160,7 +182,7 @@ public class Stage {
         if (displayObject.isMovieClip()) {
             MovieClip movieClip = (MovieClip) displayObject;
 
-            if (movieClip.getFrames().length > 1) {
+            if (movieClip.getFrames().size() > 1) {
                 Rect bounds = new Rect();
 
                 // Saving last movie clip state
@@ -337,9 +359,16 @@ public class Stage {
         return this.images.get(index);
     }
 
-    public GLImage createGLImage(SWFTexture texture) {
+    public GLImage createGLImage(SWFTexture texture, Path directory) throws TextureFileNotFound {
+        byte[] ktxData = texture.getKtxData();
+        String textureFilename = texture.getTextureFilename();
+        if (ktxData == null && textureFilename != null) {
+            byte[] compressedData = getTextureFileBytes(directory, textureFilename);
+            ktxData = Zstandard.decompress(compressedData, 0);
+        }
+
         GLImage image = new GLImage();
-        image.createWithFormat(texture.getKtxData(), false, texture.getTag().getTextureFilter(), texture.getWidth(), texture.getHeight(), texture.getPixels(), texture.getTextureInfo().pixelFormat(), texture.getTextureInfo().pixelType());
+        image.createWithFormat(ktxData, false, texture.getTag().getTextureFilter(), texture.getWidth(), texture.getHeight(), texture.getPixels(), texture.getTextureInfo().pixelFormat(), texture.getTextureInfo().pixelType());
         this.images.put(texture.getIndex(), image);
 
         return image;

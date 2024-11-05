@@ -1,10 +1,10 @@
-package com.vorono4ka.swf.displayObjects;
+package com.vorono4ka.swf.displayobjects;
 
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
-import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;
-import com.vorono4ka.swf.originalObjects.ShapeOriginal;
+import com.vorono4ka.swf.shapes.ShapeDrawBitmapCommand;
+import com.vorono4ka.swf.shapes.ShapeOriginal;
 import com.vorono4ka.utilities.RenderConfig;
 
 import java.util.List;
@@ -16,7 +16,7 @@ public class Shape extends DisplayObject {
         Shape shape = new Shape();
 
         shape.id = original.getId();
-        shape.commands = List.of(original.getCommands());
+        shape.commands = original.getCommands();
 
         return shape;
     }

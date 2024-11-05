@@ -5,8 +5,8 @@ import com.vorono4ka.editor.renderer.Framebuffer;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.MathHelper;
 import com.vorono4ka.math.Rect;
-import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.MovieClip;
+import com.vorono4ka.swf.displayobjects.DisplayObject;
+import com.vorono4ka.swf.displayobjects.MovieClip;
 import com.vorono4ka.utilities.ImageData;
 import com.vorono4ka.utilities.ImageUtils;
 
@@ -101,7 +101,7 @@ public class ImageExporter {
         if (child.isMovieClip()) {
             MovieClip movieClip = (MovieClip) child;
 
-            if (movieClip.getFrames().length > 1) {
+            if (movieClip.getFrames().size() > 1) {
                 int currentFrame = movieClip.getCurrentFrame();
                 String frameLabel = movieClip.getFrameLabel(currentFrame);
                 String frameName = String.valueOf(currentFrame);

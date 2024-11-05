@@ -1,9 +1,9 @@
-package com.vorono4ka.swf.displayObjects;
+package com.vorono4ka.swf.displayobjects;
 
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
-import com.vorono4ka.swf.constants.MovieClipState;
+import com.vorono4ka.swf.movieclips.MovieClipState;
 import com.vorono4ka.utilities.RenderConfig;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package com.vorono4ka.swf.displayObjects;
+package com.vorono4ka.swf.displayobjects;
 
 import com.vorono4ka.editor.renderer.Stage;
 

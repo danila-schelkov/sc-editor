@@ -78,7 +78,7 @@ public class GLImage {
         return texture.getId();
     }
 
-    public void createWithFormat(ByteBuffer khronosTextureFileData, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
+    public void createWithFormat(byte[] khronosTextureFileData, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
         Stage stage = Stage.getInstance();
         GL3 gl = stage.getGl();
 
@@ -121,7 +121,7 @@ public class GLImage {
             texture.setFilters(minFilter, magFilter);
 
             if (khronosTextureFileData != null) {
-                loadKhronosTexture(texture, khronosTextureFileData);
+                loadKhronosTexture(texture, BufferUtils.wrapDirect(khronosTextureFileData));
             } else {
                 loadImage(texture, pixels, pixelFormat, pixelType);
             }
