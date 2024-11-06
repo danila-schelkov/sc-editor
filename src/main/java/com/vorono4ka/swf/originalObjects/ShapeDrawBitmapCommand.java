@@ -4,6 +4,7 @@ import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.constants.Tag;
 
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 public class ShapeDrawBitmapCommand {
     private transient Tag tag;
@@ -17,6 +18,9 @@ public class ShapeDrawBitmapCommand {
     private transient ShapePoint[] shapePoints;
 
     private transient SWFTexture texture;
+
+    private transient IntFunction<int[]> triangulator;
+    private transient int[] indices;
 
     public void load(ByteStream stream, Tag tag, Function<Integer, SWFTexture> imageFunction) {
         this.tag = tag;
@@ -125,5 +129,21 @@ public class ShapeDrawBitmapCommand {
 
     public int getVertexCount() {
         return shapePoints.length;
+    }
+
+    public int getTriangleCount() {
+        return this.getVertexCount() - 2;
+    }
+
+    public void setTriangulator(IntFunction<int[]> triangulator) {
+        this.triangulator = triangulator;
+    }
+
+    public int[] getIndices() {
+        if (indices != null) {
+            return indices;
+        }
+
+        return indices = triangulator.apply(getTriangleCount());
     }
 }

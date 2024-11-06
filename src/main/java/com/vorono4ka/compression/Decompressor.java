@@ -3,21 +3,28 @@ package com.vorono4ka.compression;
 import com.github.luben.zstd.Zstd;
 import com.vorono4ka.compression.exceptions.UnknownFileMagicException;
 import com.vorono4ka.compression.exceptions.UnknownFileVersionException;
+import com.vorono4ka.utilities.ArrayUtils;
 import org.sevenzip.compression.LZMA.Decoder;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class Decompressor {
-    public static final int SC_MAGIC = 0x5343;
+    private static final int SC_MAGIC = 0x5343;
+    private static final byte[] START_SECTION_BYTES = {'S', 'T', 'A', 'R', 'T'};
 
     public static byte[] decompress(DataInputStream stream, byte[] compressedData, int version) throws UnknownFileMagicException, UnknownFileVersionException, IOException {
         switch (version) {
             case 1, 2, 3 -> {
                 int hashLength = stream.readInt();
                 stream.skip(hashLength);
+                int startSectionIndex = ArrayUtils.indexOf(compressedData, START_SECTION_BYTES);
+                if (startSectionIndex != -1) {
+                    compressedData = Arrays.copyOf(compressedData, startSectionIndex);
+                }
             }
             case 0x05000000 -> {
                 int metadataRootTableOffset = stream.readInt();

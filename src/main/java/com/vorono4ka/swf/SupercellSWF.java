@@ -6,14 +6,13 @@ import com.vorono4ka.compression.exceptions.UnknownFileMagicException;
 import com.vorono4ka.compression.exceptions.UnknownFileVersionException;
 import com.vorono4ka.flatloader.FlatByteStream;
 import com.vorono4ka.flatloader.FlatLoader;
-import com.vorono4ka.swf.flat.FlatSupercellSWF;
-import com.vorono4ka.swf.flat.roots.*;
-import com.vorono4ka.swf.flat.TextureSet;
 import com.vorono4ka.resources.ResourceManager;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.constants.Tag;
-import com.vorono4ka.swf.displayObjects.ShapeDrawBitmapCommandRenderer;
 import com.vorono4ka.swf.exceptions.*;
+import com.vorono4ka.swf.flat.FlatSupercellSWF;
+import com.vorono4ka.swf.flat.TextureSet;
+import com.vorono4ka.swf.flat.roots.*;
 import com.vorono4ka.swf.originalObjects.*;
 import com.vorono4ka.utilities.ArrayUtils;
 import org.slf4j.Logger;
@@ -24,10 +23,30 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.IntFunction;
 
 public class SupercellSWF {
     public static final String TEXTURE_EXTENSION = "_tex.sc";
-    public static final byte[] START_SECTION_BYTES = {'S', 'T', 'A', 'R', 'T'};
+
+    private static final IntFunction<int[]> TRIANGULATOR_FUNCTION_1 = (triangleCount) -> {
+        int[] indices = new int[triangleCount * 3];
+        for (int i = 0; i < triangleCount; i++) {
+            indices[i * 3] = 0;
+            indices[i * 3 + 1] = i + 1;
+            indices[i * 3 + 2] = i + 2;
+        }
+        return indices;
+    };
+
+    private static final IntFunction<int[]> TRIANGULATOR_FUNCTION_2 = (triangleCount) -> {
+        int[] indices = new int[triangleCount * 3];
+        for (int i = 0; i < triangleCount; i++) {
+            indices[i * 3] = i;
+            indices[i * 3 + 1] = i + 1;
+            indices[i * 3 + 2] = i + 2;
+        }
+        return indices;
+    };
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SupercellSWF.class);
 
@@ -96,10 +115,7 @@ public class SupercellSWF {
         }
 
         if (version == 0x05000000) {
-            ShapeDrawBitmapCommandRenderer.triangulatorFunction = ShapeDrawBitmapCommandRenderer.TRIANGULATOR_FUNCTION_2;
             return loadAsFlat(path, decompressedData);
-        } else {
-            ShapeDrawBitmapCommandRenderer.triangulatorFunction = ShapeDrawBitmapCommandRenderer.TRIANGULATOR_FUNCTION_1;
         }
 
         return loadOld(path, isTextureFile, decompressedData);
@@ -147,6 +163,7 @@ public class SupercellSWF {
                 }
 
                 command.setPoints(points);
+                command.setTriangulator(TRIANGULATOR_FUNCTION_2);
             }
         }
 
@@ -185,6 +202,10 @@ public class SupercellSWF {
             if (highresTexture != null) {
                 highresTexture.resolveStrings(strings);
                 texture = highresTexture;
+            }
+
+            if (texture == null) {
+                throw new IllegalStateException("Texture cannot be null! File " + path);
             }
 
             texture.resolve();
@@ -246,6 +267,12 @@ public class SupercellSWF {
             for (Export export : exports) {
                 MovieClipOriginal movieClip = this.getOriginalMovieClip(export.id(), export.name());
                 movieClip.setExportName(export.name());
+            }
+
+            for (ShapeOriginal shape : shapes) {
+                for (ShapeDrawBitmapCommand command : shape.getCommands()) {
+                    command.setTriangulator(TRIANGULATOR_FUNCTION_1);
+                }
             }
 
             return true;

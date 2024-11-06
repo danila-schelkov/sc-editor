@@ -8,31 +8,7 @@ import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.originalObjects.SWFTexture;
 import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;
 
-import java.util.function.IntFunction;
-
 public class ShapeDrawBitmapCommandRenderer {
-    public static final IntFunction<int[]> TRIANGULATOR_FUNCTION_1 = (triangleCount) -> {
-        int[] indices = new int[triangleCount * 3];
-        for (int i = 0; i < triangleCount; i++) {
-            indices[i * 3] = 0;
-            indices[i * 3 + 1] = i + 1;
-            indices[i * 3 + 2] = i + 2;
-        }
-        return indices;
-    };
-
-    public static final IntFunction<int[]> TRIANGULATOR_FUNCTION_2 = (triangleCount) -> {
-        int[] indices = new int[triangleCount * 3];
-        for (int i = 0; i < triangleCount; i++) {
-            indices[i * 3] = i;
-            indices[i * 3 + 1] = i + 1;
-            indices[i * 3 + 2] = i + 2;
-        }
-        return indices;
-    };
-
-    public static IntFunction<int[]> triangulatorFunction = TRIANGULATOR_FUNCTION_1;
-
     public static boolean render(ShapeDrawBitmapCommand command, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits) {
         Rect bounds = new Rect();
 
@@ -52,13 +28,12 @@ public class ShapeDrawBitmapCommandRenderer {
             bounds.addPoint(x, y);
         }
 
-        int triangleCount = command.getVertexCount() - 2;
-        int[] indices = triangulatorFunction.apply(triangleCount);
+        int[] indices = command.getIndices();
 
         GLImage image = stage.getImageByIndex(command.getTextureIndex());
 
         if (stage.startShape(bounds, image.getTexture(), renderConfigBits)) {
-            stage.addTriangles(triangleCount, indices);
+            stage.addTriangles(command.getTriangleCount(), indices);
 
             float redMultiplier = colorTransform.getRedMultiplier() / 255f;
             float greenMultiplier = colorTransform.getGreenMultiplier() / 255f;
@@ -123,13 +98,12 @@ public class ShapeDrawBitmapCommandRenderer {
             bounds.addPoint(appliedX, appliedY);
         }
 
-        int triangleCount = command.getVertexCount() - 2;
-        int[] indices = triangulatorFunction.apply(triangleCount);
+        int[] indices = command.getIndices();
 
         GLImage image = stage.getImageByIndex(command.getTextureIndex());
 
         if (stage.startShape(bounds, image.getTexture(), renderConfigBits)) {
-            stage.addTriangles(triangleCount, indices);
+            stage.addTriangles(command.getTriangleCount(), indices);
 
             float redMultiplier = colorTransform.getRedMultiplier() / 255f;
             float greenMultiplier = colorTransform.getGreenMultiplier() / 255f;
@@ -187,11 +161,10 @@ public class ShapeDrawBitmapCommandRenderer {
             bounds.addPoint(x, y);
         }
 
-        int triangleCount = command.getVertexCount() - 2;
-        int[] indices = triangulatorFunction.apply(triangleCount);
+        int[] indices = command.getIndices();
 
         if (stage.startShape(bounds, stage.getGradientTexture().getTexture(), renderConfigBits)) {
-            stage.addTriangles(triangleCount, indices);
+            stage.addTriangles(command.getTriangleCount(), indices);
 
             for (int i = 0; i < command.getVertexCount(); i++) {
                 stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], 1f, 0, 1, 0, 0, 0.5f, 0, 0, 0);
