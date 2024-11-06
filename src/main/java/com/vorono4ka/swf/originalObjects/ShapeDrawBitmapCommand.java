@@ -3,7 +3,6 @@ package com.vorono4ka.swf.originalObjects;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.constants.Tag;
 
-import java.util.function.Function;
 import java.util.function.IntFunction;
 
 public class ShapeDrawBitmapCommand {
@@ -17,16 +16,13 @@ public class ShapeDrawBitmapCommand {
     private transient int vertexCount;
     private transient ShapePoint[] shapePoints;
 
-    private transient SWFTexture texture;
-
     private transient IntFunction<int[]> triangulator;
     private transient int[] indices;
 
-    public void load(ByteStream stream, Tag tag, Function<Integer, SWFTexture> imageFunction) {
+    public void load(ByteStream stream, Tag tag) {
         this.tag = tag;
 
         this.textureIndex = stream.readUnsignedChar();
-        this.texture = imageFunction.apply(textureIndex);
 
         this.vertexCount = 4;
         if (tag != Tag.SHAPE_DRAW_BITMAP_COMMAND) {
@@ -121,10 +117,6 @@ public class ShapeDrawBitmapCommand {
 
     public void setPoints(ShapePoint[] points) {
         this.shapePoints = points;
-    }
-
-    public SWFTexture getTexture() {
-        return texture;
     }
 
     public int getVertexCount() {

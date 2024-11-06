@@ -350,7 +350,7 @@ public class SupercellSWF {
                         throw new TooManyObjectsException("Trying to load too many shapes from ");
                     }
 
-                    this.shapes[loadedShapes++].load(stream, tagValue, this::getTexture, filename);
+                    this.shapes[loadedShapes++].load(stream, tagValue, filename);
                 }
                 case MOVIE_CLIP, MOVIE_CLIP_2, MOVIE_CLIP_3, MOVIE_CLIP_4, MOVIE_CLIP_5,
                      MOVIE_CLIP_6 -> {

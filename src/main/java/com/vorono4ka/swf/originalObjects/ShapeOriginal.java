@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 
 @VTableClass
 public class ShapeOriginal extends DisplayObjectOriginal {
@@ -27,7 +26,7 @@ public class ShapeOriginal extends DisplayObjectOriginal {
     @VTableField(1)
     private ArrayList<ShapeDrawBitmapCommand> commands;
 
-    public int load(ByteStream stream, Tag tag, Function<Integer, SWFTexture> imageFunction, String filename) throws NegativeTagLengthException {
+    public int load(ByteStream stream, Tag tag, String filename) throws NegativeTagLengthException {
         this.tag = tag;
 
         this.id = stream.readShort();
@@ -61,7 +60,7 @@ public class ShapeOriginal extends DisplayObjectOriginal {
                 }
                 case SHAPE_DRAW_BITMAP_COMMAND, SHAPE_DRAW_BITMAP_COMMAND_2,
                      SHAPE_DRAW_BITMAP_COMMAND_3 ->
-                    this.commands.get(loadedCommands++).load(stream, tagValue, imageFunction);
+                    this.commands.get(loadedCommands++).load(stream, tagValue);
                 case SHAPE_DRAW_COLOR_FILL_COMMAND -> {
                     try {
                         throw new UnsupportedTagException(String.format("SupercellSWF::TAG_SHAPE_DRAW_COLOR_FILL_COMMAND not supported, %s", filename));

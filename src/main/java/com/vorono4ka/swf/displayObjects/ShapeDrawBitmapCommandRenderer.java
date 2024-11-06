@@ -5,7 +5,6 @@ import com.vorono4ka.editor.renderer.texture.GLImage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
-import com.vorono4ka.swf.originalObjects.SWFTexture;
 import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;
 
 public class ShapeDrawBitmapCommandRenderer {
@@ -143,12 +142,12 @@ public class ShapeDrawBitmapCommandRenderer {
     public static boolean renderUV(ShapeDrawBitmapCommand command, Stage stage, int renderConfigBits) {
         Rect bounds = new Rect();
 
-        SWFTexture texture = command.getTexture();
+        GLImage image = stage.getImageByIndex(command.getTextureIndex());
 
         float[] transformedPoints = new float[command.getVertexCount() * 2];
         for (int i = 0; i < command.getVertexCount(); i++) {
-            float x = command.getU(i) - texture.getWidth() / 2f;
-            float y = command.getV(i) - texture.getHeight() / 2f;
+            float x = command.getU(i) * image.getWidth() - image.getWidth() / 2f;
+            float y = command.getV(i) * image.getHeight() - image.getHeight() / 2f;
 
             transformedPoints[i * 2] = x;
             transformedPoints[i * 2 + 1] = y;
