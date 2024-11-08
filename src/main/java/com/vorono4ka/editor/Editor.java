@@ -13,14 +13,14 @@ import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.editor.renderer.texture.GLImage;
 import com.vorono4ka.exporter.ImageExporter;
 import com.vorono4ka.swf.SupercellSWF;
-import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.MovieClip;
+import com.vorono4ka.swf.displayobjects.DisplayObject;
+import com.vorono4ka.swf.displayobjects.MovieClip;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.TextureFileNotFound;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.exceptions.UnsupportedCustomPropertyException;
-import com.vorono4ka.swf.originalObjects.MovieClipOriginal;
-import com.vorono4ka.swf.originalObjects.SWFTexture;
+import com.vorono4ka.swf.movieclips.MovieClipOriginal;
+import com.vorono4ka.swf.textures.SWFTexture;
 import com.vorono4ka.utilities.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +52,15 @@ public class Editor {
 
     public void openFile(String path) {
         try {
+            String filename = path.substring(path.lastIndexOf("\\") + 1);
+            this.window.setTitle(Main.TITLE + " - " + filename);
+
             this.swf = new SupercellSWF();
-            this.swf.load(path, path.substring(path.lastIndexOf("\\") + 1));
+            this.swf.load(path, filename);
+
+            List<GLImage> images = uploadTexturesToOpenGl();
+
+            SwingUtilities.invokeLater(() -> this.updateTextureTable(images));
         } catch (LoadingFaultException | UnableToFindObjectException |
                  UnsupportedCustomPropertyException exception) {
             LOGGER.error("An error occurred while loading the file: {}", path, exception);
@@ -63,12 +70,7 @@ public class Editor {
             return;
         }
 
-        this.window.setTitle(Main.TITLE + " - " + this.swf.getFilename());
-
-        List<GLImage> images = uploadImagesToOpenGl();
-
         SwingUtilities.invokeLater(this::updateObjectTable);
-        SwingUtilities.invokeLater(() -> this.updateTextureTable(images));
 
         FileMenu fileMenu = this.window.getMenubar().getFileMenu();
         fileMenu.checkCanSave();
@@ -110,12 +112,19 @@ public class Editor {
         if (this.swf != null) {
             Stage stage = Stage.getInstance();
 
-            int[] textureIds = new int[this.swf.getTextureCount()];
-            for (int i = 0; i < this.swf.getTextureCount(); i++) {
-                textureIds[i] = stage.getImageByIndex(this.swf.getTexture(i).getIndex()).getTextureId();
+            int textureCount = this.swf.getTextureCount();
+            if (textureCount > 0) {
+                int[] textureIds = new int[textureCount];
+                for (int i = 0; i < textureCount; i++) {
+                    GLImage image = stage.getImageByIndex(this.swf.getTexture(i).getIndex());
+                    if (image == null) continue;
+
+                    textureIds[i] = image.getTextureId();
+                }
+
+                stage.doInRenderThread(() -> stage.getGl().glDeleteTextures(textureIds.length, textureIds, 0));
             }
 
-            stage.doInRenderThread(() -> stage.getGl().glDeleteTextures(textureIds.length, textureIds, 0));
             stage.clearBatches();
             stage.removeAllChildren();
 
@@ -129,7 +138,7 @@ public class Editor {
     }
 
     /**
-     * Adds display object to the Stage and to the object history and updates the info panel.
+     * Adds a display object to the Stage and to the object history and updates the info panel.
      *
      * @param displayObject selected display object
      */
@@ -206,13 +215,14 @@ public class Editor {
 
         Table objectsTable = usagesWindow.getObjectsTable();
 
-        Integer[] ids = this.swf.getMovieClipsIds();
+        int[] ids = this.swf.getMovieClipsIds();
         try {
             for (int i = 0; i < this.swf.getMovieClipCount(); i++) {
                 int movieClipId = ids[i];
 
-                MovieClipOriginal movieClipOriginal = this.swf.getOriginalMovieClip(movieClipId, null);
-                if (ArrayUtils.contains(movieClipOriginal.getChildrenIds(), (short) displayObjectId)) {
+                MovieClipOriginal movieClipOriginal = this.swf.getOriginalMovieClip(movieClipId & 0xFFFF, null);
+                short[] childIds = movieClipOriginal.getChildIds();
+                if (childIds != null && ArrayUtils.contains(childIds, (short) displayObjectId)) {
                     objectsTable.addRow(movieClipId, movieClipOriginal.getExportName(), "MovieClip");
                 }
             }
@@ -271,13 +281,13 @@ public class Editor {
         }
     }
 
-    private List<GLImage> uploadImagesToOpenGl() {
+    private List<GLImage> uploadTexturesToOpenGl() throws TextureFileNotFound {
         List<GLImage> images = new ArrayList<>();
 
         Stage stage = Stage.getInstance();
         for (int i = 0; i < this.swf.getTextureCount(); i++) {
             SWFTexture texture = this.swf.getTexture(i);
-            GLImage image = stage.createGLImage(texture);
+            GLImage image = stage.createGLImage(texture, this.swf.getPath().getParent());
             images.add(image);
         }
 
@@ -306,13 +316,13 @@ public class Editor {
 
         StatusBar statusBar = this.window.getStatusBar();
 
-        Integer[] movieClipsIds = this.swf.getMovieClipsIds();
+        int[] movieClipsIds = this.swf.getMovieClipsIds();
         try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Collecting MovieClip info...", 0, movieClipsIds.length)) {
             for (int i = 0; i < movieClipsIds.length; i++) {
                 int movieClipId = movieClipsIds[i];
 
                 try {
-                    MovieClipOriginal movieClipOriginal = this.swf.getOriginalMovieClip(movieClipId, null);
+                    MovieClipOriginal movieClipOriginal = this.swf.getOriginalMovieClip(movieClipId & 0xFFFF, null);
                     rowDataList.add(new Object[]{movieClipId, movieClipOriginal.getExportName(), "MovieClip"});
                 } catch (UnableToFindObjectException e) {
                     LOGGER.error(e.getMessage(), e);
@@ -322,7 +332,7 @@ public class Editor {
             }
         }
 
-        Integer[] shapesIds = this.swf.getShapesIds();
+        int[] shapesIds = this.swf.getShapesIds();
         try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Collecting Shape info...", 0, shapesIds.length)) {
             for (int i = 0; i < shapesIds.length; i++) {
                 int shapesId = shapesIds[i];
@@ -331,7 +341,7 @@ public class Editor {
             }
         }
 
-        Integer[] textFieldsIds = this.swf.getTextFieldsIds();
+        int[] textFieldsIds = this.swf.getTextFieldsIds();
         try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Collecting TextField info...", 0, textFieldsIds.length)) {
             for (int i = 0; i < textFieldsIds.length; i++) {
                 int textFieldId = textFieldsIds[i];

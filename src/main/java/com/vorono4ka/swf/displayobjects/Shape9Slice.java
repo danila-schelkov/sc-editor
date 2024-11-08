@@ -1,14 +1,12 @@
-package com.vorono4ka.swf.displayObjects;
+package com.vorono4ka.swf.displayobjects;
 
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
-import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;
-import com.vorono4ka.swf.originalObjects.ShapeOriginal;
+import com.vorono4ka.swf.shapes.ShapeDrawBitmapCommand;
+import com.vorono4ka.swf.shapes.ShapeOriginal;
 import com.vorono4ka.utilities.RenderConfig;
-
-import java.util.List;
 
 public class Shape9Slice extends Shape {
     private final Rect scalingGrid;
@@ -21,7 +19,7 @@ public class Shape9Slice extends Shape {
         Shape9Slice shape9Slice = new Shape9Slice(scalingGrid);
 
         shape9Slice.id = original.getId();
-        shape9Slice.commands = List.of(original.getCommands());
+        shape9Slice.commands = original.getCommands();
 
         return shape9Slice;
     }
@@ -47,14 +45,15 @@ public class Shape9Slice extends Shape {
         }
 
         Rect movedGrid = new Rect(this.scalingGrid);
+        // Why not matrix applied? Maybe here is a bug?
         movedGrid.movePosition(-this.getMatrix().getX(), -this.getMatrix().getY());
 
-        float widthSheared = this.scalingGrid.getWidth() * matrixApplied.getShearX();
-        float widthScaled = this.scalingGrid.getWidth() * matrixApplied.getScaleX();
+        float widthSheared = this.scalingGrid.getWidth() * matrixApplied.getB();
+        float widthScaled = this.scalingGrid.getWidth() * matrixApplied.getA();
         float widthDistance = widthSheared * widthSheared + widthScaled * widthScaled;
 
-        float heightSheared = this.scalingGrid.getHeight() * matrixApplied.getShearY();
-        float heightScaled = this.scalingGrid.getHeight() * matrixApplied.getScaleY();
+        float heightSheared = this.scalingGrid.getHeight() * matrixApplied.getC();
+        float heightScaled = this.scalingGrid.getHeight() * matrixApplied.getD();
         float heightDistance = heightSheared * heightSheared + heightScaled * heightScaled;
 
         float scaledWidth = 1.0f;

@@ -14,14 +14,16 @@ import com.vorono4ka.editor.layout.panels.TimelinePanel;
 import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
 import com.vorono4ka.editor.layout.panels.info.MovieClipInfoPanel;
 import com.vorono4ka.editor.layout.panels.info.ShapeInfoPanel;
-import com.vorono4ka.swf.MovieClipFrame;
-import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.MovieClip;
-import com.vorono4ka.swf.displayObjects.Shape;
-import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;
+import com.vorono4ka.swf.displayobjects.DisplayObject;
+import com.vorono4ka.swf.displayobjects.MovieClip;
+import com.vorono4ka.swf.displayobjects.Shape;
+import com.vorono4ka.swf.movieclips.MovieClipFrame;
+import com.vorono4ka.swf.shapes.ShapeDrawBitmapCommand;
 
 import javax.swing.*;
 import java.awt.*;
+
+import java.util.List;
 
 public class EditorWindow extends Window {
     public static final Dimension CANVAS_SIZE = new Dimension(680, 640);
@@ -49,11 +51,12 @@ public class EditorWindow extends Window {
             DisplayObject[] timelineChildren = movieClip.getTimelineChildren();
             String[] timelineChildrenNames = movieClip.getTimelineChildrenNames();
             for (int i = 0; i < timelineChildren.length; i++) {
-                movieClipInfoPanel.addTimelineChild(i, timelineChildren[i].getId(), timelineChildren[i].getClass().getSimpleName(), timelineChildrenNames[i], true);
+                Object childName = timelineChildrenNames != null && timelineChildrenNames.length > 0 ? timelineChildrenNames[i] : null;
+                movieClipInfoPanel.addTimelineChild(i, timelineChildren[i].getId(), timelineChildren[i].getClass().getSimpleName(), childName, true);
             }
 
-            MovieClipFrame[] frames = movieClip.getFrames();
-            for (int i = 0; i < frames.length; i++) {
+            List<MovieClipFrame> frames = movieClip.getFrames();
+            for (int i = 0; i < frames.size(); i++) {
                 movieClipInfoPanel.addFrame(i, movieClip.getFrameLabel(i));
             }
 

@@ -1,22 +1,14 @@
-package com.vorono4ka.swf.displayObjects;
+package com.vorono4ka.swf.displayobjects;
 
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.editor.renderer.texture.GLImage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
-import com.vorono4ka.swf.originalObjects.SWFTexture;
-import com.vorono4ka.swf.originalObjects.ShapeDrawBitmapCommand;
+import com.vorono4ka.swf.shapes.ShapeDrawBitmapCommand;
 
-public class ShapeDrawBitmapCommandRenderer {
-    private static int[] createTriangleIndices(int triangleCount) {
-        int[] indices = new int[triangleCount * 3];
-        for (int i = 0; i < triangleCount; i++) {
-            indices[i * 3] = 0;
-            indices[i * 3 + 1] = i + 1;
-            indices[i * 3 + 2] = i + 2;
-        }
-        return indices;
+public final class ShapeDrawBitmapCommandRenderer {
+    private ShapeDrawBitmapCommandRenderer() {
     }
 
     public static boolean render(ShapeDrawBitmapCommand command, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits) {
@@ -38,42 +30,7 @@ public class ShapeDrawBitmapCommandRenderer {
             bounds.addPoint(x, y);
         }
 
-        int triangleCount = command.getVertexCount() - 2;
-        int[] indices = createTriangleIndices(triangleCount);
-
-        GLImage image = stage.getImageByIndex(command.getTextureIndex());
-
-        if (stage.startShape(bounds, image.getTexture(), renderConfigBits)) {
-            stage.addTriangles(triangleCount, indices);
-
-            float redMultiplier = colorTransform.getRedMultiplier() / 255f;
-            float greenMultiplier = colorTransform.getGreenMultiplier() / 255f;
-            float blueMultiplier = colorTransform.getBlueMultiplier() / 255f;
-            float redAddition = colorTransform.getRedAddition() / 255f;
-            float greenAddition = colorTransform.getGreenAddition() / 255f;
-            float blueAddition = colorTransform.getBlueAddition() / 255f;
-            float alpha = colorTransform.getAlpha() / 255f;
-
-            for (int i = 0; i < command.getVertexCount(); i++) {
-                stage.addVertex(
-                    transformedPoints[i * 2],
-                    transformedPoints[i * 2 + 1],
-                    command.getU(i),
-                    command.getV(i),
-                    redMultiplier,
-                    greenMultiplier,
-                    blueMultiplier,
-                    alpha,
-                    redAddition,
-                    greenAddition,
-                    blueAddition
-                );
-            }
-
-            return true;
-        }
-
-        return false;
+        return render0(command, stage, bounds, colorTransform, transformedPoints, renderConfigBits);
     }
 
     public static boolean render9Slice(ShapeDrawBitmapCommand command, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, Rect safeArea, Rect shapeBounds, float width, float height) {
@@ -109,38 +66,16 @@ public class ShapeDrawBitmapCommandRenderer {
             bounds.addPoint(appliedX, appliedY);
         }
 
-        int triangleCount = command.getVertexCount() - 2;
-        int[] indices = createTriangleIndices(triangleCount);
+        return render0(command, stage, bounds, colorTransform, transformedPoints, renderConfigBits);
+    }
 
+    private static boolean render0(ShapeDrawBitmapCommand command, Stage stage, Rect bounds, ColorTransform colorTransform, float[] transformedPoints, int renderConfigBits) {
         GLImage image = stage.getImageByIndex(command.getTextureIndex());
 
         if (stage.startShape(bounds, image.getTexture(), renderConfigBits)) {
-            stage.addTriangles(triangleCount, indices);
+            stage.addTriangles(command.getTriangleCount(), command.getIndices());
 
-            float redMultiplier = colorTransform.getRedMultiplier() / 255f;
-            float greenMultiplier = colorTransform.getGreenMultiplier() / 255f;
-            float blueMultiplier = colorTransform.getBlueMultiplier() / 255f;
-            float redAddition = colorTransform.getRedAddition() / 255f;
-            float greenAddition = colorTransform.getGreenAddition() / 255f;
-            float blueAddition = colorTransform.getBlueAddition() / 255f;
-            float alpha = colorTransform.getAlpha() / 255f;
-
-            // TODO: optimize vertices and pass color transform via uniforms instead
-            for (int i = 0; i < command.getVertexCount(); i++) {
-                stage.addVertex(
-                    transformedPoints[i * 2],
-                    transformedPoints[i * 2 + 1],
-                    command.getU(i),
-                    command.getV(i),
-                    redMultiplier,
-                    greenMultiplier,
-                    blueMultiplier,
-                    alpha,
-                    redAddition,
-                    greenAddition,
-                    blueAddition
-                );
-            }
+            renderCommandVertices(command, stage, colorTransform, transformedPoints);
 
             return true;
         }
@@ -155,7 +90,7 @@ public class ShapeDrawBitmapCommandRenderer {
     public static boolean renderUV(ShapeDrawBitmapCommand command, Stage stage, int renderConfigBits) {
         Rect bounds = new Rect();
 
-        SWFTexture texture = command.getTexture();
+        GLImage texture = stage.getImageByIndex(command.getTextureIndex());
 
         float[] transformedPoints = new float[command.getVertexCount() * 2];
         for (int i = 0; i < command.getVertexCount(); i++) {
@@ -173,11 +108,8 @@ public class ShapeDrawBitmapCommandRenderer {
             bounds.addPoint(x, y);
         }
 
-        int triangleCount = command.getVertexCount() - 2;
-        int[] indices = createTriangleIndices(triangleCount);
-
         if (stage.startShape(bounds, stage.getGradientTexture().getTexture(), renderConfigBits)) {
-            stage.addTriangles(triangleCount, indices);
+            stage.addTriangles(command.getTriangleCount(), command.getIndices());
 
             for (int i = 0; i < command.getVertexCount(); i++) {
                 stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], 1f, 0, 1, 0, 0, 0.5f, 0, 0, 0);
@@ -187,5 +119,31 @@ public class ShapeDrawBitmapCommandRenderer {
         }
 
         return false;
+    }
+
+    private static void renderCommandVertices(ShapeDrawBitmapCommand command, Stage stage, ColorTransform colorTransform, float[] transformedPoints) {
+        float redMultiplier = colorTransform.getRedMultiplier() / 255f;
+        float greenMultiplier = colorTransform.getGreenMultiplier() / 255f;
+        float blueMultiplier = colorTransform.getBlueMultiplier() / 255f;
+        float redAddition = colorTransform.getRedAddition() / 255f;
+        float greenAddition = colorTransform.getGreenAddition() / 255f;
+        float blueAddition = colorTransform.getBlueAddition() / 255f;
+        float alpha = colorTransform.getAlpha() / 255f;
+
+        for (int i = 0; i < command.getVertexCount(); i++) {
+            stage.addVertex(
+                transformedPoints[i * 2],
+                transformedPoints[i * 2 + 1],
+                command.getU(i),
+                command.getV(i),
+                redMultiplier,
+                greenMultiplier,
+                blueMultiplier,
+                alpha,
+                redAddition,
+                greenAddition,
+                blueAddition
+            );
+        }
     }
 }

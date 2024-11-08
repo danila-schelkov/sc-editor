@@ -7,14 +7,14 @@ import com.vorono4ka.exporter.ImageExporter;
 import com.vorono4ka.exporter.VideoExporter;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.streams.ByteStream;
+import com.vorono4ka.swf.DisplayObjectOriginal;
 import com.vorono4ka.swf.SupercellSWF;
-import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.DisplayObjectFactory;
-import com.vorono4ka.swf.displayObjects.MovieClip;
+import com.vorono4ka.swf.displayobjects.DisplayObject;
+import com.vorono4ka.swf.displayobjects.DisplayObjectFactory;
+import com.vorono4ka.swf.displayobjects.MovieClip;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
-import com.vorono4ka.swf.originalObjects.DisplayObjectOriginal;
-import com.vorono4ka.swf.originalObjects.MovieClipOriginal;
-import com.vorono4ka.swf.originalObjects.TextFieldOriginal;
+import com.vorono4ka.swf.movieclips.MovieClipOriginal;
+import com.vorono4ka.swf.textfields.TextFieldOriginal;
 import com.vorono4ka.utilities.ByteArrayFlavor;
 import com.vorono4ka.utilities.ImageData;
 import com.vorono4ka.utilities.ImageUtils;
@@ -85,7 +85,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
             DisplayObjectOriginal displayObject = swf.getOriginalDisplayObject(displayObjectId, null);
             exportAsMenu.setEnabled(!(displayObject instanceof TextFieldOriginal));
             if (displayObject instanceof MovieClipOriginal movieClipOriginal) {
-                boolean hasMoreThanOneFrame = movieClipOriginal.getFrames().length > 1;
+                boolean hasMoreThanOneFrame = movieClipOriginal.getFrames().size() > 1;
                 exportAsVideoButton.setEnabled(hasMoreThanOneFrame);
             } else {
                 exportAsVideoButton.setEnabled(false);

@@ -2,9 +2,9 @@ package com.vorono4ka.editor.layout.listeners;
 
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.layout.panels.info.MovieClipInfoPanel;
-import com.vorono4ka.swf.MovieClipFrameElement;
-import com.vorono4ka.swf.displayObjects.DisplayObject;
-import com.vorono4ka.swf.displayObjects.MovieClip;
+import com.vorono4ka.swf.displayobjects.DisplayObject;
+import com.vorono4ka.swf.displayobjects.MovieClip;
+import com.vorono4ka.swf.movieclips.MovieClipFrameElement;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -34,10 +34,10 @@ public class FrameSelectionListener implements ListSelectionListener {
 
         int index = (int) this.table.getValueAt(selectedRow, 0);
 
-        MovieClipFrameElement[] frameElements = movieClip.getFrames()[index].getElements();
+        MovieClipFrameElement[] frameElements = movieClip.getFrames().get(index).getElements();
         for (int i = 0; i < frameElements.length; i++) {
             MovieClipFrameElement frameElement = frameElements[i];
-            panel.addFrameElement(i, frameElement.getChildIndex(), frameElement.getMatrixIndex(), frameElement.getColorTransformIndex());
+            panel.addFrameElement(i, frameElement.childIndex(), frameElement.matrixIndex(), frameElement.colorTransformIndex());
         }
     }
 }
