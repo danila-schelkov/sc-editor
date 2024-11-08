@@ -193,13 +193,22 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         Stage stage = Stage.getInstance();
         SupercellSWF swf = Main.editor.getSwf();
+        DisplayObject selectedObject = Main.editor.getSelectedObject();
 
         try {
             DisplayObjectOriginal displayObjectOriginal = swf.getOriginalDisplayObject(displayObjectId, null);
             DisplayObject displayObject = DisplayObjectFactory.createFromOriginal(displayObjectOriginal, swf, null);
-            if (!displayObject.isMovieClip()) return;
+            if (!displayObject.isMovieClip() || !selectedObject.isMovieClip()) return;
 
+            MovieClip selectedMovieClip = ((MovieClip) selectedObject);
             MovieClip movieClip = ((MovieClip) displayObject);
+
+            DisplayObject[] selectedClipChildren = selectedMovieClip.getTimelineChildren();
+            DisplayObject[] children = movieClip.getTimelineChildren();
+
+            for (int i = 0; i < children.length; i++) {
+                children[i].setVisibleRecursive(selectedClipChildren[i].isVisible());
+            }
 
             Rect bounds = stage.calculateBoundsForAllFrames(displayObject);
             stage.getCamera().zoomToFit(bounds);
