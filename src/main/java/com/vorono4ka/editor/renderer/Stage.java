@@ -61,6 +61,9 @@ public class Stage {
     private boolean isCalculatingBounds;
     private Rect bounds;
     private boolean isAnimationPaused;
+    private boolean isCalculatingMaskBounds;
+    private Rect maskBounds;
+    private boolean isApplyingMaskBounds;
 
     private Stage() {
         this.stageSprite = new StageSprite(this);
@@ -244,7 +247,16 @@ public class Stage {
 
     public boolean startShape(Shader shader, Rect rect, Texture texture, int renderConfigBits, ReadonlyRect clipArea) {
         if (this.isCalculatingBounds) {
+            if (this.isCalculatingMaskBounds) {
+                this.maskBounds.mergeBounds(rect);
+                return false;
+            }
+
             if (this.bounds != null) {
+                if (this.isApplyingMaskBounds) {
+                    rect.clamp(this.maskBounds);
+                }
+
                 this.bounds.mergeBounds(rect);
             }
 
@@ -331,7 +343,21 @@ public class Stage {
     }
 
     public void setStencilRenderingState(int state) {
-        if (this.isCalculatingBounds) return;
+        if (this.isCalculatingBounds) {
+            switch (state) {
+                case 2 -> {
+                    this.isCalculatingMaskBounds = true;
+                    this.maskBounds = new Rect();
+                }
+                case 3 -> {
+                    this.isCalculatingMaskBounds = false;
+                    this.isApplyingMaskBounds = true;
+                }
+                case 4 -> this.isApplyingMaskBounds = false;
+            }
+
+            return;
+        }
         this.batches.add(this.batchPool.createOrPopBatch(gl, shader, null, state));
     }
 
