@@ -109,27 +109,27 @@ public class Editor {
         editMenu.checkPreviousAvailable();
         editMenu.checkNextAvailable();
 
-        if (this.swf != null) {
-            Stage stage = Stage.getInstance();
+        if (this.swf == null) return;
 
-            int textureCount = this.swf.getTextureCount();
-            if (textureCount > 0) {
-                int[] textureIds = new int[textureCount];
-                for (int i = 0; i < textureCount; i++) {
-                    GLImage image = stage.getImageByIndex(this.swf.getTexture(i).getIndex());
-                    if (image == null) continue;
+        Stage stage = Stage.getInstance();
 
-                    textureIds[i] = image.getTextureId();
-                }
+        int textureCount = this.swf.getTextureCount();
+        if (textureCount > 0) {
+            int[] textureIds = new int[textureCount];
+            for (int i = 0; i < textureCount; i++) {
+                GLImage image = stage.getImageByIndex(this.swf.getTexture(i).getIndex());
+                if (image == null) continue;
 
-                stage.doInRenderThread(() -> stage.getGl().glDeleteTextures(textureIds.length, textureIds, 0));
+                textureIds[i] = image.getTextureId();
             }
 
-            stage.clearBatches();
-            stage.removeAllChildren();
-
-            this.swf = null;
+            stage.doInRenderThread(() -> stage.getGl().glDeleteTextures(textureIds.length, textureIds, 0));
         }
+
+        stage.clearBatches();
+        stage.removeAllChildren();
+
+        this.swf = null;
     }
 
     public DisplayObject getSelectedObject() {
