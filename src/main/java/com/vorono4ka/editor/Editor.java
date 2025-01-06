@@ -21,7 +21,6 @@ import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.exceptions.UnsupportedCustomPropertyException;
 import com.vorono4ka.swf.movieclips.MovieClipOriginal;
 import com.vorono4ka.swf.textures.SWFTexture;
-import com.vorono4ka.utilities.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +78,7 @@ public class Editor {
     public void saveFile(String path) {
         if (this.swf == null) return;
 
-        this.swf.save(path);
+        this.swf.save(path, null);
     }
 
     public void closeFile() {
@@ -215,14 +214,13 @@ public class Editor {
 
         Table objectsTable = usagesWindow.getObjectsTable();
 
-        int[] ids = this.swf.getMovieClipsIds();
+        int[] ids = this.swf.getMovieClipIds();
         try {
             for (int i = 0; i < this.swf.getMovieClipCount(); i++) {
                 int movieClipId = ids[i];
 
                 MovieClipOriginal movieClipOriginal = this.swf.getOriginalMovieClip(movieClipId & 0xFFFF, null);
-                short[] childIds = movieClipOriginal.getChildIds();
-                if (childIds != null && ArrayUtils.contains(childIds, (short) displayObjectId)) {
+                if (movieClipOriginal.getChildren().stream().anyMatch(movieClipChild -> movieClipChild.id() == displayObjectId)) {
                     objectsTable.addRow(movieClipId, movieClipOriginal.getExportName(), "MovieClip");
                 }
             }
@@ -316,7 +314,7 @@ public class Editor {
 
         StatusBar statusBar = this.window.getStatusBar();
 
-        int[] movieClipsIds = this.swf.getMovieClipsIds();
+        int[] movieClipsIds = this.swf.getMovieClipIds();
         try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Collecting MovieClip info...", 0, movieClipsIds.length)) {
             for (int i = 0; i < movieClipsIds.length; i++) {
                 int movieClipId = movieClipsIds[i];
@@ -332,7 +330,7 @@ public class Editor {
             }
         }
 
-        int[] shapesIds = this.swf.getShapesIds();
+        int[] shapesIds = this.swf.getShapeIds();
         try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Collecting Shape info...", 0, shapesIds.length)) {
             for (int i = 0; i < shapesIds.length; i++) {
                 int shapesId = shapesIds[i];
@@ -341,7 +339,7 @@ public class Editor {
             }
         }
 
-        int[] textFieldsIds = this.swf.getTextFieldsIds();
+        int[] textFieldsIds = this.swf.getTextFieldIds();
         try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Collecting TextField info...", 0, textFieldsIds.length)) {
             for (int i = 0; i < textFieldsIds.length; i++) {
                 int textFieldId = textFieldsIds[i];

@@ -2,10 +2,7 @@ package com.vorono4ka.swf.displayobjects;
 
 import com.vorono4ka.swf.*;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
-import com.vorono4ka.swf.movieclips.MovieClipFrame;
-import com.vorono4ka.swf.movieclips.MovieClipFrameElement;
-import com.vorono4ka.swf.movieclips.MovieClipOriginal;
-import com.vorono4ka.swf.movieclips.MovieClipState;
+import com.vorono4ka.swf.movieclips.*;
 
 import java.util.List;
 
@@ -33,25 +30,20 @@ public class MovieClip extends Sprite {
         movieClip.id = original.getId();
         movieClip.matrixBank = swf.getMatrixBank(original.getMatrixBankIndex());
 
-        byte[] childBlends = original.getChildBlends();
-
-        DisplayObjectOriginal[] children = original.getChildren();
-        DisplayObject[] childrenArray = new DisplayObject[original.getChildCount()];
-        for (int i = 0; i < childrenArray.length; i++) {
-            DisplayObjectOriginal child = children[i];
+        List<MovieClipChild> clipChildren = original.getChildren();
+        DisplayObjectOriginal[] timelineChildrenOriginal = original.getTimelineChildren();
+        DisplayObject[] timelineChildren = new DisplayObject[clipChildren.size()];
+        for (int i = 0; i < timelineChildren.length; i++) {
+            DisplayObjectOriginal child = timelineChildrenOriginal[i];
             DisplayObject displayObject = DisplayObjectFactory.createFromOriginal(child, swf, original.getScalingGrid());
-
-            if (childBlends != null && childBlends.length != 0) {
-                displayObject.setVisibleRecursive((childBlends[i] & 64) == 0);
-            }
-
+            displayObject.setVisibleRecursive((clipChildren.get(i).blend() & 64) == 0);
             displayObject.setInteractiveRecursive(true);
 
-            childrenArray[i] = displayObject;
+            timelineChildren[i] = displayObject;
         }
 
-        movieClip.timelineChildren = childrenArray;
-        movieClip.timelineChildrenNames = original.getChildNames();
+        movieClip.timelineChildren = timelineChildren;
+        movieClip.timelineChildrenNames = clipChildren.stream().map(MovieClipChild::name).toArray(String[]::new);
         movieClip.frames = original.getFrames();
         movieClip.setFps(original.getFps());
         movieClip.exportName = original.getExportName();
