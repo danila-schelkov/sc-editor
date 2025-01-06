@@ -56,4 +56,12 @@ public class SpriteSheet extends DisplayObject {
     public boolean collisionRender(Matrix2x3 matrix) {
         return false;
     }
+
+    public int getWidth() {
+        return image.getWidth();
+    }
+
+    public int getHeight() {
+        return image.getHeight();
+    }
 }

@@ -216,7 +216,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
         ImageExporter imageExporter = Main.editor.getImageExporter();
 
         stage.doInRenderThread(() -> {
-            stage.getCamera().zoomToFit(bounds);
+            stage.getCamera().moveToFit(bounds);
             Main.editor.selectObject(displayObject);
 
             stage.unbindRender();
@@ -237,7 +237,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
         Rect bounds = stage.calculateBoundsForAllFrames(movieClip);
 
         stage.doInRenderThread(() -> {
-            stage.getCamera().zoomToFit(bounds);
+            stage.getCamera().moveToFit(bounds);
 
             Main.editor.selectObject(movieClip);
 
