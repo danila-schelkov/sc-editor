@@ -5,6 +5,7 @@ import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.exporter.FfmpegVideoExporter;
 import com.vorono4ka.exporter.ImageExporter;
 import com.vorono4ka.exporter.VideoExporter;
+import com.vorono4ka.math.ReadonlyRect;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.DisplayObjectOriginal;
@@ -158,6 +159,9 @@ public class DisplayObjectContextMenu extends ContextMenu {
     }
 
     private void export(ActionEvent actionEvent) {
+        Stage stage = Stage.getInstance();
+        ReadonlyRect viewport = stage.getCamera().getViewport();
+
         for (int row : this.table.getSelectedRows()) {
             int displayObjectId = getDisplayObjectId(row);
 
@@ -170,6 +174,14 @@ public class DisplayObjectContextMenu extends ContextMenu {
                 exportAsImage(renderableObject);
             }
         }
+
+        stage.doInRenderThread(()->{
+            stage.unbindRender();
+            stage.init(stage.getGl(), 0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
+
+            stage.getCamera().reset();
+            stage.updatePMVMatrix();
+        });
     }
 
     private static boolean canExportAsVideo(DisplayObject renderableObject) {
@@ -181,7 +193,18 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         int displayObjectId = getDisplayObjectId(this.table.getSelectedRow());
 
+        Stage stage = Stage.getInstance();
+        ReadonlyRect viewport = stage.getCamera().getViewport();
+
         exportAsImage(getRenderableObject(displayObjectId));
+
+        stage.doInRenderThread(()->{
+            stage.unbindRender();
+            stage.init(stage.getGl(), 0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
+
+            stage.getCamera().reset();
+            stage.updatePMVMatrix();
+        });
     }
 
     private void exportAsVideoCallback(ActionEvent actionEvent) {
@@ -189,7 +212,18 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         int displayObjectId = getDisplayObjectId(this.table.getSelectedRow());
 
+        Stage stage = Stage.getInstance();
+        ReadonlyRect viewport = stage.getCamera().getViewport();
+
         exportAsVideo((MovieClip) getRenderableObject(displayObjectId));
+
+        stage.doInRenderThread(()->{
+            stage.unbindRender();
+            stage.init(stage.getGl(), 0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
+
+            stage.getCamera().reset();
+            stage.updatePMVMatrix();
+        });
     }
 
     private static DisplayObject getRenderableObject(int displayObjectId) {
@@ -236,14 +270,19 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         Rect bounds = stage.calculateBoundsForAllFrames(movieClip);
 
+        int scaleFactor = 1;
+
         stage.doInRenderThread(() -> {
             stage.getCamera().moveToFit(bounds);
+            bounds.scale(scaleFactor);
 
             Main.editor.selectObject(movieClip);
 
             stage.unbindRender();
             stage.init(stage.getGl(), 0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
-//            stage.updatePMVMatrix();
+
+            stage.getCamera().getZoom().setPointSize(scaleFactor);
+            stage.updatePMVMatrix();
 
             String filename = movieClip.getExportName();
             if (filename == null)
