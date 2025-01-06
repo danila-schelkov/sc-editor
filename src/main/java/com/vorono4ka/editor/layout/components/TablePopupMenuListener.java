@@ -47,16 +47,7 @@ public class TablePopupMenuListener implements PopupMenuListener {
     }
 
     private boolean shouldUpdateValue(int rowAtPoint) {
-        boolean shouldUpdateValue = true;
-
-        int selectionMode = table.getSelectionModel().getSelectionMode();
-        if (selectionMode == ListSelectionModel.SINGLE_INTERVAL_SELECTION) {
-            int[] selectedRows = table.getSelectedRows();
-            if (ArrayUtils.contains(selectedRows, rowAtPoint)) {
-                shouldUpdateValue = false;
-            }
-        }
-        return shouldUpdateValue;
+        return !ArrayUtils.contains(table.getSelectedRows(), rowAtPoint);
     }
 
     @FunctionalInterface

@@ -55,7 +55,7 @@ public class Editor {
             this.window.setTitle(Main.TITLE + " - " + filename);
 
             this.swf = new SupercellSWF();
-            this.swf.load(path, filename);
+            this.swf.load(path, filename, false);
 
             List<GLImage> images = uploadTexturesToOpenGl();
 

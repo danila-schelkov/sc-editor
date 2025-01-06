@@ -504,4 +504,12 @@ public class Stage {
 
         return screenBatch;
     }
+
+    public void setFramebuffer(Framebuffer framebuffer) {
+        if (framebuffer == null) {
+            throw new RuntimeException("Attempt to set null framebuffer");
+        }
+
+        this.framebuffer = framebuffer;
+    }
 }

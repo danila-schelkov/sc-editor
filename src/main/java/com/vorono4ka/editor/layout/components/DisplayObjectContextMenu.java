@@ -49,13 +49,17 @@ public class DisplayObjectContextMenu extends ContextMenu {
         JMenuItem copyAsBytesButton = this.add(copyAsMenu, "Copy as bytes", KeyEvent.VK_B);
         copyAsBytesButton.addActionListener(this::copyAsBytes);
 
-        exportAsMenu = this.addMenu("Export as...", KeyEvent.VK_E);
+        // Note: aka quick export, which uses user settings (but not impl yet)
+        JMenuItem exportButton = this.add("Export", KeyEvent.VK_X);
+        exportButton.addActionListener(this::export);
+
+        exportAsMenu = this.addMenu("Export as...", KeyEvent.VK_A);
 
         JMenuItem exportAsImageButton = this.add(exportAsMenu, "Export as image", KeyEvent.VK_I);
-        exportAsImageButton.addActionListener(this::exportAsImage);
+        exportAsImageButton.addActionListener(this::exportAsImageCallback);
 
         exportAsVideoButton = this.add(exportAsMenu, "Export as video", KeyEvent.VK_V);
-        exportAsVideoButton.addActionListener(this::exportAsVideo);
+        exportAsVideoButton.addActionListener(this::exportAsVideoCallback);
 
         this.addSeparator();
 
@@ -80,18 +84,23 @@ public class DisplayObjectContextMenu extends ContextMenu {
             return;
         }
 
-        int displayObjectId = getDisplayObjectId(rowIndex);
-        try {
-            DisplayObjectOriginal displayObject = swf.getOriginalDisplayObject(displayObjectId, null);
-            exportAsMenu.setEnabled(!(displayObject instanceof TextFieldOriginal));
-            if (displayObject instanceof MovieClipOriginal movieClipOriginal) {
-                boolean hasMoreThanOneFrame = movieClipOriginal.getFrames().size() > 1;
-                exportAsVideoButton.setEnabled(hasMoreThanOneFrame);
-            } else {
-                exportAsVideoButton.setEnabled(false);
+        int[] selectedRows = table.getSelectedRows();
+        if (selectedRows.length == 1) {
+            int displayObjectId = getDisplayObjectId(rowIndex);
+            try {
+                DisplayObjectOriginal displayObject = swf.getOriginalDisplayObject(displayObjectId, null);
+                exportAsMenu.setEnabled(!(displayObject instanceof TextFieldOriginal));
+                if (displayObject instanceof MovieClipOriginal movieClipOriginal) {
+                    boolean hasMoreThanOneFrame = movieClipOriginal.getFrames().size() > 1;
+                    exportAsVideoButton.setEnabled(hasMoreThanOneFrame);
+                } else {
+                    exportAsVideoButton.setEnabled(false);
+                }
+            } catch (UnableToFindObjectException e) {
+                throw new RuntimeException(e);
             }
-        } catch (UnableToFindObjectException e) {
-            throw new RuntimeException(e);
+        } else {
+            exportAsMenu.setEnabled(false);
         }
     }
 
@@ -148,35 +157,72 @@ public class DisplayObjectContextMenu extends ContextMenu {
         }
     }
 
-    private void exportAsImage(ActionEvent actionEvent) {
-        int selectedRow = this.table.getSelectedRow();
-        if (selectedRow == -1) return;
+    private void export(ActionEvent actionEvent) {
+        for (int row : this.table.getSelectedRows()) {
+            int displayObjectId = getDisplayObjectId(row);
 
-        int displayObjectId = getDisplayObjectId(selectedRow);
+            DisplayObject renderableObject = getRenderableObject(displayObjectId);
+            if (renderableObject == null || renderableObject.isTextField()) continue;
 
-        Stage stage = Stage.getInstance();
-        SupercellSWF swf = Main.editor.getSwf();
-        ImageExporter imageExporter = Main.editor.getImageExporter();
-
-        DisplayObject displayObject;
-        DisplayObject selectedObject = Main.editor.getSelectedObject();
-        if (selectedObject == null || selectedObject.getId() != displayObjectId) {
-            try {
-                DisplayObjectOriginal displayObjectOriginal = swf.getOriginalDisplayObject(displayObjectId, null);
-                displayObject = DisplayObjectFactory.createFromOriginal(displayObjectOriginal, swf, null);
-            } catch (UnableToFindObjectException e) {
-                throw new RuntimeException(e);
+            if (canExportAsVideo(renderableObject)) {
+                exportAsVideo((MovieClip) renderableObject);
+            } else {
+                exportAsImage(renderableObject);
             }
-        } else {
-            displayObject = selectedObject;
+        }
+    }
+
+    private static boolean canExportAsVideo(DisplayObject renderableObject) {
+        return renderableObject.isMovieClip() && ((MovieClip) renderableObject).getFrames().size() > 1;
+    }
+
+    private void exportAsImageCallback(ActionEvent actionEvent) {
+        if (this.table.getSelectedRowCount() == 0) return;
+
+        int displayObjectId = getDisplayObjectId(this.table.getSelectedRow());
+
+        exportAsImage(getRenderableObject(displayObjectId));
+    }
+
+    private void exportAsVideoCallback(ActionEvent actionEvent) {
+        if (this.table.getSelectedRowCount() == 0) return;
+
+        int displayObjectId = getDisplayObjectId(this.table.getSelectedRow());
+
+        exportAsVideo((MovieClip) getRenderableObject(displayObjectId));
+    }
+
+    private static DisplayObject getRenderableObject(int displayObjectId) {
+        SupercellSWF swf = Main.editor.getSwf();
+
+        DisplayObject selectedObject = Main.editor.getSelectedObject();
+        if (selectedObject != null && selectedObject.getId() == displayObjectId) {
+            return selectedObject;
         }
 
+        try {
+            DisplayObjectOriginal displayObjectOriginal = swf.getOriginalDisplayObject(displayObjectId, null);
+            return DisplayObjectFactory.createFromOriginal(displayObjectOriginal, swf, null);
+        } catch (UnableToFindObjectException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void exportAsImage(DisplayObject displayObject) {
+        Stage stage = Stage.getInstance();
+
         Rect bounds = stage.calculateBoundsForAllFrames(displayObject);
-        stage.getCamera().zoomToFit(bounds);
+
+        ImageExporter imageExporter = Main.editor.getImageExporter();
 
         stage.doInRenderThread(() -> {
+            stage.getCamera().zoomToFit(bounds);
             Main.editor.selectObject(displayObject);
-            stage.updatePMVMatrix();
+
+            stage.unbindRender();
+            stage.init(stage.getGl(), 0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
+
+//            stage.updatePMVMatrix();
 
             stage.render(0);
 
@@ -185,50 +231,38 @@ public class DisplayObjectContextMenu extends ContextMenu {
         });
     }
 
-    private void exportAsVideo(ActionEvent actionEvent) {
-        int selectedRow = this.table.getSelectedRow();
-        if (selectedRow == -1) return;
-
-        int displayObjectId = getDisplayObjectId(selectedRow);
-
+    private static void exportAsVideo(MovieClip movieClip) {
         Stage stage = Stage.getInstance();
-        SupercellSWF swf = Main.editor.getSwf();
 
-        try {
-            DisplayObjectOriginal displayObjectOriginal = swf.getOriginalDisplayObject(displayObjectId, null);
-            DisplayObject displayObject = DisplayObjectFactory.createFromOriginal(displayObjectOriginal, swf, null);
-            if (!displayObject.isMovieClip()) return;
+        Rect bounds = stage.calculateBoundsForAllFrames(movieClip);
 
-            MovieClip movieClip = ((MovieClip) displayObject);
-
-            Rect bounds = stage.calculateBoundsForAllFrames(displayObject);
+        stage.doInRenderThread(() -> {
             stage.getCamera().zoomToFit(bounds);
 
-            stage.doInRenderThread(() -> {
-                Main.editor.selectObject(displayObject);
-                stage.updatePMVMatrix();
+            Main.editor.selectObject(movieClip);
 
-                String filename = movieClip.getExportName();
-                if (filename == null)
-                    filename = String.valueOf(movieClip.getId());
+            stage.unbindRender();
+            stage.init(stage.getGl(), 0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
+//            stage.updatePMVMatrix();
 
-                Path workingDirectory = Path.of("screenshots");
-                // TODO: ask where to save the video file
-                try (VideoExporter videoExporter = new FfmpegVideoExporter(workingDirectory, filename, "webm", "libvpx-vp9", movieClip.getFps())) {
-                    MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> {
-                        // Note: it's necessary to set frame index using this method,
-                        // because absolute time frame setting may skip frames.
-                        movieClip.gotoAndStopFrameIndex(frameIndex);
-                        stage.render(0);
+            String filename = movieClip.getExportName();
+            if (filename == null)
+                filename = String.valueOf(movieClip.getId());
 
-                        ImageData imageData = Main.editor.getImageExporter().getCroppedFramebufferData(bounds, false);
-                        BufferedImage image = ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels(), false);
-                        videoExporter.encodeFrame(image, frameIndex);
-                    });
-                }
-            });
-        } catch (UnableToFindObjectException e) {
-            throw new RuntimeException(e);
-        }
+            Path workingDirectory = Path.of("screenshots");
+            // TODO: ask where to save the video file
+            try (VideoExporter videoExporter = new FfmpegVideoExporter(workingDirectory, filename, "webm", "libvpx-vp9", movieClip.getFps())) {
+                MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> {
+                    // Note: it's necessary to set frame index using this method,
+                    // because absolute time frame setting may skip frames.
+                    movieClip.gotoAndStopFrameIndex(frameIndex);
+                    stage.render(0);
+
+                    ImageData imageData = Main.editor.getImageExporter().getCroppedFramebufferData(bounds, false);
+                    BufferedImage image = ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels(), false);
+                    videoExporter.encodeFrame(image, frameIndex);
+                });
+            }
+        });
     }
 }

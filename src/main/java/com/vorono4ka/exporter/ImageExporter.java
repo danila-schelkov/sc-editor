@@ -111,6 +111,11 @@ public class ImageExporter {
 
                 return Path.of(String.valueOf(child.getId()), frameName + ".png");
             }
+
+            String exportName = movieClip.getExportName();
+            if (exportName != null) {
+                return Path.of(exportName + ".png");
+            }
         }
 
         return Path.of(child.getId() + ".png");

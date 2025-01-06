@@ -31,6 +31,7 @@ public class Framebuffer {
         this.attachTexture(texture, GL3.GL_COLOR_ATTACHMENT0);
 
         this.stencilTexture = new Texture(this.gl, this.width, this.height);
+//        this.stencilTexture.setFilters(GL3.GL_NEAREST, GL3.GL_NEAREST);
         this.stencilTexture.bind();
         this.stencilTexture.init(0, GL3.GL_DEPTH24_STENCIL8, GL3.GL_DEPTH_STENCIL, GL3.GL_UNSIGNED_INT_24_8, null);
         this.attachTexture(stencilTexture, GL3.GL_DEPTH_STENCIL_ATTACHMENT);
