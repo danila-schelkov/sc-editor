@@ -185,7 +185,8 @@ public class Stage {
         if (displayObject.isMovieClip()) {
             MovieClip movieClip = (MovieClip) displayObject;
 
-            if (movieClip.getFrames().size() > 1) {
+            // FIXME: very inefficient way out of recursion
+            if (movieClip.getFrameCountRecursive() > 1) {
                 Rect bounds = new Rect();
 
                 // Saving last movie clip state

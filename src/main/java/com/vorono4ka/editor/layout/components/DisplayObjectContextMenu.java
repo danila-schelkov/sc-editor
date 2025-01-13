@@ -15,6 +15,7 @@ import com.vorono4ka.swf.displayobjects.DisplayObjectFactory;
 import com.vorono4ka.swf.displayobjects.MovieClip;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.movieclips.MovieClipOriginal;
+import com.vorono4ka.swf.movieclips.MovieClipState;
 import com.vorono4ka.swf.textfields.TextFieldOriginal;
 import com.vorono4ka.utilities.ByteArrayFlavor;
 import com.vorono4ka.utilities.ImageData;
@@ -29,6 +30,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
+import java.util.Objects;
 
 public class DisplayObjectContextMenu extends ContextMenu {
     public static final Clipboard SYSTEM_CLIPBOARD = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -185,7 +187,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
     }
 
     private static boolean canExportAsVideo(DisplayObject renderableObject) {
-        return renderableObject.isMovieClip() && ((MovieClip) renderableObject).getFrames().size() > 1;
+        return renderableObject.isMovieClip() && ((MovieClip) renderableObject).getFrameCountRecursive() > 1;
     }
 
     private void exportAsImageCallback(ActionEvent actionEvent) {
@@ -285,16 +287,39 @@ public class DisplayObjectContextMenu extends ContextMenu {
             stage.updatePMVMatrix();
 
             String filename = movieClip.getExportName();
-            if (filename == null)
+            if (filename == null) {
                 filename = String.valueOf(movieClip.getId());
+            }
 
-            Path workingDirectory = Path.of("screenshots");
+            MovieClipState state = movieClip.getState();
+            int loopFrame = movieClip.getLoopFrame();
+            int startFrame = movieClip.getCurrentFrame();
+
+            String frameLabel = null;
+            if (state == MovieClipState.STOPPED) {
+                frameLabel = Objects.requireNonNullElse(movieClip.getFrameLabel(startFrame), String.valueOf(startFrame));
+            } else if (loopFrame != -1) {
+                frameLabel = Objects.requireNonNullElse(movieClip.getFrameLabel(loopFrame), String.valueOf(loopFrame));
+            }
+
+            if (frameLabel != null) {
+                filename += "_" + frameLabel;
+            }
+
+            Path workingDirectory = Path.of("screenshots").toAbsolutePath();
+
             // TODO: ask where to save the video file
             try (VideoExporter videoExporter = new FfmpegVideoExporter(workingDirectory, filename, "webm", "libvpx-vp9", movieClip.getFps())) {
                 MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> {
                     // Note: it's necessary to set frame index using this method,
                     // because absolute time frame setting may skip frames.
-                    movieClip.gotoAndStopFrameIndex(frameIndex);
+                    movieClip.gotoAbsoluteTimeRecursive(frameIndex * movieClip.getMsPerFrame());
+                    if (loopFrame != -1) {
+                        movieClip.setFrame(loopFrame);
+                    } else if (state == MovieClipState.STOPPED) {
+                        movieClip.setFrame(startFrame);
+                    }
+
                     stage.render(0);
 
                     ImageData imageData = Main.editor.getImageExporter().getCroppedFramebufferData(bounds, false);

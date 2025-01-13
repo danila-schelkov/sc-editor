@@ -27,6 +27,7 @@ public class FrameTableContextMenu extends ContextMenu {
         int frameIndex = this.table.getSelectedRow();
         String frameLabel = (String) this.table.getValueAt(frameIndex, 1);
         if (frameLabel != null) {
+            // TODO: add patterns of animation frame names to settings
             String endFrameLabel = frameLabel + "End";
             if (frameLabel.endsWith("Start")) {
                 endFrameLabel = frameLabel.substring(0, frameLabel.length() - 5) + "End";

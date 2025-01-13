@@ -41,7 +41,7 @@ public class FileMenu extends JMenu {
         this.saveButton.addActionListener(this::save);
         openScreenshotsFolderButton.addActionListener(e -> {
             try {
-                Path screenshots = Path.of("screenshots");
+                Path screenshots = Path.of("screenshots").toAbsolutePath();
                 screenshots.toFile().mkdirs();
 
                 Desktop.getDesktop().open(screenshots.toFile());
