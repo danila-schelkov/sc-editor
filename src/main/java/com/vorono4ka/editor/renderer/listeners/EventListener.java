@@ -10,6 +10,8 @@ import com.vorono4ka.editor.renderer.texture.GLImage;
 import com.vorono4ka.editor.renderer.texture.khronos.ExtensionKhronosTextureLoader;
 import com.vorono4ka.editor.renderer.texture.khronos.KhronosTextureLoaders;
 
+import java.awt.*;
+
 public class EventListener implements GLEventListener {
     private ExtensionKhronosTextureLoader extensionKhronosTextureLoader;
 
@@ -43,7 +45,16 @@ public class EventListener implements GLEventListener {
     public void reshape(GLAutoDrawable glAutoDrawable, int x, int y, int width, int height) {
         GL3 gl = glAutoDrawable.getGL().getGL3();
 
-        gl.glViewport(x, y, width, height);
+        // Note: fix for https://github.com/NASAWorldWind/WorldWindJava/issues/195 and https://forum.jogamp.org/JOGL-broken-with-JRE-gt-8-and-Windows-window-scaling-td4039122.html
+        // caused by Windows window scaling, but it is inoperable because it zooms out the window
+        // System.setProperty("sun.java2d.uiScale.enabled", "false");
+        // System.setProperty("sun.java2d.dpiaware", "false");
+
+        // Note: Got from here: https://github.com/nicolas-van/WorldWindJava/commit/0360d5f1c6117f1b989dc68d2b52085e2cbb7a09#diff-0998fa6b85b93125b092a5a0fc9246247ad761615ddec52c15616096593b5a98R498
+        // This is apparently necessary to enable the canvas to resize correctly with JSplitPane.
+        float dpiScalingFactor = Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f;
+        width = (int) (width * dpiScalingFactor);
+        height = (int) (height * dpiScalingFactor);
 
         Stage.getInstance().unbindRender();
         Stage.getInstance().init(gl, 0, 0, width, height);
