@@ -79,9 +79,6 @@ public class GLImage {
     }
 
     public void createWithFormat(byte[] khronosTextureFileData, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
-        Stage stage = Stage.getInstance();
-        GL3 gl = stage.getGl();
-
         this.width = width;
         this.height = height;
         this.pixelFormat = pixelFormat;
@@ -107,10 +104,13 @@ public class GLImage {
             }
         }
 
+        Stage stage = Stage.getInstance();
         stage.doInRenderThread(() -> {
             if (this.texture != null) {
                 this.texture.delete();
             }
+
+            GL3 gl = stage.getGl();
 
             texture = new Texture(gl, width, height);
             texture.bind();

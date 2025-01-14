@@ -19,13 +19,13 @@ public class Main {
             EditorWindow window = Main.editor.getWindow();
             window.initialize(TITLE);
             window.show();
-        });
 
-        if (args.length > 0) {
-            String path = args[0];
-            if (ResourceManager.doesFileExist(path)) {
-                Main.editor.openFile(path);
+            if (args.length > 0) {
+                String path = args[0];
+                if (ResourceManager.doesFileExist(path)) {
+                    Main.editor.openFile(path);
+                }
             }
-        }
+        });
     }
 }
