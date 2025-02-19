@@ -8,6 +8,7 @@ import com.vorono4ka.swf.displayobjects.StageSprite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -16,8 +17,9 @@ public class ViewportMouseListener extends MouseAdapter {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        int x = e.getX();
-        int y = e.getY();
+        float dpiScalingFactor = Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f;
+        int x = (int) (e.getX() * dpiScalingFactor);
+        int y = (int) (e.getY() * dpiScalingFactor);
 
         Stage stage = Stage.getInstance();
         Camera camera = stage.getCamera();

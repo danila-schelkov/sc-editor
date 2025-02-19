@@ -3,6 +3,7 @@ package com.vorono4ka.editor.renderer.listeners;
 import com.vorono4ka.editor.renderer.Camera;
 import com.vorono4ka.editor.renderer.Stage;
 
+import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -21,8 +22,9 @@ public class CameraMouseListener implements MouseListener, MouseMotionListener {
     public void mousePressed(MouseEvent e) {
         if (e.getButton() != MouseEvent.BUTTON2) return;
 
-        this.startX = e.getX();
-        this.startY = e.getY();
+        float dpiScalingFactor = Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f;
+        this.startX = (int) (e.getX() * dpiScalingFactor);
+        this.startY = (int) (e.getY() * dpiScalingFactor);
     }
 
     @Override
@@ -48,17 +50,21 @@ public class CameraMouseListener implements MouseListener, MouseMotionListener {
         int modifiers = e.getModifiersEx();
         if ((modifiers & InputEvent.BUTTON2_DOWN_MASK) != InputEvent.BUTTON2_DOWN_MASK) return;
 
+        float dpiScalingFactor = Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f;
+        int x = (int) (e.getX() * dpiScalingFactor);
+        int y = (int) (e.getY() * dpiScalingFactor);
+
         Stage stage = Stage.getInstance();
-        float x = this.startX + this.previousX - e.getX();
-        float y = this.startY + this.previousY - e.getY();
+        float dx = this.startX + this.previousX - x;
+        float dy = this.startY + this.previousY - y;
 
         Camera camera = stage.getCamera();
-        camera.addOffset(x / camera.getZoom().getPointSize(), y / camera.getZoom().getPointSize());
+        camera.addOffset(dx / camera.getZoom().getPointSize(), dy / camera.getZoom().getPointSize());
 
         stage.doInRenderThread(stage::updatePMVMatrix);
 
-        this.previousX = e.getX();
-        this.previousY = e.getY();
+        this.previousX = x;
+        this.previousY = y;
         this.startX = 0;
         this.startY = 0;
     }
