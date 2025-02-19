@@ -40,7 +40,7 @@ public class TextureTableContextMenu extends ContextMenu {
 
         // TODO: add setting for the saving path pattern (e.g. "{folder}/{filename}/texture_{index}.png", "{filepath}/{index}.png", "{filepath}/{basename}_{index}.png")
         // TODO: ask folder to save files in
-        Path path = Path.of("screenshots", swf.getFilename());
+        Path path = Path.of("screenshots").toAbsolutePath().resolve(swf.getFilename());
         path.toFile().mkdirs();
 
         stage.doInRenderThread(() -> {

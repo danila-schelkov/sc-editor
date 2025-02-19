@@ -308,4 +308,19 @@ public class MovieClip extends Sprite {
     private void interpolateFrames() {
         throw new RuntimeException("Not implemented yet");
     }
+
+    public int getFrameCountRecursive() {
+        int frameCount = this.frames.size();
+
+        for (DisplayObject timelineChild : children) {
+            if (timelineChild.isVisible() && timelineChild.isMovieClip()) {
+                int childFrameCount = ((MovieClip) timelineChild).getFrameCountRecursive();
+                if (childFrameCount > frameCount) {
+                    frameCount = childFrameCount;
+                }
+            }
+        }
+
+        return frameCount;
+    }
 }

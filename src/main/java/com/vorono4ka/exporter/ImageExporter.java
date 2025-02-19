@@ -14,7 +14,7 @@ import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 
 public class ImageExporter {
-    private static final Path SCREENSHOT_FOLDER = Path.of("screenshots");
+    private static final Path SCREENSHOT_FOLDER = Path.of("screenshots").toAbsolutePath();
 
     private final Stage stage;
     private final Camera camera;
