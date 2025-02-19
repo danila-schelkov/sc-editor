@@ -22,6 +22,8 @@ public class DisplayObjectListPanel extends JPanel {
 
     public DisplayObjectListPanel() {
         this.table = new Table("Id", "Name", "Type");
+        this.table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+
         this.sorter = new TableRowSorter<>(this.table.getModel());
 
         new DisplayObjectContextMenu(this.table);

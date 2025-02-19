@@ -1,5 +1,6 @@
 package com.vorono4ka.editor.layout.panels.info;
 
+import com.vorono4ka.editor.layout.components.DrawCommandContextMenu;
 import com.vorono4ka.editor.layout.components.Table;
 
 import javax.swing.*;
@@ -12,6 +13,7 @@ public class ShapeInfoPanel extends JPanel {
         this.setLayout(new GridLayout(0, 1));
 
         this.drawCommandsTable = new Table("#", "Texture Id", "Tag");
+        new DrawCommandContextMenu(this.drawCommandsTable);
 
         this.add(new JScrollPane(this.drawCommandsTable), "Commands");
     }

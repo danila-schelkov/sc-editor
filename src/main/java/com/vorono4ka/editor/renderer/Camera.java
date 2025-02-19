@@ -91,4 +91,13 @@ public class Camera {
 
         addOffset(offsetX, offsetY);
     }
+
+    public void moveToFit(Rect bounds) {
+        reset();
+
+        float offsetX = bounds.getMidX() - viewport.getMidX();
+        float offsetY = bounds.getMidY() - viewport.getMidY();
+
+        addOffset(offsetX, offsetY);
+    }
 }
