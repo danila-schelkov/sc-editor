@@ -11,8 +11,7 @@ out vec2 texCoord;
 out vec4 colorMul;
 out vec3 colorAdd;
 
-void main()
-{
+void main() {
     gl_Position = pmv * vec4(aPos, 0.0f, 1.0f);
     texCoord = aTexCoord;
     colorMul = aColorMul;
