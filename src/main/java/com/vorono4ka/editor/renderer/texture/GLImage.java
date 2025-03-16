@@ -55,7 +55,7 @@ public class GLImage {
             return;
         }
 
-        throw new RuntimeException("Khronos textures aren't supported on your device");
+        throw new RuntimeException("Khronos textures aren't supported on your device. Install ktx2ktx2 and ktx from https://github.com/KhronosGroup/KTX-Software and restart the program.");
     }
 
     public int getWidth() {
