@@ -8,6 +8,7 @@ import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.editor.renderer.texture.GLImage;
 import com.vorono4ka.editor.renderer.texture.khronos.ExtensionKhronosTextureLoader;
+import com.vorono4ka.editor.renderer.texture.khronos.ExtensionSctxTextureLoader;
 import com.vorono4ka.editor.renderer.texture.khronos.KhronosTextureLoaders;
 
 import java.awt.*;
@@ -25,6 +26,7 @@ public class EventListener implements GLEventListener {
         KhronosTextureLoaders.registerLoader(extensionKhronosTextureLoader);
 
         GLImage.khronosTextureLoader = KhronosTextureLoaders.getLoader();
+        GLImage.sctxTextureLoader = new ExtensionSctxTextureLoader(gl);
 
         Stage.getInstance().init(gl, 0, 0, canvas.getWidth(), canvas.getHeight());
     }
