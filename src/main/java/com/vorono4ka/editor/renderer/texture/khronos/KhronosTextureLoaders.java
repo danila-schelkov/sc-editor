@@ -6,6 +6,9 @@ import java.util.List;
 public final class KhronosTextureLoaders {
     private static final List<KhronosTextureLoader> loaders = new ArrayList<>();
 
+    private KhronosTextureLoaders() {
+    }
+
     static {
         registerLoader(new KhronosToolTextureLoader());
     }

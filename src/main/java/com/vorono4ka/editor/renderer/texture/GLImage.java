@@ -3,6 +3,8 @@ package com.vorono4ka.editor.renderer.texture;
 import com.jogamp.opengl.GL3;
 import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.editor.renderer.texture.khronos.KhronosTextureLoader;
+import com.vorono4ka.editor.renderer.texture.khronos.SctxTextureLoader;
+import com.vorono4ka.sctx.SctxTexture;
 import com.vorono4ka.utilities.BufferUtils;
 
 import java.nio.Buffer;
@@ -11,6 +13,7 @@ import java.nio.IntBuffer;
 
 public class GLImage {
     public static KhronosTextureLoader khronosTextureLoader;
+    public static SctxTextureLoader sctxTextureLoader;
 
     protected Texture texture;
     protected int width;
@@ -55,7 +58,21 @@ public class GLImage {
             return;
         }
 
-        throw new RuntimeException("Khronos textures aren't supported on your device");
+        throw new RuntimeException("Khronos textures aren't supported on your device. Install ktx2ktx2 and ktx from https://github.com/KhronosGroup/KTX-Software and restart the program.");
+    }
+
+    private static void loadTexture(Texture texture, SctxTexture sctxTexture) {
+        if (sctxTextureLoader != null && sctxTextureLoader.isAvailable()) {
+            try {
+                sctxTextureLoader.load(texture, sctxTexture);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            return;
+        }
+
+        throw new RuntimeException("ASTC textures aren't supported on your device.");
     }
 
     public int getWidth() {
@@ -78,7 +95,7 @@ public class GLImage {
         return texture.getId();
     }
 
-    public void createWithFormat(byte[] khronosTextureFileData, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
+    public void createWithFormat(byte[] khronosTextureFileData, SctxTexture sctxTexture, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
         this.width = width;
         this.height = height;
         this.pixelFormat = pixelFormat;
@@ -122,11 +139,12 @@ public class GLImage {
 
             if (khronosTextureFileData != null) {
                 loadKhronosTexture(texture, BufferUtils.wrapDirect(khronosTextureFileData));
+            } else if (sctxTexture != null) {
+                loadTexture(texture, sctxTexture);
             } else {
                 loadImage(texture, pixels, pixelFormat, pixelType);
+                texture.generateMipMap();
             }
-
-            texture.generateMipMap();
 
             int channelCount = texture.getChannelCount();
             gl.glPixelStorei(GL3.GL_UNPACK_ALIGNMENT, channelCount);

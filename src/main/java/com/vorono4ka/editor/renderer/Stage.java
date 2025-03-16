@@ -3,11 +3,14 @@ package com.vorono4ka.editor.renderer;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.renderer.exceptions.ShaderCompilationException;
 import com.vorono4ka.editor.renderer.texture.GLImage;
 import com.vorono4ka.editor.renderer.texture.Texture;
 import com.vorono4ka.math.ReadonlyRect;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.resources.Assets;
+import com.vorono4ka.sctx.FlatSctxTextureLoader;
+import com.vorono4ka.sctx.SctxTexture;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.displayobjects.DisplayObject;
@@ -24,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -84,21 +86,21 @@ public class Stage {
     }
 
     private static byte[] getTextureFileBytes(Path directory, String compressedTextureFilename) throws TextureFileNotFound {
-        Path compressedTextureFilepath = directory.resolve(compressedTextureFilename);
-        File file = new File(compressedTextureFilepath.toUri());
+        Path filepath = directory.resolve(compressedTextureFilename);
 
         byte[] compressedData;
-        try (FileInputStream fis = new FileInputStream(file)) {
+        try (FileInputStream fis = new FileInputStream(filepath.toFile())) {
             compressedData = fis.readAllBytes();
         } catch (FileNotFoundException e) {
-            throw new TextureFileNotFound(compressedTextureFilepath.toString());
+            throw new TextureFileNotFound(filepath.toString());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
         return compressedData;
     }
 
-    public void init(GL3 gl, int x, int y, int width, int height) {
+    public void init(GL3 gl, int x, int y, int width, int height) throws ShaderCompilationException {
         this.gl = gl;
 
         this.shader = Assets.getShader(
@@ -125,7 +127,7 @@ public class Stage {
             this.gradientTexture = new GLImage();
         }
 
-        this.gradientTexture.createWithFormat(null, true, 1, 256, 2, ImageUtils.getPixelBuffer(imageBuffer), GL3.GL_LUMINANCE_ALPHA, GL3.GL_UNSIGNED_BYTE);
+        this.gradientTexture.createWithFormat(null, null, true, 1, 256, 2, ImageUtils.getPixelBuffer(imageBuffer), GL3.GL_LUMINANCE_ALPHA, GL3.GL_UNSIGNED_BYTE);
 
         this.camera.init(width, height);
 
@@ -389,16 +391,30 @@ public class Stage {
     public GLImage createGLImage(SWFTexture texture, Path directory) throws TextureFileNotFound {
         byte[] ktxData = texture.getKtxData();
         String textureFilename = texture.getTextureFilename();
+        SctxTexture sctxTexture = null;
+
         if (ktxData == null && textureFilename != null) {
-            byte[] compressedData = getTextureFileBytes(directory, textureFilename);
-            ktxData = Zstandard.decompress(compressedData, 0);
+            if (textureFilename.endsWith(".zktx")) {
+                byte[] compressedData = getTextureFileBytes(directory, textureFilename);
+                ktxData = Zstandard.decompress(compressedData, 0);
+            } else if (textureFilename.endsWith(".sctx")) {
+                sctxTexture = loadSctxTexture(directory, textureFilename);
+            }
         }
 
         GLImage image = new GLImage();
-        image.createWithFormat(ktxData, false, texture.getTag().getTextureFilter(), texture.getWidth(), texture.getHeight(), texture.getPixels(), texture.getTextureInfo().pixelFormat(), texture.getTextureInfo().pixelType());
+        image.createWithFormat(ktxData, sctxTexture, false, texture.getTag().getTextureFilter(), texture.getWidth(), texture.getHeight(), texture.getPixels(), texture.getTextureInfo().pixelFormat(), texture.getTextureInfo().pixelType());
         this.images.put(texture.getIndex(), image);
 
         return image;
+    }
+
+    private static SctxTexture loadSctxTexture(Path directory, String textureFilename) {
+        try (FileInputStream inputStream = new FileInputStream(directory.resolve(textureFilename).toFile())) {
+            return FlatSctxTextureLoader.getInstance().load(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public Rect getDisplayObjectBounds(DisplayObject displayObject) {
