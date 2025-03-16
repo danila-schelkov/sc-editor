@@ -7,8 +7,7 @@ uniform mat4 pmv;
 
 out vec2 texCoord;
 
-void main()
-{
+void main() {
     gl_Position = vec4(aPos, 0.0, 1.0);
     texCoord = aTexCoords;
 }

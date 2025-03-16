@@ -4,7 +4,8 @@ uniform sampler2D TEX_SAMPLER;
 
 in vec2 texCoord;
 
-void main()
-{
-    gl_FragColor = texture(TEX_SAMPLER, texCoord);
+out vec4 fragColor;
+
+void main() {
+    fragColor = texture(TEX_SAMPLER, texCoord);
 }
