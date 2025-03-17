@@ -84,7 +84,8 @@ public class FileMenu extends JMenu {
     private void open(ActionEvent e) {
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc)", "sc"));
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell Texture (*.sctx)", "sctx"));
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc, *.sc2)", "sc", "sc2"));
 
         int result = fileChooser.showOpenDialog(this.frame);
         if (result != JFileChooser.APPROVE_OPTION) return;

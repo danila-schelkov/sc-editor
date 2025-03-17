@@ -10,7 +10,7 @@ import com.vorono4ka.editor.layout.panels.status.TaskProgressTracker;
 import com.vorono4ka.editor.layout.windows.EditorWindow;
 import com.vorono4ka.editor.layout.windows.UsagesWindow;
 import com.vorono4ka.editor.renderer.impl.Stage;
-import com.vorono4ka.editor.renderer.impl.texture.GLImage;
+import com.vorono4ka.editor.renderer.texture.GLTexture;
 import com.vorono4ka.editor.renderer.texture.Texture;
 import com.vorono4ka.exporter.ImageExporter;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
@@ -32,6 +32,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Editor {
@@ -55,10 +56,21 @@ public class Editor {
 
     // Editor debug stuff
     private boolean shouldDisplayPolygons;
+    private String filename;
 
     public void openFile(String path) {
-        if (path.endsWith(".sctx") && !loadSctx(path)) return;
-        if (!loadSc(path)) return;
+        this.filename = path.substring(path.lastIndexOf("\\") + 1);
+        this.window.setTitle(Main.TITLE + " - " + filename);
+
+        if (path.endsWith(".sc") || path.endsWith(".sc2")) {
+            if (!loadSc(path, filename)) {
+                return;
+            }
+        } else if (path.endsWith(".sctx")) {
+            if (!loadSctx(path)) {
+                return;
+            }
+        }
 
         FileMenu fileMenu = this.window.getMenubar().getFileMenu();
         fileMenu.checkCanSave();
@@ -66,12 +78,9 @@ public class Editor {
 
     private boolean loadSctx(String path) {
         try {
-            String filename = path.substring(path.lastIndexOf("\\") + 1);
-            this.window.setTitle(Main.TITLE + " - " + filename);
-
             sctxTexture = loadSctxTexture(Path.of(path));
 
-            List<GLImage> images = uploadSwfTexturesToOpenGl();
+            List<GLTexture> images = uploadSctxTextureToOpenGl(sctxTexture);
 
             SwingUtilities.invokeLater(() -> this.updateTextureTable(images));
             return true;
@@ -81,15 +90,12 @@ public class Editor {
         }
     }
 
-    private boolean loadSc(String path) {
+    private boolean loadSc(String path, String filename) {
         try {
-            String filename = path.substring(path.lastIndexOf("\\") + 1);
-            this.window.setTitle(Main.TITLE + " - " + filename);
-
             this.swf = new SupercellSWF();
             this.swf.load(path, filename, false);
 
-            List<GLImage> images = uploadSwfTexturesToOpenGl();
+            List<GLTexture> images = uploadSwfTexturesToOpenGl();
 
             SwingUtilities.invokeLater(() -> this.updateTextureTable(images));
         } catch (LoadingFaultException | UnableToFindObjectException |
@@ -115,6 +121,7 @@ public class Editor {
         this.window.getTexturesTable().clear();
         this.window.getObjectsTable().clear();
         this.window.setTitle(Main.TITLE);
+        this.filename = null;
 
         EditorInfoPanel infoBlock = this.window.getInfoPanel();
         infoBlock.setPanel(null);
@@ -138,18 +145,16 @@ public class Editor {
         editMenu.checkPreviousAvailable();
         editMenu.checkNextAvailable();
 
-        if (this.swf == null) return;
-
         Stage stage = Stage.getInstance();
 
-        int textureCount = this.swf.getTextureCount();
+        int textureCount = stage.getTextureCount();
         if (textureCount > 0) {
             int[] textureIds = new int[textureCount];
             for (int i = 0; i < textureCount; i++) {
-                Texture image = stage.getTextureByIndex(this.swf.getTexture(i).getIndex());
-                if (image == null) continue;
+                Texture texture = stage.getTextureByIndex(i);
+                if (texture == null) continue;
 
-                textureIds[i] = image.getId();
+                textureIds[i] = texture.getId();
             }
 
             stage.doInRenderThread(() -> stage.getGlContext().glDeleteTextures(textureIds.length, textureIds, 0));
@@ -159,6 +164,7 @@ public class Editor {
         stage.removeAllChildren();
 
         this.swf = null;
+        this.sctxTexture = null;
     }
 
     public DisplayObject getSelectedObject() {
@@ -269,6 +275,10 @@ public class Editor {
         return selectedIndex;
     }
 
+    public String getFilename() {
+        return filename;
+    }
+
     public SupercellSWF getSwf() {
         return swf;
     }
@@ -309,43 +319,33 @@ public class Editor {
         }
     }
 
-    private List<GLImage> uploadSctxTextureToOpenGl() throws TextureFileNotFound {
-        List<GLImage> images = new ArrayList<>();
-
-        Stage stage = Stage.getInstance();
-
-        for (int i = 0; i < this.swf.getTextureCount(); i++) {
-//            SWFTexture texture = .getTexture(i);
-//            GLImage image = stage.createGLImage(texture, this.swf.getPath().getParent());
-//            images.add(image);
-        }
-
-        return images;
+    private List<GLTexture> uploadSctxTextureToOpenGl(SctxTexture texture) throws TextureFileNotFound {
+        return List.of(Stage.getInstance().createGLTexture(texture, 0));
     }
 
-    private List<GLImage> uploadSwfTexturesToOpenGl() throws TextureFileNotFound {
-        List<GLImage> images = new ArrayList<>();
+    private List<GLTexture> uploadSwfTexturesToOpenGl() throws TextureFileNotFound {
+        List<GLTexture> images = new ArrayList<>();
 
         Stage stage = Stage.getInstance();
         for (int i = 0; i < this.swf.getTextureCount(); i++) {
             SWFTexture texture = this.swf.getTexture(i);
-            GLImage image = stage.createGLImage(texture, this.swf.getPath().getParent());
+            GLTexture image = stage.createGLTexture(texture, this.swf.getPath().getParent());
             images.add(image);
         }
 
         return images;
     }
 
-    private void updateTextureTable(List<GLImage> images) {
+    private void updateTextureTable(List<GLTexture> images) {
         Table texturesTable = this.window.getTexturesTable();
         StatusBar statusBar = this.window.getStatusBar();
 
         try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Loading textures table...", 0, images.size())) {
             for (int i = 0; i < images.size(); i++) {
-                GLImage image = images.get(i);
-                texturesTable.addRow(i, image.getWidth(), image.getHeight(), image.getPixelFormat());
+                GLTexture texture = images.get(i);
+                texturesTable.addRow(i, texture.getWidth(), texture.getHeight(), texture.getFormat());
 
-                SpriteSheet spriteSheet = new SpriteSheet(image, swf.getDrawBitmapsOfTexture(i));
+                SpriteSheet spriteSheet = new SpriteSheet(texture, swf != null ? swf.getDrawBitmapsOfTexture(i) : Collections.emptyList());
                 this.spriteSheets.add(spriteSheet);
 
                 taskTracker.setValue(i);
