@@ -9,12 +9,15 @@ import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
 import com.vorono4ka.editor.layout.panels.status.TaskProgressTracker;
 import com.vorono4ka.editor.layout.windows.EditorWindow;
 import com.vorono4ka.editor.layout.windows.UsagesWindow;
-import com.vorono4ka.editor.renderer.Stage;
-import com.vorono4ka.editor.renderer.texture.GLImage;
+import com.vorono4ka.editor.renderer.impl.Stage;
+import com.vorono4ka.editor.renderer.impl.texture.GLImage;
+import com.vorono4ka.editor.renderer.texture.Texture;
 import com.vorono4ka.exporter.ImageExporter;
+import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
+import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
+import com.vorono4ka.sctx.FlatSctxTextureLoader;
+import com.vorono4ka.sctx.SctxTexture;
 import com.vorono4ka.swf.SupercellSWF;
-import com.vorono4ka.swf.displayobjects.DisplayObject;
-import com.vorono4ka.swf.displayobjects.MovieClip;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.TextureFileNotFound;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
@@ -25,6 +28,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,11 +51,37 @@ public class Editor {
     private int selectedIndex = -1;
 
     private SupercellSWF swf;
+    private SctxTexture sctxTexture;
 
     // Editor debug stuff
     private boolean shouldDisplayPolygons;
 
     public void openFile(String path) {
+        if (path.endsWith(".sctx") && !loadSctx(path)) return;
+        if (!loadSc(path)) return;
+
+        FileMenu fileMenu = this.window.getMenubar().getFileMenu();
+        fileMenu.checkCanSave();
+    }
+
+    private boolean loadSctx(String path) {
+        try {
+            String filename = path.substring(path.lastIndexOf("\\") + 1);
+            this.window.setTitle(Main.TITLE + " - " + filename);
+
+            sctxTexture = loadSctxTexture(Path.of(path));
+
+            List<GLImage> images = uploadSwfTexturesToOpenGl();
+
+            SwingUtilities.invokeLater(() -> this.updateTextureTable(images));
+            return true;
+        } catch (TextureFileNotFound e) {
+            this.window.showErrorDialog(e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean loadSc(String path) {
         try {
             String filename = path.substring(path.lastIndexOf("\\") + 1);
             this.window.setTitle(Main.TITLE + " - " + filename);
@@ -57,22 +89,20 @@ public class Editor {
             this.swf = new SupercellSWF();
             this.swf.load(path, filename, false);
 
-            List<GLImage> images = uploadTexturesToOpenGl();
+            List<GLImage> images = uploadSwfTexturesToOpenGl();
 
             SwingUtilities.invokeLater(() -> this.updateTextureTable(images));
         } catch (LoadingFaultException | UnableToFindObjectException |
                  UnsupportedCustomPropertyException exception) {
             LOGGER.error("An error occurred while loading the file: {}", path, exception);
-            return;
+            return false;
         } catch (TextureFileNotFound e) {
             this.window.showErrorDialog(e.getMessage());
-            return;
+            return false;
         }
 
         SwingUtilities.invokeLater(this::updateObjectTable);
-
-        FileMenu fileMenu = this.window.getMenubar().getFileMenu();
-        fileMenu.checkCanSave();
+        return true;
     }
 
     public void saveFile(String path) {
@@ -116,13 +146,13 @@ public class Editor {
         if (textureCount > 0) {
             int[] textureIds = new int[textureCount];
             for (int i = 0; i < textureCount; i++) {
-                GLImage image = stage.getImageByIndex(this.swf.getTexture(i).getIndex());
+                Texture image = stage.getTextureByIndex(this.swf.getTexture(i).getIndex());
                 if (image == null) continue;
 
-                textureIds[i] = image.getTextureId();
+                textureIds[i] = image.getId();
             }
 
-            stage.doInRenderThread(() -> stage.getGl().glDeleteTextures(textureIds.length, textureIds, 0));
+            stage.doInRenderThread(() -> stage.getGlContext().glDeleteTextures(textureIds.length, textureIds, 0));
         }
 
         stage.clearBatches();
@@ -279,7 +309,21 @@ public class Editor {
         }
     }
 
-    private List<GLImage> uploadTexturesToOpenGl() throws TextureFileNotFound {
+    private List<GLImage> uploadSctxTextureToOpenGl() throws TextureFileNotFound {
+        List<GLImage> images = new ArrayList<>();
+
+        Stage stage = Stage.getInstance();
+
+        for (int i = 0; i < this.swf.getTextureCount(); i++) {
+//            SWFTexture texture = .getTexture(i);
+//            GLImage image = stage.createGLImage(texture, this.swf.getPath().getParent());
+//            images.add(image);
+        }
+
+        return images;
+    }
+
+    private List<GLImage> uploadSwfTexturesToOpenGl() throws TextureFileNotFound {
         List<GLImage> images = new ArrayList<>();
 
         Stage stage = Stage.getInstance();
@@ -349,5 +393,13 @@ public class Editor {
         }
 
         return rowDataList;
+    }
+
+    private static SctxTexture loadSctxTexture(Path path) {
+        try (FileInputStream inputStream = new FileInputStream(path.toFile())) {
+            return FlatSctxTextureLoader.getInstance().load(inputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

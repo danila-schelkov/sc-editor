@@ -1,7 +1,7 @@
 package com.vorono4ka.editor.layout.components;
 
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.renderer.Stage;
+import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.exporter.FfmpegVideoExporter;
 import com.vorono4ka.exporter.ImageExporter;
 import com.vorono4ka.exporter.VideoExporter;
@@ -10,9 +10,9 @@ import com.vorono4ka.math.Rect;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.DisplayObjectOriginal;
 import com.vorono4ka.swf.SupercellSWF;
-import com.vorono4ka.swf.displayobjects.DisplayObject;
-import com.vorono4ka.swf.displayobjects.DisplayObjectFactory;
-import com.vorono4ka.swf.displayobjects.MovieClip;
+import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
+import com.vorono4ka.renderer.impl.swf.objects.DisplayObjectFactory;
+import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.movieclips.MovieClipOriginal;
 import com.vorono4ka.swf.movieclips.MovieClipState;
@@ -179,7 +179,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         stage.doInRenderThread(()->{
             stage.unbindRender();
-            stage.init(stage.getGl(), 0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
+            stage.init(0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
 
             stage.getCamera().reset();
             stage.updatePMVMatrix();
@@ -202,7 +202,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         stage.doInRenderThread(()->{
             stage.unbindRender();
-            stage.init(stage.getGl(), 0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
+            stage.init(0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
 
             stage.getCamera().reset();
             stage.updatePMVMatrix();
@@ -221,7 +221,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         stage.doInRenderThread(()->{
             stage.unbindRender();
-            stage.init(stage.getGl(), 0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
+            stage.init(0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
 
             stage.getCamera().reset();
             stage.updatePMVMatrix();
@@ -256,7 +256,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
             Main.editor.selectObject(displayObject);
 
             stage.unbindRender();
-            stage.init(stage.getGl(), 0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
+            stage.init(0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
 
 //            stage.updatePMVMatrix();
 
@@ -281,7 +281,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
             Main.editor.selectObject(movieClip);
 
             stage.unbindRender();
-            stage.init(stage.getGl(), 0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
+            stage.init(0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
 
             stage.getCamera().getZoom().setPointSize(scaleFactor);
             stage.updatePMVMatrix();

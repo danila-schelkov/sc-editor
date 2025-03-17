@@ -1,8 +1,8 @@
 package com.vorono4ka.editor.layout.components;
 
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.swf.displayobjects.DisplayObject;
-import com.vorono4ka.swf.displayobjects.MovieClip;
+import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
+import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
 
 import java.awt.event.ActionEvent;
 

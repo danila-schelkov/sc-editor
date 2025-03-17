@@ -2,8 +2,8 @@ package com.vorono4ka.editor.layout.listeners;
 
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.layout.panels.info.MovieClipInfoPanel;
-import com.vorono4ka.swf.displayobjects.DisplayObject;
-import com.vorono4ka.swf.displayobjects.MovieClip;
+import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
+import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
 import com.vorono4ka.swf.movieclips.MovieClipFrameElement;
 
 import javax.swing.*;

@@ -1,8 +1,9 @@
 package com.vorono4ka.resources;
 
-import com.jogamp.opengl.GL3;
-import com.vorono4ka.editor.renderer.Attribute;
-import com.vorono4ka.editor.renderer.Shader;
+import com.vorono4ka.editor.renderer.gl.GLRendererContext;
+import com.vorono4ka.editor.renderer.shader.Attribute;
+import com.vorono4ka.editor.renderer.shader.Shader;
+import com.vorono4ka.editor.renderer.gl.GLShader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,13 +19,13 @@ public class Assets {
     private static final Map<String, Shader> shaders = new HashMap<>();
     private static final Map<String, BufferedImage> images = new HashMap<>();
 
-    public static Shader getShader(GL3 gl, String vertexFile, String fragmentFile, Attribute... attributes) {
+    public static Shader getShader(GLRendererContext gl, String vertexFile, String fragmentFile, Attribute... attributes) {
         String key = vertexFile + fragmentFile;
         if (shaders.containsKey(key)) {
             return shaders.get(key);
         }
 
-        Shader shader = new Shader(gl, vertexFile, fragmentFile, attributes);
+        Shader shader = new GLShader(gl, vertexFile, fragmentFile, attributes);
         shaders.put(key, shader);
         return shader;
     }

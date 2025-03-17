@@ -1,6 +1,6 @@
 package com.vorono4ka.utilities;
 
-import com.vorono4ka.swf.displayobjects.MovieClip;
+import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
 import com.vorono4ka.swf.movieclips.MovieClipState;
 
 public final class MovieClipHelper {

@@ -14,9 +14,9 @@ import com.vorono4ka.editor.layout.panels.TimelinePanel;
 import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
 import com.vorono4ka.editor.layout.panels.info.MovieClipInfoPanel;
 import com.vorono4ka.editor.layout.panels.info.ShapeInfoPanel;
-import com.vorono4ka.swf.displayobjects.DisplayObject;
-import com.vorono4ka.swf.displayobjects.MovieClip;
-import com.vorono4ka.swf.displayobjects.Shape;
+import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
+import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
+import com.vorono4ka.renderer.impl.swf.objects.Shape;
 import com.vorono4ka.swf.movieclips.MovieClipFrame;
 import com.vorono4ka.swf.shapes.ShapeDrawBitmapCommand;
 
