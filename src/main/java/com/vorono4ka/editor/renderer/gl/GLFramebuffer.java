@@ -23,14 +23,16 @@ public class GLFramebuffer extends Framebuffer {
 
         this.bind();
 
-        GLTexture texture = new GLTexture(this.gl, this.width, this.height);
+        GLTexture texture = new GLTexture(gl, this.width, this.height);
+        texture.bindContext();
         texture.bind();
         texture.init(0, GLConstants.GL_RGBA, GLConstants.GL_RGBA, GLConstants.GL_UNSIGNED_BYTE, null);
         this.attachTexture(texture, GLConstants.GL_COLOR_ATTACHMENT0);
 
         this.texture = texture;
 
-        GLTexture stencilTexture = new GLTexture(this.gl, this.width, this.height);
+        GLTexture stencilTexture = new GLTexture(gl, this.width, this.height);
+        stencilTexture.bindContext();
         stencilTexture.bind();
         stencilTexture.init(0, GLConstants.GL_DEPTH24_STENCIL8, GLConstants.GL_DEPTH_STENCIL, GLConstants.GL_UNSIGNED_INT_24_8, null);
 //        stencilTexture.setFilters(GLConstants.GL_NEAREST, GLConstants.GL_NEAREST);

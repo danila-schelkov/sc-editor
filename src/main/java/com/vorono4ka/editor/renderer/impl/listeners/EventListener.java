@@ -9,8 +9,8 @@ import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.editor.renderer.impl.gl.JoglRendererContext;
 import com.vorono4ka.editor.renderer.impl.texture.GLImage;
 import com.vorono4ka.editor.renderer.impl.texture.khronos.ExtensionKhronosTextureLoader;
-import com.vorono4ka.editor.renderer.impl.texture.khronos.ExtensionSctxTextureLoader;
 import com.vorono4ka.editor.renderer.impl.texture.khronos.KhronosTextureLoaders;
+import com.vorono4ka.editor.renderer.impl.texture.sctx.ExtensionSctxTextureLoader;
 
 import java.awt.*;
 

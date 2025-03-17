@@ -10,8 +10,9 @@ import java.nio.IntBuffer;
 
 public class GLTexture implements RenderableTexture {
     private final GLRendererContext gl;
-    private final int id;
     private final int width, height;
+
+    private int id;
 
     private int internalFormat, format;
     private int pixelType;
@@ -20,7 +21,9 @@ public class GLTexture implements RenderableTexture {
         this.gl = gl;
         this.width = width;
         this.height = height;
+    }
 
+    public void bindContext() {
         this.id = gl.glGenTexture();
 
         this.bind();
@@ -99,17 +102,17 @@ public class GLTexture implements RenderableTexture {
     }
 
     public void delete() {
-        this.gl.glDeleteTexture(this.id);
+        gl.glDeleteTexture(this.id);
     }
 
     public void generateMipMap() {
-        this.gl.glGenerateMipmap(GLConstants.GL_TEXTURE_2D);
+        gl.glGenerateMipmap(GLConstants.GL_TEXTURE_2D);
     }
 
     /// Ensure using in the render thread
     public IntBuffer getPixels(int level) {
         IntBuffer pixels = BufferUtils.allocateDirect(width * height * Integer.BYTES * getChannelCount()).asIntBuffer();
-        this.gl.glGetTexImage(GLConstants.GL_TEXTURE_2D, level, this.internalFormat, this.pixelType, pixels);
+        gl.glGetTexImage(GLConstants.GL_TEXTURE_2D, level, this.internalFormat, this.pixelType, pixels);
         return pixels;
     }
 
@@ -124,7 +127,7 @@ public class GLTexture implements RenderableTexture {
         gl.glGetTexLevelParameteriv(GLConstants.GL_TEXTURE_2D, level, GLConstants.GL_TEXTURE_COMPRESSED_IMAGE_SIZE, compressedImageSize);
 
         IntBuffer pixels = BufferUtils.allocateDirect(compressedImageSize.get()).asIntBuffer();
-        this.gl.glGetCompressedTexImage(GLConstants.GL_TEXTURE_2D, level, pixels);
+        gl.glGetCompressedTexImage(GLConstants.GL_TEXTURE_2D, level, pixels);
         return pixels;
     }
 
@@ -158,6 +161,7 @@ public class GLTexture implements RenderableTexture {
         gl.glTexParameteriv(GLConstants.GL_TEXTURE_2D, type, value);
     }
 
+    // TODO: remove and replace in ktx loader with KTX format parsing
     public void setPixelInfo(int format, int pixelType) {
         this.internalFormat = format;
         this.format = format;

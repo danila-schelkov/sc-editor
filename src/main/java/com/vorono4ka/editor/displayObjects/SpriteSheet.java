@@ -2,12 +2,13 @@ package com.vorono4ka.editor.displayObjects;
 
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.renderer.Renderer;
+import com.vorono4ka.editor.renderer.texture.GLTexture;
+import com.vorono4ka.editor.renderer.texture.RenderableTexture;
 import com.vorono4ka.math.Rect;
-import com.vorono4ka.swf.ColorTransform;
-import com.vorono4ka.editor.renderer.impl.texture.GLImage;
-import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
 import com.vorono4ka.renderer.impl.swf.objects.ShapeDrawBitmapCommandRenderer;
+import com.vorono4ka.swf.ColorTransform;
+import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.shapes.ShapeDrawBitmapCommand;
 
 import java.util.List;
@@ -15,16 +16,16 @@ import java.util.List;
 public class SpriteSheet extends DisplayObject {
     private static final int[] INDICES = {0, 1, 2, 0, 2, 3};
 
-    private final GLImage image;
+    private final RenderableTexture texture;
     private final Rect bounds;
     private final List<ShapeDrawBitmapCommand> drawBitmapCommands;
 
-    public SpriteSheet(GLImage image, List<ShapeDrawBitmapCommand> drawBitmapCommands) {
-        this.image = image;
+    public SpriteSheet(RenderableTexture texture, List<ShapeDrawBitmapCommand> drawBitmapCommands) {
+        this.texture = texture;
         this.drawBitmapCommands = drawBitmapCommands;
 
-        float halfWidth = this.image.getWidth() / 2f;
-        float halfHeight = this.image.getHeight() / 2f;
+        float halfWidth = this.texture.getWidth() / 2f;
+        float halfHeight = this.texture.getHeight() / 2f;
 
         this.bounds = new Rect(-halfWidth, -halfHeight, halfWidth, halfHeight);
     }
@@ -32,7 +33,7 @@ public class SpriteSheet extends DisplayObject {
     @Override
     public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
         Renderer renderer = this.getRenderer();
-        if (renderer.startShape(this.bounds, this.image.getTexture(), 0)) {
+        if (renderer.startShape(this.bounds, this.texture, 0)) {
             renderer.addTriangles(2, INDICES);
 
             renderer.addVertex(this.bounds.getLeft(), this.bounds.getTop(), 0, 0, 1, 1, 1, 1, 0, 0, 0);
@@ -58,10 +59,10 @@ public class SpriteSheet extends DisplayObject {
     }
 
     public int getWidth() {
-        return image.getWidth();
+        return texture.getWidth();
     }
 
     public int getHeight() {
-        return image.getHeight();
+        return texture.getHeight();
     }
 }

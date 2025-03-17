@@ -1,51 +1,13 @@
-package com.vorono4ka.editor.renderer.impl.texture.khronos;
+package com.vorono4ka.editor.renderer.impl.texture.sctx;
 
 import com.vorono4ka.editor.renderer.gl.GLConstants;
-import com.vorono4ka.editor.renderer.gl.GLRendererContext;
-import com.vorono4ka.editor.renderer.texture.GLTexture;
-import com.vorono4ka.sctx.MipMapData;
 import com.vorono4ka.sctx.PixelType;
-import com.vorono4ka.sctx.SctxTexture;
-import com.vorono4ka.utilities.BufferUtils;
 
-import java.util.List;
-
-public class ExtensionSctxTextureLoader implements SctxTextureLoader {
-    private final GLRendererContext gl;
-
-    public ExtensionSctxTextureLoader(GLRendererContext gl) {
-        this.gl = gl;
+public final class SctxPixelType {
+    private SctxPixelType() {
     }
 
-    @Override
-    public boolean isAvailable() {
-        return gl.isExtensionAvailable("GL_KHR_texture_compression_astc_ldr");
-    }
-
-    @Override
-    public void load(GLTexture texture, SctxTexture sctxTexture) {
-        PixelType pixelType = sctxTexture.getPixelType();
-
-        if (pixelType == PixelType.UNCOMPRESSED) {
-            List<MipMapData> mipMaps = sctxTexture.getMipMaps();
-            for (int level = 0; level < mipMaps.size(); level++) {
-                MipMapData mipMap = mipMaps.get(level);
-                texture.init(level,
-                    GLConstants.GL_RGBA, GLConstants.GL_RGBA, GLConstants.GL_UNSIGNED_INT, BufferUtils.wrapDirect(mipMap.data()));
-            }
-        } else {
-            int format = getFormat(pixelType);
-            int internalFormat = getInternalFormat(pixelType);
-
-            List<MipMapData> mipMaps = sctxTexture.getMipMaps();
-            for (int level = 0; level < mipMaps.size(); level++) {
-                MipMapData mipMap = mipMaps.get(level);
-                texture.initCompressed(level, internalFormat, format, BufferUtils.wrapDirect(mipMap.data()));
-            }
-        }
-    }
-
-    private static int getFormat(PixelType pixelType) {
+    public static int getFormat(PixelType pixelType) {
         return switch (pixelType) {
             case NONE, UNCOMPRESSED, ASTC_SRGBA8_4x4, ASTC_SRGBA8_5x4, ASTC_SRGBA8_5x5,
                  ASTC_SRGBA8_6x5, ASTC_SRGBA8_6x6, ASTC_SRGBA8_8x5, ASTC_SRGBA8_8x6,
@@ -64,7 +26,7 @@ public class ExtensionSctxTextureLoader implements SctxTextureLoader {
         };
     }
 
-    private static int getInternalFormat(PixelType pixelType) {
+    public static int getInternalFormat(PixelType pixelType) {
         return switch (pixelType) {
             case UNCOMPRESSED -> GLConstants.GL_RGBA;
             case ASTC_SRGBA8_4x4 -> GLConstants.GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4;
@@ -99,13 +61,34 @@ public class ExtensionSctxTextureLoader implements SctxTextureLoader {
             case ETC2_EAC_SRGBA8 -> GLConstants.GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC;
             case ETC2_RGB8 -> GLConstants.GL_COMPRESSED_RGB8_ETC2;
             case ETC2_SRGB8 -> GLConstants.GL_COMPRESSED_SRGB8_ETC2;
-            case ETC2_RGB8_PUNCHTHROUGH_ALPHA1 -> GLConstants.GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
-            case ETC2_SRGB8_PUNCHTHROUGH_ALPHA1 -> GLConstants.GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2;
+            case ETC2_RGB8_PUNCHTHROUGH_ALPHA1 ->
+                GLConstants.GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2;
+            case ETC2_SRGB8_PUNCHTHROUGH_ALPHA1 ->
+                GLConstants.GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2;
             case EAC_R11 -> GLConstants.GL_COMPRESSED_R11_EAC;
             case EAC_SIGNED_R11 -> GLConstants.GL_COMPRESSED_SIGNED_R11_EAC;
             case EAC_RG11 -> GLConstants.GL_COMPRESSED_RG11_EAC;
             case EAC_SIGNED_RG11 -> GLConstants.GL_COMPRESSED_SIGNED_RG11_EAC;
             case NONE, ETC1_RGB8, ETC1_LUMINANCE, ETC1_LUMINANCE_ALPHA ->
+                throw new IllegalStateException("Unexpected value: " + pixelType);
+        };
+    }
+
+    public static int getPixelType(PixelType pixelType) {
+        return switch (pixelType) {
+            case UNCOMPRESSED, ASTC_SRGBA8_4x4, ASTC_SRGBA8_5x4, ASTC_SRGBA8_5x5,
+                 ASTC_SRGBA8_6x5, ASTC_SRGBA8_6x6, ASTC_SRGBA8_8x5, ASTC_SRGBA8_8x6,
+                 ASTC_SRGBA8_8x8, ASTC_SRGBA8_10x5, ASTC_SRGBA8_10x6, ASTC_SRGBA8_10x8,
+                 ASTC_SRGBA8_10x10, ASTC_SRGBA8_12x10, ASTC_SRGBA8_12x12,
+                 ASTC_RGBA8_4x4, ASTC_RGBA8_5x4, ASTC_RGBA8_5x5, ASTC_RGBA8_6x5,
+                 ASTC_RGBA8_6x6, ASTC_RGBA8_8x5, ASTC_RGBA8_8x6, ASTC_RGBA8_8x8,
+                 ASTC_RGBA8_10x5, ASTC_RGBA8_10x6, ASTC_RGBA8_10x8, ASTC_RGBA8_10x10,
+                 ASTC_RGBA8_12x10, ASTC_RGBA8_12x12, ETC2_EAC_RGBA8, ETC2_EAC_SRGBA8,
+                 ETC2_RGB8, ETC2_SRGB8, ETC2_RGB8_PUNCHTHROUGH_ALPHA1,
+                 ETC2_SRGB8_PUNCHTHROUGH_ALPHA1, ETC1_RGB8, EAC_R11, EAC_SIGNED_R11,
+                 ETC1_LUMINANCE, EAC_RG11, EAC_SIGNED_RG11, ETC1_LUMINANCE_ALPHA ->
+                GLConstants.GL_UNSIGNED_BYTE;
+            case NONE ->
                 throw new IllegalStateException("Unexpected value: " + pixelType);
         };
     }

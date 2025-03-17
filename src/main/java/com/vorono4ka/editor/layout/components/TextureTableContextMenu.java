@@ -6,7 +6,6 @@ import com.vorono4ka.editor.layout.panels.status.TaskProgressTracker;
 import com.vorono4ka.editor.renderer.gl.GLConstants;
 import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.editor.renderer.texture.GLTexture;
-import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.utilities.BufferUtils;
 import com.vorono4ka.utilities.ImageUtils;
 
@@ -35,12 +34,11 @@ public class TextureTableContextMenu extends ContextMenu {
         int[] selectedRows = table.getSelectedRows();
 
         Stage stage = Stage.getInstance();
-        SupercellSWF swf = Main.editor.getSwf();
         StatusBar statusBar = Main.editor.getWindow().getStatusBar();
 
         // TODO: add setting for the saving path pattern (e.g. "{folder}/{filename}/texture_{index}.png", "{filepath}/{index}.png", "{filepath}/{basename}_{index}.png")
         // TODO: ask folder to save files in
-        Path path = Path.of("screenshots").toAbsolutePath().resolve(swf.getFilename());
+        Path path = Path.of("screenshots").toAbsolutePath().resolve(Main.editor.getFilename());
         path.toFile().mkdirs();
 
         stage.doInRenderThread(() -> {
@@ -49,7 +47,7 @@ public class TextureTableContextMenu extends ContextMenu {
                 for (int selectedRow : selectedRows) {
                     int textureIndex = (int) this.table.getValueAt(selectedRow, 0);
 
-                    GLTexture texture = stage.getTextureByIndex(swf.getTexture(textureIndex).getIndex());
+                    GLTexture texture = stage.getTextureByIndex(textureIndex);
                     texture.bind();
                     IntBuffer pixels = texture.getPixels(0);
                     texture.unbind();

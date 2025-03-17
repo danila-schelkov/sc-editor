@@ -34,8 +34,8 @@ public class HelpMenu extends JMenu {
             this.frame,
             new Object[]{
                 titleLabel,
-                new LinkLabel("https://github.com/vorono4ka/sc-editor"),
-                "Copyright 2022-" + Year.now() + " Vorono4ka"
+                new LinkLabel("https://github.com/danila-schelkov/sc-editor"),
+                "Copyright 2022-" + Year.now() + " Danila Schelkov"
             },
             "About",
             JOptionPane.PLAIN_MESSAGE

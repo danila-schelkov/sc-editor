@@ -1,10 +1,9 @@
 package com.vorono4ka.editor.renderer.impl.texture;
 
 import com.vorono4ka.editor.renderer.gl.GLConstants;
-import com.vorono4ka.editor.renderer.gl.GLRendererContext;
 import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.editor.renderer.impl.texture.khronos.KhronosTextureLoader;
-import com.vorono4ka.editor.renderer.impl.texture.khronos.SctxTextureLoader;
+import com.vorono4ka.editor.renderer.impl.texture.sctx.SctxTextureLoader;
 import com.vorono4ka.editor.renderer.texture.GLTexture;
 import com.vorono4ka.sctx.SctxTexture;
 import com.vorono4ka.utilities.BufferUtils;
@@ -13,14 +12,12 @@ import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
-public class GLImage {
+public final class GLImage {
     public static KhronosTextureLoader khronosTextureLoader;
     public static SctxTextureLoader sctxTextureLoader;
 
-    protected GLTexture texture;
-    protected int width;
-    protected int height;
-    protected int pixelFormat;
+    private GLImage() {
+    }
 
     public static void loadImage(GLTexture texture, Buffer pixels, int pixelFormat, int pixelType) {
         int error = texture.init(0, pixelFormat, pixelFormat, pixelType, pixels);
@@ -77,31 +74,7 @@ public class GLImage {
         throw new RuntimeException("ASTC textures aren't supported on your device.");
     }
 
-    public int getWidth() {
-        return width;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public int getPixelFormat() {
-        return this.pixelFormat;
-    }
-
-    public GLTexture getTexture() {
-        return texture;
-    }
-
-    public int getTextureId() {
-        return texture.getId();
-    }
-
-    public void createWithFormat(byte[] khronosTextureFileData, SctxTexture sctxTexture, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
-        this.width = width;
-        this.height = height;
-        this.pixelFormat = pixelFormat;
-
+    public static GLTexture createWithFormat(byte[] khronosTextureFileData, SctxTexture sctxTexture, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
         int magFilter;
         int minFilter;
         switch (filter) {
@@ -124,17 +97,13 @@ public class GLImage {
         }
 
         Stage stage = Stage.getInstance();
+
+        GLTexture texture = new GLTexture(stage.getGlContext(), width, height);
+        texture.setPixelInfo(pixelFormat, pixelType);
+
         stage.doInRenderThread(() -> {
-            if (this.texture != null) {
-                this.texture.delete();
-            }
-
-            GLRendererContext gl = stage.getGlContext();
-
-            texture = new GLTexture(gl, width, height);
+            texture.bindContext();
             texture.bind();
-
-            texture.setPixelInfo(pixelFormat, pixelType);
 
             texture.setWrap(clampToEdge ? GLConstants.GL_CLAMP_TO_EDGE : GLConstants.GL_REPEAT);
             texture.setFilters(minFilter, magFilter);
@@ -149,9 +118,11 @@ public class GLImage {
             }
 
             int channelCount = texture.getChannelCount();
-            gl.glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, channelCount);
+            stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, channelCount);
 
             texture.unbind();
         });
+
+        return texture;
     }
 }
