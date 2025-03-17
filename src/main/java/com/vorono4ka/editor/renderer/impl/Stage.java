@@ -1,10 +1,13 @@
 package com.vorono4ka.editor.renderer.impl;
 
-import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.util.PMVMatrix;
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.renderer.*;
-import com.vorono4ka.editor.renderer.impl.exceptions.ShaderCompilationException;
+import com.vorono4ka.editor.renderer.gl.GLBatch;
+import com.vorono4ka.editor.renderer.gl.GLConstants;
+import com.vorono4ka.editor.renderer.gl.GLFramebuffer;
+import com.vorono4ka.editor.renderer.gl.GLRendererContext;
+import com.vorono4ka.editor.renderer.gl.exceptions.ShaderCompilationException;
 import com.vorono4ka.editor.renderer.impl.texture.GLImage;
 import com.vorono4ka.editor.renderer.shader.Attribute;
 import com.vorono4ka.editor.renderer.shader.Shader;
@@ -12,14 +15,14 @@ import com.vorono4ka.editor.renderer.texture.GLTexture;
 import com.vorono4ka.editor.renderer.texture.RenderableTexture;
 import com.vorono4ka.math.ReadonlyRect;
 import com.vorono4ka.math.Rect;
+import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
+import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
+import com.vorono4ka.renderer.impl.swf.objects.StageSprite;
 import com.vorono4ka.resources.Assets;
 import com.vorono4ka.sctx.FlatSctxTextureLoader;
 import com.vorono4ka.sctx.SctxTexture;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
-import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
-import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
-import com.vorono4ka.renderer.impl.swf.objects.StageSprite;
 import com.vorono4ka.swf.exceptions.TextureFileNotFound;
 import com.vorono4ka.swf.file.compression.Zstandard;
 import com.vorono4ka.swf.movieclips.MovieClipState;
@@ -57,7 +60,7 @@ public class Stage implements Renderer {
 
     private boolean initialized;
     private Shader shader, screenShader;
-    private GL3 gl;
+    private GLRendererContext gl;
 
     private Batch currentBatch;
     private Batch screenBatch;
@@ -104,24 +107,22 @@ public class Stage implements Renderer {
         return compressedData;
     }
 
-    public void init(GL3 gl, int x, int y, int width, int height) throws ShaderCompilationException {
-        this.gl = gl;
-
+    public void init(int x, int y, int width, int height) throws ShaderCompilationException {
         this.shader = Assets.getShader(
             this.gl,
             "objects.vertex.glsl",
             "objects.fragment.glsl",
-            new Attribute(0, 2, Float.BYTES, GL3.GL_FLOAT),
-            new Attribute(1, 2, Float.BYTES, GL3.GL_FLOAT),
-            new Attribute(2, 4, Float.BYTES, GL3.GL_FLOAT),
-            new Attribute(3, 3, Float.BYTES, GL3.GL_FLOAT)
+            new Attribute(0, 2, Float.BYTES, GLConstants.GL_FLOAT),
+            new Attribute(1, 2, Float.BYTES, GLConstants.GL_FLOAT),
+            new Attribute(2, 4, Float.BYTES, GLConstants.GL_FLOAT),
+            new Attribute(3, 3, Float.BYTES, GLConstants.GL_FLOAT)
         );
         this.screenShader = Assets.getShader(
             this.gl,
             "screen.vertex.glsl",
             "screen.fragment.glsl",
-            new Attribute(0, 2, Float.BYTES, GL3.GL_FLOAT),
-            new Attribute(1, 2, Float.BYTES, GL3.GL_FLOAT)
+            new Attribute(0, 2, Float.BYTES, GLConstants.GL_FLOAT),
+            new Attribute(1, 2, Float.BYTES, GLConstants.GL_FLOAT)
         );
 
         BufferedImage imageBuffer = Assets.getImageBuffer("gradient_texture.png");
@@ -131,20 +132,20 @@ public class Stage implements Renderer {
             this.gradientTexture = new GLImage();
         }
 
-        this.gradientTexture.createWithFormat(null, null, true, 1, 256, 2, ImageUtils.getPixelBuffer(imageBuffer), GL3.GL_LUMINANCE_ALPHA, GL3.GL_UNSIGNED_BYTE);
+        this.gradientTexture.createWithFormat(null, null, true, 1, 256, 2, ImageUtils.getPixelBuffer(imageBuffer), GLConstants.GL_LUMINANCE_ALPHA, GLConstants.GL_UNSIGNED_BYTE);
 
         this.camera.init(width, height);
 
         gl.glViewport(x, y, width, height);
-        this.framebuffer = new JoglFramebuffer(gl, width, height);
+        this.framebuffer = new GLFramebuffer(gl, width, height);
 
         this.screenBatch = initScreenBatch(screenShader, framebuffer.getTexture(), VIEWPORT_RECT);
 
         this.updatePMVMatrix();
 
-        gl.glEnable(GL3.GL_BLEND);
-        gl.glBlendEquation(GL3.GL_FUNC_ADD);
-        gl.glBlendFunc(GL3.GL_ONE, GL3.GL_ONE_MINUS_SRC_ALPHA);
+        gl.glEnable(GLConstants.GL_BLEND);
+        gl.glBlendEquation(GLConstants.GL_FUNC_ADD);
+        gl.glBlendFunc(GLConstants.GL_ONE, GLConstants.GL_ONE_MINUS_SRC_ALPHA);
 
         this.initialized = true;
     }
@@ -234,10 +235,10 @@ public class Stage implements Renderer {
         this.initialized = false;
         this.gl.glDisableVertexAttribArray(0);
         this.gl.glDisableVertexAttribArray(1);
-        this.gl.glBindBuffer(GL3.GL_ARRAY_BUFFER, 0);
-        this.gl.glBindBuffer(GL3.GL_ELEMENT_ARRAY_BUFFER, 0);
+        this.gl.glBindBuffer(GLConstants.GL_ARRAY_BUFFER, 0);
+        this.gl.glBindBuffer(GLConstants.GL_ELEMENT_ARRAY_BUFFER, 0);
 
-        this.gl.glDisable(GL3.GL_BLEND);
+        this.gl.glDisable(GLConstants.GL_BLEND);
     }
 
     public void clearBatches() {
@@ -393,12 +394,16 @@ public class Stage implements Renderer {
         return framebuffer;
     }
 
-    public GL3 getGl() {
-        return this.gl;
-    }
-
     public StageSprite getStageSprite() {
         return stageSprite;
+    }
+
+    public GLRendererContext getGlContext() {
+        return gl;
+    }
+
+    public void setGlContext(GLRendererContext glRendererContext) {
+        gl = glRendererContext;
     }
 
     public GLImage createGLImage(SWFTexture texture, Path directory) throws TextureFileNotFound {
@@ -454,7 +459,7 @@ public class Stage implements Renderer {
 
     private void renderDisplayObject() {
         this.gl.glClearColor(0, 0, 0, 0);
-        this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
+        this.gl.glClear(GLConstants.GL_COLOR_BUFFER_BIT | GLConstants.GL_DEPTH_BUFFER_BIT | GLConstants.GL_STENCIL_BUFFER_BIT);
 
         this.gl.glStencilMask(0xFF);
         this.gl.glClearStencil(0);
@@ -467,7 +472,7 @@ public class Stage implements Renderer {
 
     private void renderScreen() {
         this.gl.glClearColor(.5f, .5f, .5f, 1);
-        this.gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT | GL3.GL_STENCIL_BUFFER_BIT);
+        this.gl.glClear(GLConstants.GL_COLOR_BUFFER_BIT | GLConstants.GL_DEPTH_BUFFER_BIT | GLConstants.GL_STENCIL_BUFFER_BIT);
 
         this.screenShader.bind();
         this.screenBatch.render();
@@ -498,23 +503,23 @@ public class Stage implements Renderer {
                 // scissors
             }
             case 2 -> {
-                this.gl.glEnable(GL3.GL_STENCIL_TEST);
-                this.gl.glStencilFunc(GL3.GL_ALWAYS, 1, 0xFF); // каждый фрагмент обновит трафаретный буфер
-                this.gl.glStencilOp(GL3.GL_KEEP, GL3.GL_KEEP, GL3.GL_REPLACE);
+                this.gl.glEnable(GLConstants.GL_STENCIL_TEST);
+                this.gl.glStencilFunc(GLConstants.GL_ALWAYS, 1, 0xFF); // каждый фрагмент обновит трафаретный буфер
+                this.gl.glStencilOp(GLConstants.GL_KEEP, GLConstants.GL_KEEP, GLConstants.GL_REPLACE);
                 this.gl.glStencilMask(0xFF); // включить запись в трафаретный буфер
                 this.gl.glColorMask(false, false, false, false);
 
                 this.gl.glDepthMask(false);
-                this.gl.glClear(GL3.GL_STENCIL_BUFFER_BIT); // Clear stencil buffer (0 by default)
+                this.gl.glClear(GLConstants.GL_STENCIL_BUFFER_BIT); // Clear stencil buffer (0 by default)
             }
             case 3 -> {
-                this.gl.glStencilFunc(GL3.GL_EQUAL, 1, 0xFF);
+                this.gl.glStencilFunc(GLConstants.GL_EQUAL, 1, 0xFF);
                 this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
                 this.gl.glColorMask(true, true, true, true);
             }
-            case 4 -> this.gl.glDisable(GL3.GL_STENCIL_TEST);
+            case 4 -> this.gl.glDisable(GLConstants.GL_STENCIL_TEST);
             case 5 -> {
-                this.gl.glStencilFunc(GL3.GL_NOTEQUAL, 1, 0xFF);
+                this.gl.glStencilFunc(GLConstants.GL_NOTEQUAL, 1, 0xFF);
                 this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
                 this.gl.glColorMask(true, true, true, true);
             }
@@ -522,7 +527,7 @@ public class Stage implements Renderer {
     }
 
     private Batch initScreenBatch(Shader shader, RenderableTexture texture, Rect rect) {
-        Batch screenBatch = new JoglBatch(shader, texture, 0, gl);
+        Batch screenBatch = new GLBatch(shader, texture, 0, gl);
         screenBatch.init();
 
         screenBatch.addTriangles(2, RECT_INDICES);
@@ -544,6 +549,6 @@ public class Stage implements Renderer {
     }
 
     private Batch constructBatch(Shader shader1, RenderableTexture texture, int stencilRenderingState) {
-        return new JoglBatch(shader1, texture, stencilRenderingState, this.gl);
+        return new GLBatch(shader1, texture, stencilRenderingState, this.gl);
     }
 }

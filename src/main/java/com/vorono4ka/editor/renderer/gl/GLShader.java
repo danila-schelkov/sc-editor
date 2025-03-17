@@ -1,34 +1,32 @@
-package com.vorono4ka.editor.renderer.impl;
+package com.vorono4ka.editor.renderer.gl;
 
-import com.jogamp.opengl.GL3;
+import com.vorono4ka.editor.renderer.gl.exceptions.ShaderCompilationException;
+import com.vorono4ka.editor.renderer.gl.exceptions.ShaderLinkingException;
 import com.vorono4ka.editor.renderer.shader.Attribute;
 import com.vorono4ka.editor.renderer.shader.Shader;
-import com.vorono4ka.editor.renderer.impl.exceptions.ShaderCompilationException;
-import com.vorono4ka.editor.renderer.impl.exceptions.ShaderLinkingException;
 import com.vorono4ka.resources.ResourceManager;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-
-public class JoglShader extends Shader {
+public class GLShader extends Shader {
     private static final int LOG_BUFFER_LENGTH = 1024;
 
-    private final GL3 gl;
+    private final GLRendererContext gl;
     private final int programId;
 
-    public JoglShader(GL3 gl, String vertexFile, String fragmentFile, Attribute... attributes) {
+    public GLShader(GLRendererContext gl, String vertexFile, String fragmentFile, Attribute... attributes) {
         super(attributes);
         this.gl = gl;
 
-        int vertexShader = gl.glCreateShader(GL3.GL_VERTEX_SHADER);
-        gl.glShaderSource(vertexShader, 1, new String[]{ResourceManager.loadString(vertexFile)}, null);
+        int vertexShader = gl.glCreateShader(GLConstants.GL_VERTEX_SHADER);
+        gl.glShaderSource(vertexShader, ResourceManager.loadString(vertexFile));
         gl.glCompileShader(vertexShader);
         checkShaderCompiled(gl, vertexShader, "VERTEX");
 
-        int fragmentShader = gl.glCreateShader(GL3.GL_FRAGMENT_SHADER);
-        gl.glShaderSource(fragmentShader, 1, new String[]{ResourceManager.loadString(fragmentFile)}, null);
+        int fragmentShader = gl.glCreateShader(GLConstants.GL_FRAGMENT_SHADER);
+        gl.glShaderSource(fragmentShader, ResourceManager.loadString(fragmentFile));
         gl.glCompileShader(fragmentShader);
         checkShaderCompiled(gl, fragmentShader, "FRAGMENT");
 
@@ -62,27 +60,27 @@ public class JoglShader extends Shader {
         this.gl.glUniformMatrix4fv(this.getUniformLocation("pmv"), 1, false, matrixBuffer);
     }
 
-    private int getUniformLocation(String uniform) {
-        return gl.glGetUniformLocation(this.programId, uniform);
+    private int getUniformLocation(String name) {
+        return gl.glGetUniformLocation(this.programId, name);
     }
 
-    private static void checkShaderCompiled(GL3 gl, int shader, String type) {
+    private static void checkShaderCompiled(GLRendererContext gl, int shader, String type) {
         IntBuffer hasCompiled = IntBuffer.allocate(1);
-        gl.glGetShaderiv(shader, GL3.GL_COMPILE_STATUS, hasCompiled);
-        if (hasCompiled.get() == GL3.GL_TRUE) return;
+        gl.glGetShaderiv(shader, GLConstants.GL_COMPILE_STATUS, hasCompiled);
+        if (hasCompiled.get() == GLConstants.GL_TRUE) return;
 
-        ByteBuffer logBuffer = ByteBuffer.allocate(LOG_BUFFER_LENGTH);
+        ByteBuffer logBuffer = ByteBuffer.allocateDirect(LOG_BUFFER_LENGTH);
         gl.glGetShaderInfoLog(shader, LOG_BUFFER_LENGTH, null, logBuffer);
         throw new ShaderCompilationException("Shader (%s) compilation failed:\n%s", type, new String(logBuffer.array()).trim());
     }
 
-    private static void checkProgramLinked(GL3 gl, int shader) {
+    private static void checkProgramLinked(GLRendererContext gl, int program) {
         IntBuffer hasCompiled = IntBuffer.allocate(1);
-        gl.glGetProgramiv(shader, GL3.GL_LINK_STATUS, hasCompiled);
-        if (hasCompiled.get() == GL3.GL_TRUE) return;
+        gl.glGetProgramiv(program, GLConstants.GL_LINK_STATUS, hasCompiled);
+        if (hasCompiled.get() == GLConstants.GL_TRUE) return;
 
-        ByteBuffer logBuffer = ByteBuffer.allocate(LOG_BUFFER_LENGTH);
-        gl.glGetShaderInfoLog(shader, LOG_BUFFER_LENGTH, null, logBuffer);
+        ByteBuffer logBuffer = ByteBuffer.allocateDirect(LOG_BUFFER_LENGTH);
+        gl.glGetProgramInfoLog(program, LOG_BUFFER_LENGTH, null, logBuffer);
         throw new ShaderLinkingException("Program linking failed:\n%s", new String(logBuffer.array()).trim());
     }
 }

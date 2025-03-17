@@ -1,4 +1,4 @@
-package com.vorono4ka.editor.renderer.impl.buffers;
+package com.vorono4ka.editor.renderer.gl.buffers;
 
 import java.nio.FloatBuffer;
 

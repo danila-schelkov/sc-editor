@@ -1,4 +1,4 @@
-package com.vorono4ka.editor.renderer.impl.exceptions;
+package com.vorono4ka.editor.renderer.gl.exceptions;
 
 public class ShaderLinkingException extends RuntimeException {
     public ShaderLinkingException(String message) {

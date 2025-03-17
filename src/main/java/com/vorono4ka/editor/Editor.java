@@ -13,11 +13,11 @@ import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.editor.renderer.impl.texture.GLImage;
 import com.vorono4ka.editor.renderer.texture.Texture;
 import com.vorono4ka.exporter.ImageExporter;
+import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
+import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
 import com.vorono4ka.sctx.FlatSctxTextureLoader;
 import com.vorono4ka.sctx.SctxTexture;
 import com.vorono4ka.swf.SupercellSWF;
-import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
-import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
 import com.vorono4ka.swf.exceptions.LoadingFaultException;
 import com.vorono4ka.swf.exceptions.TextureFileNotFound;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
@@ -152,7 +152,7 @@ public class Editor {
                 textureIds[i] = image.getId();
             }
 
-            stage.doInRenderThread(() -> stage.getGl().glDeleteTextures(textureIds.length, textureIds, 0));
+            stage.doInRenderThread(() -> stage.getGlContext().glDeleteTextures(textureIds.length, textureIds, 0));
         }
 
         stage.clearBatches();

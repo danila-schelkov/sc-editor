@@ -1,7 +1,6 @@
 package com.vorono4ka.renderer.impl.swf.objects;
 
 import com.vorono4ka.editor.renderer.Renderer;
-import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.editor.renderer.texture.RenderableTexture;
 import com.vorono4ka.editor.renderer.texture.Texture;
 import com.vorono4ka.math.Rect;

@@ -1,6 +1,7 @@
 package com.vorono4ka.editor.renderer.impl.texture.khronos;
 
-import com.jogamp.opengl.GL3;
+import com.vorono4ka.editor.renderer.gl.GLConstants;
+import com.vorono4ka.editor.renderer.gl.GLRendererContext;
 import com.vorono4ka.editor.renderer.texture.GLTexture;
 import team.nulls.ntengine.assets.KhronosTexture;
 import team.nulls.ntengine.assets.KhronosTextureDataLoader;
@@ -8,9 +9,9 @@ import team.nulls.ntengine.assets.KhronosTextureDataLoader;
 import java.nio.ByteBuffer;
 
 public class ExtensionKhronosTextureLoader implements KhronosTextureLoader {
-    private final GL3 gl;
+    private final GLRendererContext gl;
 
-    public ExtensionKhronosTextureLoader(GL3 gl) {
+    public ExtensionKhronosTextureLoader(GLRendererContext gl) {
         this.gl = gl;
     }
 
@@ -25,7 +26,7 @@ public class ExtensionKhronosTextureLoader implements KhronosTextureLoader {
 
         if (ktx.glFormat() != 0) {
             for (int level = 0; level < ktx.levels().length; level++) {
-                texture.init(level, ktx.glInternalFormat(), ktx.glFormat(), GL3.GL_UNSIGNED_INT, ktx.levels()[level]);
+                texture.init(level, ktx.glInternalFormat(), ktx.glFormat(), GLConstants.GL_UNSIGNED_INT, ktx.levels()[level]);
             }
         } else {
             for (int level = 0; level < ktx.levels().length; level++) {

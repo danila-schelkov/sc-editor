@@ -179,7 +179,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         stage.doInRenderThread(()->{
             stage.unbindRender();
-            stage.init(stage.getGl(), 0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
+            stage.init(0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
 
             stage.getCamera().reset();
             stage.updatePMVMatrix();
@@ -202,7 +202,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         stage.doInRenderThread(()->{
             stage.unbindRender();
-            stage.init(stage.getGl(), 0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
+            stage.init(0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
 
             stage.getCamera().reset();
             stage.updatePMVMatrix();
@@ -221,7 +221,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         stage.doInRenderThread(()->{
             stage.unbindRender();
-            stage.init(stage.getGl(), 0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
+            stage.init(0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
 
             stage.getCamera().reset();
             stage.updatePMVMatrix();
@@ -256,7 +256,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
             Main.editor.selectObject(displayObject);
 
             stage.unbindRender();
-            stage.init(stage.getGl(), 0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
+            stage.init(0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
 
 //            stage.updatePMVMatrix();
 
@@ -281,7 +281,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
             Main.editor.selectObject(movieClip);
 
             stage.unbindRender();
-            stage.init(stage.getGl(), 0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
+            stage.init(0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
 
             stage.getCamera().getZoom().setPointSize(scaleFactor);
             stage.updatePMVMatrix();

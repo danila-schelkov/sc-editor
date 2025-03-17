@@ -1,4 +1,4 @@
-package com.vorono4ka.editor.renderer.impl.exceptions;
+package com.vorono4ka.editor.renderer.gl.exceptions;
 
 public class ShaderCompilationException extends RuntimeException {
     public ShaderCompilationException(String message) {
