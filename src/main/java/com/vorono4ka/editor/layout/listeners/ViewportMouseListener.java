@@ -1,10 +1,10 @@
 package com.vorono4ka.editor.layout.listeners;
 
 import com.vorono4ka.editor.renderer.Camera;
-import com.vorono4ka.editor.renderer.Stage;
+import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.math.Rect;
-import com.vorono4ka.swf.displayobjects.DisplayObject;
-import com.vorono4ka.swf.displayobjects.StageSprite;
+import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
+import com.vorono4ka.renderer.impl.swf.objects.StageSprite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

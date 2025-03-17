@@ -1,7 +1,7 @@
 package com.vorono4ka.editor.renderer;
 
-import com.jogamp.opengl.GL3;
-import com.vorono4ka.editor.renderer.texture.Texture;
+import com.vorono4ka.editor.renderer.shader.Shader;
+import com.vorono4ka.editor.renderer.texture.RenderableTexture;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,11 +9,17 @@ import java.util.List;
 public class BatchPool {
     private final List<Batch> batches = new ArrayList<>();
 
+    private final BatchConstructor batchConstructor;
+
+    public BatchPool(BatchConstructor batchConstructor) {
+        this.batchConstructor = batchConstructor;
+    }
+
     public void pullBatches(List<Batch> batches) {
         this.batches.addAll(batches);
     }
 
-    public Batch createOrPopBatch(GL3 gl, Shader shader, Texture texture, int stencilRenderingState) {
+    public Batch createOrPopBatch(Shader shader, RenderableTexture texture, int stencilRenderingState) {
         Batch targetBatch = null;
 
         for (Batch batch : this.batches) {
@@ -26,10 +32,15 @@ public class BatchPool {
         this.batches.remove(targetBatch);
 
         if (targetBatch == null) {
-            targetBatch = new Batch(shader, texture, stencilRenderingState);
-            targetBatch.init(gl);
+            targetBatch = batchConstructor.construct(shader, texture, stencilRenderingState);
+            targetBatch.init();
         }
 
         return targetBatch;
+    }
+
+    @FunctionalInterface
+    public interface BatchConstructor {
+        Batch construct(Shader shader, RenderableTexture texture, int stencilRenderingState);
     }
 }

@@ -1,39 +1,36 @@
 package com.vorono4ka.editor.renderer;
 
-import com.jogamp.opengl.GL3;
-import com.vorono4ka.editor.renderer.texture.Texture;
+import com.vorono4ka.editor.renderer.shader.Attribute;
+import com.vorono4ka.editor.renderer.shader.Shader;
+import com.vorono4ka.editor.renderer.texture.RenderableTexture;
 import com.vorono4ka.utilities.BufferUtils;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-public class Batch {
-    public static final int SIZE = 512;
+public abstract class Batch {
+    protected static final int SIZE = 512;
 
-    private final Attribute[] attributes;
-    private final Texture texture;
-    private final Shader shader;
-    private final int stencilRenderingState;
-    private final int vertexSize, vertexSizeInBytes;
+    protected final Attribute[] attributes;
+    protected final RenderableTexture texture;
+    protected final Shader shader;
+    protected final int stencilRenderingState;
+    protected final int vertexSize, vertexSizeInBytes;
 
-    private FloatBuffer vertices;
-    private IntBuffer indices;
+    protected FloatBuffer vertices;
+    protected IntBuffer indices;
 
     /**
      * Represents max triangle count.
      */
-    private int capacity;
+    protected int capacity;
 
-    private int renderConfigBits;
-    private int triangleCount;
-    private int vertexIndex;
-    private int pointCount;
+    protected int renderConfigBits;
+    protected int triangleCount;
+    protected int vertexIndex;
+    protected int pointCount;
 
-    private VAO vao;
-    private VBO vbo;
-    private EBO ebo;
-
-    public Batch(Shader shader, Texture texture, int stencilRenderingState) {
+    public Batch(Shader shader, RenderableTexture texture, int stencilRenderingState) {
         this.shader = shader;
         this.texture = texture;
         this.stencilRenderingState = stencilRenderingState;
@@ -63,32 +60,18 @@ public class Batch {
         return vertexSize;
     }
 
-    public void init(GL3 gl) {
-        this.vao = new VAO(gl);
-        this.vao.bind();
+    public abstract void init();
 
-        this.vbo = new VBO(gl, this.vertices.capacity(), GL3.GL_DYNAMIC_DRAW);
-        this.ebo = new EBO(gl, this.indices.capacity(), GL3.GL_DYNAMIC_DRAW);
-        this.ebo.bind();
+    public abstract void delete();
 
-        linkAttributes();
-        this.vao.bind();
+    protected abstract void renderInternal();
 
-        this.vao.unbind();
-        this.ebo.unbind();
-    }
-
-    public void render(GL3 gl) {
+    public void render() {
         if (this.texture != null) {
             this.texture.bind();
         }
 
-        this.vbo.subData(0, this.vertices);
-        this.ebo.subData(0, this.indices);
-
-        this.vao.bind();
-        gl.glDrawElements(GL3.GL_TRIANGLES, this.triangleCount * 3, GL3.GL_UNSIGNED_INT, 0);
-        this.vao.unbind();
+        renderInternal();
     }
 
     public void reset() {
@@ -100,12 +83,6 @@ public class Batch {
         this.vertexIndex = 0;
     }
 
-    public void delete() {
-        this.vao.delete();
-        this.vbo.delete();
-        this.ebo.delete();
-    }
-
     public boolean startShape(int renderConfigBits) {
         this.renderConfigBits = renderConfigBits;
 
@@ -113,14 +90,14 @@ public class Batch {
     }
 
     public void addVertex(float x, float y, float u, float v) {
-        addVertex(new Float[]{x, y, u, v});
+        addVertex(new float[]{x, y, u, v});
     }
 
     public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float alpha, float redAdd, float greenAdd, float blueAdd) {
-        addVertex(new Float[]{x, y, u, v, redMul, greenMul, blueMul, alpha, redAdd, greenAdd, blueAdd});
+        addVertex(new float[]{x, y, u, v, redMul, greenMul, blueMul, alpha, redAdd, greenAdd, blueAdd});
     }
 
-    public void addVertex(Float... parameters) {
+    public void addVertex(float... parameters) {
         if (parameters.length != vertexSize) {
             throw new IllegalStateException("Parameter count doesn't match to vertex attributes");
         }
@@ -149,7 +126,7 @@ public class Batch {
             this.indices.clear();
 
             this.delete();
-            this.init(Stage.getInstance().getGl());
+            this.init();
         }
 
         for (int i = 0; i < triangles.length; i++) {
@@ -164,31 +141,23 @@ public class Batch {
         return this.triangleCount + triangleCount <= this.capacity;
     }
 
-    public boolean hasSame(Shader shader, Texture texture) {
+    public boolean hasSame(Shader shader, RenderableTexture texture) {
         return this.shader == shader && this.texture == texture;
     }
 
-    public boolean hasSame(Shader shader, Texture texture, int stencilRenderingState) {
+    public boolean hasSame(Shader shader, RenderableTexture texture, int stencilRenderingState) {
         return this.shader == shader && this.texture == texture && this.stencilRenderingState == stencilRenderingState;
-    }
-
-    @Override
-    public String toString() {
-        return "Batch {" +
-            "textureId=" + (this.texture != null ? this.texture.getId() : -1) +
-            ", stencilRenderingState=" + this.stencilRenderingState +
-            "}";
     }
 
     public int getStencilRenderingState() {
         return stencilRenderingState;
     }
 
-    private void linkAttributes() {
-        int offset = 0;
-        for (Attribute attribute : attributes) {
-            this.vao.linkAttrib(this.vbo, attribute.layout(), attribute.size(), attribute.glType(), vertexSizeInBytes, offset);
-            offset += attribute.sizeInBytes();
-        }
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "{" +
+            "textureId=" + (this.texture != null ? this.texture.getId() : -1) +
+            ", stencilRenderingState=" + this.stencilRenderingState +
+            "}";
     }
 }

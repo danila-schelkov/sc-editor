@@ -1,7 +1,7 @@
 package com.vorono4ka.editor.layout.components;
 
 import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.renderer.Stage;
+import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.exporter.FfmpegVideoExporter;
 import com.vorono4ka.exporter.ImageExporter;
 import com.vorono4ka.exporter.VideoExporter;
@@ -10,9 +10,9 @@ import com.vorono4ka.math.Rect;
 import com.vorono4ka.streams.ByteStream;
 import com.vorono4ka.swf.DisplayObjectOriginal;
 import com.vorono4ka.swf.SupercellSWF;
-import com.vorono4ka.swf.displayobjects.DisplayObject;
-import com.vorono4ka.swf.displayobjects.DisplayObjectFactory;
-import com.vorono4ka.swf.displayobjects.MovieClip;
+import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
+import com.vorono4ka.renderer.impl.swf.objects.DisplayObjectFactory;
+import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.movieclips.MovieClipOriginal;
 import com.vorono4ka.swf.movieclips.MovieClipState;

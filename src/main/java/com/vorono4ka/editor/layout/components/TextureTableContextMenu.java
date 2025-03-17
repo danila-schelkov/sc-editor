@@ -4,8 +4,8 @@ import com.jogamp.opengl.GL3;
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.layout.panels.StatusBar;
 import com.vorono4ka.editor.layout.panels.status.TaskProgressTracker;
-import com.vorono4ka.editor.renderer.Stage;
-import com.vorono4ka.editor.renderer.texture.Texture;
+import com.vorono4ka.editor.renderer.impl.Stage;
+import com.vorono4ka.editor.renderer.texture.GLTexture;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.utilities.BufferUtils;
 import com.vorono4ka.utilities.ImageUtils;
@@ -49,7 +49,7 @@ public class TextureTableContextMenu extends ContextMenu {
                 for (int selectedRow : selectedRows) {
                     int textureIndex = (int) this.table.getValueAt(selectedRow, 0);
 
-                    Texture texture = stage.getImageByIndex(swf.getTexture(textureIndex).getIndex()).getTexture();
+                    GLTexture texture = stage.getTextureByIndex(swf.getTexture(textureIndex).getIndex());
                     texture.bind();
                     IntBuffer pixels = texture.getPixels(0);
                     texture.unbind();

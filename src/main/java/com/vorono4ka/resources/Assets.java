@@ -1,8 +1,9 @@
 package com.vorono4ka.resources;
 
 import com.jogamp.opengl.GL3;
-import com.vorono4ka.editor.renderer.Attribute;
-import com.vorono4ka.editor.renderer.Shader;
+import com.vorono4ka.editor.renderer.shader.Attribute;
+import com.vorono4ka.editor.renderer.shader.Shader;
+import com.vorono4ka.editor.renderer.impl.JoglShader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +25,7 @@ public class Assets {
             return shaders.get(key);
         }
 
-        Shader shader = new Shader(gl, vertexFile, fragmentFile, attributes);
+        Shader shader = new JoglShader(gl, vertexFile, fragmentFile, attributes);
         shaders.put(key, shader);
         return shader;
     }

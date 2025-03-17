@@ -2,10 +2,10 @@ package com.vorono4ka.editor.layout.components;
 
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.displayObjects.SpriteSheet;
-import com.vorono4ka.editor.renderer.Stage;
+import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.math.Rect;
-import com.vorono4ka.swf.displayobjects.DisplayObject;
-import com.vorono4ka.swf.displayobjects.Shape;
+import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
+import com.vorono4ka.renderer.impl.swf.objects.Shape;
 import com.vorono4ka.swf.shapes.ShapeDrawBitmapCommand;
 
 import javax.swing.*;

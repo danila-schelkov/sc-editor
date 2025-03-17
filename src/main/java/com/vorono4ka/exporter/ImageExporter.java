@@ -2,11 +2,11 @@ package com.vorono4ka.exporter;
 
 import com.vorono4ka.editor.renderer.Camera;
 import com.vorono4ka.editor.renderer.Framebuffer;
-import com.vorono4ka.editor.renderer.Stage;
+import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.math.MathHelper;
 import com.vorono4ka.math.Rect;
-import com.vorono4ka.swf.displayobjects.DisplayObject;
-import com.vorono4ka.swf.displayobjects.MovieClip;
+import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
+import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
 import com.vorono4ka.utilities.ImageData;
 import com.vorono4ka.utilities.ImageUtils;
 
