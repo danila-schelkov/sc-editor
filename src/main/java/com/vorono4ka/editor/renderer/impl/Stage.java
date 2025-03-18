@@ -422,14 +422,14 @@ public class Stage implements Renderer {
             }
         }
 
-        GLTexture image = GLImage.createWithFormat(ktxData, sctxTexture, false, texture.getTag().getTextureFilter(), texture.getWidth(), texture.getHeight(), texture.getPixels(), texture.getTextureInfo().pixelFormat(), texture.getTextureInfo().pixelType());
+        GLTexture image = GLImage.createWithFormat(ktxData, sctxTexture, true, texture.getTag().getTextureFilter(), texture.getWidth(), texture.getHeight(), texture.getPixels(), texture.getTextureInfo().pixelFormat(), texture.getTextureInfo().pixelType());
         this.textures.put(texture.getIndex(), image);
 
         return image;
     }
 
     public GLTexture createGLTexture(SctxTexture texture, int index) {
-        GLTexture image = GLImage.createWithFormat(null, texture, false, 1, texture.getWidth(), texture.getHeight(), null, SctxPixelType.getFormat(texture.getPixelType()), SctxPixelType.getPixelType(texture.getPixelType()));
+        GLTexture image = GLImage.createWithFormat(null, texture, true, 1, texture.getWidth(), texture.getHeight(), null, SctxPixelType.getFormat(texture.getPixelType()), SctxPixelType.getPixelType(texture.getPixelType()));
         this.textures.put(index, image);
 
         return image;
