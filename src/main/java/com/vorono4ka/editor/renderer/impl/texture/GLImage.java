@@ -113,12 +113,11 @@ public final class GLImage {
             } else if (sctxTexture != null) {
                 loadTexture(texture, sctxTexture);
             } else {
+                stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
+
                 loadImage(texture, pixels, pixelFormat, pixelType);
                 texture.generateMipMap();
             }
-
-            int channelCount = texture.getChannelCount();
-            stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, channelCount);
 
             texture.unbind();
         });

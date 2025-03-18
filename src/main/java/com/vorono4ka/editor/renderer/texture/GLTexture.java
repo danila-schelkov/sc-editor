@@ -93,6 +93,25 @@ public class GLTexture implements RenderableTexture {
         };
     }
 
+    public int getPixelBytes() {
+        return switch (pixelType) {
+            case GLConstants.GL_UNSIGNED_BYTE -> getChannelCount();
+            case GLConstants.GL_UNSIGNED_SHORT, GLConstants.GL_UNSIGNED_SHORT_4_4_4_4, GLConstants.GL_UNSIGNED_SHORT_5_5_5_1, GLConstants.GL_UNSIGNED_SHORT_5_6_5 -> 2;
+            case GLConstants.GL_UNSIGNED_INT, GLConstants.GL_UNSIGNED_INT_24_8 -> 4;
+            default ->
+                throw new IllegalArgumentException("Unsupported pixel type: " + pixelType);
+        };
+    }
+
+    public int getAlignment() {
+        int rowSize = getPixelBytes() * width;
+        if ((rowSize & 7) == 0) return 8;
+        if ((rowSize & 3) == 0) return 4;
+        if ((rowSize & 1) == 0) return 2;
+
+        return 1;
+    }
+
     public void bind() {
         gl.glBindTexture(GLConstants.GL_TEXTURE_2D, this.id);
     }
