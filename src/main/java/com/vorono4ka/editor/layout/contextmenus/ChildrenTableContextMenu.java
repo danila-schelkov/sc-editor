@@ -1,6 +1,8 @@
-package com.vorono4ka.editor.layout.components;
+package com.vorono4ka.editor.layout.contextmenus;
 
 import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.layout.components.Table;
+import com.vorono4ka.editor.layout.components.TablePopupMenuListener;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
 import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
 

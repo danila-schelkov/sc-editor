@@ -1,4 +1,4 @@
-package com.vorono4ka.editor.layout.listeners;
+package com.vorono4ka.editor.layout.components.listeners;
 
 import com.vorono4ka.editor.Main;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;

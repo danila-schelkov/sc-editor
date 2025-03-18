@@ -1,10 +1,10 @@
 package com.vorono4ka.editor.layout.panels.info;
 
-import com.vorono4ka.editor.layout.components.ChildrenTableContextMenu;
-import com.vorono4ka.editor.layout.components.FrameTableContextMenu;
+import com.vorono4ka.editor.layout.contextmenus.ChildrenTableContextMenu;
+import com.vorono4ka.editor.layout.contextmenus.FrameTableContextMenu;
 import com.vorono4ka.editor.layout.components.Table;
-import com.vorono4ka.editor.layout.listeners.ChildrenListMouseListener;
-import com.vorono4ka.editor.layout.listeners.FrameSelectionListener;
+import com.vorono4ka.editor.layout.components.listeners.ChildrenListMouseListener;
+import com.vorono4ka.editor.layout.components.listeners.FrameSelectionListener;
 
 import javax.swing.*;
 import java.awt.*;
