@@ -1,8 +1,8 @@
 package com.vorono4ka.editor.layout.panels;
 
 import com.vorono4ka.editor.layout.components.Table;
-import com.vorono4ka.editor.layout.components.TextureTableContextMenu;
-import com.vorono4ka.editor.layout.listeners.TextureListMouseListener;
+import com.vorono4ka.editor.layout.contextmenus.TextureTableContextMenu;
+import com.vorono4ka.editor.layout.components.listeners.TextureListMouseListener;
 
 import javax.swing.*;
 import java.awt.*;

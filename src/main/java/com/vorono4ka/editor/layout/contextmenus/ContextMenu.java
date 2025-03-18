@@ -1,4 +1,4 @@
-package com.vorono4ka.editor.layout.components;
+package com.vorono4ka.editor.layout.contextmenus;
 
 import javax.swing.*;
 import java.awt.*;

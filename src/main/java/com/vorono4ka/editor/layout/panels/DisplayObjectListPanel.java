@@ -1,8 +1,8 @@
 package com.vorono4ka.editor.layout.panels;
 
-import com.vorono4ka.editor.layout.components.DisplayObjectContextMenu;
+import com.vorono4ka.editor.layout.contextmenus.DisplayObjectContextMenu;
 import com.vorono4ka.editor.layout.components.Table;
-import com.vorono4ka.editor.layout.listeners.DisplayObjectListMouseListener;
+import com.vorono4ka.editor.layout.components.listeners.DisplayObjectListMouseListener;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;

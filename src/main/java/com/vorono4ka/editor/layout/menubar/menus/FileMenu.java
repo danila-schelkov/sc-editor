@@ -1,6 +1,7 @@
 package com.vorono4ka.editor.layout.menubar.menus;
 
 import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.layout.filechooser.BetterFileChooser;
 import com.vorono4ka.resources.ResourceManager;
 
 import javax.swing.*;
@@ -82,7 +83,7 @@ public class FileMenu extends JMenu {
     }
 
     private void open(ActionEvent e) {
-        JFileChooser fileChooser = new JFileChooser();
+        BetterFileChooser fileChooser = new BetterFileChooser();
         fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell Texture (*.sctx)", "sctx"));
         fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc, *.sc2)", "sc", "sc2"));
@@ -90,14 +91,14 @@ public class FileMenu extends JMenu {
         int result = fileChooser.showOpenDialog(this.frame);
         if (result != JFileChooser.APPROVE_OPTION) return;
 
-        String path = fileChooser.getSelectedFile().getPath();
+        Path path = fileChooser.getSelectedFile().toPath();
 
         close(null);
 
         SwingWorker<Integer, Integer> worker = new SwingWorker<>() {
             @Override
             protected Integer doInBackground() {
-                Main.editor.openFile(path);
+                Main.editor.openFile(path.toString());
                 return 0;
             }
 
@@ -111,17 +112,14 @@ public class FileMenu extends JMenu {
     }
 
     private void save(ActionEvent actionEvent) {
-        JFileChooser fileChooser = new JFileChooser();
+        BetterFileChooser fileChooser = new BetterFileChooser();
         fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc)", "sc"));
 
         int result = fileChooser.showSaveDialog(this.frame);
         if (result != JFileChooser.APPROVE_OPTION) return;
 
-        String path = fileChooser.getSelectedFile().getPath();
-        if (!path.endsWith(".sc")) {
-            path += ".sc";
-        }
+        String path = getPathWithExtension(fileChooser);
 
         if (ResourceManager.doesFileExist(path)) {
             Object[] options = {"Yes", "Cancel"};
@@ -137,9 +135,25 @@ public class FileMenu extends JMenu {
                 options[0]
             );
 
-            if (warningResult != 0) return;
+            if (warningResult != JOptionPane.OK_OPTION) return;
         }
 
         Main.editor.saveFile(path);
+    }
+
+    private static String getPathWithExtension(BetterFileChooser fileChooser) {
+        String path = fileChooser.getSelectedFile().getPath();
+        if (fileChooser.getFileFilter() instanceof FileNameExtensionFilter extensionFilter) {
+            String extension = extensionFilter.getExtensions()[0];
+            if (!path.endsWith("." + extension)) {
+                path += "." + extension;
+            }
+        } else {
+            // TODO: choose extension depending on the file format
+            if (!path.endsWith(".sc")) {
+                path += ".sc";
+            }
+        }
+        return path;
     }
 }

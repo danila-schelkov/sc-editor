@@ -1,6 +1,6 @@
 package com.vorono4ka.editor.layout.panels.info;
 
-import com.vorono4ka.editor.layout.components.DrawCommandContextMenu;
+import com.vorono4ka.editor.layout.contextmenus.DrawCommandContextMenu;
 import com.vorono4ka.editor.layout.components.Table;
 
 import javax.swing.*;
