@@ -1,9 +1,9 @@
 package com.vorono4ka.exporter;
 
-import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.layout.panels.StatusBar;
 import com.vorono4ka.utilities.ImageUtils;
 import com.vorono4ka.utilities.SystemUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -14,6 +14,8 @@ import java.util.Comparator;
 import java.util.stream.Stream;
 
 public class FfmpegVideoExporter implements VideoExporter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(FfmpegVideoExporter.class);
+
     private final Path filepath;
     private final String codecName;
     private final int fps;
@@ -40,8 +42,6 @@ public class FfmpegVideoExporter implements VideoExporter {
     public void close() {
         if (isClosed) return;
 
-        StatusBar statusBar = Main.editor.getWindow().getStatusBar();
-
         SystemUtils.waitProcessInSwing(
             () -> SystemUtils.runProcess(
                 "ffmpeg",
@@ -56,9 +56,9 @@ public class FfmpegVideoExporter implements VideoExporter {
                 "-lossless", 1,
                 filepath.toAbsolutePath()
             ),
-            (process) -> statusBar.setStatus("Waiting for ffmpeg to do its work..."),
+            (process) -> LOGGER.info("Waiting for ffmpeg to do its work..."),
             (process) -> {
-                statusBar.setStatus("ffmpeg done its work with code: " + process.exitValue());
+                LOGGER.info("ffmpeg done its work with code: {}", process.exitValue());
 
                 try (Stream<Path> files = Files.walk(framesDirectory)) {
                     files.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);

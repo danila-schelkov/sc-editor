@@ -1,7 +1,6 @@
 package com.vorono4ka.editor.layout.menubar.menus;
 
 import com.vorono4ka.editor.Editor;
-import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.windows.EditorWindow;
 
@@ -11,11 +10,15 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
 public class EditMenu extends JMenu {
+    private final Editor editor;
+
     private final JMenuItem previous;
     private final JMenuItem next;
 
-    public EditMenu() {
+    public EditMenu(Editor editor) {
         super("Edit");
+
+        this.editor = editor;
 
         setMnemonic(KeyEvent.VK_E);
 
@@ -46,37 +49,35 @@ public class EditMenu extends JMenu {
     }
 
     private void find(ActionEvent actionEvent) {
-        EditorWindow window = Main.editor.getWindow();
+        EditorWindow window = editor.getWindow();
         window.getTabbedPane().setSelectedIndex(0);
         window.getDisplayObjectPanel().setFocusOnTextField();
     }
 
     private void findUsages(ActionEvent event) {
-        Table objectsTable = Main.editor.getWindow().getObjectsTable();
+        Table objectsTable = editor.getWindow().getObjectsTable();
         int selectedRow = objectsTable.getSelectedRow();
         if (selectedRow == -1) return;
 
         int displayObjectId = (int) objectsTable.getValueAt(selectedRow, 0);
         String displayObjectName = (String) objectsTable.getValueAt(selectedRow, 1);
 
-        Main.editor.findUsages(displayObjectId, displayObjectName);
+        editor.findUsages(displayObjectId, displayObjectName);
     }
 
     private void previous(ActionEvent e) {
-        Main.editor.selectPrevious();
+        editor.selectPrevious();
     }
 
     private void next(ActionEvent e) {
-        Main.editor.selectNext();
+        editor.selectNext();
     }
 
     public void checkPreviousAvailable() {
-        this.previous.setEnabled(Main.editor.getSelectedIndex() > 0);
+        this.previous.setEnabled(editor.getSelectedIndex() > 0);
     }
 
     public void checkNextAvailable() {
-        Editor editor = Main.editor;
-
         this.next.setEnabled(editor.getSelectedIndex() + 1 < editor.getClonedObjectCount());
     }
 }

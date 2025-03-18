@@ -1,6 +1,6 @@
 package com.vorono4ka.editor.layout.components.listeners;
 
-import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.layout.panels.info.MovieClipInfoPanel;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
 import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
@@ -13,9 +13,11 @@ import java.util.List;
 
 public class FrameSelectionListener implements ListSelectionListener {
     private final JTable table;
+    private final Editor editor;
 
-    public FrameSelectionListener(JTable table) {
+    public FrameSelectionListener(JTable table, Editor editor) {
         this.table = table;
+        this.editor = editor;
     }
 
     @Override
@@ -25,12 +27,12 @@ public class FrameSelectionListener implements ListSelectionListener {
         int selectedRow = this.table.getSelectedRow();
         if (selectedRow == -1) return;
 
-        DisplayObject selectedObject = Main.editor.getSelectedObject();
+        DisplayObject selectedObject = editor.getSelectedObject();
         if (!selectedObject.isMovieClip()) return;
 
         MovieClip movieClip = (MovieClip) selectedObject;
 
-        MovieClipInfoPanel panel = (MovieClipInfoPanel) Main.editor.getWindow().getInfoPanel().getPanel();
+        MovieClipInfoPanel panel = (MovieClipInfoPanel) editor.getWindow().getInfoPanel().getPanel();
         panel.clearFrameElements();
 
         int index = (int) this.table.getValueAt(selectedRow, 0);

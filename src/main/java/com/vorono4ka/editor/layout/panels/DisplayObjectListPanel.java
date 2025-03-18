@@ -1,8 +1,9 @@
 package com.vorono4ka.editor.layout.panels;
 
-import com.vorono4ka.editor.layout.contextmenus.DisplayObjectContextMenu;
+import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.listeners.DisplayObjectListMouseListener;
+import com.vorono4ka.editor.layout.contextmenus.DisplayObjectContextMenu;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -20,14 +21,14 @@ public class DisplayObjectListPanel extends JPanel {
 
     private final JTextField textField;
 
-    public DisplayObjectListPanel() {
+    public DisplayObjectListPanel(Editor editor) {
         this.table = new Table("Id", "Name", "Type");
         this.table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         this.sorter = new TableRowSorter<>(this.table.getModel());
 
-        new DisplayObjectContextMenu(this.table);
-        this.table.addMouseListener(new DisplayObjectListMouseListener(this.table));
+        new DisplayObjectContextMenu(this.table, editor);
+        this.table.addMouseListener(new DisplayObjectListMouseListener(this.table, editor));
         this.table.setRowSorter(this.sorter);
 
         List<RowSorter.SortKey> sortKeys = new ArrayList<>();

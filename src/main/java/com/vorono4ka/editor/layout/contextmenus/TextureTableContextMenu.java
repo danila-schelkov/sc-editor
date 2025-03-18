@@ -1,10 +1,8 @@
 package com.vorono4ka.editor.layout.contextmenus;
 
-import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.TablePopupMenuListener;
-import com.vorono4ka.editor.layout.panels.StatusBar;
-import com.vorono4ka.editor.layout.panels.status.TaskProgressTracker;
 import com.vorono4ka.editor.renderer.gl.GLConstants;
 import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.editor.renderer.texture.GLTexture;
@@ -20,11 +18,13 @@ import java.nio.file.Path;
 
 public class TextureTableContextMenu extends ContextMenu {
     private final Table table;
+    private final Editor editor;
 
-    public TextureTableContextMenu(Table table) {
+    public TextureTableContextMenu(Table table, Editor editor) {
         super(table, null);
 
         this.table = table;
+        this.editor = editor;
 
         JMenuItem exportButton = this.add("Export", KeyEvent.VK_E);
         exportButton.addActionListener(this::export);
@@ -36,31 +36,23 @@ public class TextureTableContextMenu extends ContextMenu {
         int[] selectedRows = table.getSelectedRows();
 
         Stage stage = Stage.getInstance();
-        StatusBar statusBar = Main.editor.getWindow().getStatusBar();
-
         // TODO: add setting for the saving path pattern (e.g. "{folder}/{filename}/texture_{index}.png", "{filepath}/{index}.png", "{filepath}/{basename}_{index}.png")
         // TODO: ask folder to save files in
-        Path path = Path.of("screenshots").toAbsolutePath().resolve(Main.editor.getFilename());
+        Path path = Path.of("screenshots").toAbsolutePath().resolve(editor.getFilename());
         path.toFile().mkdirs();
 
         stage.doInRenderThread(() -> {
-            try (TaskProgressTracker taskTracker = statusBar.createTaskTracker("Exporting textures...", 0, selectedRows.length)) {
-                int progress = 0;
-                for (int selectedRow : selectedRows) {
-                    int textureIndex = (int) this.table.getValueAt(selectedRow, 0);
+            for (int selectedRow : selectedRows) {
+                int textureIndex = (int) this.table.getValueAt(selectedRow, 0);
 
-                    GLTexture texture = stage.getTextureByIndex(textureIndex);
-                    texture.bind();
-                    IntBuffer pixels = texture.getPixels(0);
-                    texture.unbind();
+                GLTexture texture = stage.getTextureByIndex(textureIndex);
+                texture.bind();
+                IntBuffer pixels = texture.getPixels(0);
+                texture.unbind();
 
-                    boolean isLuminanceAlpha = texture.getFormat() == GLConstants.GL_LUMINANCE_ALPHA || texture.getFormat() == GLConstants.GL_RG;
-                    BufferedImage bufferedImage = ImageUtils.createBufferedImageFromPixels(texture.getWidth(), texture.getHeight(), BufferUtils.toArray(pixels), isLuminanceAlpha);
-                    ImageUtils.saveImage(path.resolve("texture_" + textureIndex + ".png"), bufferedImage);
-
-                    // TODO: find a way to notify the main app thread about the changes, unfreeze it or transfer render thread to another thread
-                    taskTracker.setValue(++progress);
-                }
+                boolean isLuminanceAlpha = texture.getFormat() == GLConstants.GL_LUMINANCE_ALPHA || texture.getFormat() == GLConstants.GL_RG;
+                BufferedImage bufferedImage = ImageUtils.createBufferedImageFromPixels(texture.getWidth(), texture.getHeight(), BufferUtils.toArray(pixels), isLuminanceAlpha);
+                ImageUtils.saveImage(path.resolve("texture_" + textureIndex + ".png"), bufferedImage);
             }
         });
     }

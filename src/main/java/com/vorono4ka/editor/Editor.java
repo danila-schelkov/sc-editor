@@ -12,6 +12,7 @@ import com.vorono4ka.editor.layout.windows.UsagesWindow;
 import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.editor.renderer.texture.GLTexture;
 import com.vorono4ka.editor.renderer.texture.Texture;
+import com.vorono4ka.editor.settings.EditorSettings;
 import com.vorono4ka.exporter.ImageExporter;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
 import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
@@ -38,7 +39,9 @@ import java.util.List;
 public class Editor {
     private static final Logger LOGGER = LoggerFactory.getLogger(Editor.class);
 
-    private final EditorWindow window = new EditorWindow();
+    private final EditorWindow window = new EditorWindow(this);
+    // TODO: save into file somewhere
+    private final EditorSettings settings = new EditorSettings();
 
     private final List<UsagesWindow> usagesWindows = new ArrayList<>();
     private final List<SpriteSheet> spriteSheets = new ArrayList<>();
@@ -54,19 +57,17 @@ public class Editor {
     private SupercellSWF swf;
     private SctxTexture sctxTexture;
 
-    // Editor debug stuff
-    private boolean shouldDisplayPolygons;
     private String filename;
 
-    public void openFile(String path) {
-        this.filename = path.substring(path.lastIndexOf("\\") + 1);
-        this.window.setTitle(Main.TITLE + " - " + filename);
+    public void openFile(Path path) {
+        this.filename = path.getFileName().toString();
+        this.window.setTitle(EditorWindow.TITLE + " - " + filename);
 
-        if (path.endsWith(".sc") || path.endsWith(".sc2")) {
+        if (path.toString().endsWith(".sc") || path.toString().endsWith(".sc2")) {
             if (!loadSc(path, filename)) {
                 return;
             }
-        } else if (path.endsWith(".sctx")) {
+        } else if (path.toString().endsWith(".sctx")) {
             if (!loadSctx(path)) {
                 return;
             }
@@ -76,9 +77,9 @@ public class Editor {
         fileMenu.checkCanSave();
     }
 
-    private boolean loadSctx(String path) {
+    private boolean loadSctx(Path path) {
         try {
-            sctxTexture = loadSctxTexture(Path.of(path));
+            sctxTexture = loadSctxTexture(path);
 
             List<GLTexture> images = uploadSctxTextureToOpenGl(sctxTexture);
 
@@ -90,10 +91,10 @@ public class Editor {
         }
     }
 
-    private boolean loadSc(String path, String filename) {
+    private boolean loadSc(Path path, String filename) {
         try {
             this.swf = new SupercellSWF();
-            this.swf.load(path, filename, false);
+            this.swf.load(path.toString(), filename, false);
 
             List<GLTexture> images = uploadSwfTexturesToOpenGl();
 
@@ -120,7 +121,7 @@ public class Editor {
     public void closeFile() {
         this.window.getTexturesTable().clear();
         this.window.getObjectsTable().clear();
-        this.window.setTitle(Main.TITLE);
+        this.window.setTitle(EditorWindow.TITLE);
         this.filename = null;
 
         EditorInfoPanel infoBlock = this.window.getInfoPanel();
@@ -199,6 +200,7 @@ public class Editor {
         this.selectedIndex = objectIndex;
 
         DisplayObject displayObject = this.clonedObjects.get(this.selectedIndices.get(objectIndex));
+        window.getTimelinePanel().setSelectedObject(displayObject);
 
         if (displayObject.isMovieClip()) {
             this.window.setTargetFps(((MovieClip) displayObject).getFps());
@@ -244,7 +246,7 @@ public class Editor {
             title += " - " + name;
         }
 
-        UsagesWindow usagesWindow = new UsagesWindow();
+        UsagesWindow usagesWindow = new UsagesWindow(this);
         usagesWindow.initialize(title);
         this.usagesWindows.add(usagesWindow);
 
@@ -295,12 +297,12 @@ public class Editor {
         return this.spriteSheets.get(index);
     }
 
-    public boolean shouldDisplayPolygons() {
-        return this.shouldDisplayPolygons;
-    }
-
     public void setShouldDisplayPolygons(boolean shouldDisplayPolygons) {
-        this.shouldDisplayPolygons = shouldDisplayPolygons;
+        this.settings.setShouldDisplayPolygons(shouldDisplayPolygons);
+
+        for (SpriteSheet spriteSheet : spriteSheets) {
+            spriteSheet.setShouldDisplayPolygons(shouldDisplayPolygons);
+        }
     }
 
     private void updateObjectTable() {

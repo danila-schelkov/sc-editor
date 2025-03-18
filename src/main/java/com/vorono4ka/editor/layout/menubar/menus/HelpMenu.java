@@ -1,8 +1,8 @@
 package com.vorono4ka.editor.layout.menubar.menus;
 
 import com.formdev.flatlaf.FlatClientProperties;
-import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.layout.components.LinkLabel;
+import com.vorono4ka.editor.layout.windows.EditorWindow;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -27,7 +27,7 @@ public class HelpMenu extends JMenu {
     }
 
     private void openAboutPopup(ActionEvent e) {
-        JLabel titleLabel = new JLabel(Main.TITLE);
+        JLabel titleLabel = new JLabel(EditorWindow.TITLE);
         titleLabel.putClientProperty(FlatClientProperties.STYLE_CLASS, "h1");
 
         JOptionPane.showMessageDialog(

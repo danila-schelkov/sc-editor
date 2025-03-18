@@ -1,13 +1,13 @@
 package com.vorono4ka.editor.renderer.impl.texture.khronos;
 
-import com.vorono4ka.editor.Main;
-import com.vorono4ka.editor.layout.panels.StatusBar;
 import com.vorono4ka.editor.renderer.impl.texture.GLImage;
 import com.vorono4ka.editor.renderer.texture.GLTexture;
 import com.vorono4ka.utilities.ImageUtils;
 import com.vorono4ka.utilities.PathUtils;
 import com.vorono4ka.utilities.SystemUtils;
 import com.vorono4ka.utilities.process.ChainedExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -18,10 +18,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
-/**
- * Wrapper over <a href="https://github.com/KhronosGroup/KTX-Software/tree/main/tools">KTX CLI tools</a>.
- */
+/// Wrapper over <a href="https://github.com/KhronosGroup/KTX-Software/tree/main/tools">KTX CLI tools</a>.
 public class KhronosToolTextureLoader implements KhronosTextureLoader {
+    private static final Logger LOGGER = LoggerFactory.getLogger(KhronosToolTextureLoader.class);
+
     public static final String KTX2KTX = "ktx2ktx2";
     public static final String KTX = "ktx";
 
@@ -77,25 +77,31 @@ public class KhronosToolTextureLoader implements KhronosTextureLoader {
         Path ktx2Path = PathUtils.replaceExtension(ktx1Path, "ktx2");
         Path pngPath = PathUtils.replaceExtension(ktx1Path, "png");
 
-        StatusBar statusBar = Main.editor.getWindow().getStatusBar();
-
         ChainedExecutor<Process> executor = ChainedExecutor.<Process>create().add(
             () -> SystemUtils.runProcess(KTX2KTX, ktx1Path),
-            (process) -> statusBar.setStatus("Waiting for " + KTX2KTX + " to do its work..."),
+            (process) -> logProcessStarted(KTX2KTX),
             (process) -> {
-                statusBar.setStatus(KTX2KTX + " done its work with code: " + process.exitValue());
+                logProcessDone(KTX2KTX, process);
                 ktx1File.delete();
             }
         ).add(
             () -> SystemUtils.runProcess(KTX, "extract", ktx2Path, pngPath),
-            (process) -> statusBar.setStatus("Waiting for " + KTX + " to do its work..."),
+            (process) -> logProcessStarted(KTX),
             (process) -> {
-                statusBar.setStatus(KTX + " done its work with code: " + process.exitValue());
+                logProcessDone(KTX, process);
                 ktx2Path.toFile().delete();
                 loadPngToGl(texture, pngPath);
             }
         );
 
         executor.run(SystemUtils::wait);
+    }
+
+    private static void logProcessStarted(String name) {
+        LOGGER.info("Waiting for {} to do its work...", name);
+    }
+
+    private static void logProcessDone(String name, Process process) {
+        LOGGER.info("{} done its work with code: {}", name, process.exitValue());
     }
 }

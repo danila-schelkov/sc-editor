@@ -1,7 +1,6 @@
 package com.vorono4ka.editor.layout.panels;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
 import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
@@ -16,10 +15,13 @@ public class TimelinePanel extends JPanel {
     public static final int MIN_FRAME = 0;
     public static final int DEFAULT_START_FRAME = 0;
     public static final int DEFAULT_END_FRAME = 100;
+
     private final JSpinner currentFrameSpinner;
     private final JSpinner startFrameSpinner;
     private final JSpinner endFrameSpinner;
     private final JSlider slider;
+
+    private DisplayObject selectedObject;
 
     public TimelinePanel() {
         super(new BorderLayout());
@@ -82,7 +84,6 @@ public class TimelinePanel extends JPanel {
 
         this.slider.setValue(value);
 
-        DisplayObject selectedObject = Main.editor.getSelectedObject();
         if (selectedObject == null) return;
         if (!selectedObject.isMovieClip()) return;
 
@@ -112,6 +113,10 @@ public class TimelinePanel extends JPanel {
 
     private int validateFrame(int value) {
         return Math.max(MIN_FRAME, value);
+    }
+
+    public void setSelectedObject(DisplayObject selectedObject) {
+        this.selectedObject = selectedObject;
     }
 
     public static void main(String[] args) {
