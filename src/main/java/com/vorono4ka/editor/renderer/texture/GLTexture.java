@@ -35,7 +35,7 @@ public class GLTexture implements RenderableTexture {
     }
 
     /**
-     * Initializes 2d texture in OpenGL
+     * Initializes 2d texture in OpenGL.
      *
      * @param level          mip map level
      * @param internalFormat e.g. GL_RGBA
@@ -45,6 +45,22 @@ public class GLTexture implements RenderableTexture {
      * @return 0 if succeeded, otherwise gl error code
      */
     public int init(int level, int internalFormat, int format, int pixelType, Buffer pixels) {
+        return init(level, width >> level, height >> level, internalFormat, format, pixelType, pixels);
+    }
+
+    /**
+     * Initializes 2d texture in OpenGL with specified width and height.
+     *
+     * @param level          mip map level
+     * @param width          texture level width
+     * @param height         texture level height
+     * @param internalFormat e.g. GL_RGBA
+     * @param format         e.g. GL_RGBA
+     * @param pixelType      e.g. GL_UNSIGNED_BYTE
+     * @param pixels         buffer containing texture pixels
+     * @return 0 if succeeded, otherwise gl error code
+     */
+    public int init(int level, int width, int height, int internalFormat, int format, int pixelType, Buffer pixels) {
         this.internalFormat = internalFormat;
         this.format = format;
         this.pixelType = pixelType;
@@ -54,7 +70,7 @@ public class GLTexture implements RenderableTexture {
     }
 
     /**
-     * Initializes compressed 2d texture in OpenGL
+     * Initializes compressed 2d texture in OpenGL.
      *
      * @param level          mip map level
      * @param internalFormat e.g. GL_RGBA
@@ -63,10 +79,44 @@ public class GLTexture implements RenderableTexture {
      * @return 0 if succeeded, otherwise gl error code
      */
     public int initCompressed(int level, int internalFormat, int format, ByteBuffer data) {
+        return initCompressed(level, width >> level, height >> level, internalFormat, format, data);
+    }
+
+    /**
+     * Initializes compressed 2d texture in OpenGL with specified width and height.
+     *
+     * @param level          mip map level
+     * @param width          texture level width
+     * @param height         texture level height
+     * @param internalFormat e.g. GL_RGBA
+     * @param format         e.g. GL_RGBA
+     * @param data           buffer containing compressed texture data
+     * @return 0 if succeeded, otherwise gl error code
+     * @see {@link jogamp.opengl.util.av.EGLMediaPlayerImpl.EGLTextureFrame}
+     */
+    public int initCompressed(int level, int width, int height, int internalFormat, int format, ByteBuffer data) {
         this.internalFormat = format;
         this.format = format;
 
         gl.glCompressedTexImage2D(GLConstants.GL_TEXTURE_2D, level, internalFormat, width, height, 0, data.remaining(), data);
+        return gl.glGetError();
+    }
+
+    /**
+     * Updates 2d texture sub image in OpenGL.
+     *
+     * @param level     mip map level
+     * @param format    e.g. GL_RGBA
+     * @param pixelType e.g. GL_UNSIGNED_BYTE
+     * @param pixels    buffer containing texture pixels
+     * @return 0 if succeeded, otherwise gl error code
+     */
+    public int update(int level, int xOffset, int yOffset, int width, int height, int format, int pixelType, Buffer pixels) {
+        this.internalFormat = format;
+        this.format = format;
+        this.pixelType = pixelType;
+
+        gl.glTexSubImage2D(GLConstants.GL_TEXTURE_2D, level, xOffset, yOffset, width, height, format, pixelType, pixels);
         return gl.glGetError();
     }
 
@@ -96,7 +146,9 @@ public class GLTexture implements RenderableTexture {
     public int getPixelBytes() {
         return switch (pixelType) {
             case GLConstants.GL_UNSIGNED_BYTE -> getChannelCount();
-            case GLConstants.GL_UNSIGNED_SHORT, GLConstants.GL_UNSIGNED_SHORT_4_4_4_4, GLConstants.GL_UNSIGNED_SHORT_5_5_5_1, GLConstants.GL_UNSIGNED_SHORT_5_6_5 -> 2;
+            case GLConstants.GL_UNSIGNED_SHORT, GLConstants.GL_UNSIGNED_SHORT_4_4_4_4,
+                 GLConstants.GL_UNSIGNED_SHORT_5_5_5_1,
+                 GLConstants.GL_UNSIGNED_SHORT_5_6_5 -> 2;
             case GLConstants.GL_UNSIGNED_INT, GLConstants.GL_UNSIGNED_INT_24_8 -> 4;
             default ->
                 throw new IllegalArgumentException("Unsupported pixel type: " + pixelType);

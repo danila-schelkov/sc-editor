@@ -39,7 +39,7 @@ public class ExtensionSctxTextureLoader implements SctxTextureLoader {
             List<MipMapData> mipMaps = sctxTexture.getMipMaps();
             for (int level = 0; level < mipMaps.size(); level++) {
                 MipMapData mipMap = mipMaps.get(level);
-                texture.initCompressed(level, internalFormat, format, BufferUtils.wrapDirect(mipMap.data()));
+                texture.initCompressed(level, mipMap.width(), mipMap.height(), internalFormat, format, BufferUtils.wrapDirect(mipMap.data()));
             }
         }
     }

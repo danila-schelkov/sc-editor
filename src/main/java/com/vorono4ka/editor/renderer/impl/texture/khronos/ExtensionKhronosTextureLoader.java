@@ -26,12 +26,12 @@ public class ExtensionKhronosTextureLoader implements KhronosTextureLoader {
 
         if (ktx.glFormat() != 0) {
             for (int level = 0; level < ktx.levels().length; level++) {
-                texture.init(level, ktx.glInternalFormat(), ktx.glFormat(), GLConstants.GL_UNSIGNED_INT, ktx.levels()[level]);
+                texture.init(level, ktx.width() >> level, ktx.height() >> level, ktx.glInternalFormat(), ktx.glFormat(), GLConstants.GL_UNSIGNED_INT, ktx.levels()[level]);
             }
         } else {
             for (int level = 0; level < ktx.levels().length; level++) {
                 ByteBuffer data = ktx.levels()[level];
-                texture.initCompressed(level, ktx.glInternalFormat(), ktx.glBaseInternalFormat(), data);
+                texture.initCompressed(level, ktx.width() >> level, ktx.height() >> level, ktx.glInternalFormat(), ktx.glBaseInternalFormat(), data);
             }
         }
     }

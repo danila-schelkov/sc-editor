@@ -8,6 +8,7 @@ import com.vorono4ka.editor.renderer.gl.GLFramebuffer;
 import com.vorono4ka.editor.renderer.gl.GLRendererContext;
 import com.vorono4ka.editor.renderer.gl.exceptions.ShaderCompilationException;
 import com.vorono4ka.editor.renderer.impl.texture.GLImage;
+import com.vorono4ka.editor.renderer.impl.texture.ImageFilter;
 import com.vorono4ka.editor.renderer.impl.texture.sctx.SctxPixelType;
 import com.vorono4ka.editor.renderer.shader.Attribute;
 import com.vorono4ka.editor.renderer.shader.Shader;
@@ -129,7 +130,7 @@ public class Stage implements Renderer {
         assert imageBuffer != null : "Gradient texture not found.";
 
         if (this.gradientTexture == null) {
-            this.gradientTexture = GLImage.createWithFormat(null, null, true, 1, 256, 2, ImageUtils.getPixelBuffer(imageBuffer), GLConstants.GL_LUMINANCE_ALPHA, GLConstants.GL_UNSIGNED_BYTE);
+            this.gradientTexture = GLImage.createWithFormat(null, null, true, ImageFilter.LINEAR, 256, 2, ImageUtils.getPixelBuffer(imageBuffer), GLConstants.GL_LUMINANCE_ALPHA, GLConstants.GL_UNSIGNED_BYTE);
         }
 
         this.camera.init(width, height);
@@ -422,14 +423,14 @@ public class Stage implements Renderer {
             }
         }
 
-        GLTexture image = GLImage.createWithFormat(ktxData, sctxTexture, true, texture.getTag().getTextureFilter(), texture.getWidth(), texture.getHeight(), texture.getPixels(), texture.getTextureInfo().pixelFormat(), texture.getTextureInfo().pixelType());
+        GLTexture image = GLImage.createWithFormat(ktxData, sctxTexture, true, ImageFilter.values()[texture.getInitialTag().getTextureFilter()], texture.getWidth(), texture.getHeight(), texture.getPixels(), texture.getTextureInfo().pixelFormat(), texture.getTextureInfo().pixelType());
         this.textures.put(texture.getIndex(), image);
 
         return image;
     }
 
     public GLTexture createGLTexture(SctxTexture texture, int index) {
-        GLTexture image = GLImage.createWithFormat(null, texture, true, 1, texture.getWidth(), texture.getHeight(), null, SctxPixelType.getFormat(texture.getPixelType()), SctxPixelType.getPixelType(texture.getPixelType()));
+        GLTexture image = GLImage.createWithFormat(null, texture, true, ImageFilter.LINEAR, texture.getWidth(), texture.getHeight(), null, SctxPixelType.getFormat(texture.getPixelType()), SctxPixelType.getPixelType(texture.getPixelType()));
         this.textures.put(index, image);
 
         return image;
