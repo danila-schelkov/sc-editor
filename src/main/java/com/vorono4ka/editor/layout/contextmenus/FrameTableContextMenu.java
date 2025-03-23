@@ -1,6 +1,6 @@
 package com.vorono4ka.editor.layout.contextmenus;
 
-import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.TablePopupMenuListener;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
@@ -10,11 +10,13 @@ import java.awt.event.ActionEvent;
 
 public class FrameTableContextMenu extends ContextMenu {
     private final Table table;
+    private final Editor editor;
 
-    public FrameTableContextMenu(Table table) {
+    public FrameTableContextMenu(Table table, Editor editor) {
         super(table, null);
 
         this.table = table;
+        this.editor = editor;
 
         this.add("Goto and play", this::gotoAndPlay);
         this.add("Goto and stop", this::gotoAndStop);
@@ -49,7 +51,7 @@ public class FrameTableContextMenu extends ContextMenu {
     }
 
     private MovieClip getMovieClip() {
-        DisplayObject selectedObject = Main.editor.getSelectedObject();
+        DisplayObject selectedObject = editor.getSelectedObject();
         if (selectedObject.isMovieClip()) {
             return (MovieClip) selectedObject;
         }

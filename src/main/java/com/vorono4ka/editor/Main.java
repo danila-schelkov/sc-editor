@@ -2,30 +2,56 @@ package com.vorono4ka.editor;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import com.vorono4ka.editor.layout.windows.EditorWindow;
-import com.vorono4ka.resources.ResourceManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
 
 public class Main {
-    public static final String TITLE = "SC Editor";
-    public static Editor editor;
+    private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
-        Main.editor = new Editor();
+        FlatLightLaf.setup();
 
         SwingUtilities.invokeLater(() -> {
-            FlatLightLaf.setup();
-
-            EditorWindow window = Main.editor.getWindow();
-            window.initialize(TITLE);
+            Editor editor = new Editor();
+            EditorWindow window = editor.getWindow();
+            window.initialize(EditorWindow.TITLE);
             window.show();
 
             if (args.length > 0) {
-                String path = args[0];
-                if (ResourceManager.doesFileExist(path)) {
-                    Main.editor.openFile(path);
+                Path path = Path.of(args[0]);
+                if (Files.exists(path)) {
+                    editor.openFile(path);
                 }
             }
+
+            registerOpenFileHandler(editor);
         });
+    }
+
+    private static void registerOpenFileHandler(Editor editor) {
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop desktop = Desktop.getDesktop();
+                if (desktop.isSupported(Desktop.Action.APP_OPEN_FILE)) {
+                    desktop.setOpenFileHandler(e -> {
+                        List<Path> paths = e.getFiles().stream().map(File::toPath).toList();
+                        if (paths.size() > 1) {
+                            LOGGER.warn("Loading multiple files is not supported!");
+                        }
+
+                        editor.openFile(paths.get(0));
+                    });
+                }
+            }
+        } catch (Throwable e) {
+            LOGGER.error("Failed to register open file handler", e);
+        }
     }
 }

@@ -1,10 +1,10 @@
 package com.vorono4ka.editor.layout.components.listeners;
 
-import com.vorono4ka.editor.Main;
-import com.vorono4ka.swf.DisplayObjectOriginal;
-import com.vorono4ka.swf.SupercellSWF;
+import com.vorono4ka.editor.Editor;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObjectFactory;
+import com.vorono4ka.swf.DisplayObjectOriginal;
+import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +17,11 @@ public class ChildrenListMouseListener extends MouseAdapter {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChildrenListMouseListener.class);
 
     private final JTable table;
+    private final Editor editor;
 
-    public ChildrenListMouseListener(JTable table) {
+    public ChildrenListMouseListener(JTable table, Editor editor) {
         this.table = table;
+        this.editor = editor;
     }
 
     @Override
@@ -35,13 +37,13 @@ public class ChildrenListMouseListener extends MouseAdapter {
 
         int id = (int) this.table.getValueAt(selectedRow, selectedColumn);
 
-        SupercellSWF swf = Main.editor.getSwf();
+        SupercellSWF swf = editor.getSwf();
         try {
             DisplayObjectOriginal displayObjectOriginal = swf.getOriginalDisplayObject(id, null);
             DisplayObject displayObject = DisplayObjectFactory.createFromOriginal(displayObjectOriginal, swf, null);
 
-            Main.editor.selectObject(displayObject);
-            Main.editor.selectObjectInTable(Main.editor.getSelectedObject());
+            editor.selectObject(displayObject);
+            editor.selectObjectInTable(editor.getSelectedObject());
         } catch (UnableToFindObjectException exception) {
             LOGGER.error(exception.getMessage(), exception);
         }

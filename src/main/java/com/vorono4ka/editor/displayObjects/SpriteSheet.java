@@ -1,8 +1,6 @@
 package com.vorono4ka.editor.displayObjects;
 
-import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.renderer.Renderer;
-import com.vorono4ka.editor.renderer.texture.GLTexture;
 import com.vorono4ka.editor.renderer.texture.RenderableTexture;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
@@ -19,6 +17,8 @@ public class SpriteSheet extends DisplayObject {
     private final RenderableTexture texture;
     private final Rect bounds;
     private final List<ShapeDrawBitmapCommand> drawBitmapCommands;
+
+    private boolean shouldDisplayPolygons;
 
     public SpriteSheet(RenderableTexture texture, List<ShapeDrawBitmapCommand> drawBitmapCommands) {
         this.texture = texture;
@@ -41,7 +41,7 @@ public class SpriteSheet extends DisplayObject {
             renderer.addVertex(this.bounds.getRight(), this.bounds.getBottom(), 1, 1, 1, 1, 1, 1, 0, 0, 0);
             renderer.addVertex(this.bounds.getRight(), this.bounds.getTop(), 1, 0, 1, 1, 1, 1, 0, 0, 0);
 
-            if (Main.editor.shouldDisplayPolygons()) {
+            if (this.shouldDisplayPolygons) {
                 for (ShapeDrawBitmapCommand command : this.drawBitmapCommands) {
                     ShapeDrawBitmapCommandRenderer.renderUV(command, renderer, 0);
                 }
@@ -64,5 +64,9 @@ public class SpriteSheet extends DisplayObject {
 
     public int getHeight() {
         return texture.getHeight();
+    }
+
+    public void setShouldDisplayPolygons(boolean shouldDisplayPolygons) {
+        this.shouldDisplayPolygons = shouldDisplayPolygons;
     }
 }

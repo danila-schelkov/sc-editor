@@ -1,6 +1,6 @@
 package com.vorono4ka.editor.layout.menubar.menus;
 
-import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.layout.filechooser.BetterFileChooser;
 import com.vorono4ka.resources.ResourceManager;
 
@@ -14,14 +14,17 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public class FileMenu extends JMenu {
+    private final Editor editor;
+
     private final JFrame frame;
     private final JMenuItem saveButton;
     private final JMenuItem saveAsButton;
 
-    public FileMenu(JFrame frame) {
+    public FileMenu(JFrame frame, Editor editor) {
         super("File");
 
         this.frame = frame;
+        this.editor = editor;
 
         setMnemonic(KeyEvent.VK_F);
 
@@ -50,7 +53,7 @@ public class FileMenu extends JMenu {
                 throw new RuntimeException(ex);
             }
         });
-        close.addActionListener(FileMenu::close);
+        close.addActionListener(this::close);
         exit.addActionListener(FileMenu::exit);
 
         this.add(open);
@@ -67,8 +70,8 @@ public class FileMenu extends JMenu {
         this.checkCanSave();
     }
 
-    private static void close(ActionEvent e) {
-        Main.editor.closeFile();
+    private void close(ActionEvent e) {
+        editor.closeFile();
     }
 
     private static void exit(ActionEvent e) {
@@ -76,7 +79,7 @@ public class FileMenu extends JMenu {
     }
 
     public void checkCanSave() {
-        boolean canSave = Main.editor.getSwf() != null;
+        boolean canSave = editor.getSwf() != null;
 
         this.saveButton.setEnabled(canSave);
         this.saveAsButton.setEnabled(canSave);
@@ -98,7 +101,7 @@ public class FileMenu extends JMenu {
         SwingWorker<Integer, Integer> worker = new SwingWorker<>() {
             @Override
             protected Integer doInBackground() {
-                Main.editor.openFile(path.toString());
+                editor.openFile(path);
                 return 0;
             }
 
@@ -138,7 +141,7 @@ public class FileMenu extends JMenu {
             if (warningResult != JOptionPane.OK_OPTION) return;
         }
 
-        Main.editor.saveFile(path);
+        editor.saveFile(path);
     }
 
     private static String getPathWithExtension(BetterFileChooser fileChooser) {

@@ -1,7 +1,6 @@
 package com.vorono4ka.editor.renderer.impl;
 
 import com.jogamp.opengl.util.PMVMatrix;
-import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.renderer.*;
 import com.vorono4ka.editor.renderer.gl.GLBatch;
 import com.vorono4ka.editor.renderer.gl.GLConstants;
@@ -129,11 +128,9 @@ public class Stage implements Renderer {
         BufferedImage imageBuffer = Assets.getImageBuffer("gradient_texture.png");
         assert imageBuffer != null : "Gradient texture not found.";
 
-        if (this.gradientTexture != null) {
-            this.gradientTexture.delete();
+        if (this.gradientTexture == null) {
+            this.gradientTexture = GLImage.createWithFormat(null, null, true, 1, 256, 2, ImageUtils.getPixelBuffer(imageBuffer), GLConstants.GL_LUMINANCE_ALPHA, GLConstants.GL_UNSIGNED_BYTE);
         }
-
-        this.gradientTexture = GLImage.createWithFormat(null, null, true, 1, 256, 2, ImageUtils.getPixelBuffer(imageBuffer), GLConstants.GL_LUMINANCE_ALPHA, GLConstants.GL_UNSIGNED_BYTE);
 
         this.camera.init(width, height);
 
@@ -166,7 +163,7 @@ public class Stage implements Renderer {
             iterator.remove();
         }
 
-        float deltaTime = 1f / Main.editor.getWindow().getTargetFps(); // TODO: calculate delta time more precisely
+        float deltaTime = 1f / 60; // TODO: calculate delta time more precisely
 
         if (isAnimationPaused) {
             deltaTime = 0;

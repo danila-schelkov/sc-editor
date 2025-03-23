@@ -1,6 +1,5 @@
 package com.vorono4ka.editor.layout.menubar.menus;
 
-import com.vorono4ka.editor.Main;
 import com.vorono4ka.editor.layout.panels.TimelinePanel;
 import com.vorono4ka.editor.layout.windows.EditorWindow;
 import com.vorono4ka.editor.renderer.Camera;
@@ -17,10 +16,14 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class ViewMenu extends JMenu {
+    private final EditorWindow editorWindow;
+
     private final JCheckBoxMenuItem timelineToggle;
 
-    public ViewMenu() {
+    public ViewMenu(EditorWindow editorWindow) {
         super("View");
+
+        this.editorWindow = editorWindow;
 
         setMnemonic(KeyEvent.VK_V);
 
@@ -110,16 +113,14 @@ public class ViewMenu extends JMenu {
     private void toggleTimeline(ActionEvent actionEvent) {
         boolean visible = this.timelineToggle.getState();
 
-        EditorWindow window = Main.editor.getWindow();
-
-        JFrame frame = window.getFrame();
+        JFrame frame = editorWindow.getFrame();
         Dimension minimumSize = frame.getMinimumSize();
         frame.setMinimumSize(minimumSize);
 
-        TimelinePanel timelinePanel = window.getTimelinePanel();
+        TimelinePanel timelinePanel = editorWindow.getTimelinePanel();
         timelinePanel.setVisible(visible);
 
-        JSplitPane timelineSplitPane = window.getTimelineSplitPane();
+        JSplitPane timelineSplitPane = editorWindow.getTimelineSplitPane();
         timelineSplitPane.setDividerLocation(0.7f);
     }
 }

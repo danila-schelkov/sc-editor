@@ -1,7 +1,7 @@
 package com.vorono4ka.editor.layout.menubar;
 
+import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.layout.menubar.menus.*;
-import com.vorono4ka.editor.layout.windows.EditorWindow;
 
 import javax.swing.*;
 
@@ -12,13 +12,13 @@ public class EditorMenuBar extends JMenuBar {
     private final OptionsMenu optionsMenu;
     private final HelpMenu helpMenu;
 
-    public EditorMenuBar(EditorWindow window) {
-        JFrame frame = window.getFrame();
+    public EditorMenuBar(Editor editor) {
+        JFrame frame = editor.getWindow().getFrame();
 
-        this.fileMenu = new FileMenu(frame);
-        this.editMenu = new EditMenu();
-        this.viewMenu = new ViewMenu();
-        this.optionsMenu = new OptionsMenu();
+        this.fileMenu = new FileMenu(frame, editor);
+        this.editMenu = new EditMenu(editor);
+        this.viewMenu = new ViewMenu(editor.getWindow());
+        this.optionsMenu = new OptionsMenu(editor);
         this.helpMenu = new HelpMenu(frame);
 
         this.add(this.fileMenu);

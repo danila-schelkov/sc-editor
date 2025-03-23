@@ -1,6 +1,6 @@
 package com.vorono4ka.editor.layout.contextmenus;
 
-import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.TablePopupMenuListener;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
@@ -10,11 +10,13 @@ import java.util.function.Function;
 
 public class ChildrenTableContextMenu extends ContextMenu {
     private final Table table;
+    private final Editor editor;
 
-    public ChildrenTableContextMenu(Table table) {
+    public ChildrenTableContextMenu(Table table, Editor editor) {
         super(table, null);
 
         this.table = table;
+        this.editor = editor;
 
         this.add("Toggle visibility", event -> this.changeVisibility(child -> !child.isVisible()));
         this.add("Enable", event -> this.changeVisibility(child -> true));
@@ -38,7 +40,7 @@ public class ChildrenTableContextMenu extends ContextMenu {
     }
 
     private MovieClip getMovieClip() {
-        DisplayObject selectedObject = Main.editor.getSelectedObject();
+        DisplayObject selectedObject = editor.getSelectedObject();
         if (selectedObject.isMovieClip()) {
             return (MovieClip) selectedObject;
         }

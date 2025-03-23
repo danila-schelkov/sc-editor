@@ -1,16 +1,20 @@
 package com.vorono4ka.editor.layout.menubar.menus;
 
-import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.Editor;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 public class OptionsMenu extends JMenu {
+    private final Editor editor;
+
     private final JCheckBoxMenuItem renderPolygonsCheckBox;
 
-    public OptionsMenu() {
+    public OptionsMenu(Editor editor) {
         super("Options");
+
+        this.editor = editor;
 
         setMnemonic(KeyEvent.VK_O);
 
@@ -22,6 +26,6 @@ public class OptionsMenu extends JMenu {
     }
 
     private void togglePolygonRendering(ActionEvent event) {
-        Main.editor.setShouldDisplayPolygons(this.renderPolygonsCheckBox.getState());
+        editor.setShouldDisplayPolygons(this.renderPolygonsCheckBox.getState());
     }
 }

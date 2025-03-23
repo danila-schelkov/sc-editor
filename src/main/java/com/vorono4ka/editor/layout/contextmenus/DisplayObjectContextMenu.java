@@ -1,6 +1,6 @@
 package com.vorono4ka.editor.layout.contextmenus;
 
-import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.TablePopupMenuListener;
 import com.vorono4ka.editor.renderer.impl.Stage;
@@ -9,12 +9,12 @@ import com.vorono4ka.exporter.ImageExporter;
 import com.vorono4ka.exporter.VideoExporter;
 import com.vorono4ka.math.ReadonlyRect;
 import com.vorono4ka.math.Rect;
-import com.vorono4ka.streams.ByteStream;
-import com.vorono4ka.swf.DisplayObjectOriginal;
-import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObjectFactory;
 import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
+import com.vorono4ka.streams.ByteStream;
+import com.vorono4ka.swf.DisplayObjectOriginal;
+import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.movieclips.MovieClipOriginal;
 import com.vorono4ka.swf.movieclips.MovieClipState;
@@ -38,13 +38,16 @@ public class DisplayObjectContextMenu extends ContextMenu {
     public static final Clipboard SYSTEM_CLIPBOARD = Toolkit.getDefaultToolkit().getSystemClipboard();
 
     private final Table table;
+    private final Editor editor;
+
     private final JMenuItem exportAsVideoButton;
     private final JMenu exportAsMenu;
 
-    public DisplayObjectContextMenu(Table table) {
+    public DisplayObjectContextMenu(Table table, Editor editor) {
         super(table, null);
 
         this.table = table;
+        this.editor = editor;
 
         JMenuItem copyExportNameButton = this.add("Copy Export Name", KeyEvent.VK_E);
         copyExportNameButton.addActionListener(this::copyExportName);
@@ -79,7 +82,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
     }
 
     private void onRowSelected(int rowIndex) {
-        SupercellSWF swf = Main.editor.getSwf();
+        SupercellSWF swf = editor.getSwf();
         if (swf == null) return;
 
         if (rowIndex != -1) {
@@ -124,7 +127,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
         int displayObjectId = getDisplayObjectId(selectedRow);
         String displayObjectName = getDisplayObjectName(selectedRow);
 
-        Main.editor.findUsages(displayObjectId, displayObjectName);
+        editor.findUsages(displayObjectId, displayObjectName);
     }
 
     private void copyExportName(ActionEvent event) {
@@ -143,7 +146,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
         int selectedRow = this.table.getSelectedRow();
         if (selectedRow == -1) return;
 
-        SupercellSWF swf = Main.editor.getSwf();
+        SupercellSWF swf = editor.getSwf();
         if (swf == null) return;
 
         int displayObjectId = getDisplayObjectId(selectedRow);
@@ -230,10 +233,10 @@ public class DisplayObjectContextMenu extends ContextMenu {
         });
     }
 
-    private static DisplayObject getRenderableObject(int displayObjectId) {
-        SupercellSWF swf = Main.editor.getSwf();
+    private DisplayObject getRenderableObject(int displayObjectId) {
+        SupercellSWF swf = editor.getSwf();
 
-        DisplayObject selectedObject = Main.editor.getSelectedObject();
+        DisplayObject selectedObject = editor.getSelectedObject();
         if (selectedObject != null && selectedObject.getId() == displayObjectId) {
             return selectedObject;
         }
@@ -246,16 +249,16 @@ public class DisplayObjectContextMenu extends ContextMenu {
         }
     }
 
-    private static void exportAsImage(DisplayObject displayObject) {
+    private void exportAsImage(DisplayObject displayObject) {
         Stage stage = Stage.getInstance();
 
         Rect bounds = stage.calculateBoundsForAllFrames(displayObject);
 
-        ImageExporter imageExporter = Main.editor.getImageExporter();
+        ImageExporter imageExporter = editor.getImageExporter();
 
         stage.doInRenderThread(() -> {
             stage.getCamera().moveToFit(bounds);
-            Main.editor.selectObject(displayObject);
+            editor.selectObject(displayObject);
 
             stage.unbindRender();
             stage.init(0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
@@ -269,7 +272,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
         });
     }
 
-    private static void exportAsVideo(MovieClip movieClip) {
+    private void exportAsVideo(MovieClip movieClip) {
         Stage stage = Stage.getInstance();
 
         Rect bounds = stage.calculateBoundsForAllFrames(movieClip);
@@ -280,7 +283,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
             stage.getCamera().moveToFit(bounds);
             bounds.scale(scaleFactor);
 
-            Main.editor.selectObject(movieClip);
+            editor.selectObject(movieClip);
 
             stage.unbindRender();
             stage.init(0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
@@ -324,7 +327,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
                     stage.render(0);
 
-                    ImageData imageData = Main.editor.getImageExporter().getCroppedFramebufferData(bounds, false);
+                    ImageData imageData = editor.getImageExporter().getCroppedFramebufferData(bounds, false);
                     BufferedImage image = ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels(), false);
                     videoExporter.encodeFrame(image, frameIndex);
                 });

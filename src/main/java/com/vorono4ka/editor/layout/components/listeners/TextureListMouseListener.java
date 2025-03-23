@@ -1,6 +1,6 @@
 package com.vorono4ka.editor.layout.components.listeners;
 
-import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.Editor;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
 
 import javax.swing.*;
@@ -9,9 +9,11 @@ import java.awt.event.MouseEvent;
 
 public class TextureListMouseListener extends MouseAdapter {
     private final JTable table;
+    private final Editor editor;
 
-    public TextureListMouseListener(JTable table) {
+    public TextureListMouseListener(JTable table, Editor editor) {
         this.table = table;
+        this.editor = editor;
     }
 
     @Override
@@ -24,8 +26,8 @@ public class TextureListMouseListener extends MouseAdapter {
 
         int textureIndex = (int) this.table.getValueAt(selectedRow, 0);
 
-        DisplayObject displayObject = Main.editor.getSpriteSheet(textureIndex);
+        DisplayObject displayObject = editor.getSpriteSheet(textureIndex);
 
-        Main.editor.selectObject(displayObject);
+        editor.selectObject(displayObject);
     }
 }

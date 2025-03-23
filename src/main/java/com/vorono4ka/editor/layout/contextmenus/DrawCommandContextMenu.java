@@ -1,6 +1,6 @@
 package com.vorono4ka.editor.layout.contextmenus;
 
-import com.vorono4ka.editor.Main;
+import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.displayObjects.SpriteSheet;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.TablePopupMenuListener;
@@ -16,11 +16,13 @@ import java.awt.event.KeyEvent;
 
 public class DrawCommandContextMenu extends ContextMenu {
     private final Table table;
+    private final Editor editor;
 
-    public DrawCommandContextMenu(Table table) {
+    public DrawCommandContextMenu(Table table, Editor editor) {
         super(table, null);
 
         this.table = table;
+        this.editor = editor;
 
         JMenuItem showOnAtlasButton = this.add("Show on atlas", KeyEvent.VK_A);
         showOnAtlasButton.addActionListener(this::showOnAtlas);
@@ -29,7 +31,7 @@ public class DrawCommandContextMenu extends ContextMenu {
     }
 
     private void showOnAtlas(ActionEvent actionEvent) {
-        DisplayObject selectedObject = Main.editor.getSelectedObject();
+        DisplayObject selectedObject = editor.getSelectedObject();
         if (selectedObject == null) return;
 
         int selectedRow = this.table.getSelectedRow();
@@ -37,7 +39,7 @@ public class DrawCommandContextMenu extends ContextMenu {
         int commandIndex = getCommandIndex(selectedRow);
         int textureIndex = getTextureIndex(selectedRow);
 
-        SpriteSheet spriteSheet = Main.editor.getSpriteSheet(textureIndex);
+        SpriteSheet spriteSheet = editor.getSpriteSheet(textureIndex);
 
         Shape shape = (Shape) selectedObject;
         ShapeDrawBitmapCommand command = shape.getCommand(commandIndex);
@@ -51,7 +53,7 @@ public class DrawCommandContextMenu extends ContextMenu {
         stage.getCamera().zoomToFit(bounds);
 
         stage.doInRenderThread(() -> {
-            Main.editor.selectObject(spriteSheet);
+            editor.selectObject(spriteSheet);
             stage.updatePMVMatrix();
         });
     }
