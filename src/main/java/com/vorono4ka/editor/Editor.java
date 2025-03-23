@@ -305,6 +305,14 @@ public class Editor {
         }
     }
 
+    public float getPixelSize() {
+        return settings.getPixelSize();
+    }
+
+    public void setPixelSize(float pixelSize) {
+        settings.setPixelSize(pixelSize);
+    }
+
     private void updateObjectTable() {
         List<Object[]> rowDataList = collectObjectTableRows();
 
