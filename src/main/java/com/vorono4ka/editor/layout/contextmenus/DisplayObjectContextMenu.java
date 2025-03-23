@@ -32,6 +32,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
 import java.util.Objects;
 
 public class DisplayObjectContextMenu extends ContextMenu {
@@ -191,10 +192,6 @@ public class DisplayObjectContextMenu extends ContextMenu {
         });
     }
 
-    private static boolean canExportAsVideo(DisplayObject renderableObject) {
-        return renderableObject.isMovieClip() && ((MovieClip) renderableObject).getFrameCountRecursive() > 1;
-    }
-
     private void exportAsImageCallback(ActionEvent actionEvent) {
         if (this.table.getSelectedRowCount() == 0) return;
 
@@ -257,18 +254,13 @@ public class DisplayObjectContextMenu extends ContextMenu {
         ImageExporter imageExporter = editor.getImageExporter();
 
         stage.doInRenderThread(() -> {
-            stage.getCamera().moveToFit(bounds);
-            editor.selectObject(displayObject);
-
-            stage.unbindRender();
-            stage.init(0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
-
-//            stage.updatePMVMatrix();
+            float pixelSize = editor.getPixelSize();
+            prepareStageForRendering(stage, displayObject, bounds, pixelSize);
 
             stage.render(0);
 
-            BufferedImage screenshot = imageExporter.takeScreenshot(displayObject);
-            imageExporter.saveScreenshot(displayObject, screenshot);
+            BufferedImage screenshot = imageExporter.takeScreenshot(displayObject, bounds);
+            imageExporter.saveScreenshot(screenshot, getDisplayObjectFilename(displayObject, pixelSize));
         });
     }
 
@@ -277,39 +269,15 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         Rect bounds = stage.calculateBoundsForAllFrames(movieClip);
 
-        int scaleFactor = 1;
-
         stage.doInRenderThread(() -> {
-            stage.getCamera().moveToFit(bounds);
-            bounds.scale(scaleFactor);
-
-            editor.selectObject(movieClip);
-
-            stage.unbindRender();
-            stage.init(0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
-
-            stage.getCamera().getZoom().setPointSize(scaleFactor);
-            stage.updatePMVMatrix();
-
-            String filename = movieClip.getExportName();
-            if (filename == null) {
-                filename = String.valueOf(movieClip.getId());
-            }
+            float pixelSize = editor.getPixelSize();
+            prepareStageForRendering(stage, movieClip, bounds, pixelSize);
 
             MovieClipState state = movieClip.getState();
             int loopFrame = movieClip.getLoopFrame();
             int startFrame = movieClip.getCurrentFrame();
 
-            String frameLabel = null;
-            if (state == MovieClipState.STOPPED) {
-                frameLabel = Objects.requireNonNullElse(movieClip.getFrameLabel(startFrame), String.valueOf(startFrame));
-            } else if (loopFrame != -1) {
-                frameLabel = Objects.requireNonNullElse(movieClip.getFrameLabel(loopFrame), String.valueOf(loopFrame));
-            }
-
-            if (frameLabel != null) {
-                filename += "_" + frameLabel;
-            }
+            String filename = getClipFilename(movieClip, state, startFrame, loopFrame, pixelSize);
 
             Path workingDirectory = Path.of("screenshots").toAbsolutePath();
 
@@ -333,5 +301,80 @@ public class DisplayObjectContextMenu extends ContextMenu {
                 });
             }
         });
+    }
+
+    private void prepareStageForRendering(Stage stage, DisplayObject displayObject, Rect bounds, float scaleFactor) {
+        stage.getCamera().moveToFit(bounds);
+        bounds.scale(scaleFactor);
+
+        editor.selectObject(displayObject);
+
+        stage.unbindRender();
+        stage.init(0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
+
+        stage.getCamera().getZoom().setPointSize(scaleFactor);
+        stage.updatePMVMatrix();
+    }
+
+    private static String getClipFilename(MovieClip movieClip, MovieClipState state, int startFrame, int loopFrame, float pixelSize) {
+        String filename = movieClip.getExportName();
+        if (filename == null) {
+            filename = String.valueOf(movieClip.getId());
+        }
+
+        String frameLabel = null;
+        if (state == MovieClipState.STOPPED) {
+            frameLabel = Objects.requireNonNullElse(movieClip.getFrameLabel(startFrame), String.valueOf(startFrame));
+        } else if (loopFrame != -1) {
+            frameLabel = Objects.requireNonNullElse(movieClip.getFrameLabel(loopFrame), String.valueOf(loopFrame));
+        }
+
+        if (frameLabel != null) {
+            filename += "_" + frameLabel;
+        }
+
+        return addPixelSizeToFilename(filename, pixelSize);
+    }
+
+    private static Path getDisplayObjectFilename(DisplayObject displayObject, float pixelSize) {
+        if (displayObject.isMovieClip()) {
+            MovieClip movieClip = (MovieClip) displayObject;
+
+            if (movieClip.getFrames().size() > 1) {
+                int currentFrame = movieClip.getCurrentFrame();
+                String frameLabel = movieClip.getFrameLabel(currentFrame);
+                String frameName = String.valueOf(currentFrame);
+                if (frameLabel != null) {
+                    frameName = String.join("-", frameName, frameLabel);
+                }
+
+                return Path.of(String.valueOf(displayObject.getId()), addPixelSizeToFilename(frameName, pixelSize) + ".png");
+            }
+
+            String exportName = movieClip.getExportName();
+            if (exportName != null) {
+                return Path.of(addPixelSizeToFilename(exportName, pixelSize) + ".png");
+            }
+        }
+
+        return Path.of(addPixelSizeToFilename(String.valueOf(displayObject.getId()), pixelSize) + ".png");
+    }
+
+    private static boolean canExportAsVideo(DisplayObject renderableObject) {
+        return renderableObject.isMovieClip() && ((MovieClip) renderableObject).getFrameCountRecursive() > 1;
+    }
+
+    private static String addPixelSizeToFilename(String filename, float pixelSize) {
+        DecimalFormat df = new DecimalFormat();
+        df.setMinimumFractionDigits(0);
+        df.setMaximumFractionDigits(2);
+        df.setGroupingUsed(false);
+
+        // TODO: allow to disable this in settings
+        if (pixelSize != 1.0f) {
+            filename += "_" + df.format(pixelSize) + "x";
+        }
+
+        return filename;
     }
 }

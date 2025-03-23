@@ -6,7 +6,6 @@ import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.math.MathHelper;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
-import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
 import com.vorono4ka.utilities.ImageData;
 import com.vorono4ka.utilities.ImageUtils;
 
@@ -14,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 
 public class ImageExporter {
+    // TODO: load from settings
     private static final Path SCREENSHOT_FOLDER = Path.of("screenshots").toAbsolutePath();
 
     private final Stage stage;
@@ -49,11 +49,11 @@ public class ImageExporter {
     /**
      * Saves an image into the file in the screenshot folder.
      *
-     * @param displayObject screenshot target, used for choosing a name for file
      * @param bufferedImage image data
+     * @param filename screenshot relative filepath
      */
-    public void saveScreenshot(DisplayObject displayObject, BufferedImage bufferedImage) {
-        ImageUtils.saveImage(SCREENSHOT_FOLDER.resolve(getScreenshotFilename(displayObject)), bufferedImage);
+    public void saveScreenshot(BufferedImage bufferedImage, Path filename) {
+        ImageUtils.saveImage(SCREENSHOT_FOLDER.resolve(filename), bufferedImage);
     }
 
     public Rect toFramebufferBounds(Rect bounds, boolean shouldBeDividableByTwo) {
@@ -95,29 +95,5 @@ public class ImageExporter {
         );
 
         return new ImageData((int) framebufferBounds.getWidth(), (int) framebufferBounds.getHeight(), croppedPixelArray);
-    }
-
-    private Path getScreenshotFilename(DisplayObject child) {
-        if (child.isMovieClip()) {
-            MovieClip movieClip = (MovieClip) child;
-
-            if (movieClip.getFrames().size() > 1) {
-                int currentFrame = movieClip.getCurrentFrame();
-                String frameLabel = movieClip.getFrameLabel(currentFrame);
-                String frameName = String.valueOf(currentFrame);
-                if (frameLabel != null) {
-                    frameName = String.join("-", frameName, frameLabel);
-                }
-
-                return Path.of(String.valueOf(child.getId()), frameName + ".png");
-            }
-
-            String exportName = movieClip.getExportName();
-            if (exportName != null) {
-                return Path.of(exportName + ".png");
-            }
-        }
-
-        return Path.of(child.getId() + ".png");
     }
 }
