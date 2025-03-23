@@ -57,6 +57,8 @@ public interface GLRendererContext {
 
     void glCompressedTexImage2D(int textureType, int level, int internalFormat, int width, int height, int border, int byteLength, ByteBuffer data);
 
+    void glTexSubImage2D(int target, int level, int xOffset, int yOffset, int width, int height, int format, int pixelType, Buffer pixels);
+
     // Framebuffer
     int glGenFramebuffer();
 

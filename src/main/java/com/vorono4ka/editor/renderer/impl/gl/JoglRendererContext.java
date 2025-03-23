@@ -142,6 +142,11 @@ public class JoglRendererContext implements GLRendererContext {
     }
 
     @Override
+    public void glTexSubImage2D(int target, int level, int xOffset, int yOffset, int width, int height, int format, int pixelType, Buffer pixels) {
+        gl.glTexSubImage2D(target, level, xOffset, yOffset, width, height, format, pixelType, pixels);
+    }
+
+    @Override
     public int glGenFramebuffer() {
         IntBuffer ids = IntBuffer.allocate(1);
         gl.glGenFramebuffers(1, ids);

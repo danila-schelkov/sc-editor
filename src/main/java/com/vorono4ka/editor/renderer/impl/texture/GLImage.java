@@ -46,6 +46,56 @@ public final class GLImage {
         }
     }
 
+    public static GLTexture createWithFormat(byte[] khronosTextureFileData, SctxTexture sctxTexture, boolean clampToEdge, ImageFilter filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
+        Stage stage = Stage.getInstance();
+
+        GLTexture texture = new GLTexture(stage.getGlContext(), width, height);
+        texture.setPixelInfo(pixelFormat, pixelType);
+
+        stage.doInRenderThread(() -> {
+            texture.bindContext();
+            texture.bind();
+
+            texture.setWrap(clampToEdge ? GLConstants.GL_CLAMP_TO_EDGE : GLConstants.GL_REPEAT);
+            texture.setFilters(filter.getMinFilter(), filter.getMagFilter());
+
+            if (khronosTextureFileData != null) {
+                loadKhronosTexture(texture, BufferUtils.wrapDirect(khronosTextureFileData));
+            } else if (sctxTexture != null) {
+                loadTexture(texture, sctxTexture);
+            } else {
+                stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
+
+                loadImage(texture, pixels, pixelFormat, pixelType);
+                texture.generateMipMap();
+            }
+
+            texture.unbind();
+        });
+
+        return texture;
+    }
+
+    public static GLTexture updateSubImage(GLTexture texture, boolean clampToEdge, ImageFilter filter, int width, int height, int pixelFormat, int pixelType, Buffer pixels) {
+        Stage stage = Stage.getInstance();
+
+        stage.doInRenderThread(() -> {
+            texture.bind();
+
+            texture.setWrap(clampToEdge ? GLConstants.GL_CLAMP_TO_EDGE : GLConstants.GL_REPEAT);
+            texture.setFilters(filter.getMinFilter(), filter.getMagFilter());
+
+            stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
+            texture.update(0, 0, 0, width, height, pixelFormat, pixelType, pixels);
+
+            loadImage(texture, pixels, pixelFormat, pixelType);
+
+            texture.unbind();
+        });
+
+        return texture;
+    }
+
     private static void loadKhronosTexture(GLTexture texture, ByteBuffer khronosTextureFileData) {
         if (khronosTextureLoader != null) {
             try {
@@ -72,56 +122,5 @@ public final class GLImage {
         }
 
         throw new RuntimeException("ASTC textures aren't supported on your device.");
-    }
-
-    public static GLTexture createWithFormat(byte[] khronosTextureFileData, SctxTexture sctxTexture, boolean clampToEdge, int filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
-        int magFilter;
-        int minFilter;
-        switch (filter) {
-            case 1 -> {
-                magFilter = GLConstants.GL_LINEAR;
-                minFilter = GLConstants.GL_LINEAR;
-            }
-            case 2 -> {
-                magFilter = GLConstants.GL_LINEAR;
-                minFilter = GLConstants.GL_LINEAR_MIPMAP_NEAREST;
-            }
-            case 3 -> {
-                magFilter = GLConstants.GL_LINEAR;
-                minFilter = GLConstants.GL_LINEAR_MIPMAP_LINEAR;
-            }
-            default -> {
-                magFilter = GLConstants.GL_NEAREST;
-                minFilter = GLConstants.GL_NEAREST;
-            }
-        }
-
-        Stage stage = Stage.getInstance();
-
-        GLTexture texture = new GLTexture(stage.getGlContext(), width, height);
-        texture.setPixelInfo(pixelFormat, pixelType);
-
-        stage.doInRenderThread(() -> {
-            texture.bindContext();
-            texture.bind();
-
-            texture.setWrap(clampToEdge ? GLConstants.GL_CLAMP_TO_EDGE : GLConstants.GL_REPEAT);
-            texture.setFilters(minFilter, magFilter);
-
-            if (khronosTextureFileData != null) {
-                loadKhronosTexture(texture, BufferUtils.wrapDirect(khronosTextureFileData));
-            } else if (sctxTexture != null) {
-                loadTexture(texture, sctxTexture);
-            } else {
-                stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
-
-                loadImage(texture, pixels, pixelFormat, pixelType);
-                texture.generateMipMap();
-            }
-
-            texture.unbind();
-        });
-
-        return texture;
     }
 }
