@@ -78,10 +78,10 @@ public final class GLImage {
         int magFilter;
         int minFilter;
         switch (filter) {
-//            case 1 -> { // TODO: find out what's wrong with linear and why sprites become transparent using this filter
-//                magFilter = GLConstants.GL_LINEAR;
-//                minFilter = GLConstants.GL_LINEAR;
-//            }
+            case 1 -> {
+                magFilter = GLConstants.GL_LINEAR;
+                minFilter = GLConstants.GL_LINEAR;
+            }
             case 2 -> {
                 magFilter = GLConstants.GL_LINEAR;
                 minFilter = GLConstants.GL_LINEAR_MIPMAP_NEAREST;
