@@ -123,13 +123,13 @@ public final class ShapeDrawBitmapCommandRenderer {
     }
 
     private static void renderCommandVertices(ShapeDrawBitmapCommand command, Renderer stage, ColorTransform colorTransform, float[] transformedPoints) {
-        float redMultiplier = colorTransform.getRedMultiplier() / 255f;
-        float greenMultiplier = colorTransform.getGreenMultiplier() / 255f;
-        float blueMultiplier = colorTransform.getBlueMultiplier() / 255f;
-        float redAddition = colorTransform.getRedAddition() / 255f;
-        float greenAddition = colorTransform.getGreenAddition() / 255f;
-        float blueAddition = colorTransform.getBlueAddition() / 255f;
-        float alpha = colorTransform.getAlpha() / 255f;
+        float redMultiplier = (colorTransform.getRedMultiplier() & 0xFF) / 255f;
+        float greenMultiplier = (colorTransform.getGreenMultiplier() & 0xFF) / 255f;
+        float blueMultiplier = (colorTransform.getBlueMultiplier() & 0xFF) / 255f;
+        float redAddition = (colorTransform.getRedAddition() & 0xFF) / 255f;
+        float greenAddition = (colorTransform.getGreenAddition() & 0xFF) / 255f;
+        float blueAddition = (colorTransform.getBlueAddition() & 0xFF) / 255f;
+        float alpha = (colorTransform.getAlpha() & 0xFF) / 255f;
 
         for (int i = 0; i < command.getVertexCount(); i++) {
             stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], command.getU(i), command.getV(i), redMultiplier, greenMultiplier, blueMultiplier, alpha, redAddition, greenAddition, blueAddition);
