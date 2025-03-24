@@ -48,6 +48,8 @@ public class Stage implements Renderer {
 
     private static final Rect VIEWPORT_RECT = new Rect(-1, -1, 1, 1);
     private static final int[] RECT_INDICES = {0, 1, 2, 0, 2, 3};
+    private static final Matrix2x3 DEFAULT_MATRIX = new Matrix2x3();
+    private static final ColorTransform DEFAULT_COLOR_TRANSFORM = new ColorTransform();
 
     private static int STAGE_COUNT;
     private static Stage INSTANCE;
@@ -174,15 +176,17 @@ public class Stage implements Renderer {
     }
 
     public void render(float deltaTime) {
-        this.stageSprite.render(new Matrix2x3(), new ColorTransform(), 0, deltaTime);
+        this.stageSprite.render(DEFAULT_MATRIX, DEFAULT_COLOR_TRANSFORM, 0, deltaTime);
 
-        this.framebuffer.bind();
-        renderDisplayObject();
-        this.framebuffer.unbind();
-
-        this.unloadBatchesToPool();
+        renderToFramebuffer(this.framebuffer);
 
         renderScreen();
+    }
+
+    public void renderToFramebuffer(Framebuffer framebuffer) {
+        framebuffer.bind();
+        renderDisplayObject();
+        framebuffer.unbind();
 
         this.unloadBatchesToPool();
     }
@@ -365,7 +369,7 @@ public class Stage implements Renderer {
             1
         );
 
-        FloatBuffer matrixBuffer = BufferUtils.allocateDirect(16 * Float.BYTES).asFloatBuffer();
+        FloatBuffer matrixBuffer = BufferUtils.allocateDirectFloat(16);
         matrix.glGetFloatv(matrix.glGetMatrixMode(), matrixBuffer);
 
         this.shader.bind();
@@ -395,6 +399,15 @@ public class Stage implements Renderer {
 
     public Framebuffer getFramebuffer() {
         return framebuffer;
+    }
+
+    public void setFramebuffer(Framebuffer framebuffer) {
+        if (framebuffer == null) {
+            throw new RuntimeException("Attempt to set null framebuffer");
+        }
+
+        this.framebuffer = framebuffer;
+        this.screenBatch = initScreenBatch(screenShader, framebuffer.getTexture(), VIEWPORT_RECT);
     }
 
     public StageSprite getStageSprite() {
@@ -450,7 +463,7 @@ public class Stage implements Renderer {
         this.isCalculatingBounds = true;
         this.bounds = bounds;
 
-        displayObject.render(new Matrix2x3(), new ColorTransform(), 0, 0);
+        displayObject.render(DEFAULT_MATRIX, DEFAULT_COLOR_TRANSFORM, 0, 0);
 
         this.isCalculatingBounds = false;
         this.bounds = null;
@@ -547,14 +560,6 @@ public class Stage implements Renderer {
         screenBatch.addVertex(rect.getRight(), rect.getTop(), 1, 0);
 
         return screenBatch;
-    }
-
-    public void setFramebuffer(Framebuffer framebuffer) {
-        if (framebuffer == null) {
-            throw new RuntimeException("Attempt to set null framebuffer");
-        }
-
-        this.framebuffer = framebuffer;
     }
 
     private Batch constructBatch(Shader shader1, RenderableTexture texture, int stencilRenderingState) {
