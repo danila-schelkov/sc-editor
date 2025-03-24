@@ -13,7 +13,6 @@ import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.editor.renderer.texture.GLTexture;
 import com.vorono4ka.editor.renderer.texture.Texture;
 import com.vorono4ka.editor.settings.EditorSettings;
-import com.vorono4ka.exporter.ImageExporter;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
 import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
 import com.vorono4ka.sctx.FlatSctxTextureLoader;
@@ -49,8 +48,6 @@ public class Editor {
     // For selection history
     private final List<DisplayObject> clonedObjects = new ArrayList<>();
     private final List<Integer> selectedIndices = new ArrayList<>();
-
-    private final ImageExporter imageExporter = new ImageExporter(Stage.getInstance().getCamera());
 
     private int selectedIndex = -1;
 
@@ -283,10 +280,6 @@ public class Editor {
 
     public SupercellSWF getSwf() {
         return swf;
-    }
-
-    public ImageExporter getImageExporter() {
-        return imageExporter;
     }
 
     public EditorWindow getWindow() {

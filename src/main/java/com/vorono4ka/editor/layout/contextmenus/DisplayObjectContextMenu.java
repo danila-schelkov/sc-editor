@@ -3,9 +3,11 @@ package com.vorono4ka.editor.layout.contextmenus;
 import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.TablePopupMenuListener;
+import com.vorono4ka.editor.renderer.Camera;
+import com.vorono4ka.editor.renderer.Framebuffer;
+import com.vorono4ka.editor.renderer.gl.GLFramebuffer;
 import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.exporter.FfmpegVideoExporter;
-import com.vorono4ka.exporter.ImageExporter;
 import com.vorono4ka.exporter.VideoExporter;
 import com.vorono4ka.math.ReadonlyRect;
 import com.vorono4ka.math.Rect;
@@ -13,14 +15,15 @@ import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObjectFactory;
 import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
 import com.vorono4ka.streams.ByteStream;
+import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.DisplayObjectOriginal;
+import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.SupercellSWF;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.movieclips.MovieClipOriginal;
 import com.vorono4ka.swf.movieclips.MovieClipState;
 import com.vorono4ka.swf.textfields.TextFieldOriginal;
 import com.vorono4ka.utilities.ByteArrayFlavor;
-import com.vorono4ka.utilities.ImageData;
 import com.vorono4ka.utilities.ImageUtils;
 import com.vorono4ka.utilities.MovieClipHelper;
 
@@ -37,6 +40,9 @@ import java.util.Objects;
 
 public class DisplayObjectContextMenu extends ContextMenu {
     public static final Clipboard SYSTEM_CLIPBOARD = Toolkit.getDefaultToolkit().getSystemClipboard();
+
+    // TODO: load from settings
+    private static final Path SCREENSHOT_FOLDER = Path.of("screenshots").toAbsolutePath();
 
     private final Table table;
     private final Editor editor;
@@ -183,13 +189,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
             }
         }
 
-        stage.doInRenderThread(()->{
-            stage.unbindRender();
-            stage.init(0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
-
-            stage.getCamera().reset();
-            stage.updatePMVMatrix();
-        });
+        rollbackRenderer(stage, viewport);
     }
 
     private void exportAsImageCallback(ActionEvent actionEvent) {
@@ -202,13 +202,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         exportAsImage(getRenderableObject(displayObjectId));
 
-        stage.doInRenderThread(()->{
-            stage.unbindRender();
-            stage.init(0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
-
-            stage.getCamera().reset();
-            stage.updatePMVMatrix();
-        });
+        rollbackRenderer(stage, viewport);
     }
 
     private void exportAsVideoCallback(ActionEvent actionEvent) {
@@ -221,13 +215,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         exportAsVideo((MovieClip) getRenderableObject(displayObjectId));
 
-        stage.doInRenderThread(()->{
-            stage.unbindRender();
-            stage.init(0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
-
-            stage.getCamera().reset();
-            stage.updatePMVMatrix();
-        });
+        rollbackRenderer(stage, viewport);
     }
 
     private DisplayObject getRenderableObject(int displayObjectId) {
@@ -251,16 +239,23 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         Rect bounds = stage.calculateBoundsForAllFrames(displayObject);
 
-        ImageExporter imageExporter = editor.getImageExporter();
+        float pixelSize = editor.getPixelSize();
+        bounds.scale(pixelSize);
+
+        Matrix2x3 matrix = new Matrix2x3();
+        matrix.scaleMultiply(pixelSize, pixelSize);
 
         stage.doInRenderThread(() -> {
-            float pixelSize = editor.getPixelSize();
-            prepareStageForRendering(stage, displayObject, bounds, pixelSize);
+            Framebuffer framebuffer = prepareStageForRendering(stage, bounds);
 
-            stage.render(0);
+            displayObject.render(matrix, new ColorTransform(), 0, 0);
 
-            BufferedImage screenshot = imageExporter.takeScreenshot(stage.getFramebuffer(), bounds);
-            imageExporter.saveScreenshot(screenshot, getDisplayObjectFilename(displayObject, pixelSize));
+            stage.renderToFramebuffer(framebuffer);
+
+            BufferedImage screenshot = ImageUtils.createBufferedImageFromPixels(framebuffer.getWidth(), framebuffer.getHeight(), framebuffer.getPixelArray(true), false);
+            ImageUtils.saveImage(SCREENSHOT_FOLDER.resolve(getDisplayObjectFilename(displayObject, pixelSize)), screenshot);
+
+            framebuffer.delete();
         });
     }
 
@@ -269,20 +264,23 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         Rect bounds = stage.calculateBoundsForAllFrames(movieClip);
 
+        float pixelSize = editor.getPixelSize();
+        bounds.scale(pixelSize);
+
+        Matrix2x3 matrix = new Matrix2x3();
+        matrix.scaleMultiply(pixelSize, pixelSize);
+
+        MovieClipState state = movieClip.getState();
+        int loopFrame = movieClip.getLoopFrame();
+        int startFrame = movieClip.getCurrentFrame();
+
+        String filename = getClipFilename(movieClip, state, startFrame, loopFrame, pixelSize);
+
         stage.doInRenderThread(() -> {
-            float pixelSize = editor.getPixelSize();
-            prepareStageForRendering(stage, movieClip, bounds, pixelSize);
-
-            MovieClipState state = movieClip.getState();
-            int loopFrame = movieClip.getLoopFrame();
-            int startFrame = movieClip.getCurrentFrame();
-
-            String filename = getClipFilename(movieClip, state, startFrame, loopFrame, pixelSize);
-
-            Path workingDirectory = Path.of("screenshots").toAbsolutePath();
+            Framebuffer framebuffer = prepareStageForRendering(stage, bounds);
 
             // TODO: ask where to save the video file
-            try (VideoExporter videoExporter = new FfmpegVideoExporter(workingDirectory, filename, "webm", "libvpx-vp9", movieClip.getFps())) {
+            try (VideoExporter videoExporter = new FfmpegVideoExporter(SCREENSHOT_FOLDER, filename, "webm", "libvpx-vp9", movieClip.getFps())) {
                 MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> {
                     // Note: it's necessary to set frame index using this method,
                     // because absolute time frame setting may skip frames.
@@ -293,27 +291,16 @@ public class DisplayObjectContextMenu extends ContextMenu {
                         movieClip.setFrame(startFrame);
                     }
 
-                    stage.render(0);
+                    movieClip.render(matrix, new ColorTransform(), 0, 0);
+                    stage.renderToFramebuffer(framebuffer);
 
-                    ImageData imageData = editor.getImageExporter().getCroppedFramebufferData(stage.getFramebuffer(), bounds, false);
-                    BufferedImage image = ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels(), false);
+                    BufferedImage image = ImageUtils.createBufferedImageFromPixels(framebuffer.getWidth(), framebuffer.getHeight(), framebuffer.getPixelArray(true), false);
                     videoExporter.encodeFrame(image, frameIndex);
                 });
             }
+
+            framebuffer.delete();
         });
-    }
-
-    private void prepareStageForRendering(Stage stage, DisplayObject displayObject, Rect bounds, float scaleFactor) {
-        stage.getCamera().moveToFit(bounds);
-        bounds.scale(scaleFactor);
-
-        editor.selectObject(displayObject);
-
-        stage.unbindRender();
-        stage.init(0, 0, (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
-
-        stage.getCamera().getZoom().setPointSize(scaleFactor);
-        stage.updatePMVMatrix();
     }
 
     private static String getClipFilename(MovieClip movieClip, MovieClipState state, int startFrame, int loopFrame, float pixelSize) {
@@ -340,7 +327,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
         if (displayObject.isMovieClip()) {
             MovieClip movieClip = (MovieClip) displayObject;
 
-            if (movieClip.getFrames().size() > 1) {
+            if (movieClip.getFrameCount() > 1) {
                 int currentFrame = movieClip.getCurrentFrame();
                 String frameLabel = movieClip.getFrameLabel(currentFrame);
                 String frameName = String.valueOf(currentFrame);
@@ -348,7 +335,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
                     frameName = String.join("-", frameName, frameLabel);
                 }
 
-                return Path.of(String.valueOf(displayObject.getId()), addPixelSizeToFilename(frameName, pixelSize) + ".png");
+                return Path.of(addPixelSizeToFilename(String.valueOf(displayObject.getId()), pixelSize), frameName + ".png");
             }
 
             String exportName = movieClip.getExportName();
@@ -376,5 +363,28 @@ public class DisplayObjectContextMenu extends ContextMenu {
         }
 
         return filename;
+    }
+
+    private Framebuffer prepareStageForRendering(Stage stage, Rect bounds) {
+        Camera camera = stage.getCamera();
+        camera.reset();
+        camera.init((int) bounds.getWidth(), (int) bounds.getHeight());
+        camera.moveToFit(bounds);
+
+        stage.updatePMVMatrix();
+
+        Framebuffer framebuffer = new GLFramebuffer(stage.getGlContext(), (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
+        stage.getGlContext().glViewport(0, 0, framebuffer.getWidth(), framebuffer.getHeight());
+        return framebuffer;
+    }
+
+    private void rollbackRenderer(Stage stage, ReadonlyRect viewport) {
+        stage.doInRenderThread(() -> {
+            stage.getGlContext().glViewport(0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
+            stage.getCamera().init(viewport.getLeft(), viewport.getTop(), viewport.getRight(), viewport.getBottom());
+
+            stage.getCamera().reset();
+            stage.updatePMVMatrix();
+        });
     }
 }

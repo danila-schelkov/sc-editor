@@ -323,4 +323,8 @@ public class MovieClip extends Sprite {
 
         return frameCount;
     }
+
+    public int getFrameCount() {
+        return this.frames.size();
+    }
 }
