@@ -359,4 +359,9 @@ public class JoglRendererContext implements GLRendererContext {
     public boolean isExtensionAvailable(String extension) {
         return gl.isExtensionAvailable(extension);
     }
+
+    public void printExtensions() {
+        System.out.println("Platform: " + gl.getContext().getPlatformExtensionsString());
+        System.out.println("GL: " + gl.getContext().getGLExtensionsString());
+    }
 }

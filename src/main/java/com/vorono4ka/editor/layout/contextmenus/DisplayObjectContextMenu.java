@@ -259,7 +259,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
             stage.render(0);
 
-            BufferedImage screenshot = imageExporter.takeScreenshot(displayObject, bounds);
+            BufferedImage screenshot = imageExporter.takeScreenshot(stage.getFramebuffer(), bounds);
             imageExporter.saveScreenshot(screenshot, getDisplayObjectFilename(displayObject, pixelSize));
         });
     }
@@ -295,7 +295,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
                     stage.render(0);
 
-                    ImageData imageData = editor.getImageExporter().getCroppedFramebufferData(bounds, false);
+                    ImageData imageData = editor.getImageExporter().getCroppedFramebufferData(stage.getFramebuffer(), bounds, false);
                     BufferedImage image = ImageUtils.createBufferedImageFromPixels(imageData.width(), imageData.height(), imageData.pixels(), false);
                     videoExporter.encodeFrame(image, frameIndex);
                 });

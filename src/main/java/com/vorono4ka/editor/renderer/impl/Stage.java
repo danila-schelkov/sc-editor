@@ -176,13 +176,17 @@ public class Stage implements Renderer {
     public void render(float deltaTime) {
         this.stageSprite.render(new Matrix2x3(), new ColorTransform(), 0, deltaTime);
 
-        this.framebuffer.bind();
-        renderDisplayObject();
-        this.framebuffer.unbind();
-
-        this.unloadBatchesToPool();
+        renderToFramebuffer(this.framebuffer);
 
         renderScreen();
+
+        this.unloadBatchesToPool();
+    }
+
+    public void renderToFramebuffer(Framebuffer framebuffer) {
+        framebuffer.bind();
+        renderDisplayObject();
+        framebuffer.unbind();
 
         this.unloadBatchesToPool();
     }
@@ -397,6 +401,14 @@ public class Stage implements Renderer {
         return framebuffer;
     }
 
+    public void setFramebuffer(Framebuffer framebuffer) {
+        if (framebuffer == null) {
+            throw new RuntimeException("Attempt to set null framebuffer");
+        }
+
+        this.framebuffer = framebuffer;
+    }
+
     public StageSprite getStageSprite() {
         return stageSprite;
     }
@@ -547,14 +559,6 @@ public class Stage implements Renderer {
         screenBatch.addVertex(rect.getRight(), rect.getTop(), 1, 0);
 
         return screenBatch;
-    }
-
-    public void setFramebuffer(Framebuffer framebuffer) {
-        if (framebuffer == null) {
-            throw new RuntimeException("Attempt to set null framebuffer");
-        }
-
-        this.framebuffer = framebuffer;
     }
 
     private Batch constructBatch(Shader shader1, RenderableTexture texture, int stencilRenderingState) {

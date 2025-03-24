@@ -50,7 +50,7 @@ public class Editor {
     private final List<DisplayObject> clonedObjects = new ArrayList<>();
     private final List<Integer> selectedIndices = new ArrayList<>();
 
-    private final ImageExporter imageExporter = new ImageExporter(Stage.getInstance());
+    private final ImageExporter imageExporter = new ImageExporter(Stage.getInstance().getCamera());
 
     private int selectedIndex = -1;
 
