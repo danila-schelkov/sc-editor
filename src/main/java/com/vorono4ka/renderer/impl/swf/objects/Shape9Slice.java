@@ -1,6 +1,6 @@
 package com.vorono4ka.renderer.impl.swf.objects;
 
-import com.vorono4ka.editor.renderer.Renderer;
+import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
@@ -68,7 +68,7 @@ public class Shape9Slice extends Shape {
 
         boolean result = false;
 
-        Renderer stage = this.getRenderer();
+        Stage stage = this.getStage();
         for (ShapeDrawBitmapCommand command : this.commands) {
             result |= ShapeDrawBitmapCommandRenderer.render9Slice(command, stage, matrixApplied, colorTransformApplied, renderConfigBits, movedGrid, bounds, scaledWidth, scaledHeight);
         }

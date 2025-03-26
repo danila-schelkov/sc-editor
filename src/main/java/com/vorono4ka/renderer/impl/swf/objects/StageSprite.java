@@ -1,15 +1,15 @@
 package com.vorono4ka.renderer.impl.swf.objects;
 
-import com.vorono4ka.editor.renderer.impl.Stage;
+import com.vorono4ka.editor.renderer.impl.EditorStage;
 
 public class StageSprite extends Sprite {
-    private final Stage stage;
+    private final EditorStage stage;
 
-    public StageSprite(Stage stage) {
+    public StageSprite(EditorStage stage) {
         this.stage = stage;
     }
 
-    public Stage getRenderer() {
+    public EditorStage getStage() {
         return this.stage;
     }
 }

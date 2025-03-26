@@ -19,7 +19,7 @@ public class BatchPool {
         this.batches.addAll(batches);
     }
 
-    public Batch createOrPopBatch(Shader shader, RenderableTexture texture, int stencilRenderingState) {
+    public Batch createOrPopBatch(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState) {
         Batch targetBatch = null;
 
         for (Batch batch : this.batches) {
@@ -41,6 +41,6 @@ public class BatchPool {
 
     @FunctionalInterface
     public interface BatchConstructor {
-        Batch construct(Shader shader, RenderableTexture texture, int stencilRenderingState);
+        Batch construct(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState);
     }
 }

@@ -994,71 +994,71 @@ public class GLConstants {
 
     public static final int GL_CLIPPING_INPUT_PRIMITIVES = 0x82F6;
 
-    /// Alias: `GL_CLIPPING_INPUT_PRIMITIVES`]
+    /// Alias: `GL_CLIPPING_INPUT_PRIMITIVES`
     public static final int GL_CLIPPING_INPUT_PRIMITIVES_ARB = 0x82F6;
 
     public static final int GL_CLIPPING_OUTPUT_PRIMITIVES = 0x82F7;
 
-    /// Alias: `GL_CLIPPING_OUTPUT_PRIMITIVES`]
+    /// Alias: `GL_CLIPPING_OUTPUT_PRIMITIVES`
     public static final int GL_CLIPPING_OUTPUT_PRIMITIVES_ARB = 0x82F7;
 
     public static final int GL_CLIP_DEPTH_MODE = 0x935D;
 
-    /// Alias: `GL_CLIP_DEPTH_MODE`]
+    /// Alias: `GL_CLIP_DEPTH_MODE`
     public static final int GL_CLIP_DEPTH_MODE_EXT = 0x935D;
 
     /// Groups: `EnableCap`, `ClipPlaneName`
-    /// Alias: `GL_CLIP_PLANE0`]
+    /// Alias: `GL_CLIP_PLANE0`
     public static final int GL_CLIP_DISTANCE0 = 0x3000;
 
     public static final int GL_CLIP_DISTANCE0_APPLE = 0x3000;
 
-    /// Alias: `GL_CLIP_PLANE0`]
+    /// Alias: `GL_CLIP_PLANE0`
     public static final int GL_CLIP_DISTANCE0_EXT = 0x3000;
 
     /// Groups: `EnableCap`, `ClipPlaneName`
-    /// Alias: `GL_CLIP_PLANE1`]
+    /// Alias: `GL_CLIP_PLANE1`
     public static final int GL_CLIP_DISTANCE1 = 0x3001;
 
     public static final int GL_CLIP_DISTANCE1_APPLE = 0x3001;
 
-    /// Alias: `GL_CLIP_PLANE1`]
+    /// Alias: `GL_CLIP_PLANE1`
     public static final int GL_CLIP_DISTANCE1_EXT = 0x3001;
 
     /// Groups: `EnableCap`, `ClipPlaneName`
-    /// Alias: `GL_CLIP_PLANE2`]
+    /// Alias: `GL_CLIP_PLANE2`
     public static final int GL_CLIP_DISTANCE2 = 0x3002;
 
     public static final int GL_CLIP_DISTANCE2_APPLE = 0x3002;
 
-    /// Alias: `GL_CLIP_PLANE2`]
+    /// Alias: `GL_CLIP_PLANE2`
     public static final int GL_CLIP_DISTANCE2_EXT = 0x3002;
 
     /// Groups: `EnableCap`, `ClipPlaneName`
-    /// Alias: `GL_CLIP_PLANE3`]
+    /// Alias: `GL_CLIP_PLANE3`
     public static final int GL_CLIP_DISTANCE3 = 0x3003;
 
     public static final int GL_CLIP_DISTANCE3_APPLE = 0x3003;
 
-    /// Alias: `GL_CLIP_PLANE3`]
+    /// Alias: `GL_CLIP_PLANE3`
     public static final int GL_CLIP_DISTANCE3_EXT = 0x3003;
 
     /// Groups: `EnableCap`, `ClipPlaneName`
-    /// Alias: `GL_CLIP_PLANE4`]
+    /// Alias: `GL_CLIP_PLANE4`
     public static final int GL_CLIP_DISTANCE4 = 0x3004;
 
     public static final int GL_CLIP_DISTANCE4_APPLE = 0x3004;
 
-    /// Alias: `GL_CLIP_PLANE4`]
+    /// Alias: `GL_CLIP_PLANE4`
     public static final int GL_CLIP_DISTANCE4_EXT = 0x3004;
 
     /// Groups: `EnableCap`, `ClipPlaneName`
-    /// Alias: `GL_CLIP_PLANE5`]
+    /// Alias: `GL_CLIP_PLANE5`
     public static final int GL_CLIP_DISTANCE5 = 0x3005;
 
     public static final int GL_CLIP_DISTANCE5_APPLE = 0x3005;
 
-    /// Alias: `GL_CLIP_PLANE5`]
+    /// Alias: `GL_CLIP_PLANE5`
     public static final int GL_CLIP_DISTANCE5_EXT = 0x3005;
 
     /// Groups: `EnableCap`, `ClipPlaneName`
@@ -1066,7 +1066,7 @@ public class GLConstants {
 
     public static final int GL_CLIP_DISTANCE6_APPLE = 0x3006;
 
-    /// Alias: `GL_CLIP_DISTANCE6`]
+    /// Alias: `GL_CLIP_DISTANCE6`
     public static final int GL_CLIP_DISTANCE6_EXT = 0x3006;
 
     /// Groups: `EnableCap`, `ClipPlaneName`
@@ -1074,7 +1074,7 @@ public class GLConstants {
 
     public static final int GL_CLIP_DISTANCE7_APPLE = 0x3007;
 
-    /// Alias: `GL_CLIP_DISTANCE7`]
+    /// Alias: `GL_CLIP_DISTANCE7`
     public static final int GL_CLIP_DISTANCE7_EXT = 0x3007;
 
     public static final int GL_CLIP_DISTANCE_NV = 0x8C7A;
@@ -1087,7 +1087,7 @@ public class GLConstants {
 
     public static final int GL_CLIP_ORIGIN = 0x935C;
 
-    /// Alias: `GL_CLIP_ORIGIN`]
+    /// Alias: `GL_CLIP_ORIGIN`
     public static final int GL_CLIP_ORIGIN_EXT = 0x935C;
 
     /// Groups: `GetPName`, `ClipPlaneName`, `EnableCap`
@@ -1688,7 +1688,7 @@ public class GLConstants {
     public static final int GL_COMPARE_REF_DEPTH_TO_TEXTURE_EXT = 0x884E;
 
     /// Group: `TextureCompareMode`
-    /// Alias: `GL_COMPARE_R_TO_TEXTURE`]
+    /// Alias: `GL_COMPARE_R_TO_TEXTURE`
     public static final int GL_COMPARE_REF_TO_TEXTURE = 0x884E;
 
     public static final int GL_COMPARE_REF_TO_TEXTURE_EXT = 0x884E;
@@ -1710,7 +1710,7 @@ public class GLConstants {
     /// Group: `ShaderParameterName`
     public static final int GL_COMPILE_STATUS = 0x8B81;
 
-    /// Alias: `GL_COMPLETION_STATUS_KHR`]
+    /// Alias: `GL_COMPLETION_STATUS_KHR`
     public static final int GL_COMPLETION_STATUS_ARB = 0x91B1;
 
     public static final int GL_COMPLETION_STATUS_KHR = 0x91B1;
@@ -2287,7 +2287,7 @@ public class GLConstants {
 
     public static final int GL_COMPUTE_SHADER_INVOCATIONS = 0x82F5;
 
-    /// Alias: `GL_COMPUTE_SHADER_INVOCATIONS`]
+    /// Alias: `GL_COMPUTE_SHADER_INVOCATIONS`
     public static final int GL_COMPUTE_SHADER_INVOCATIONS_ARB = 0x82F5;
 
     /// Group: `ProgramInterface`
@@ -2395,7 +2395,7 @@ public class GLConstants {
     public static final int GL_CONTEXT_FLAG_NO_ERROR_BIT = 0x00000008;
 
     /// Group: `ContextFlagMask`
-    /// Alias: `GL_CONTEXT_FLAG_NO_ERROR_BIT`]
+    /// Alias: `GL_CONTEXT_FLAG_NO_ERROR_BIT`
     public static final int GL_CONTEXT_FLAG_NO_ERROR_BIT_KHR = 0x00000008;
 
     /// Group: `ContextFlagMask`
@@ -2611,7 +2611,7 @@ public class GLConstants {
     ///   `BufferStorageTarget`
     public static final int GL_COPY_READ_BUFFER = 0x8F36;
 
-    /// Alias: `GL_COPY_READ_BUFFER`]
+    /// Alias: `GL_COPY_READ_BUFFER`
     public static final int GL_COPY_READ_BUFFER_BINDING = 0x8F36;
 
     public static final int GL_COPY_READ_BUFFER_NV = 0x8F36;
@@ -2620,7 +2620,7 @@ public class GLConstants {
     ///   `BufferStorageTarget`
     public static final int GL_COPY_WRITE_BUFFER = 0x8F37;
 
-    /// Alias: `GL_COPY_WRITE_BUFFER`]
+    /// Alias: `GL_COPY_WRITE_BUFFER`
     public static final int GL_COPY_WRITE_BUFFER_BINDING = 0x8F37;
 
     public static final int GL_COPY_WRITE_BUFFER_NV = 0x8F37;
@@ -2705,7 +2705,7 @@ public class GLConstants {
     /// Group: `GetPName`
     public static final int GL_CURRENT_COLOR = 0x0B00;
 
-    /// Alias: `GL_CURRENT_FOG_COORDINATE`]
+    /// Alias: `GL_CURRENT_FOG_COORDINATE`
     public static final int GL_CURRENT_FOG_COORD = 0x8453;
 
     public static final int GL_CURRENT_FOG_COORDINATE = 0x8453;
@@ -4233,7 +4233,7 @@ public class GLConstants {
     public static final int GL_FOG_COLOR = 0x0B66;
 
     /// Group: `FogCoordSrc`
-    /// Alias: `GL_FOG_COORDINATE`]
+    /// Alias: `GL_FOG_COORDINATE`
     public static final int GL_FOG_COORD = 0x8451;
 
     /// Group: `FogCoordSrc`
@@ -4270,27 +4270,27 @@ public class GLConstants {
 
     public static final int GL_FOG_COORDINATE_SOURCE_EXT = 0x8450;
 
-    /// Alias: `GL_FOG_COORDINATE_ARRAY`]
+    /// Alias: `GL_FOG_COORDINATE_ARRAY`
     public static final int GL_FOG_COORD_ARRAY = 0x8457;
 
     public static final int GL_FOG_COORD_ARRAY_ADDRESS_NV = 0x8F28;
 
-    /// Alias: `GL_FOG_COORDINATE_ARRAY_BUFFER_BINDING`]
+    /// Alias: `GL_FOG_COORDINATE_ARRAY_BUFFER_BINDING`
     public static final int GL_FOG_COORD_ARRAY_BUFFER_BINDING = 0x889D;
 
     public static final int GL_FOG_COORD_ARRAY_LENGTH_NV = 0x8F32;
 
-    /// Alias: `GL_FOG_COORDINATE_ARRAY_POINTER`]
+    /// Alias: `GL_FOG_COORDINATE_ARRAY_POINTER`
     public static final int GL_FOG_COORD_ARRAY_POINTER = 0x8456;
 
-    /// Alias: `GL_FOG_COORDINATE_ARRAY_STRIDE`]
+    /// Alias: `GL_FOG_COORDINATE_ARRAY_STRIDE`
     public static final int GL_FOG_COORD_ARRAY_STRIDE = 0x8455;
 
-    /// Alias: `GL_FOG_COORDINATE_ARRAY_TYPE`]
+    /// Alias: `GL_FOG_COORDINATE_ARRAY_TYPE`
     public static final int GL_FOG_COORD_ARRAY_TYPE = 0x8454;
 
     /// Group: `FogPName`
-    /// Alias: `GL_FOG_COORDINATE_SOURCE`]
+    /// Alias: `GL_FOG_COORDINATE_SOURCE`
     public static final int GL_FOG_COORD_SRC = 0x8450;
 
     /// Groups: `FogPName`, `FogParameter`, `GetPName`
@@ -4535,7 +4535,7 @@ public class GLConstants {
 
     public static final int GL_FRAGMENT_SHADER_INVOCATIONS = 0x82F4;
 
-    /// Alias: `GL_FRAGMENT_SHADER_INVOCATIONS`]
+    /// Alias: `GL_FRAGMENT_SHADER_INVOCATIONS`
     public static final int GL_FRAGMENT_SHADER_INVOCATIONS_ARB = 0x82F4;
 
     /// Group: `GetPName`
@@ -4984,7 +4984,7 @@ public class GLConstants {
 
     public static final int GL_GEOMETRY_SHADER_PRIMITIVES_EMITTED = 0x82F3;
 
-    /// Alias: `GL_GEOMETRY_SHADER_PRIMITIVES_EMITTED`]
+    /// Alias: `GL_GEOMETRY_SHADER_PRIMITIVES_EMITTED`
     public static final int GL_GEOMETRY_SHADER_PRIMITIVES_EMITTED_ARB = 0x82F3;
 
     /// Group: `ProgramInterface`
@@ -6244,7 +6244,7 @@ public class GLConstants {
     /// Group: `ClipControlOrigin`
     public static final int GL_LOWER_LEFT = 0x8CA1;
 
-    /// Alias: `GL_LOWER_LEFT`]
+    /// Alias: `GL_LOWER_LEFT`
     public static final int GL_LOWER_LEFT_EXT = 0x8CA1;
 
     /// Group: `PrecisionType`
@@ -6826,12 +6826,12 @@ public class GLConstants {
     public static final int GL_MAX_CLIPMAP_VIRTUAL_DEPTH_SGIX = 0x8178;
 
     /// Group: `GetPName`
-    /// Alias: `GL_MAX_CLIP_PLANES`]
+    /// Alias: `GL_MAX_CLIP_PLANES`
     public static final int GL_MAX_CLIP_DISTANCES = 0x0D32;
 
     public static final int GL_MAX_CLIP_DISTANCES_APPLE = 0x0D32;
 
-    /// Alias: `GL_MAX_CLIP_PLANES`]
+    /// Alias: `GL_MAX_CLIP_PLANES`
     public static final int GL_MAX_CLIP_DISTANCES_EXT = 0x0D32;
 
     /// Group: `GetPName`
@@ -6869,7 +6869,7 @@ public class GLConstants {
 
     public static final int GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES = 0x82FA;
 
-    /// Alias: `GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES`]
+    /// Alias: `GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES`
     public static final int GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES_EXT = 0x82FA;
 
     /// Group: `GetPName`
@@ -6895,7 +6895,7 @@ public class GLConstants {
 
     public static final int GL_MAX_COMBINED_MESH_UNIFORM_COMPONENTS_NV = 0x8E67;
 
-    /// Alias: `GL_MAX_COMBINED_IMAGE_UNITS_AND_FRAGMENT_OUTPUTS`]
+    /// Alias: `GL_MAX_COMBINED_IMAGE_UNITS_AND_FRAGMENT_OUTPUTS`
     public static final int GL_MAX_COMBINED_SHADER_OUTPUT_RESOURCES = 0x8F39;
 
     /// Group: `GetPName`
@@ -6932,10 +6932,10 @@ public class GLConstants {
     /// Group: `GetPName`
     public static final int GL_MAX_COMPUTE_ATOMIC_COUNTER_BUFFERS = 0x8264;
 
-    /// Alias: `GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS`]
+    /// Alias: `GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS`
     public static final int GL_MAX_COMPUTE_FIXED_GROUP_INVOCATIONS_ARB = 0x90EB;
 
-    /// Alias: `GL_MAX_COMPUTE_WORK_GROUP_SIZE`]
+    /// Alias: `GL_MAX_COMPUTE_WORK_GROUP_SIZE`
     public static final int GL_MAX_COMPUTE_FIXED_GROUP_SIZE_ARB = 0x91BF;
 
     public static final int GL_MAX_COMPUTE_IMAGE_UNIFORMS = 0x91BD;
@@ -6993,7 +6993,7 @@ public class GLConstants {
 
     public static final int GL_MAX_CULL_DISTANCES = 0x82F9;
 
-    /// Alias: `GL_MAX_CULL_DISTANCES`]
+    /// Alias: `GL_MAX_CULL_DISTANCES`
     public static final int GL_MAX_CULL_DISTANCES_EXT = 0x82F9;
 
     /// Group: `GetPName`
@@ -7482,7 +7482,7 @@ public class GLConstants {
 
     public static final int GL_MAX_SHADER_COMBINED_LOCAL_STORAGE_SIZE_EXT = 0x9651;
 
-    /// Alias: `GL_MAX_SHADER_COMPILER_THREADS_KHR`]
+    /// Alias: `GL_MAX_SHADER_COMPILER_THREADS_KHR`
     public static final int GL_MAX_SHADER_COMPILER_THREADS_ARB = 0x91B0;
 
     public static final int GL_MAX_SHADER_COMPILER_THREADS_KHR = 0x91B0;
@@ -7709,7 +7709,7 @@ public class GLConstants {
 
     public static final int GL_MAX_TEXTURE_MAX_ANISOTROPY = 0x84FF;
 
-    /// Alias: `GL_MAX_TEXTURE_MAX_ANISOTROPY`]
+    /// Alias: `GL_MAX_TEXTURE_MAX_ANISOTROPY`
     public static final int GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT = 0x84FF;
 
     /// Group: `GetPName`
@@ -7759,7 +7759,7 @@ public class GLConstants {
     public static final int GL_MAX_UNIFORM_LOCATIONS = 0x826E;
 
     /// Group: `GetPName`
-    /// Alias: `GL_MAX_VARYING_FLOATS`]
+    /// Alias: `GL_MAX_VARYING_FLOATS`
     public static final int GL_MAX_VARYING_COMPONENTS = 0x8B4B;
 
     public static final int GL_MAX_VARYING_COMPONENTS_EXT = 0x8B4B;
@@ -8247,7 +8247,7 @@ public class GLConstants {
     /// Group: `ClipControlDepth`
     public static final int GL_NEGATIVE_ONE_TO_ONE = 0x935E;
 
-    /// Alias: `GL_NEGATIVE_ONE_TO_ONE`]
+    /// Alias: `GL_NEGATIVE_ONE_TO_ONE`
     public static final int GL_NEGATIVE_ONE_TO_ONE_EXT = 0x935E;
 
     /// Group: `VertexShaderCoordOutEXT`
@@ -8524,15 +8524,15 @@ public class GLConstants {
 
     public static final int GL_OFFSET_PROJECTIVE_TEXTURE_RECTANGLE_SCALE_NV = 0x8853;
 
-    /// Alias: `GL_OFFSET_TEXTURE_BIAS_NV`]
+    /// Alias: `GL_OFFSET_TEXTURE_BIAS_NV`
     public static final int GL_OFFSET_TEXTURE_2D_BIAS_NV = 0x86E3;
 
-    /// Alias: `GL_OFFSET_TEXTURE_MATRIX_NV`]
+    /// Alias: `GL_OFFSET_TEXTURE_MATRIX_NV`
     public static final int GL_OFFSET_TEXTURE_2D_MATRIX_NV = 0x86E1;
 
     public static final int GL_OFFSET_TEXTURE_2D_NV = 0x86E8;
 
-    /// Alias: `GL_OFFSET_TEXTURE_SCALE_NV`]
+    /// Alias: `GL_OFFSET_TEXTURE_SCALE_NV`
     public static final int GL_OFFSET_TEXTURE_2D_SCALE_NV = 0x86E2;
 
     public static final int GL_OFFSET_TEXTURE_BIAS_NV = 0x86E3;
@@ -8902,12 +8902,12 @@ public class GLConstants {
     /// Group: `BufferTargetARB`
     public static final int GL_PARAMETER_BUFFER = 0x80EE;
 
-    /// Alias: `GL_PARAMETER_BUFFER`]
+    /// Alias: `GL_PARAMETER_BUFFER`
     public static final int GL_PARAMETER_BUFFER_ARB = 0x80EE;
 
     public static final int GL_PARAMETER_BUFFER_BINDING = 0x80EF;
 
-    /// Alias: `GL_PARAMETER_BUFFER_BINDING`]
+    /// Alias: `GL_PARAMETER_BUFFER_BINDING`
     public static final int GL_PARAMETER_BUFFER_BINDING_ARB = 0x80EF;
 
     public static final int GL_PARTIAL_SUCCESS_NV = 0x902E;
@@ -9475,7 +9475,7 @@ public class GLConstants {
 
     public static final int GL_POLYGON_OFFSET_CLAMP = 0x8E1B;
 
-    /// Alias: `GL_POLYGON_OFFSET_CLAMP`]
+    /// Alias: `GL_POLYGON_OFFSET_CLAMP`
     public static final int GL_POLYGON_OFFSET_CLAMP_EXT = 0x8E1B;
 
     /// Group: `CommandOpcodesNV`
@@ -9690,7 +9690,7 @@ public class GLConstants {
     /// Group: `QueryTarget`
     public static final int GL_PRIMITIVES_SUBMITTED = 0x82EF;
 
-    /// Alias: `GL_PRIMITIVES_SUBMITTED`]
+    /// Alias: `GL_PRIMITIVES_SUBMITTED`
     public static final int GL_PRIMITIVES_SUBMITTED_ARB = 0x82EF;
 
     public static final int GL_PRIMITIVE_BOUNDING_BOX = 0x92BE;
@@ -9830,7 +9830,7 @@ public class GLConstants {
     public static final int GL_PROGRAM_PIPELINE_OBJECT_EXT = 0x8A4F;
 
     /// Groups: `GetPName`, `EnableCap`
-    /// Alias: `GL_VERTEX_PROGRAM_POINT_SIZE`]
+    /// Alias: `GL_VERTEX_PROGRAM_POINT_SIZE`
     public static final int GL_PROGRAM_POINT_SIZE = 0x8642;
 
     public static final int GL_PROGRAM_POINT_SIZE_ARB = 0x8642;
@@ -11396,10 +11396,10 @@ public class GLConstants {
     public static final int GL_SAMPLE_COVERAGE_VALUE_ARB = 0x80AA;
 
     /// Group: `GetMultisamplePNameNV`
-    /// Alias: `GL_SAMPLE_POSITION`]
+    /// Alias: `GL_SAMPLE_POSITION`
     public static final int GL_SAMPLE_LOCATION_ARB = 0x8E50;
 
-    /// Alias: `GL_SAMPLE_POSITION_NV`]
+    /// Alias: `GL_SAMPLE_POSITION_NV`
     public static final int GL_SAMPLE_LOCATION_NV = 0x8E50;
 
     public static final int GL_SAMPLE_LOCATION_PIXEL_GRID_HEIGHT_ARB = 0x933F;
@@ -11598,7 +11598,7 @@ public class GLConstants {
     /// Group: `ShaderBinaryFormat`
     public static final int GL_SHADER_BINARY_FORMAT_SPIR_V = 0x9551;
 
-    /// Alias: `GL_SHADER_BINARY_FORMAT_SPIR_V`]
+    /// Alias: `GL_SHADER_BINARY_FORMAT_SPIR_V`
     public static final int GL_SHADER_BINARY_FORMAT_SPIR_V_ARB = 0x9551;
 
     /// Group: `ShaderBinaryFormat`
@@ -11678,21 +11678,21 @@ public class GLConstants {
     public static final int GL_SHADING_RATE_16_INVOCATIONS_PER_PIXEL_NV = 0x956F;
 
     /// Group: `ShadingRate`
-    /// Alias: `GL_SHADING_RATE_1X1_PIXELS_QCOM`]
+    /// Alias: `GL_SHADING_RATE_1X1_PIXELS_QCOM`
     public static final int GL_SHADING_RATE_1X1_PIXELS_EXT = 0x96A6;
 
     /// Group: `ShadingRateQCOM`
     public static final int GL_SHADING_RATE_1X1_PIXELS_QCOM = 0x96A6;
 
     /// Group: `ShadingRate`
-    /// Alias: `GL_SHADING_RATE_1X2_PIXELS_QCOM`]
+    /// Alias: `GL_SHADING_RATE_1X2_PIXELS_QCOM`
     public static final int GL_SHADING_RATE_1X2_PIXELS_EXT = 0x96A7;
 
     /// Group: `ShadingRateQCOM`
     public static final int GL_SHADING_RATE_1X2_PIXELS_QCOM = 0x96A7;
 
     /// Group: `ShadingRate`
-    /// Alias: `GL_SHADING_RATE_1X4_PIXELS_QCOM`]
+    /// Alias: `GL_SHADING_RATE_1X4_PIXELS_QCOM`
     public static final int GL_SHADING_RATE_1X4_PIXELS_EXT = 0x96AA;
 
     /// Group: `ShadingRateQCOM`
@@ -11713,21 +11713,21 @@ public class GLConstants {
     public static final int GL_SHADING_RATE_1_INVOCATION_PER_PIXEL_NV = 0x9565;
 
     /// Group: `ShadingRate`
-    /// Alias: `GL_SHADING_RATE_2X1_PIXELS_QCOM`]
+    /// Alias: `GL_SHADING_RATE_2X1_PIXELS_QCOM`
     public static final int GL_SHADING_RATE_2X1_PIXELS_EXT = 0x96A8;
 
     /// Group: `ShadingRateQCOM`
     public static final int GL_SHADING_RATE_2X1_PIXELS_QCOM = 0x96A8;
 
     /// Group: `ShadingRate`
-    /// Alias: `GL_SHADING_RATE_2X2_PIXELS_QCOM`]
+    /// Alias: `GL_SHADING_RATE_2X2_PIXELS_QCOM`
     public static final int GL_SHADING_RATE_2X2_PIXELS_EXT = 0x96A9;
 
     /// Group: `ShadingRateQCOM`
     public static final int GL_SHADING_RATE_2X2_PIXELS_QCOM = 0x96A9;
 
     /// Group: `ShadingRate`
-    /// Alias: `GL_SHADING_RATE_2X4_PIXELS_QCOM`]
+    /// Alias: `GL_SHADING_RATE_2X4_PIXELS_QCOM`
     public static final int GL_SHADING_RATE_2X4_PIXELS_EXT = 0x96AD;
 
     /// Group: `ShadingRateQCOM`
@@ -11736,21 +11736,21 @@ public class GLConstants {
     public static final int GL_SHADING_RATE_2_INVOCATIONS_PER_PIXEL_NV = 0x956C;
 
     /// Group: `ShadingRate`
-    /// Alias: `GL_SHADING_RATE_4X1_PIXELS_QCOM`]
+    /// Alias: `GL_SHADING_RATE_4X1_PIXELS_QCOM`
     public static final int GL_SHADING_RATE_4X1_PIXELS_EXT = 0x96AB;
 
     /// Group: `ShadingRateQCOM`
     public static final int GL_SHADING_RATE_4X1_PIXELS_QCOM = 0x96AB;
 
     /// Group: `ShadingRate`
-    /// Alias: `GL_SHADING_RATE_4X2_PIXELS_QCOM`]
+    /// Alias: `GL_SHADING_RATE_4X2_PIXELS_QCOM`
     public static final int GL_SHADING_RATE_4X2_PIXELS_EXT = 0x96AC;
 
     /// Group: `ShadingRateQCOM`
     public static final int GL_SHADING_RATE_4X2_PIXELS_QCOM = 0x96AC;
 
     /// Group: `ShadingRate`
-    /// Alias: `GL_SHADING_RATE_4X4_PIXELS_QCOM`]
+    /// Alias: `GL_SHADING_RATE_4X4_PIXELS_QCOM`
     public static final int GL_SHADING_RATE_4X4_PIXELS_EXT = 0x96AE;
 
     /// Group: `ShadingRateQCOM`
@@ -11950,19 +11950,19 @@ public class GLConstants {
     public static final int GL_SMOOTH_CUBIC_CURVE_TO_NV = 0x10;
 
     /// Group: `GetPName`
-    /// Alias: `GL_LINE_WIDTH_GRANULARITY`]
+    /// Alias: `GL_LINE_WIDTH_GRANULARITY`
     public static final int GL_SMOOTH_LINE_WIDTH_GRANULARITY = 0x0B23;
 
     /// Group: `GetPName`
-    /// Alias: `GL_LINE_WIDTH_RANGE`]
+    /// Alias: `GL_LINE_WIDTH_RANGE`
     public static final int GL_SMOOTH_LINE_WIDTH_RANGE = 0x0B22;
 
     /// Group: `GetPName`
-    /// Alias: `GL_POINT_SIZE_GRANULARITY`]
+    /// Alias: `GL_POINT_SIZE_GRANULARITY`
     public static final int GL_SMOOTH_POINT_SIZE_GRANULARITY = 0x0B13;
 
     /// Group: `GetPName`
-    /// Alias: `GL_POINT_SIZE_RANGE`]
+    /// Alias: `GL_POINT_SIZE_RANGE`
     public static final int GL_SMOOTH_POINT_SIZE_RANGE = 0x0B12;
 
     /// Group: `PathCoordType`
@@ -12062,7 +12062,7 @@ public class GLConstants {
 
     public static final int GL_SPIR_V_BINARY = 0x9552;
 
-    /// Alias: `GL_SPIR_V_BINARY`]
+    /// Alias: `GL_SPIR_V_BINARY`
     public static final int GL_SPIR_V_BINARY_ARB = 0x9552;
 
     public static final int GL_SPIR_V_EXTENSIONS = 0x9553;
@@ -12103,15 +12103,15 @@ public class GLConstants {
     public static final int GL_SR8_EXT = 0x8FBD;
 
     /// Group: `TextureEnvParameter`
-    /// Alias: `GL_SOURCE0_ALPHA`]
+    /// Alias: `GL_SOURCE0_ALPHA`
     public static final int GL_SRC0_ALPHA = 0x8588;
 
     /// Group: `TextureEnvParameter`
-    /// Alias: `GL_SOURCE0_RGB`]
+    /// Alias: `GL_SOURCE0_RGB`
     public static final int GL_SRC0_RGB = 0x8580;
 
     /// Groups: `TextureEnvParameter`, `BlendingFactor`
-    /// Alias: `GL_SOURCE1_ALPHA`]
+    /// Alias: `GL_SOURCE1_ALPHA`
     public static final int GL_SRC1_ALPHA = 0x8589;
 
     /// Group: `TextureEnvParameter`
@@ -12123,15 +12123,15 @@ public class GLConstants {
     public static final int GL_SRC1_COLOR_EXT = 0x88F9;
 
     /// Group: `TextureEnvParameter`
-    /// Alias: `GL_SOURCE1_RGB`]
+    /// Alias: `GL_SOURCE1_RGB`
     public static final int GL_SRC1_RGB = 0x8581;
 
     /// Group: `TextureEnvParameter`
-    /// Alias: `GL_SOURCE2_ALPHA`]
+    /// Alias: `GL_SOURCE2_ALPHA`
     public static final int GL_SRC2_ALPHA = 0x858A;
 
     /// Group: `TextureEnvParameter`
-    /// Alias: `GL_SOURCE2_RGB`]
+    /// Alias: `GL_SOURCE2_RGB`
     public static final int GL_SRC2_RGB = 0x8582;
 
     /// Group: `BlendingFactor`
@@ -12690,7 +12690,7 @@ public class GLConstants {
 
     public static final int GL_TESS_CONTROL_SHADER_PATCHES = 0x82F1;
 
-    /// Alias: `GL_TESS_CONTROL_SHADER_PATCHES`]
+    /// Alias: `GL_TESS_CONTROL_SHADER_PATCHES`
     public static final int GL_TESS_CONTROL_SHADER_PATCHES_ARB = 0x82F1;
 
     /// Group: `ProgramInterface`
@@ -12723,7 +12723,7 @@ public class GLConstants {
 
     public static final int GL_TESS_EVALUATION_SHADER_INVOCATIONS = 0x82F2;
 
-    /// Alias: `GL_TESS_EVALUATION_SHADER_INVOCATIONS`]
+    /// Alias: `GL_TESS_EVALUATION_SHADER_INVOCATIONS`
     public static final int GL_TESS_EVALUATION_SHADER_INVOCATIONS_ARB = 0x82F2;
 
     public static final int GL_TESS_EVALUATION_SHADER_OES = 0x8E87;
@@ -13586,7 +13586,7 @@ public class GLConstants {
     /// Groups: `SamplerParameterF`, `TextureParameterName`
     public static final int GL_TEXTURE_MAX_ANISOTROPY = 0x84FE;
 
-    /// Alias: `GL_TEXTURE_MAX_ANISOTROPY`]
+    /// Alias: `GL_TEXTURE_MAX_ANISOTROPY`
     public static final int GL_TEXTURE_MAX_ANISOTROPY_EXT = 0x84FE;
 
     /// Groups: `TextureParameterName`, `GetTextureParameter`
@@ -13660,7 +13660,7 @@ public class GLConstants {
 
     public static final int GL_TEXTURE_REDUCTION_MODE_ARB = 0x9366;
 
-    /// Alias: `GL_TEXTURE_REDUCTION_MODE_ARB`]
+    /// Alias: `GL_TEXTURE_REDUCTION_MODE_ARB`
     public static final int GL_TEXTURE_REDUCTION_MODE_EXT = 0x9366;
 
     /// Groups: `TextureParameterName`, `GetTextureParameter`
@@ -13886,7 +13886,7 @@ public class GLConstants {
     public static final int GL_TRANSFORM_FEEDBACK = 0x8E22;
 
     /// Group: `TransformFeedbackPName`
-    /// Alias: `GL_TRANSFORM_FEEDBACK_BUFFER_ACTIVE`]
+    /// Alias: `GL_TRANSFORM_FEEDBACK_BUFFER_ACTIVE`
     public static final int GL_TRANSFORM_FEEDBACK_ACTIVE = 0x8E24;
 
     public static final int GL_TRANSFORM_FEEDBACK_ATTRIBS_NV = 0x8C7E;
@@ -13956,11 +13956,11 @@ public class GLConstants {
     /// Group: `QueryTarget`
     public static final int GL_TRANSFORM_FEEDBACK_OVERFLOW = 0x82EC;
 
-    /// Alias: `GL_TRANSFORM_FEEDBACK_OVERFLOW`]
+    /// Alias: `GL_TRANSFORM_FEEDBACK_OVERFLOW`
     public static final int GL_TRANSFORM_FEEDBACK_OVERFLOW_ARB = 0x82EC;
 
     /// Group: `TransformFeedbackPName`
-    /// Alias: `GL_TRANSFORM_FEEDBACK_BUFFER_PAUSED`]
+    /// Alias: `GL_TRANSFORM_FEEDBACK_BUFFER_PAUSED`
     public static final int GL_TRANSFORM_FEEDBACK_PAUSED = 0x8E23;
 
     /// Group: `QueryTarget`
@@ -13974,7 +13974,7 @@ public class GLConstants {
 
     public static final int GL_TRANSFORM_FEEDBACK_STREAM_OVERFLOW = 0x82ED;
 
-    /// Alias: `GL_TRANSFORM_FEEDBACK_STREAM_OVERFLOW`]
+    /// Alias: `GL_TRANSFORM_FEEDBACK_STREAM_OVERFLOW`
     public static final int GL_TRANSFORM_FEEDBACK_STREAM_OVERFLOW_ARB = 0x82ED;
 
     /// Group: `ProgramInterface`
@@ -14636,7 +14636,7 @@ public class GLConstants {
     /// Group: `ClipControlOrigin`
     public static final int GL_UPPER_LEFT = 0x8CA2;
 
-    /// Alias: `GL_UPPER_LEFT`]
+    /// Alias: `GL_UPPER_LEFT`
     public static final int GL_UPPER_LEFT_EXT = 0x8CA2;
 
     /// Group: `PathHandleMissingGlyphs`
@@ -15003,7 +15003,7 @@ public class GLConstants {
     /// Group: `QueryTarget`
     public static final int GL_VERTEX_SHADER_INVOCATIONS = 0x82F0;
 
-    /// Alias: `GL_VERTEX_SHADER_INVOCATIONS`]
+    /// Alias: `GL_VERTEX_SHADER_INVOCATIONS`
     public static final int GL_VERTEX_SHADER_INVOCATIONS_ARB = 0x82F0;
 
     public static final int GL_VERTEX_SHADER_LOCALS_EXT = 0x87D3;
@@ -15069,7 +15069,7 @@ public class GLConstants {
     /// Group: `QueryTarget`
     public static final int GL_VERTICES_SUBMITTED = 0x82EE;
 
-    /// Alias: `GL_VERTICES_SUBMITTED`]
+    /// Alias: `GL_VERTICES_SUBMITTED`
     public static final int GL_VERTICES_SUBMITTED_ARB = 0x82EE;
 
     public static final int GL_VIBRANCE_BIAS_NV = 0x8719;
@@ -15294,7 +15294,7 @@ public class GLConstants {
 
     public static final int GL_WEIGHTED_AVERAGE_ARB = 0x9367;
 
-    /// Alias: `GL_WEIGHTED_AVERAGE_ARB`]
+    /// Alias: `GL_WEIGHTED_AVERAGE_ARB`
     public static final int GL_WEIGHTED_AVERAGE_EXT = 0x9367;
 
     public static final int GL_WEIGHT_ARRAY_ARB = 0x86AD;
@@ -15406,7 +15406,7 @@ public class GLConstants {
     /// Group: `ClipControlDepth`
     public static final int GL_ZERO_TO_ONE = 0x935F;
 
-    /// Alias: `GL_ZERO_TO_ONE`]
+    /// Alias: `GL_ZERO_TO_ONE`
     public static final int GL_ZERO_TO_ONE_EXT = 0x935F;
 
     /// Group: `GetPName`

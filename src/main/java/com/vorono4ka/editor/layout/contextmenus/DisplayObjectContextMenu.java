@@ -5,7 +5,7 @@ import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.TablePopupMenuListener;
 import com.vorono4ka.editor.renderer.Framebuffer;
 import com.vorono4ka.editor.renderer.impl.RendererHelper;
-import com.vorono4ka.editor.renderer.impl.Stage;
+import com.vorono4ka.editor.renderer.impl.EditorStage;
 import com.vorono4ka.exporter.FfmpegVideoExporter;
 import com.vorono4ka.exporter.VideoExporter;
 import com.vorono4ka.math.ReadonlyRect;
@@ -172,7 +172,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
     }
 
     private void export(ActionEvent actionEvent) {
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
         ReadonlyRect viewport = stage.getCamera().getViewport();
 
         for (int row : this.table.getSelectedRows()) {
@@ -196,7 +196,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         int displayObjectId = getDisplayObjectId(this.table.getSelectedRow());
 
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
         ReadonlyRect viewport = stage.getCamera().getViewport();
 
         exportAsImage(getRenderableObject(displayObjectId));
@@ -209,7 +209,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         int displayObjectId = getDisplayObjectId(this.table.getSelectedRow());
 
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
         ReadonlyRect viewport = stage.getCamera().getViewport();
 
         exportAsVideo((MovieClip) getRenderableObject(displayObjectId));
@@ -234,7 +234,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
     }
 
     private void exportAsImage(DisplayObject displayObject) {
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
 
         Rect bounds = stage.calculateBoundsForAllFrames(displayObject);
 
@@ -259,7 +259,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
     }
 
     private void exportAsVideo(MovieClip movieClip) {
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
 
         Rect bounds = stage.calculateBoundsForAllFrames(movieClip);
 

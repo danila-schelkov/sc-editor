@@ -1,7 +1,7 @@
 package com.vorono4ka.editor.renderer.impl.listeners;
 
 import com.vorono4ka.editor.renderer.Camera;
-import com.vorono4ka.editor.renderer.impl.Stage;
+import com.vorono4ka.editor.renderer.impl.EditorStage;
 
 import java.awt.*;
 import java.awt.event.InputEvent;
@@ -54,7 +54,7 @@ public class CameraMouseListener implements MouseListener, MouseMotionListener {
         int x = (int) (e.getX() * dpiScalingFactor);
         int y = (int) (e.getY() * dpiScalingFactor);
 
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
         float dx = this.startX + this.previousX - x;
         float dy = this.startY + this.previousY - y;
 

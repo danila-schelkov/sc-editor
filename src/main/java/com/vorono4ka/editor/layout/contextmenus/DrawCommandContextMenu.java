@@ -6,7 +6,7 @@ import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.TablePopupMenuListener;
 import com.vorono4ka.editor.renderer.Framebuffer;
 import com.vorono4ka.editor.renderer.impl.RendererHelper;
-import com.vorono4ka.editor.renderer.impl.Stage;
+import com.vorono4ka.editor.renderer.impl.EditorStage;
 import com.vorono4ka.math.ReadonlyRect;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
@@ -60,7 +60,7 @@ public class DrawCommandContextMenu extends ContextMenu {
 
         Rect bounds = getDrawCommandBounds(command, spriteSheet);
 
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
         stage.getCamera().zoomToFit(bounds);
 
         stage.doInRenderThread(() -> {
@@ -85,7 +85,7 @@ public class DrawCommandContextMenu extends ContextMenu {
 
         Rect bounds = getDrawCommandBounds(command, spriteSheet);
 
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
         ReadonlyRect viewport = stage.getCamera().getViewport();
 
         stage.doInRenderThread(() -> {

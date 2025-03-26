@@ -1,6 +1,7 @@
 package com.vorono4ka.editor.renderer.gl;
 
 import com.vorono4ka.editor.renderer.Batch;
+import com.vorono4ka.editor.renderer.RenderStencilState;
 import com.vorono4ka.editor.renderer.gl.buffers.Ebo;
 import com.vorono4ka.editor.renderer.gl.buffers.FloatBufferObject;
 import com.vorono4ka.editor.renderer.gl.buffers.IntBufferObject;
@@ -16,7 +17,7 @@ public class GLBatch extends Batch {
     private FloatBufferObject vbo;
     private IntBufferObject ebo;
 
-    public GLBatch(Shader shader, RenderableTexture texture, int stencilRenderingState, GLRendererContext gl) {
+    public GLBatch(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState, GLRendererContext gl) {
         super(shader, texture, stencilRenderingState);
 
         this.gl = gl;

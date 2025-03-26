@@ -1,6 +1,6 @@
 package com.vorono4ka.editor.displayObjects;
 
-import com.vorono4ka.editor.renderer.Renderer;
+import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.editor.renderer.texture.RenderableTexture;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
@@ -33,7 +33,7 @@ public class SpriteSheet extends DisplayObject {
 
     @Override
     public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
-        Renderer renderer = this.getRenderer();
+        Stage renderer = this.getStage();
         if (renderer.startShape(this.bounds, this.texture, 0)) {
             renderer.addTriangles(2, INDICES);
 

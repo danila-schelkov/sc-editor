@@ -1,6 +1,6 @@
 package com.vorono4ka.renderer.impl.swf.objects;
 
-import com.vorono4ka.editor.renderer.Renderer;
+import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
@@ -29,7 +29,7 @@ public class TextField extends DisplayObject {
         int v45 = RenderConfig.getUnknownRenderModification(colorTransformApplied, a4);
 
         this.cursorBlinkTime = (this.cursorBlinkTime + deltaTime) % 1.0f;
-        return this.shapeRender(this.getRenderer(), matrixApplied, colorTransformApplied, this.getRenderConfigBits() | v45, this.bounds == null);
+        return this.shapeRender(this.getStage(), matrixApplied, colorTransformApplied, this.getRenderConfigBits() | v45, this.bounds == null);
     }
 
     @Override
@@ -39,7 +39,7 @@ public class TextField extends DisplayObject {
         Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
         matrixApplied.multiply(matrix);
 
-        return this.shapeRender(this.getRenderer(), matrixApplied, this.getColorTransform(), 0, false);
+        return this.shapeRender(this.getStage(), matrixApplied, this.getColorTransform(), 0, false);
     }
 
     @Override
@@ -47,7 +47,7 @@ public class TextField extends DisplayObject {
         return true;
     }
 
-    private boolean shapeRender(Renderer stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, boolean noBounds) {
+    private boolean shapeRender(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, boolean noBounds) {
         return false;
     }
 

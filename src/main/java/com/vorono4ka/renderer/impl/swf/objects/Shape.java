@@ -1,6 +1,6 @@
 package com.vorono4ka.renderer.impl.swf.objects;
 
-import com.vorono4ka.editor.renderer.Renderer;
+import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.shapes.ShapeDrawBitmapCommand;
@@ -33,7 +33,7 @@ public class Shape extends DisplayObject {
 
         int renderConfigBits = this.getRenderConfigBits() | v35;
 
-        Renderer stage = this.getRenderer();
+        Stage stage = this.getStage();
 
         boolean result = false;
         for (ShapeDrawBitmapCommand command : this.commands) {
@@ -50,7 +50,7 @@ public class Shape extends DisplayObject {
 
         // TODO: accurateCollisionRender
 
-        Renderer stage = this.getRenderer();
+        Stage stage = this.getStage();
 
         boolean result = false;
 

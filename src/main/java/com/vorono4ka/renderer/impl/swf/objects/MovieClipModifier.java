@@ -1,6 +1,7 @@
 package com.vorono4ka.renderer.impl.swf.objects;
 
-import com.vorono4ka.editor.renderer.Renderer;
+import com.vorono4ka.editor.renderer.RenderStencilState;
+import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
 import com.vorono4ka.swf.Tag;
@@ -21,19 +22,18 @@ public class MovieClipModifier extends DisplayObject {
 
     @Override
     public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
-        Renderer stage = this.getRenderer();
+        Stage stage = this.getStage();
 
-        int stencilRenderingState;
-        switch (this.tag) {
-            case MODIFIER_STATE_2 -> stencilRenderingState = 2;
-            case MODIFIER_STATE_3 -> stencilRenderingState = 3;
-            case MODIFIER_STATE_4 -> stencilRenderingState = 4;
-            default -> {
-                return false;
-            }
+        RenderStencilState stencilRenderingState = switch (this.tag) {
+            case MODIFIER_STATE_2 -> RenderStencilState.ENABLED;
+            case MODIFIER_STATE_3 -> RenderStencilState.RENDERING_MASKED;
+            case MODIFIER_STATE_4 -> RenderStencilState.DISABLED;
+            default -> null;
+        };
+
+        if (stencilRenderingState != null) {
+            stage.setStencilRenderingState(stencilRenderingState);
         }
-
-        stage.setStencilRenderingState(stencilRenderingState);
 
         return false;
     }

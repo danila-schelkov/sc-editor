@@ -3,7 +3,7 @@ package com.vorono4ka.editor.renderer.impl.listeners;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
-import com.vorono4ka.editor.renderer.impl.Stage;
+import com.vorono4ka.editor.renderer.impl.EditorStage;
 import com.vorono4ka.editor.renderer.impl.gl.JoglRendererContext;
 import com.vorono4ka.editor.renderer.impl.texture.GLImage;
 import com.vorono4ka.editor.renderer.impl.texture.khronos.ExtensionKhronosTextureLoader;
@@ -27,7 +27,7 @@ public class EventListener implements GLEventListener {
         GLImage.khronosTextureLoader = KhronosTextureLoaders.getLoader();
         GLImage.sctxTextureLoader = new ExtensionSctxTextureLoader(rendererContext);
 
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
         stage.setGlContext(rendererContext);
         stage.init(0, 0, canvas.getSurfaceWidth(), canvas.getSurfaceHeight());
     }
@@ -41,7 +41,7 @@ public class EventListener implements GLEventListener {
 
     @Override
     public void display(GLAutoDrawable canvas) {
-        Stage.getInstance().update();
+        EditorStage.getInstance().update();
     }
 
     @Override
@@ -57,7 +57,7 @@ public class EventListener implements GLEventListener {
         width = (int) (width * dpiScalingFactor);
         height = (int) (height * dpiScalingFactor);
 
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
         stage.unbindRender();
         stage.init(0, 0, width, height);
     }

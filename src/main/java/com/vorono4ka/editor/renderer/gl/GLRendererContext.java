@@ -30,7 +30,7 @@ public interface GLRendererContext {
 
     void glBufferSubData(int bufferType, int offset, long byteLength, Buffer buffer);
 
-    void glDrawElements(int drawMode, int i, int glUnsignedInt, int i1);
+    void glDrawElements(int drawMode, int triangleCount, int glUnsignedInt, int i1);
 
     // Textures
     int glGenTexture();
@@ -73,8 +73,6 @@ public interface GLRendererContext {
     int getBoundFramebuffer(int target);
 
     int glCheckFramebufferStatus(int target);
-
-    int glGetError();
 
     // Renderbuffer
     int glGenRenderbuffer();
@@ -147,4 +145,9 @@ public interface GLRendererContext {
     void glPixelStorei(int parameter, int value);
 
     boolean isExtensionAvailable(String extension);
+
+    // Some getters
+    String glGetString(int i);
+
+    int glGetError();
 }

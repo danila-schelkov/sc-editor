@@ -9,7 +9,7 @@ import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
 import com.vorono4ka.editor.layout.panels.status.TaskProgressTracker;
 import com.vorono4ka.editor.layout.windows.EditorWindow;
 import com.vorono4ka.editor.layout.windows.UsagesWindow;
-import com.vorono4ka.editor.renderer.impl.Stage;
+import com.vorono4ka.editor.renderer.impl.EditorStage;
 import com.vorono4ka.editor.renderer.texture.GLTexture;
 import com.vorono4ka.editor.renderer.texture.Texture;
 import com.vorono4ka.editor.settings.EditorSettings;
@@ -143,7 +143,7 @@ public class Editor {
         editMenu.checkPreviousAvailable();
         editMenu.checkNextAvailable();
 
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
 
         int textureCount = stage.getTextureCount();
         if (textureCount > 0) {
@@ -209,7 +209,7 @@ public class Editor {
         editMenu.checkPreviousAvailable();
         editMenu.checkNextAvailable();
 
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
         stage.clearBatches();
         stage.removeAllChildren();
         stage.addChild(displayObject);
@@ -323,13 +323,13 @@ public class Editor {
     }
 
     private List<GLTexture> uploadSctxTextureToOpenGl(SctxTexture texture) throws TextureFileNotFound {
-        return List.of(Stage.getInstance().createGLTexture(texture, 0));
+        return List.of(EditorStage.getInstance().createGLTexture(texture, 0));
     }
 
     private List<GLTexture> uploadSwfTexturesToOpenGl() throws TextureFileNotFound {
         List<GLTexture> images = new ArrayList<>();
 
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
         for (int i = 0; i < this.swf.getTextureCount(); i++) {
             SWFTexture texture = this.swf.getTexture(i);
             GLTexture image = stage.createGLTexture(texture, this.swf.getPath().getParent());
