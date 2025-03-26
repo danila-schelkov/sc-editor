@@ -44,6 +44,6 @@ public class ViewportMouseListener extends MouseAdapter {
 
         if (touchedObject == null) return;
 
-        LOGGER.info("{} ({}) touched at ({}, {}).", touchedObject.getClass().getSimpleName(), touchedObject.getIndexInParent(), x, y);
+        LOGGER.info("{} ({}) touched at screen ({}, {}), sprite point ({}, {}).", touchedObject.getClass().getSimpleName(), touchedObject.getIndexInParent(), x, y, worldX, worldY);
     }
 }
