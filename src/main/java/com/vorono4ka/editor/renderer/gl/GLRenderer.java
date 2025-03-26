@@ -23,11 +23,11 @@ public class GLRenderer implements Renderer {
 
     @Override
     public void printInfo() {
-        LOGGER.info("Rendering API: OpenGL");
-        LOGGER.info("GL {} = {}", "Version", gl.glGetString(GLConstants.GL_VERSION));
-        LOGGER.info("GL {} = {}", "Vendor", gl.glGetString(GLConstants.GL_VENDOR));
-        LOGGER.info("GL {} = {}", "Renderer", gl.glGetString(GLConstants.GL_RENDERER));
-        LOGGER.info("GL {} = {}", "Extensions", gl.glGetString(GLConstants.GL_EXTENSIONS));
+        LOGGER.debug("Rendering API: OpenGL");
+        LOGGER.debug("GL {} = {}", "Version", gl.glGetString(GLConstants.GL_VERSION));
+        LOGGER.debug("GL {} = {}", "Vendor", gl.glGetString(GLConstants.GL_VENDOR));
+        LOGGER.debug("GL {} = {}", "Renderer", gl.glGetString(GLConstants.GL_RENDERER));
+        LOGGER.debug("GL {} = {}", "Extensions", gl.glGetString(GLConstants.GL_EXTENSIONS));
     }
 
     @Override

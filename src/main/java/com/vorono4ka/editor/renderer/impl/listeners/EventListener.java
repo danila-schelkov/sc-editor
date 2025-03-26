@@ -34,6 +34,7 @@ public class EventListener implements GLEventListener {
         EditorStage stage = EditorStage.getInstance();
         stage.setAssetManager(assetManager);
         stage.setGlContext(rendererContext);
+
         stage.init(0, 0, canvas.getSurfaceWidth(), canvas.getSurfaceHeight());
     }
 

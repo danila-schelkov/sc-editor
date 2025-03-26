@@ -418,6 +418,7 @@ public class EditorStage implements Stage {
         gl = glRendererContext;
 
         this.renderer = new GLRenderer(glRendererContext);
+        this.renderer.printInfo();
     }
 
     public Renderer getRenderer() {
