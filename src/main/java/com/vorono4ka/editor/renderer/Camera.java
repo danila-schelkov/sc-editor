@@ -68,14 +68,14 @@ public class Camera {
         float viewportX = screenX - this.viewport.getWidth() / 2f;
         viewportX /= zoom.getPointSize();
 
-        return viewportX;
+        return viewportX + offsetX;
     }
 
     public float getWorldY(int screenY) {
         float viewportY = screenY - this.viewport.getHeight() / 2f;
         viewportY /= zoom.getPointSize();
 
-        return viewportY;
+        return viewportY + offsetY;
     }
 
     public void zoomToFit(Rect bounds) {
