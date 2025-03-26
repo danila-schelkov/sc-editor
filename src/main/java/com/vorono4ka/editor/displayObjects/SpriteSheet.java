@@ -13,6 +13,7 @@ import java.util.List;
 
 public class SpriteSheet extends DisplayObject {
     private static final int[] INDICES = {0, 1, 2, 0, 2, 3};
+    private static final ColorTransform UV_COLOR_TRANSFORM = new ColorTransform((byte) 255, (byte) 0, (byte) 0, (byte) 128, (byte) 255, (byte) 0, (byte) 0);
 
     private final RenderableTexture texture;
     private final Rect bounds;
@@ -43,7 +44,7 @@ public class SpriteSheet extends DisplayObject {
 
             if (this.shouldDisplayPolygons) {
                 for (ShapeDrawBitmapCommand command : this.drawBitmapCommands) {
-                    ShapeDrawBitmapCommandRenderer.renderUV(command, renderer, 0);
+                    ShapeDrawBitmapCommandRenderer.renderUV(command, renderer, UV_COLOR_TRANSFORM, 0);
                 }
             }
 

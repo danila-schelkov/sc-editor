@@ -3,9 +3,8 @@ package com.vorono4ka.editor.layout.contextmenus;
 import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.TablePopupMenuListener;
-import com.vorono4ka.editor.renderer.Camera;
 import com.vorono4ka.editor.renderer.Framebuffer;
-import com.vorono4ka.editor.renderer.gl.GLFramebuffer;
+import com.vorono4ka.editor.renderer.impl.RendererHelper;
 import com.vorono4ka.editor.renderer.impl.Stage;
 import com.vorono4ka.exporter.FfmpegVideoExporter;
 import com.vorono4ka.exporter.VideoExporter;
@@ -189,7 +188,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
             }
         }
 
-        rollbackRenderer(stage, viewport);
+        RendererHelper.rollbackRenderer(stage, viewport);
     }
 
     private void exportAsImageCallback(ActionEvent actionEvent) {
@@ -202,7 +201,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         exportAsImage(getRenderableObject(displayObjectId));
 
-        rollbackRenderer(stage, viewport);
+        RendererHelper.rollbackRenderer(stage, viewport);
     }
 
     private void exportAsVideoCallback(ActionEvent actionEvent) {
@@ -215,7 +214,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         exportAsVideo((MovieClip) getRenderableObject(displayObjectId));
 
-        rollbackRenderer(stage, viewport);
+        RendererHelper.rollbackRenderer(stage, viewport);
     }
 
     private DisplayObject getRenderableObject(int displayObjectId) {
@@ -246,7 +245,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
         matrix.scaleMultiply(pixelSize, pixelSize);
 
         stage.doInRenderThread(() -> {
-            Framebuffer framebuffer = prepareStageForRendering(stage, bounds);
+            Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, bounds);
 
             displayObject.render(matrix, new ColorTransform(), 0, 0);
 
@@ -277,7 +276,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
         String filename = getClipFilename(movieClip, state, startFrame, loopFrame, pixelSize);
 
         stage.doInRenderThread(() -> {
-            Framebuffer framebuffer = prepareStageForRendering(stage, bounds);
+            Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, bounds);
 
             // TODO: ask where to save the video file
             try (VideoExporter videoExporter = new FfmpegVideoExporter(SCREENSHOT_FOLDER, filename, "webm", "libvpx-vp9", movieClip.getFps())) {
@@ -363,28 +362,5 @@ public class DisplayObjectContextMenu extends ContextMenu {
         }
 
         return filename;
-    }
-
-    private Framebuffer prepareStageForRendering(Stage stage, Rect bounds) {
-        Camera camera = stage.getCamera();
-        camera.reset();
-        camera.init((int) bounds.getWidth(), (int) bounds.getHeight());
-        camera.moveToFit(bounds);
-
-        stage.updatePMVMatrix();
-
-        Framebuffer framebuffer = new GLFramebuffer(stage.getGlContext(), (int) Math.ceil(bounds.getWidth()), (int) Math.ceil(bounds.getHeight()));
-        stage.getGlContext().glViewport(0, 0, framebuffer.getWidth(), framebuffer.getHeight());
-        return framebuffer;
-    }
-
-    private void rollbackRenderer(Stage stage, ReadonlyRect viewport) {
-        stage.doInRenderThread(() -> {
-            stage.getGlContext().glViewport(0, 0, (int) viewport.getWidth(), (int) viewport.getHeight());
-            stage.getCamera().init(viewport.getLeft(), viewport.getTop(), viewport.getRight(), viewport.getBottom());
-
-            stage.getCamera().reset();
-            stage.updatePMVMatrix();
-        });
     }
 }

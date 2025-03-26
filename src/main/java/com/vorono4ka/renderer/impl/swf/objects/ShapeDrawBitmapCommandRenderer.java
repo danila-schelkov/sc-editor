@@ -3,6 +3,7 @@ package com.vorono4ka.renderer.impl.swf.objects;
 import com.vorono4ka.editor.renderer.Renderer;
 import com.vorono4ka.editor.renderer.texture.RenderableTexture;
 import com.vorono4ka.editor.renderer.texture.Texture;
+import com.vorono4ka.math.ReadonlyRect;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
@@ -12,71 +13,35 @@ public final class ShapeDrawBitmapCommandRenderer {
     private ShapeDrawBitmapCommandRenderer() {
     }
 
-    public static boolean render(ShapeDrawBitmapCommand command, Renderer stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits) {
-        Rect bounds = new Rect();
-
-        float[] transformedPoints = new float[command.getVertexCount() * 2];
-        for (int i = 0; i < command.getVertexCount(); i++) {
-            float x = matrix.applyX(command.getX(i), command.getY(i));
-            float y = matrix.applyY(command.getX(i), command.getY(i));
-
-            transformedPoints[i * 2] = x;
-            transformedPoints[i * 2 + 1] = y;
-
-            if (i == 0) {
-                bounds = new Rect(x, y, x, y);
-                continue;
-            }
-
-            bounds.addPoint(x, y);
-        }
-
-        return render0(command, stage, bounds, colorTransform, transformedPoints, renderConfigBits);
+    public static boolean render(ShapeDrawBitmapCommand command, Renderer renderer, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits) {
+        return render0(renderer, command, new Matrix2x3Transformer(command, matrix), colorTransform, renderConfigBits);
     }
 
     public static boolean render9Slice(ShapeDrawBitmapCommand command, Renderer stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, Rect safeArea, Rect shapeBounds, float width, float height) {
-        Rect bounds = new Rect();
+        NineSliceTransformer vertexTransformer = new NineSliceTransformer(command, matrix, safeArea, shapeBounds, width, height);
 
-        float[] transformedPoints = new float[command.getVertexCount() * 2];
-        for (int i = 0; i < command.getVertexCount(); i++) {
-            float x = command.getX(i);
-            if (x <= safeArea.getLeft()) {
-                x = Math.min(safeArea.getMidX(), shapeBounds.getLeft() + (x - shapeBounds.getLeft()) * width);
-            } else if (x >= safeArea.getRight()) {
-                x = Math.max(safeArea.getMidX(), shapeBounds.getRight() + (x - shapeBounds.getRight()) * width);
-            }
-
-            float y = command.getY(i);
-            if (y <= safeArea.getTop()) {
-                y = Math.min(safeArea.getMidY(), shapeBounds.getTop() + (y - shapeBounds.getTop()) * height);
-            } else if (y >= safeArea.getBottom()) {
-                y = Math.max(safeArea.getMidY(), shapeBounds.getBottom() + (y - shapeBounds.getBottom()) * height);
-            }
-
-            float appliedX = matrix.applyX(x, y);
-            float appliedY = matrix.applyY(x, y);
-
-            transformedPoints[i * 2] = appliedX;
-            transformedPoints[i * 2 + 1] = appliedY;
-
-            if (i == 0) {
-                bounds = new Rect(appliedX, appliedY, appliedX, appliedY);
-                continue;
-            }
-
-            bounds.addPoint(appliedX, appliedY);
-        }
-
-        return render0(command, stage, bounds, colorTransform, transformedPoints, renderConfigBits);
+        return render0(stage, command, vertexTransformer, colorTransform, renderConfigBits);
     }
 
-    private static boolean render0(ShapeDrawBitmapCommand command, Renderer renderer, Rect bounds, ColorTransform colorTransform, float[] transformedPoints, int renderConfigBits) {
-        RenderableTexture image = renderer.getTextureByIndex(command.getTextureIndex());
+    public static boolean collisionRender(ShapeDrawBitmapCommand command, Renderer renderer, Matrix2x3 matrix, ColorTransform colorTransform) {
+        return render(command, renderer, matrix, colorTransform, 0);
+    }
 
-        if (renderer.startShape(bounds, image, renderConfigBits)) {
+    public static boolean renderUV(ShapeDrawBitmapCommand command, Renderer renderer, ColorTransform colorTransform, int renderConfigBits) {
+        UvTransformer vertexTransformer = new UvTransformer(command, renderer.getTextureByIndex(command.getTextureIndex()));
+
+        return render0(renderer, command, vertexTransformer, colorTransform, renderConfigBits);
+    }
+
+    private static boolean render0(Renderer renderer, ShapeDrawBitmapCommand command, VertexTransformer vertexTransformer, ColorTransform colorTransform, int renderConfigBits) {
+        float[] transformedPoints = new float[command.getVertexCount() * 2];
+        Rect bounds = transformPoints(vertexTransformer, transformedPoints);
+
+        RenderableTexture texture = renderer.getTextureByIndex(command.getTextureIndex());
+        if (renderer.startShape(bounds, texture, renderConfigBits)) {
             renderer.addTriangles(command.getTriangleCount(), command.getIndices());
 
-            renderCommandVertices(command, renderer, colorTransform, transformedPoints);
+            renderCommandVertices(renderer, command, colorTransform, transformedPoints);
 
             return true;
         }
@@ -84,45 +49,7 @@ public final class ShapeDrawBitmapCommandRenderer {
         return false;
     }
 
-    public static boolean collisionRender(ShapeDrawBitmapCommand command, Renderer stage, Matrix2x3 matrix, ColorTransform colorTransform) {
-        return render(command, stage, matrix, colorTransform, 0);
-    }
-
-    public static boolean renderUV(ShapeDrawBitmapCommand command, Renderer stage, int renderConfigBits) {
-        Rect bounds = new Rect();
-
-        Texture texture = stage.getTextureByIndex(command.getTextureIndex());
-
-        float[] transformedPoints = new float[command.getVertexCount() * 2];
-        for (int i = 0; i < command.getVertexCount(); i++) {
-            float x = command.getU(i) * texture.getWidth() - texture.getWidth() / 2f;
-            float y = command.getV(i) * texture.getHeight() - texture.getHeight() / 2f;
-
-            transformedPoints[i * 2] = x;
-            transformedPoints[i * 2 + 1] = y;
-
-            if (i == 0) {
-                bounds = new Rect(x, y, x, y);
-                continue;
-            }
-
-            bounds.addPoint(x, y);
-        }
-
-        if (stage.startShape(bounds, stage.getGradientTexture(), renderConfigBits)) {
-            stage.addTriangles(command.getTriangleCount(), command.getIndices());
-
-            for (int i = 0; i < command.getVertexCount(); i++) {
-                stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], 1f, 0, 1, 0, 0, 0.5f, 0, 0, 0);
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    private static void renderCommandVertices(ShapeDrawBitmapCommand command, Renderer stage, ColorTransform colorTransform, float[] transformedPoints) {
+    private static void renderCommandVertices(Renderer renderer, ShapeDrawBitmapCommand command, ColorTransform colorTransform, float[] transformedPoints) {
         float redMultiplier = (colorTransform.getRedMultiplier() & 0xFF) / 255f;
         float greenMultiplier = (colorTransform.getGreenMultiplier() & 0xFF) / 255f;
         float blueMultiplier = (colorTransform.getBlueMultiplier() & 0xFF) / 255f;
@@ -132,7 +59,141 @@ public final class ShapeDrawBitmapCommandRenderer {
         float alpha = (colorTransform.getAlpha() & 0xFF) / 255f;
 
         for (int i = 0; i < command.getVertexCount(); i++) {
-            stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], command.getU(i), command.getV(i), redMultiplier, greenMultiplier, blueMultiplier, alpha, redAddition, greenAddition, blueAddition);
+            renderer.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], command.getU(i), command.getV(i), redMultiplier, greenMultiplier, blueMultiplier, alpha, redAddition, greenAddition, blueAddition);
+        }
+    }
+
+    private static Rect transformPoints(VertexTransformer vertexTransformer, float[] transformedPoints) {
+        Rect bounds = null;
+        for (int i = 0; i < transformedPoints.length / 2; i++) {
+            vertexTransformer.transform(i);
+
+            float x = vertexTransformer.getX();
+            float y = vertexTransformer.getY();
+
+            transformedPoints[i * 2] = x;
+            transformedPoints[i * 2 + 1] = y;
+
+            if (i == 0) {
+                bounds = new Rect(x, y, x, y);
+                continue;
+            }
+
+            bounds.addPoint(x, y);
+        }
+
+        return bounds;
+    }
+
+    private interface VertexTransformer {
+        void transform(int vertexIndex);
+
+        float getX();
+
+        float getY();
+    }
+
+    private static class UvTransformer implements VertexTransformer {
+        private final ShapeDrawBitmapCommand command;
+        private final Texture texture;
+
+        private float x, y;
+
+        private UvTransformer(ShapeDrawBitmapCommand command, Texture texture) {
+            this.command = command;
+            this.texture = texture;
+        }
+
+        @Override
+        public void transform(int vertexIndex) {
+            this.x = (command.getU(vertexIndex) - 0.5f) * texture.getWidth();
+            this.y = (command.getV(vertexIndex) - 0.5f) * texture.getHeight();
+        }
+
+        @Override
+        public float getX() {
+            return this.x;
+        }
+
+        @Override
+        public float getY() {
+            return this.y;
+        }
+    }
+
+    private static class NineSliceTransformer implements VertexTransformer {
+        private final ShapeDrawBitmapCommand command;
+        private final Matrix2x3 matrix;
+        private final ReadonlyRect safeArea, shapeBounds;
+        private final float width, height;
+
+        private float x, y;
+
+        public NineSliceTransformer(ShapeDrawBitmapCommand command, Matrix2x3 matrix, ReadonlyRect safeArea, ReadonlyRect shapeBounds, float width, float height) {
+            this.command = command;
+            this.matrix = matrix;
+            this.safeArea = safeArea;
+            this.shapeBounds = shapeBounds;
+            this.width = width;
+            this.height = height;
+        }
+
+        @Override
+        public void transform(int vertexIndex) {
+            float x = command.getX(vertexIndex);
+            if (x <= safeArea.getLeft()) {
+                x = Math.min(safeArea.getMidX(), shapeBounds.getLeft() + (x - shapeBounds.getLeft()) * width);
+            } else if (x >= safeArea.getRight()) {
+                x = Math.max(safeArea.getMidX(), shapeBounds.getRight() + (x - shapeBounds.getRight()) * width);
+            }
+
+            float y = command.getY(vertexIndex);
+            if (y <= safeArea.getTop()) {
+                y = Math.min(safeArea.getMidY(), shapeBounds.getTop() + (y - shapeBounds.getTop()) * height);
+            } else if (y >= safeArea.getBottom()) {
+                y = Math.max(safeArea.getMidY(), shapeBounds.getBottom() + (y - shapeBounds.getBottom()) * height);
+            }
+
+            this.x = matrix.applyX(x, y);
+            this.y = matrix.applyY(x, y);
+        }
+
+        @Override
+        public float getX() {
+            return this.x;
+        }
+
+        @Override
+        public float getY() {
+            return this.y;
+        }
+    }
+
+    private static class Matrix2x3Transformer implements VertexTransformer {
+        private final ShapeDrawBitmapCommand command;
+        private final Matrix2x3 matrix;
+
+        private float x, y;
+
+        public Matrix2x3Transformer(ShapeDrawBitmapCommand command, Matrix2x3 matrix) {
+            this.command = command;
+            this.matrix = matrix;
+        }
+
+        @Override
+        public void transform(int vertexIndex) {
+            this.x = matrix.applyX(command.getX(vertexIndex), command.getY(vertexIndex));
+            this.y = matrix.applyY(command.getX(vertexIndex), command.getY(vertexIndex));
+        }
+
+        @Override
+        public float getX() {
+            return this.x;
+        }
+
+        @Override
+        public float getY() {
+            return this.y;
         }
     }
 }
