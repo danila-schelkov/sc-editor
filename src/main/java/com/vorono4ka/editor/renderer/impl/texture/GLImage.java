@@ -88,8 +88,6 @@ public final class GLImage {
             stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
             texture.update(0, 0, 0, width, height, pixelFormat, pixelType, pixels);
 
-            loadImage(texture, pixels, pixelFormat, pixelType);
-
             texture.unbind();
         });
 

@@ -16,7 +16,7 @@ import com.vorono4ka.math.Rect;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
 import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
 import com.vorono4ka.renderer.impl.swf.objects.StageSprite;
-import com.vorono4ka.resources.Assets;
+import com.vorono4ka.resources.AssetManager;
 import com.vorono4ka.sctx.FlatSctxTextureLoader;
 import com.vorono4ka.sctx.SctxTexture;
 import com.vorono4ka.swf.ColorTransform;
@@ -60,6 +60,7 @@ public class EditorStage implements Stage {
 
     private boolean initialized;
     private Shader shader, screenShader;
+    private AssetManager assetManager;
     private GLRendererContext gl;
     private Renderer renderer;
 
@@ -109,8 +110,7 @@ public class EditorStage implements Stage {
     }
 
     public void init(int x, int y, int width, int height) throws ShaderCompilationException {
-        this.shader = Assets.getShader(
-            this.gl,
+        this.shader = assetManager.getShader(
             "objects.vertex.glsl",
             "objects.fragment.glsl",
             new Attribute(0, 2, Float.BYTES, GLConstants.GL_FLOAT),
@@ -118,15 +118,15 @@ public class EditorStage implements Stage {
             new Attribute(2, 4, Float.BYTES, GLConstants.GL_FLOAT),
             new Attribute(3, 3, Float.BYTES, GLConstants.GL_FLOAT)
         );
-        this.screenShader = Assets.getShader(
-            this.gl,
+
+        this.screenShader = assetManager.getShader(
             "screen.vertex.glsl",
             "screen.fragment.glsl",
             new Attribute(0, 2, Float.BYTES, GLConstants.GL_FLOAT),
             new Attribute(1, 2, Float.BYTES, GLConstants.GL_FLOAT)
         );
 
-        BufferedImage imageBuffer = Assets.getImageBuffer("gradient_texture.png");
+        BufferedImage imageBuffer = assetManager.getImageBuffer("gradient_texture.png");
         assert imageBuffer != null : "Gradient texture not found.";
 
         if (this.gradientTexture == null) {
@@ -406,6 +406,10 @@ public class EditorStage implements Stage {
         return stageSprite;
     }
 
+    public void setAssetManager(AssetManager assetManager) {
+        this.assetManager = assetManager;
+    }
+
     public GLRendererContext getGlContext() {
         return gl;
     }
@@ -414,6 +418,10 @@ public class EditorStage implements Stage {
         gl = glRendererContext;
 
         this.renderer = new GLRenderer(glRendererContext);
+    }
+
+    public Renderer getRenderer() {
+        return renderer;
     }
 
     public GLTexture createGLTexture(SWFTexture texture, Path directory) throws TextureFileNotFound {
@@ -512,7 +520,7 @@ public class EditorStage implements Stage {
     }
 
     private Batch initScreenBatch(Shader shader, RenderableTexture texture, Rect rect) {
-        Batch screenBatch = new GLBatch(shader, texture, RenderStencilState.NONE, gl);
+        Batch screenBatch = constructBatch(shader, texture, RenderStencilState.NONE);
         screenBatch.init();
 
         screenBatch.addTriangles(2, RECT_INDICES);
@@ -525,7 +533,7 @@ public class EditorStage implements Stage {
         return screenBatch;
     }
 
-    private Batch constructBatch(Shader shader1, RenderableTexture texture, RenderStencilState stencilRenderingState) {
-        return new GLBatch(shader1, texture, stencilRenderingState, this.gl);
+    private Batch constructBatch(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState) {
+        return new GLBatch(shader, texture, stencilRenderingState, this.gl);
     }
 }
