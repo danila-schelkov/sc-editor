@@ -2,7 +2,7 @@ package com.vorono4ka.editor.renderer.impl.listeners;
 
 import com.vorono4ka.editor.renderer.Camera;
 import com.vorono4ka.editor.renderer.CameraZoom;
-import com.vorono4ka.editor.renderer.impl.Stage;
+import com.vorono4ka.editor.renderer.impl.EditorStage;
 
 import java.awt.event.InputEvent;
 import java.awt.event.MouseWheelEvent;
@@ -13,7 +13,7 @@ public class MouseWheelListener implements java.awt.event.MouseWheelListener {
 
     @Override
     public void mouseWheelMoved(MouseWheelEvent e) {
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
         Camera camera = stage.getCamera();
         CameraZoom zoom = camera.getZoom();
 

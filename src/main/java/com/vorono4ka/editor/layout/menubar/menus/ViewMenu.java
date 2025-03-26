@@ -3,7 +3,7 @@ package com.vorono4ka.editor.layout.menubar.menus;
 import com.vorono4ka.editor.layout.panels.TimelinePanel;
 import com.vorono4ka.editor.layout.windows.EditorWindow;
 import com.vorono4ka.editor.renderer.Camera;
-import com.vorono4ka.editor.renderer.impl.Stage;
+import com.vorono4ka.editor.renderer.impl.EditorStage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.renderer.impl.swf.objects.StageSprite;
 
@@ -41,8 +41,8 @@ public class ViewMenu extends JMenu {
         updateCamera((stage, camera) -> function.accept(camera));
     }
 
-    private static void updateCamera(BiConsumer<Stage, Camera> function) {
-        Stage stage = Stage.getInstance();
+    private static void updateCamera(BiConsumer<EditorStage, Camera> function) {
+        EditorStage stage = EditorStage.getInstance();
         Camera camera = stage.getCamera();
 
         function.accept(stage, camera);

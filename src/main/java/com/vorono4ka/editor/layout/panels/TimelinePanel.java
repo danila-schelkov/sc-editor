@@ -1,7 +1,7 @@
 package com.vorono4ka.editor.layout.panels;
 
 import com.formdev.flatlaf.FlatLightLaf;
-import com.vorono4ka.editor.renderer.impl.Stage;
+import com.vorono4ka.editor.renderer.impl.EditorStage;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
 import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
 
@@ -71,11 +71,11 @@ public class TimelinePanel extends JPanel {
     }
 
     private void playButtonPressed(ActionEvent actionEvent) {
-        Stage.getInstance().resumeAnimation();
+        EditorStage.getInstance().resumeAnimation();
     }
 
     private void stopButtonPressed(ActionEvent actionEvent) {
-        Stage.getInstance().pauseAnimation();
+        EditorStage.getInstance().pauseAnimation();
     }
 
     private void currentFrameChanged(ChangeEvent e) {

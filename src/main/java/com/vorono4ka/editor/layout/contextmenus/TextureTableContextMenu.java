@@ -4,7 +4,7 @@ import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.TablePopupMenuListener;
 import com.vorono4ka.editor.renderer.gl.GLConstants;
-import com.vorono4ka.editor.renderer.impl.Stage;
+import com.vorono4ka.editor.renderer.impl.EditorStage;
 import com.vorono4ka.editor.renderer.texture.GLTexture;
 import com.vorono4ka.utilities.BufferUtils;
 import com.vorono4ka.utilities.ImageUtils;
@@ -35,7 +35,7 @@ public class TextureTableContextMenu extends ContextMenu {
     private void export(ActionEvent actionEvent) {
         int[] selectedRows = table.getSelectedRows();
 
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
         // TODO: add setting for the saving path pattern (e.g. "{folder}/{filename}/texture_{index}.png", "{filepath}/{index}.png", "{filepath}/{basename}_{index}.png")
         // TODO: ask folder to save files in
         Path path = Path.of("screenshots").toAbsolutePath().resolve(editor.getFilename());

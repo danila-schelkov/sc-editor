@@ -14,7 +14,7 @@ public abstract class Batch {
     protected final Attribute[] attributes;
     protected final RenderableTexture texture;
     protected final Shader shader;
-    protected final int stencilRenderingState;
+    protected final RenderStencilState stencilRenderingState;
     protected final int vertexSize, vertexSizeInBytes;
 
     protected FloatBuffer vertices;
@@ -30,7 +30,7 @@ public abstract class Batch {
     protected int vertexIndex;
     protected int pointCount;
 
-    public Batch(Shader shader, RenderableTexture texture, int stencilRenderingState) {
+    public Batch(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState) {
         this.shader = shader;
         this.texture = texture;
         this.stencilRenderingState = stencilRenderingState;
@@ -145,11 +145,11 @@ public abstract class Batch {
         return this.shader == shader && this.texture == texture;
     }
 
-    public boolean hasSame(Shader shader, RenderableTexture texture, int stencilRenderingState) {
+    public boolean hasSame(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState) {
         return this.shader == shader && this.texture == texture && this.stencilRenderingState == stencilRenderingState;
     }
 
-    public int getStencilRenderingState() {
+    public RenderStencilState getStencilRenderingState() {
         return stencilRenderingState;
     }
 

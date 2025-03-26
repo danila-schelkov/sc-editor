@@ -1,7 +1,7 @@
 package com.vorono4ka.editor.layout.components.listeners;
 
 import com.vorono4ka.editor.renderer.Camera;
-import com.vorono4ka.editor.renderer.impl.Stage;
+import com.vorono4ka.editor.renderer.impl.EditorStage;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
 import com.vorono4ka.renderer.impl.swf.objects.StageSprite;
@@ -21,7 +21,7 @@ public class ViewportMouseListener extends MouseAdapter {
         int x = (int) (e.getX() * dpiScalingFactor);
         int y = (int) (e.getY() * dpiScalingFactor);
 
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
         Camera camera = stage.getCamera();
 
         float worldX = camera.getWorldX(x);

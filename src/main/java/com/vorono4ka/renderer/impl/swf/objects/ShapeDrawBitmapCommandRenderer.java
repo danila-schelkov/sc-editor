@@ -1,6 +1,6 @@
 package com.vorono4ka.renderer.impl.swf.objects;
 
-import com.vorono4ka.editor.renderer.Renderer;
+import com.vorono4ka.editor.renderer.Stage;
 import com.vorono4ka.editor.renderer.texture.RenderableTexture;
 import com.vorono4ka.editor.renderer.texture.Texture;
 import com.vorono4ka.math.ReadonlyRect;
@@ -13,35 +13,35 @@ public final class ShapeDrawBitmapCommandRenderer {
     private ShapeDrawBitmapCommandRenderer() {
     }
 
-    public static boolean render(ShapeDrawBitmapCommand command, Renderer renderer, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits) {
-        return render0(renderer, command, new Matrix2x3Transformer(command, matrix), colorTransform, renderConfigBits);
+    public static boolean render(ShapeDrawBitmapCommand command, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits) {
+        return render0(stage, command, new Matrix2x3Transformer(command, matrix), colorTransform, renderConfigBits);
     }
 
-    public static boolean render9Slice(ShapeDrawBitmapCommand command, Renderer stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, Rect safeArea, Rect shapeBounds, float width, float height) {
+    public static boolean render9Slice(ShapeDrawBitmapCommand command, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, Rect safeArea, Rect shapeBounds, float width, float height) {
         NineSliceTransformer vertexTransformer = new NineSliceTransformer(command, matrix, safeArea, shapeBounds, width, height);
 
         return render0(stage, command, vertexTransformer, colorTransform, renderConfigBits);
     }
 
-    public static boolean collisionRender(ShapeDrawBitmapCommand command, Renderer renderer, Matrix2x3 matrix, ColorTransform colorTransform) {
-        return render(command, renderer, matrix, colorTransform, 0);
+    public static boolean collisionRender(ShapeDrawBitmapCommand command, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform) {
+        return render(command, stage, matrix, colorTransform, 0);
     }
 
-    public static boolean renderUV(ShapeDrawBitmapCommand command, Renderer renderer, ColorTransform colorTransform, int renderConfigBits) {
-        UvTransformer vertexTransformer = new UvTransformer(command, renderer.getTextureByIndex(command.getTextureIndex()));
+    public static boolean renderUV(ShapeDrawBitmapCommand command, Stage stage, ColorTransform colorTransform, int renderConfigBits) {
+        UvTransformer vertexTransformer = new UvTransformer(command, stage.getTextureByIndex(command.getTextureIndex()));
 
-        return render0(renderer, command, vertexTransformer, colorTransform, renderConfigBits);
+        return render0(stage, command, vertexTransformer, colorTransform, renderConfigBits);
     }
 
-    private static boolean render0(Renderer renderer, ShapeDrawBitmapCommand command, VertexTransformer vertexTransformer, ColorTransform colorTransform, int renderConfigBits) {
+    private static boolean render0(Stage stage, ShapeDrawBitmapCommand command, VertexTransformer vertexTransformer, ColorTransform colorTransform, int renderConfigBits) {
         float[] transformedPoints = new float[command.getVertexCount() * 2];
         Rect bounds = transformPoints(vertexTransformer, transformedPoints);
 
-        RenderableTexture texture = renderer.getTextureByIndex(command.getTextureIndex());
-        if (renderer.startShape(bounds, texture, renderConfigBits)) {
-            renderer.addTriangles(command.getTriangleCount(), command.getIndices());
+        RenderableTexture texture = stage.getTextureByIndex(command.getTextureIndex());
+        if (stage.startShape(bounds, texture, renderConfigBits)) {
+            stage.addTriangles(command.getTriangleCount(), command.getIndices());
 
-            renderCommandVertices(renderer, command, colorTransform, transformedPoints);
+            renderCommandVertices(stage, command, colorTransform, transformedPoints);
 
             return true;
         }
@@ -49,7 +49,7 @@ public final class ShapeDrawBitmapCommandRenderer {
         return false;
     }
 
-    private static void renderCommandVertices(Renderer renderer, ShapeDrawBitmapCommand command, ColorTransform colorTransform, float[] transformedPoints) {
+    private static void renderCommandVertices(Stage stage, ShapeDrawBitmapCommand command, ColorTransform colorTransform, float[] transformedPoints) {
         float redMultiplier = (colorTransform.getRedMultiplier() & 0xFF) / 255f;
         float greenMultiplier = (colorTransform.getGreenMultiplier() & 0xFF) / 255f;
         float blueMultiplier = (colorTransform.getBlueMultiplier() & 0xFF) / 255f;
@@ -59,7 +59,7 @@ public final class ShapeDrawBitmapCommandRenderer {
         float alpha = (colorTransform.getAlpha() & 0xFF) / 255f;
 
         for (int i = 0; i < command.getVertexCount(); i++) {
-            renderer.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], command.getU(i), command.getV(i), redMultiplier, greenMultiplier, blueMultiplier, alpha, redAddition, greenAddition, blueAddition);
+            stage.addVertex(transformedPoints[i * 2], transformedPoints[i * 2 + 1], command.getU(i), command.getV(i), redMultiplier, greenMultiplier, blueMultiplier, alpha, redAddition, greenAddition, blueAddition);
         }
     }
 

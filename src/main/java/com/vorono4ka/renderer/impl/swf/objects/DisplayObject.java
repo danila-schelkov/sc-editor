@@ -1,7 +1,7 @@
 package com.vorono4ka.renderer.impl.swf.objects;
 
-import com.vorono4ka.editor.renderer.Renderer;
-import com.vorono4ka.editor.renderer.impl.Stage;
+import com.vorono4ka.editor.renderer.Stage;
+import com.vorono4ka.editor.renderer.impl.EditorStage;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.Matrix2x3;
 
@@ -55,14 +55,14 @@ public abstract class DisplayObject {
         else this.renderConfigBits &= 0xFFFFFFFB;
     }
 
-    public Renderer getRenderer() {
-        if (Stage.getStageCount() > 1) {
+    public Stage getStage() {
+        if (EditorStage.getStageCount() > 1) {
             if (this.parent != null) {
-                return this.parent.getRenderer();
+                return this.parent.getStage();
             }
         }
 
-        return Stage.getInstance();
+        return EditorStage.getInstance();
     }
 
     public DisplayObject getParent() {

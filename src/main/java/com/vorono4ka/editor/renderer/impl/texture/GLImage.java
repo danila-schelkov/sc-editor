@@ -1,7 +1,7 @@
 package com.vorono4ka.editor.renderer.impl.texture;
 
 import com.vorono4ka.editor.renderer.gl.GLConstants;
-import com.vorono4ka.editor.renderer.impl.Stage;
+import com.vorono4ka.editor.renderer.impl.EditorStage;
 import com.vorono4ka.editor.renderer.impl.texture.khronos.KhronosTextureLoader;
 import com.vorono4ka.editor.renderer.impl.texture.sctx.SctxTextureLoader;
 import com.vorono4ka.editor.renderer.texture.GLTexture;
@@ -47,7 +47,7 @@ public final class GLImage {
     }
 
     public static GLTexture createWithFormat(byte[] khronosTextureFileData, SctxTexture sctxTexture, boolean clampToEdge, ImageFilter filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
 
         GLTexture texture = new GLTexture(stage.getGlContext(), width, height);
         texture.setPixelInfo(pixelFormat, pixelType);
@@ -77,7 +77,7 @@ public final class GLImage {
     }
 
     public static GLTexture updateSubImage(GLTexture texture, boolean clampToEdge, ImageFilter filter, int width, int height, int pixelFormat, int pixelType, Buffer pixels) {
-        Stage stage = Stage.getInstance();
+        EditorStage stage = EditorStage.getInstance();
 
         stage.doInRenderThread(() -> {
             texture.bind();
@@ -87,8 +87,6 @@ public final class GLImage {
 
             stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
             texture.update(0, 0, 0, width, height, pixelFormat, pixelType, pixels);
-
-            loadImage(texture, pixels, pixelFormat, pixelType);
 
             texture.unbind();
         });

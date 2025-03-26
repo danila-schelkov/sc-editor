@@ -75,8 +75,8 @@ public class JoglRendererContext implements GLRendererContext {
     }
 
     @Override
-    public void glDrawElements(int drawMode, int i, int glUnsignedInt, int i1) {
-        gl.glDrawElements(drawMode, i, glUnsignedInt, i1);
+    public void glDrawElements(int drawMode, int triangleCount, int glUnsignedInt, int i1) {
+        gl.glDrawElements(drawMode, triangleCount, glUnsignedInt, i1);
     }
 
     @Override
@@ -181,11 +181,6 @@ public class JoglRendererContext implements GLRendererContext {
     @Override
     public int glCheckFramebufferStatus(int target) {
         return gl.glCheckFramebufferStatus(target);
-    }
-
-    @Override
-    public int glGetError() {
-        return gl.glGetError();
     }
 
     @Override
@@ -360,8 +355,13 @@ public class JoglRendererContext implements GLRendererContext {
         return gl.isExtensionAvailable(extension);
     }
 
-    public void printExtensions() {
-        System.out.println("Platform: " + gl.getContext().getPlatformExtensionsString());
-        System.out.println("GL: " + gl.getContext().getGLExtensionsString());
+    @Override
+    public int glGetError() {
+        return gl.glGetError();
+    }
+
+    @Override
+    public String glGetString(int target) {
+        return gl.glGetString(target);
     }
 }
