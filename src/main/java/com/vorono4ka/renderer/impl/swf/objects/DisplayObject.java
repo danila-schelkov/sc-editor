@@ -12,7 +12,7 @@ public abstract class DisplayObject {
     private ColorTransform colorTransform;
     private Matrix2x3 matrix;
     private int renderConfigBits;
-    private DisplayObject parent;
+    private Sprite parent;
     private int indexInParent;
 
     public DisplayObject() {
@@ -65,11 +65,11 @@ public abstract class DisplayObject {
         return EditorStage.getInstance();
     }
 
-    public DisplayObject getParent() {
+    public Sprite getParent() {
         return parent;
     }
 
-    public void setParent(DisplayObject parent) {
+    public void setParent(Sprite parent) {
         this.parent = parent;
     }
 
