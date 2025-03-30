@@ -1,7 +1,7 @@
 package com.vorono4ka.editor.renderer.impl.texture.khronos;
 
+import com.vorono4ka.editor.renderer.gl.texture.GLTexture;
 import com.vorono4ka.editor.renderer.impl.texture.GLImage;
-import com.vorono4ka.editor.renderer.texture.GLTexture;
 import com.vorono4ka.utilities.ImageUtils;
 import com.vorono4ka.utilities.PathUtils;
 import com.vorono4ka.utilities.SystemUtils;

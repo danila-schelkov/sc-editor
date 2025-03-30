@@ -1,7 +1,8 @@
-package com.vorono4ka.editor.renderer.texture;
+package com.vorono4ka.editor.renderer.gl.texture;
 
 import com.vorono4ka.editor.renderer.gl.GLConstants;
 import com.vorono4ka.editor.renderer.gl.GLRendererContext;
+import com.vorono4ka.editor.renderer.texture.RenderableTexture;
 import com.vorono4ka.utilities.BufferUtils;
 
 import java.nio.Buffer;

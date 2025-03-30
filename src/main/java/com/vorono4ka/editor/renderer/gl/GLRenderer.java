@@ -42,6 +42,7 @@ public class GLRenderer implements Renderer {
         return viewport;
     }
 
+    @Override
     public void setRenderStencilState(RenderStencilState state) {
         switch (state) {
             case NONE -> {}

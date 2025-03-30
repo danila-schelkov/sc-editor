@@ -2,7 +2,7 @@ package com.vorono4ka.editor.renderer.impl.texture.khronos;
 
 import com.vorono4ka.editor.renderer.gl.GLConstants;
 import com.vorono4ka.editor.renderer.gl.GLRendererContext;
-import com.vorono4ka.editor.renderer.texture.GLTexture;
+import com.vorono4ka.editor.renderer.gl.texture.GLTexture;
 import team.nulls.ntengine.assets.KhronosTexture;
 import team.nulls.ntengine.assets.KhronosTextureDataLoader;
 

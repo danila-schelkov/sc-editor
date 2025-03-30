@@ -2,7 +2,7 @@ package com.vorono4ka.editor.renderer.gl;
 
 import com.vorono4ka.editor.renderer.Framebuffer;
 import com.vorono4ka.editor.renderer.Renderbuffer;
-import com.vorono4ka.editor.renderer.texture.GLTexture;
+import com.vorono4ka.editor.renderer.gl.texture.GLTexture;
 import com.vorono4ka.editor.renderer.texture.RenderableTexture;
 
 public class GLFramebuffer extends Framebuffer {

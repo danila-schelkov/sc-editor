@@ -4,8 +4,8 @@ import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.TablePopupMenuListener;
 import com.vorono4ka.editor.renderer.gl.GLConstants;
+import com.vorono4ka.editor.renderer.gl.texture.GLTexture;
 import com.vorono4ka.editor.renderer.impl.EditorStage;
-import com.vorono4ka.editor.renderer.texture.GLTexture;
 import com.vorono4ka.utilities.BufferUtils;
 import com.vorono4ka.utilities.ImageUtils;
 
