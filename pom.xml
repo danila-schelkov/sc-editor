@@ -6,7 +6,7 @@
 
     <groupId>com.vorono4ka</groupId>
     <artifactId>sc-editor</artifactId>
-    <version>1.4.6</version>
+    <version>1.4.7</version>
 
     <repositories>
         <repository>
@@ -115,7 +115,7 @@
         <dependency>
             <groupId>com.vorono4ka</groupId>
             <artifactId>supercell-swf</artifactId>
-            <version>1.0.5</version>
+            <version>1.0.6</version>
         </dependency>
         <dependency>
             <groupId>com.vorono4ka</groupId>
