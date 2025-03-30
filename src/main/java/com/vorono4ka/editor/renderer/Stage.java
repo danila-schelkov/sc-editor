@@ -5,6 +5,7 @@ import com.vorono4ka.editor.renderer.texture.RenderableTexture;
 import com.vorono4ka.math.ReadonlyRect;
 import com.vorono4ka.math.Rect;
 
+// TODO: maybe should be an abstract class
 public interface Stage {
     void render(float deltaTime);
 

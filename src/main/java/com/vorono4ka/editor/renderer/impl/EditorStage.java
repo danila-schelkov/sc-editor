@@ -466,7 +466,18 @@ public class EditorStage implements Stage {
         this.isCalculatingBounds = true;
         this.bounds = bounds;
 
+        // Note: Passing own sprite as parent to provide Stage reference
+        boolean parentSet = false;
+        if (displayObject.getParent() == null) {
+            displayObject.setParent(this.stageSprite);
+            parentSet = true;
+        }
+
         displayObject.render(DEFAULT_MATRIX, DEFAULT_COLOR_TRANSFORM, 0, 0);
+
+        if (parentSet) {
+            displayObject.setParent(null);
+        }
 
         this.isCalculatingBounds = false;
         this.bounds = null;
