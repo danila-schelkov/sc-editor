@@ -546,6 +546,10 @@ public class EditorStage implements Stage {
     }
 
     private Batch constructBatch(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState) {
-        return new GLBatch(shader, texture, stencilRenderingState, this.gl);
+        return new Batch(shader, texture, stencilRenderingState, this::createDynamicVertexBuffer);
+    }
+
+    private VertexBuffer createDynamicVertexBuffer(Attribute... attributes) {
+        return new GLVertexBuffer(this.gl, GLConstants.GL_DYNAMIC_DRAW, attributes);
     }
 }

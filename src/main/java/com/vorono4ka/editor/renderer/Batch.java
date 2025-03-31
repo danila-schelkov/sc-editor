@@ -8,37 +8,41 @@ import com.vorono4ka.utilities.BufferUtils;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-public abstract class Batch {
+public class Batch {
     protected static final int SIZE = 512;
 
-    protected final Attribute[] attributes;
-    protected final RenderableTexture texture;
-    protected final Shader shader;
-    protected final RenderStencilState stencilRenderingState;
-    protected final int vertexSize, vertexSizeInBytes;
+    private final VertexBufferProducer vertexBufferProducer;
+    private final Attribute[] attributes;
+    private final RenderableTexture texture;
+    private final Shader shader;
+    private final RenderStencilState stencilRenderingState;
+    private final int vertexSize;
 
-    protected FloatBuffer vertices;
-    protected IntBuffer indices;
+    private VertexBuffer vertexBuffer;
+    private FloatBuffer vertices;
+    private IntBuffer indices;
 
     /**
      * Represents max triangle count.
      */
-    protected int capacity;
+    private int capacity;
 
-    protected int renderConfigBits;
-    protected int triangleCount;
-    protected int vertexIndex;
-    protected int pointCount;
+    private int renderConfigBits;
+    private int triangleCount;
+    private int vertexIndex;
+    private int pointCount;
 
-    public Batch(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState) {
+    private boolean isDirty;
+
+    public Batch(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState, VertexBufferProducer vertexBufferProducer) {
         this.shader = shader;
         this.texture = texture;
         this.stencilRenderingState = stencilRenderingState;
+        this.vertexBufferProducer = vertexBufferProducer;
 
         this.capacity = SIZE;
         this.attributes = shader.getAttributes();
         this.vertexSize = calculateVertexSize(this.attributes);
-        this.vertexSizeInBytes = calculateVertexSizeInBytes(this.attributes);
 
         this.vertices = BufferUtils.allocateDirectFloat(this.capacity * vertexSize * 3);
         this.indices = BufferUtils.allocateDirectInt(this.capacity * 3);
@@ -49,29 +53,33 @@ public abstract class Batch {
         for (Attribute attribute : attributes) {
             vertexSize += attribute.size();
         }
+
         return vertexSize;
     }
 
-    private static int calculateVertexSizeInBytes(Attribute... attributes) {
-        int vertexSize = 0;
-        for (Attribute attribute : attributes) {
-            vertexSize += attribute.sizeInBytes();
+    public void init() {
+        this.vertexBuffer = this.vertexBufferProducer.createVertexBuffer(attributes);
+        this.vertexBuffer.init(this.vertices.capacity(), this.indices.capacity());
+    }
+
+    public void delete() {
+        if (this.vertexBuffer != null) {
+            this.vertexBuffer.delete();
         }
-        return vertexSize;
     }
-
-    public abstract void init();
-
-    public abstract void delete();
-
-    protected abstract void renderInternal();
 
     public void render() {
         if (this.texture != null) {
             this.texture.bind();
         }
 
-        renderInternal();
+        if (this.isDirty) {
+            this.vertexBuffer.updateVertices(0, this.vertices);
+            this.vertexBuffer.updateIndices(0, this.indices);
+            this.isDirty = false;
+        }
+
+        this.vertexBuffer.render(0, this.triangleCount * 3);
     }
 
     public void reset() {
@@ -107,6 +115,7 @@ public abstract class Batch {
         }
 
         this.vertexIndex++;
+        this.isDirty = true;
     }
 
     public void addTriangles(int count, int[] triangles) {
@@ -135,6 +144,7 @@ public abstract class Batch {
 
         this.triangleCount += count;
         this.pointCount += count + 2;
+        this.isDirty = true;
     }
 
     public boolean hasSpaceFor(int triangleCount) {
@@ -159,5 +169,10 @@ public abstract class Batch {
             "textureId=" + (this.texture != null ? this.texture.getId() : -1) +
             ", stencilRenderingState=" + this.stencilRenderingState +
             "}";
+    }
+
+    @FunctionalInterface
+    public interface VertexBufferProducer {
+        VertexBuffer createVertexBuffer(Attribute... attributes);
     }
 }

@@ -30,7 +30,7 @@ public interface GLRendererContext {
 
     void glBufferSubData(int bufferType, int offset, long byteLength, Buffer buffer);
 
-    void glDrawElements(int drawMode, int triangleCount, int glUnsignedInt, int i1);
+    void glDrawElements(int drawMode, int elementCount, int glUnsignedInt, int indices);
 
     // Textures
     int glGenTexture();

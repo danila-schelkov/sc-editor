@@ -44,6 +44,7 @@ public class GLTexture implements RenderableTexture {
      * @param pixelType      e.g. GL_UNSIGNED_BYTE
      * @param pixels         buffer containing texture pixels
      * @return 0 if succeeded, otherwise gl error code
+     * @see GLTexture#init(int, int, int, int, int, int, Buffer)
      */
     public int init(int level, int internalFormat, int format, int pixelType, Buffer pixels) {
         return init(level, width >> level, height >> level, internalFormat, format, pixelType, pixels);
@@ -60,6 +61,7 @@ public class GLTexture implements RenderableTexture {
      * @param pixelType      e.g. GL_UNSIGNED_BYTE
      * @param pixels         buffer containing texture pixels
      * @return 0 if succeeded, otherwise gl error code
+     * @see GLTexture#init(int, int, int, int, Buffer)
      */
     public int init(int level, int width, int height, int internalFormat, int format, int pixelType, Buffer pixels) {
         this.internalFormat = internalFormat;
@@ -78,6 +80,7 @@ public class GLTexture implements RenderableTexture {
      * @param format         e.g. GL_RGBA
      * @param data           buffer containing compressed texture data
      * @return 0 if succeeded, otherwise gl error code
+     * @see GLTexture#initCompressed(int, int, int, int, int, ByteBuffer)
      */
     public int initCompressed(int level, int internalFormat, int format, ByteBuffer data) {
         return initCompressed(level, width >> level, height >> level, internalFormat, format, data);
@@ -93,7 +96,7 @@ public class GLTexture implements RenderableTexture {
      * @param format         e.g. GL_RGBA
      * @param data           buffer containing compressed texture data
      * @return 0 if succeeded, otherwise gl error code
-     * @see {@link jogamp.opengl.util.av.EGLMediaPlayerImpl.EGLTextureFrame}
+     * @see GLTexture#initCompressed(int, int, int, ByteBuffer)
      */
     public int initCompressed(int level, int width, int height, int internalFormat, int format, ByteBuffer data) {
         this.internalFormat = format;
