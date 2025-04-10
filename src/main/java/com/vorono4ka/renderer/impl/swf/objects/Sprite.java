@@ -92,9 +92,22 @@ public abstract class Sprite extends DisplayObject {
     }
 
     public void addChildAt(DisplayObject displayObject, int index) {
+        Sprite parent = displayObject.getParent();
+
+        if (parent != null) {
+            int indexInParent = displayObject.getIndexInParent();
+            if (parent == this && indexInParent == index) return;
+
+            parent.removeChildAt(indexInParent);
+        }
+
         this.children.add(index, displayObject);
         displayObject.setParent(this);
         displayObject.setIndexInParent(index);
+
+        for (int i = index + 1; i < this.children.size(); i++) {
+            this.children.get(i).setIndexInParent(i);
+        }
     }
 
     public void removeChild(DisplayObject displayObject) {
