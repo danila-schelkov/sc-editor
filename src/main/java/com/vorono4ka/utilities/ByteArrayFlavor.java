@@ -47,9 +47,9 @@ public class ByteArrayFlavor implements Transferable {
         throw new UnsupportedFlavorException(flavor);
     }
 
-    private static DataFlavor createConstant(Class<?> rc, String prn) {
+    private static DataFlavor createConstant(Class<?> reprClass, String presentableName) {
         try {
-            return new DataFlavor(rc, prn);
+            return new DataFlavor(reprClass, presentableName);
         } catch (Exception e) {
             return null;
         }

@@ -2,7 +2,7 @@ package com.vorono4ka.editor.renderer.impl.texture.sctx;
 
 import com.vorono4ka.editor.renderer.gl.GLConstants;
 import com.vorono4ka.editor.renderer.gl.GLRendererContext;
-import com.vorono4ka.editor.renderer.texture.GLTexture;
+import com.vorono4ka.editor.renderer.gl.texture.GLTexture;
 import com.vorono4ka.sctx.MipMapData;
 import com.vorono4ka.sctx.PixelType;
 import com.vorono4ka.sctx.SctxTexture;

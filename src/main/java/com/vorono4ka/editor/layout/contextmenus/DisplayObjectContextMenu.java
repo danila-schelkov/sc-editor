@@ -247,7 +247,18 @@ public class DisplayObjectContextMenu extends ContextMenu {
         stage.doInRenderThread(() -> {
             Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, bounds);
 
+            // Note: Passing own sprite as parent to provide Stage reference
+            boolean parentSet = false;
+            if (displayObject.getParent() == null) {
+                displayObject.setParent(stage.getStageSprite());
+                parentSet = true;
+            }
+
             displayObject.render(matrix, new ColorTransform(), 0, 0);
+
+            if (parentSet) {
+                displayObject.setParent(null);
+            }
 
             stage.renderToFramebuffer(framebuffer);
 
@@ -278,6 +289,13 @@ public class DisplayObjectContextMenu extends ContextMenu {
         stage.doInRenderThread(() -> {
             Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, bounds);
 
+            // Note: Passing own sprite as parent to provide Stage reference
+            boolean parentSet = false;
+            if (movieClip.getParent() == null) {
+                movieClip.setParent(stage.getStageSprite());
+                parentSet = true;
+            }
+
             // TODO: ask where to save the video file
             try (VideoExporter videoExporter = new FfmpegVideoExporter(SCREENSHOT_FOLDER, filename, "webm", "libvpx-vp9", movieClip.getFps())) {
                 MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> {
@@ -296,6 +314,10 @@ public class DisplayObjectContextMenu extends ContextMenu {
                     BufferedImage image = ImageUtils.createBufferedImageFromPixels(framebuffer.getWidth(), framebuffer.getHeight(), framebuffer.getPixelArray(true), false);
                     videoExporter.encodeFrame(image, frameIndex);
                 });
+            }
+
+            if (parentSet) {
+                movieClip.setParent(null);
             }
 
             framebuffer.delete();

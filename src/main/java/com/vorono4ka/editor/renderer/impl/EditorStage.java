@@ -4,12 +4,12 @@ import com.jogamp.opengl.util.PMVMatrix;
 import com.vorono4ka.editor.renderer.*;
 import com.vorono4ka.editor.renderer.gl.*;
 import com.vorono4ka.editor.renderer.gl.exceptions.ShaderCompilationException;
+import com.vorono4ka.editor.renderer.gl.texture.GLTexture;
 import com.vorono4ka.editor.renderer.impl.texture.GLImage;
 import com.vorono4ka.editor.renderer.impl.texture.ImageFilter;
 import com.vorono4ka.editor.renderer.impl.texture.sctx.SctxPixelType;
 import com.vorono4ka.editor.renderer.shader.Attribute;
 import com.vorono4ka.editor.renderer.shader.Shader;
-import com.vorono4ka.editor.renderer.texture.GLTexture;
 import com.vorono4ka.editor.renderer.texture.RenderableTexture;
 import com.vorono4ka.math.ReadonlyRect;
 import com.vorono4ka.math.Rect;
@@ -130,7 +130,7 @@ public class EditorStage implements Stage {
         assert imageBuffer != null : "Gradient texture not found.";
 
         if (this.gradientTexture == null) {
-            this.gradientTexture = GLImage.createWithFormat(null, null, true, ImageFilter.LINEAR, 256, 2, ImageUtils.getPixelBuffer(imageBuffer), GLConstants.GL_LUMINANCE_ALPHA, GLConstants.GL_UNSIGNED_BYTE);
+            this.gradientTexture = GLImage.createWithFormat(256, 2, true, ImageFilter.LINEAR, GLConstants.GL_LUMINANCE_ALPHA, GLConstants.GL_UNSIGNED_BYTE, ImageUtils.getPixelBuffer(imageBuffer), null, null);
         }
 
         this.camera.init(width, height);
@@ -439,14 +439,14 @@ public class EditorStage implements Stage {
             }
         }
 
-        GLTexture image = GLImage.createWithFormat(ktxData, sctxTexture, true, ImageFilter.values()[texture.getInitialTag().getTextureFilter()], texture.getWidth(), texture.getHeight(), texture.getPixels(), texture.getTextureInfo().pixelFormat(), texture.getTextureInfo().pixelType());
+        GLTexture image = GLImage.createWithFormat(texture.getWidth(), texture.getHeight(), true, ImageFilter.values()[texture.getInitialTag().getTextureFilter()], texture.getTextureInfo().pixelFormat(), texture.getTextureInfo().pixelType(), texture.getPixels(), sctxTexture, ktxData);
         this.textures.put(texture.getIndex(), image);
 
         return image;
     }
 
     public GLTexture createGLTexture(SctxTexture texture, int index) {
-        GLTexture image = GLImage.createWithFormat(null, texture, true, ImageFilter.LINEAR, texture.getWidth(), texture.getHeight(), null, SctxPixelType.getFormat(texture.getPixelType()), SctxPixelType.getPixelType(texture.getPixelType()));
+        GLTexture image = GLImage.createWithFormat(texture.getWidth(), texture.getHeight(), true, ImageFilter.LINEAR, SctxPixelType.getFormat(texture.getPixelType()), SctxPixelType.getPixelType(texture.getPixelType()), null, texture, null);
         this.textures.put(index, image);
 
         return image;
@@ -466,7 +466,18 @@ public class EditorStage implements Stage {
         this.isCalculatingBounds = true;
         this.bounds = bounds;
 
+        // Note: Passing own sprite as parent to provide Stage reference
+        boolean parentSet = false;
+        if (displayObject.getParent() == null) {
+            displayObject.setParent(this.stageSprite);
+            parentSet = true;
+        }
+
         displayObject.render(DEFAULT_MATRIX, DEFAULT_COLOR_TRANSFORM, 0, 0);
+
+        if (parentSet) {
+            displayObject.setParent(null);
+        }
 
         this.isCalculatingBounds = false;
         this.bounds = null;
@@ -535,6 +546,10 @@ public class EditorStage implements Stage {
     }
 
     private Batch constructBatch(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState) {
-        return new GLBatch(shader, texture, stencilRenderingState, this.gl);
+        return new Batch(shader, texture, stencilRenderingState, this::createDynamicVertexBuffer);
+    }
+
+    private VertexBuffer createDynamicVertexBuffer(Attribute... attributes) {
+        return new GLVertexBuffer(this.gl, GLConstants.GL_DYNAMIC_DRAW, attributes);
     }
 }

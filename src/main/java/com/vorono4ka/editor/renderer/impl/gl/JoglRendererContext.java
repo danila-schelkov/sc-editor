@@ -75,8 +75,8 @@ public class JoglRendererContext implements GLRendererContext {
     }
 
     @Override
-    public void glDrawElements(int drawMode, int triangleCount, int glUnsignedInt, int i1) {
-        gl.glDrawElements(drawMode, triangleCount, glUnsignedInt, i1);
+    public void glDrawElements(int drawMode, int elementCount, int glUnsignedInt, int indices) {
+        gl.glDrawElements(drawMode, elementCount, glUnsignedInt, indices);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.vorono4ka.editor.renderer.impl.texture.khronos;
 
-import com.vorono4ka.editor.renderer.texture.GLTexture;
+import com.vorono4ka.editor.renderer.gl.texture.GLTexture;
 
 import java.nio.ByteBuffer;
 

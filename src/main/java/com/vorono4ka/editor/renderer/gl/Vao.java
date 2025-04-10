@@ -12,21 +12,17 @@ public class Vao implements BufferObject {
         this.id = gl.glGenVertexArray();
     }
 
-    public void linkAttrib(BufferObject vbo, int layout, int size, int type, int stride, int offset) {
-        vbo.bind();
-        gl.glEnableVertexAttribArray(layout);
-        gl.glVertexAttribPointer(layout, size, type, false, stride, offset);
-        vbo.unbind();
-    }
-
+    @Override
     public void bind() {
         gl.glBindVertexArray(this.id);
     }
 
+    @Override
     public void unbind() {
         gl.glBindVertexArray(0);
     }
 
+    @Override
     public void delete() {
         gl.glDeleteVertexArray(this.id);
     }

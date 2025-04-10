@@ -1,10 +1,10 @@
 package com.vorono4ka.editor.renderer.impl.texture;
 
 import com.vorono4ka.editor.renderer.gl.GLConstants;
+import com.vorono4ka.editor.renderer.gl.texture.GLTexture;
 import com.vorono4ka.editor.renderer.impl.EditorStage;
 import com.vorono4ka.editor.renderer.impl.texture.khronos.KhronosTextureLoader;
 import com.vorono4ka.editor.renderer.impl.texture.sctx.SctxTextureLoader;
-import com.vorono4ka.editor.renderer.texture.GLTexture;
 import com.vorono4ka.sctx.SctxTexture;
 import com.vorono4ka.utilities.BufferUtils;
 
@@ -46,7 +46,7 @@ public final class GLImage {
         }
     }
 
-    public static GLTexture createWithFormat(byte[] khronosTextureFileData, SctxTexture sctxTexture, boolean clampToEdge, ImageFilter filter, int width, int height, Buffer pixels, int pixelFormat, int pixelType) {
+    public static GLTexture createWithFormat(int width, int height, boolean clampToEdge, ImageFilter filter, int pixelFormat, int pixelType, Buffer pixels, SctxTexture sctxTexture, byte[] khronosTextureFileData) {
         EditorStage stage = EditorStage.getInstance();
 
         GLTexture texture = new GLTexture(stage.getGlContext(), width, height);
