@@ -10,7 +10,11 @@ import java.net.URISyntaxException;
 
 public class LinkLabel extends JLabel {
     public LinkLabel(String link) {
-        super(String.format("<html><a href=\"#\">%s</a></html>", link));
+        this(link, link);
+    }
+
+    public LinkLabel(String text, String link) {
+        super(String.format("<html><a href=\"#\">%s</a></html>", text));
         this.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         this.addMouseListener(new MouseAdapter() {

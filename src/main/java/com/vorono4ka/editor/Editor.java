@@ -2,6 +2,7 @@ package com.vorono4ka.editor;
 
 import com.vorono4ka.editor.displayObjects.SpriteSheet;
 import com.vorono4ka.editor.layout.components.Table;
+import com.vorono4ka.editor.layout.dialogs.ExceptionDialog;
 import com.vorono4ka.editor.layout.menubar.menus.EditMenu;
 import com.vorono4ka.editor.layout.menubar.menus.FileMenu;
 import com.vorono4ka.editor.layout.panels.StatusBar;
@@ -23,6 +24,8 @@ import com.vorono4ka.swf.exceptions.TextureFileNotFound;
 import com.vorono4ka.swf.exceptions.UnableToFindObjectException;
 import com.vorono4ka.swf.exceptions.UnsupportedCustomPropertyException;
 import com.vorono4ka.swf.movieclips.MovieClipOriginal;
+import com.vorono4ka.swf.shapes.ShapeDrawBitmapCommand;
+import com.vorono4ka.swf.shapes.ShapeOriginal;
 import com.vorono4ka.swf.textures.SWFTexture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +102,7 @@ public class Editor {
         } catch (LoadingFaultException | UnableToFindObjectException |
                  UnsupportedCustomPropertyException exception) {
             LOGGER.error("An error occurred while loading the file: {}", path, exception);
+            ExceptionDialog.showExceptionDialog(Thread.currentThread(), exception);
             return false;
         } catch (TextureFileNotFound e) {
             this.window.showErrorDialog(e.getMessage());
@@ -348,12 +352,30 @@ public class Editor {
                 GLTexture texture = images.get(i);
                 texturesTable.addRow(i, texture.getWidth(), texture.getHeight(), texture.getFormat());
 
-                SpriteSheet spriteSheet = new SpriteSheet(texture, swf != null ? swf.getDrawBitmapsOfTexture(i) : Collections.emptyList());
+                SpriteSheet spriteSheet = new SpriteSheet(texture, getDrawBitmapsOfTexture(i));
                 this.spriteSheets.add(spriteSheet);
 
                 taskTracker.setValue(i);
             }
         }
+    }
+
+    private List<ShapeDrawBitmapCommand> getDrawBitmapsOfTexture(int textureIndex) {
+        if (swf == null) {
+            return Collections.emptyList();
+        }
+
+        List<ShapeDrawBitmapCommand> bitmapCommands = new ArrayList<>();
+
+        for (ShapeOriginal shape : swf.getShapes()) {
+            for (ShapeDrawBitmapCommand command : shape.getCommands()) {
+                if (command.getTextureIndex() == textureIndex) {
+                    bitmapCommands.add(command);
+                }
+            }
+        }
+
+        return bitmapCommands;
     }
 
     private List<Object[]> collectObjectTableRows() {
