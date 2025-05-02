@@ -439,7 +439,7 @@ public class EditorStage implements Stage {
             }
         }
 
-        GLTexture image = GLImage.createWithFormat(texture.getWidth(), texture.getHeight(), true, ImageFilter.values()[texture.getInitialTag().getTextureFilter()], texture.getTextureInfo().pixelFormat(), texture.getTextureInfo().pixelType(), texture.getPixels(), sctxTexture, ktxData);
+        GLTexture image = GLImage.createWithFormat(texture.getWidth(), texture.getHeight(), true, ImageFilter.values()[texture.getInitialTag().getTextureFilter()], texture.getType().glFormat, texture.getType().glType, texture.getPixels(), sctxTexture, ktxData);
         this.textures.put(texture.getIndex(), image);
 
         return image;
