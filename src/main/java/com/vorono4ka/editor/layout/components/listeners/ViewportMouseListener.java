@@ -1,5 +1,7 @@
 package com.vorono4ka.editor.layout.components.listeners;
 
+import com.vorono4ka.editor.SystemInfo;
+import com.vorono4ka.editor.layout.ScalingUtils;
 import com.vorono4ka.editor.renderer.Camera;
 import com.vorono4ka.editor.renderer.impl.EditorStage;
 import com.vorono4ka.math.Rect;
@@ -17,7 +19,7 @@ public class ViewportMouseListener extends MouseAdapter {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        float dpiScalingFactor = Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f;
+        float dpiScalingFactor = ScalingUtils.getDpiScalingFactor();
         int x = (int) (e.getX() * dpiScalingFactor);
         int y = (int) (e.getY() * dpiScalingFactor);
 

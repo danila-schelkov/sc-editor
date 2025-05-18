@@ -3,6 +3,8 @@ package com.vorono4ka.editor.renderer.impl.listeners;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
+import com.vorono4ka.editor.SystemInfo;
+import com.vorono4ka.editor.layout.ScalingUtils;
 import com.vorono4ka.editor.renderer.impl.EditorStage;
 import com.vorono4ka.editor.renderer.impl.gl.GLShaderLoader;
 import com.vorono4ka.editor.renderer.impl.gl.JoglRendererContext;
@@ -57,9 +59,7 @@ public class EventListener implements GLEventListener {
         // System.setProperty("sun.java2d.uiScale.enabled", "false");
         // System.setProperty("sun.java2d.dpiaware", "false");
 
-        // Note: Got from here: https://github.com/nicolas-van/WorldWindJava/commit/0360d5f1c6117f1b989dc68d2b52085e2cbb7a09#diff-0998fa6b85b93125b092a5a0fc9246247ad761615ddec52c15616096593b5a98R498
-        // This is apparently necessary to enable the canvas to resize correctly with JSplitPane.
-        float dpiScalingFactor = Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f;
+        float dpiScalingFactor = ScalingUtils.getDpiScalingFactor();
         width = (int) (width * dpiScalingFactor);
         height = (int) (height * dpiScalingFactor);
 
