@@ -1,6 +1,7 @@
 package com.vorono4ka.editor.layout.menubar.menus;
 
 import com.vorono4ka.editor.layout.panels.TimelinePanel;
+import com.vorono4ka.editor.layout.shortcut.KeyboardUtils;
 import com.vorono4ka.editor.layout.windows.EditorWindow;
 import com.vorono4ka.editor.renderer.Camera;
 import com.vorono4ka.editor.renderer.impl.EditorStage;
@@ -78,17 +79,17 @@ public class ViewMenu extends JMenu {
         zoom.setMnemonic(KeyEvent.VK_Z);
 
         JMenuItem zoomIn = new JMenuItem("Zoom in", KeyEvent.VK_I);
-        zoomIn.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_ADD, InputEvent.CTRL_DOWN_MASK));
+        zoomIn.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, KeyboardUtils.ctrlButton()));
         zoomIn.addActionListener(ViewMenu::zoomIn);
         zoom.add(zoomIn);
 
         JMenuItem zoomOut = new JMenuItem("Zoom out", KeyEvent.VK_O);
-        zoomOut.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, InputEvent.CTRL_DOWN_MASK));
+        zoomOut.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, KeyboardUtils.ctrlButton()));
         zoomOut.addActionListener(ViewMenu::zoomOut);
         zoom.add(zoomOut);
 
         JMenuItem zoomToFit = new JMenuItem("Zoom to fit", KeyEvent.VK_F);
-        zoomToFit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, InputEvent.CTRL_DOWN_MASK));
+        zoomToFit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyboardUtils.ctrlButton()));
         zoomToFit.addActionListener(ViewMenu::zoomToFit);
         zoom.add(zoomToFit);
 
