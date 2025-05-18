@@ -87,6 +87,11 @@ public class JoglRendererContext implements GLRendererContext {
     }
 
     @Override
+    public void glActiveTexture(int textureSlot) {
+        gl.glActiveTexture(textureSlot);
+    }
+
+    @Override
     public void glBindTexture(int textureType, int id) {
         gl.glBindTexture(textureType, id);
     }

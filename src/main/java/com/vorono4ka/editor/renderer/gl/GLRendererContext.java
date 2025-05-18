@@ -35,6 +35,8 @@ public interface GLRendererContext {
     // Textures
     int glGenTexture();
 
+    void glActiveTexture(int textureSlot);
+
     void glBindTexture(int textureType, int id);
 
     void glDeleteTexture(int id);
