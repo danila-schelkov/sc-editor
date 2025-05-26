@@ -14,6 +14,7 @@ public class Table extends JTable {
         this.tableHeader.setReorderingAllowed(false);
 
         this.selectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        setColumnSelectionAllowed(true);
     }
 
     public void clear() {
