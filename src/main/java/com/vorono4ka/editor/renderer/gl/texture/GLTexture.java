@@ -169,6 +169,8 @@ public class GLTexture implements RenderableTexture {
     }
 
     public void bind() {
+        // Fix of https://stackoverflow.com/a/70339902/14915825
+        gl.glActiveTexture(GLConstants.GL_TEXTURE0);
         gl.glBindTexture(GLConstants.GL_TEXTURE_2D, this.id);
     }
 
