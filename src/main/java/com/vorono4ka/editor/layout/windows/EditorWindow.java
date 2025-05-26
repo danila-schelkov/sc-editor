@@ -64,14 +64,15 @@ public class EditorWindow extends Window {
         this.tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
         this.canvas = new EditorCanvas(capabilities);
         this.timelinePanel = new TimelinePanel();
+
         this.timelineSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, this.canvas, this.timelinePanel);
 
         this.fpsAnimator = new FPSAnimator(this.canvas, 60);
         this.targetFps = fpsAnimator.getFPS();
 
         MINIMUM_SIZE.width += SIDE_PANEL_SIZE.width;
+        this.tabbedPane.setMinimumSize(SIDE_PANEL_SIZE);
         this.tabbedPane.setPreferredSize(SIDE_PANEL_SIZE);
-        this.canvas.setPreferredSize(CANVAS_SIZE);
         this.timelineSplitPane.setPreferredSize(CANVAS_SIZE);
 
         this.timelinePanel.setVisible(false);
@@ -85,11 +86,19 @@ public class EditorWindow extends Window {
         this.frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.frame.setJMenuBar(this.menubar);
 
-        this.frame.getContentPane().add(this.tabbedPane, BorderLayout.WEST);
-        this.frame.getContentPane().add(this.timelineSplitPane);
+        // Fix of canvas resizing issue. Many thanks to https://jvm-gaming.org/t/using-multiple-canvases/20962/12
+        // We need to create a Dimension object for the JPanel minimum size to fix a GLCanvas resize bug.
+        // The GLCanvas normally won't receive resize events that shrink a JPanel controlled by a JSplitPane.
+        this.canvas.setMinimumSize(new Dimension());
+        this.timelineSplitPane.setMinimumSize(new Dimension());
+
+        JSplitPane mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, this.tabbedPane, timelineSplitPane);
+
+        this.frame.getContentPane().add(mainSplitPane);
         this.frame.getContentPane().add(statusBar, BorderLayout.SOUTH);
         this.frame.setMinimumSize(MINIMUM_SIZE);
         this.frame.setSize(this.frame.getContentPane().getPreferredSize());
+        this.frame.pack();
     }
 
     public void show() {
