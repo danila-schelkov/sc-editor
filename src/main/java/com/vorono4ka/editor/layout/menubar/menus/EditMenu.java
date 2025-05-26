@@ -2,6 +2,7 @@ package com.vorono4ka.editor.layout.menubar.menus;
 
 import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.layout.components.Table;
+import com.vorono4ka.editor.layout.shortcut.KeyboardUtils;
 import com.vorono4ka.editor.layout.windows.EditorWindow;
 
 import javax.swing.*;
@@ -23,15 +24,15 @@ public class EditMenu extends JMenu {
         setMnemonic(KeyEvent.VK_E);
 
         JMenuItem find = new JMenuItem("Find", KeyEvent.VK_F);
-        find.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK));
+        find.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyboardUtils.ctrlButton()));
 
         JMenuItem findUsages = new JMenuItem("Find Usages");
-        findUsages.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_DOWN_MASK));
+        findUsages.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, KeyboardUtils.ctrlButton()));
 
         this.previous = new JMenuItem("Previous", KeyEvent.VK_P);
-        this.previous.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
+        this.previous.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyboardUtils.ctrlButton() | InputEvent.ALT_DOWN_MASK));
         this.next = new JMenuItem("Next", KeyEvent.VK_N);
-        this.next.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, InputEvent.CTRL_DOWN_MASK | InputEvent.ALT_DOWN_MASK));
+        this.next.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyboardUtils.ctrlButton() | InputEvent.ALT_DOWN_MASK));
 
         find.addActionListener(this::find);
         findUsages.addActionListener(this::findUsages);

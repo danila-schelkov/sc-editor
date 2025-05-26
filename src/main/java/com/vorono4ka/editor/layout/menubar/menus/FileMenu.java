@@ -2,6 +2,7 @@ package com.vorono4ka.editor.layout.menubar.menus;
 
 import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.layout.filechooser.BetterFileChooser;
+import com.vorono4ka.editor.layout.shortcut.KeyboardUtils;
 import com.vorono4ka.resources.ResourceManager;
 
 import javax.swing.*;
@@ -29,15 +30,15 @@ public class FileMenu extends JMenu {
         setMnemonic(KeyEvent.VK_F);
 
         JMenuItem open = new JMenuItem("Open", KeyEvent.VK_O);
-        open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK));
+        open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyboardUtils.ctrlButton()));
 
         this.saveButton = new JMenuItem("Save", KeyEvent.VK_O);
-        this.saveButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK));
+        this.saveButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyboardUtils.ctrlButton()));
 
         JMenuItem openScreenshotsFolderButton = new JMenuItem("Open screenshots folder");
 
         this.saveAsButton = new JMenuItem("Save as...", KeyEvent.VK_O);
-        this.saveAsButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+        this.saveAsButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyboardUtils.ctrlButton() | InputEvent.SHIFT_DOWN_MASK));
         JMenuItem close = new JMenuItem("Close", KeyEvent.VK_C);
         JMenuItem exit = new JMenuItem("Exit");
 
