@@ -38,7 +38,7 @@ import java.text.DecimalFormat;
 import java.util.Objects;
 
 public class DisplayObjectContextMenu extends ContextMenu {
-    public static final Clipboard SYSTEM_CLIPBOARD = Toolkit.getDefaultToolkit().getSystemClipboard();
+    private static final Clipboard SYSTEM_CLIPBOARD = Toolkit.getDefaultToolkit().getSystemClipboard();
 
     // TODO: load from settings
     private static final Path SCREENSHOT_FOLDER = Path.of("screenshots").toAbsolutePath();
