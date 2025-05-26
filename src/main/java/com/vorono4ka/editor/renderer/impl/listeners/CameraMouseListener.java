@@ -1,5 +1,7 @@
 package com.vorono4ka.editor.renderer.impl.listeners;
 
+import com.vorono4ka.editor.SystemInfo;
+import com.vorono4ka.editor.layout.ScalingUtils;
 import com.vorono4ka.editor.renderer.Camera;
 import com.vorono4ka.editor.renderer.impl.EditorStage;
 
@@ -22,7 +24,7 @@ public class CameraMouseListener implements MouseListener, MouseMotionListener {
     public void mousePressed(MouseEvent e) {
         if (e.getButton() != MouseEvent.BUTTON2) return;
 
-        float dpiScalingFactor = Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f;
+        float dpiScalingFactor = ScalingUtils.getDpiScalingFactor();
         this.startX = (int) (e.getX() * dpiScalingFactor);
         this.startY = (int) (e.getY() * dpiScalingFactor);
     }
@@ -50,7 +52,7 @@ public class CameraMouseListener implements MouseListener, MouseMotionListener {
         int modifiers = e.getModifiersEx();
         if ((modifiers & InputEvent.BUTTON2_DOWN_MASK) != InputEvent.BUTTON2_DOWN_MASK) return;
 
-        float dpiScalingFactor = Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f;
+        float dpiScalingFactor = ScalingUtils.getDpiScalingFactor();
         int x = (int) (e.getX() * dpiScalingFactor);
         int y = (int) (e.getY() * dpiScalingFactor);
 
