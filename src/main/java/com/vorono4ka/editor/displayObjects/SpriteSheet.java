@@ -32,7 +32,7 @@ public class SpriteSheet extends DisplayObject {
     }
 
     @Override
-    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
+    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, float deltaTime) {
         Stage renderer = this.getStage();
         if (renderer.startShape(this.bounds, this.texture, 0)) {
             renderer.addTriangles(2, INDICES);

@@ -29,7 +29,7 @@ public class Shape extends DisplayObject {
         ColorTransform colorTransformApplied = new ColorTransform(this.getColorTransform());
         colorTransformApplied.multiply(colorTransform);
 
-        int v35 = RenderConfig.getUnknownRenderModification(colorTransformApplied, a4);
+        int v35 = RenderConfig.getUnknownRenderModification(colorTransformApplied) | a4;
 
         int renderConfigBits = this.getRenderConfigBits() | v35;
 

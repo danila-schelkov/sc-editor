@@ -53,9 +53,9 @@ public class MovieClip extends Sprite {
     }
 
     @Override
-    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
+    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, float deltaTime) {
         if (deltaTime <= 0.0f) {
-            return super.render(matrix, colorTransform, a4, deltaTime);
+            return super.render(matrix, colorTransform, renderConfigBits, deltaTime);
         }
 
         if (this.frameTime >= this.msPerFrame) {
@@ -104,7 +104,7 @@ public class MovieClip extends Sprite {
             this.frameTime += deltaTime;
         }
 
-        return super.render(matrix, colorTransform, a4, deltaTime);
+        return super.render(matrix, colorTransform, renderConfigBits, deltaTime);
     }
 
     @Override

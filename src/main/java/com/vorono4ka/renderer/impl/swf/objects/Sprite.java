@@ -23,14 +23,14 @@ public abstract class Sprite extends DisplayObject {
     }
 
     @Override
-    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
+    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, float deltaTime) {
         Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
         matrixApplied.multiply(matrix);
 
         ColorTransform colorTransformApplied = new ColorTransform(this.getColorTransform());
         colorTransformApplied.multiply(colorTransform);
 
-        int v45 = RenderConfig.getUnknownRenderModification(colorTransformApplied, a4);
+        int v45 = RenderConfig.getUnknownRenderModification(colorTransformApplied) | renderConfigBits;
 
         boolean result = false;
         int spriteRenderConfigBits = (this.getRenderConfigBits() & 0x3FF) | v45;

@@ -23,7 +23,7 @@ public abstract class DisplayObject {
         this.isVisible = true;
     }
 
-    public abstract boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime);
+    public abstract boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, float deltaTime);
 
     public abstract boolean collisionRender(Matrix2x3 matrix);
 
@@ -52,6 +52,12 @@ public abstract class DisplayObject {
     public void setGrayOut(boolean grayOut) {
         if (grayOut) this.renderConfigBits |= 4;
         else this.renderConfigBits &= 0xFFFFFFFB;
+    }
+
+    // Note: own function for changing triangulation function
+    public void setTriangleFunction(boolean useStrip) {
+        if (useStrip) this.renderConfigBits |= 0x8000;
+        else this.renderConfigBits &= 0xffff7fff;
     }
 
     // TODO: maybe remember the stage of the object?
