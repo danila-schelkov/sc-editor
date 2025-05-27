@@ -1,6 +1,7 @@
 package com.vorono4ka.editor;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.vorono4ka.editor.layout.dialogs.AboutDialog;
 import com.vorono4ka.editor.layout.dialogs.ExceptionDialog;
 import com.vorono4ka.editor.layout.windows.EditorWindow;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ public class Main {
                 }
             }
 
+            registerAboutHandler(editor);
             registerOpenFileHandler(editor);
         });
     }
@@ -57,6 +59,21 @@ public class Main {
             }
         } catch (Throwable e) {
             LOGGER.error("Failed to register open file handler", e);
+        }
+    }
+
+    private static void registerAboutHandler(Editor editor) {
+        try {
+            if (Desktop.isDesktopSupported()) {
+                Desktop desktop = Desktop.getDesktop();
+                if (desktop.isSupported(Desktop.Action.APP_ABOUT)) {
+                    desktop.setAboutHandler(e -> {
+                        AboutDialog.showAboutDialog(editor.getWindow().getFrame());
+                    });
+                }
+            }
+        } catch (Throwable e) {
+            LOGGER.error("Failed to register about handler", e);
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.vorono4ka.editor.layout.dialogs;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.vorono4ka.editor.Editor;
 import com.vorono4ka.editor.layout.components.LinkLabel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +22,6 @@ public class ExceptionDialog extends JDialog {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionDialog.class);
 
     private static final String DIALOG_NAME = "Error";
-    private static final String REPO_URL = "https://github.com/danila-schelkov/sc-editor";
 
     public static void registerUncaughtExceptionHandler() {
         Thread.setDefaultUncaughtExceptionHandler(ExceptionDialog::showExceptionDialog);
@@ -143,7 +143,7 @@ public class ExceptionDialog extends JDialog {
             issueBody = "Please copy the displayed text in the error dialog and paste it here";
         }
 
-        return String.format("%s/issues/new?labels=bug&title=%s&body=%s", REPO_URL, issueTitle, issueBody);
+        return String.format("%s/issues/new?labels=bug&title=%s&body=%s", Editor.REPO_URL, issueTitle, issueBody);
     }
 
     private static void throwTestException() {

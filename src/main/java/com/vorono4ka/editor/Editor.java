@@ -41,6 +41,8 @@ import java.util.List;
 public class Editor {
     private static final Logger LOGGER = LoggerFactory.getLogger(Editor.class);
 
+    public static final String REPO_URL = "https://github.com/danila-schelkov/sc-editor";
+
     private final EditorWindow window = new EditorWindow(this);
     // TODO: save into file somewhere
     private final EditorSettings settings = new EditorSettings();
