@@ -21,7 +21,7 @@ public class MovieClipModifier extends DisplayObject {
     }
 
     @Override
-    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
+    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, float deltaTime) {
         Stage stage = this.getStage();
 
         RenderStencilState stencilRenderingState = switch (this.tag) {

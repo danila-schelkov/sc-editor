@@ -17,10 +17,14 @@ public class DisplayObjectFactory {
 
         if (original instanceof ShapeOriginal shapeOriginal) {
             if (scalingGrid != null) {
-                return Shape9Slice.createShape(shapeOriginal, scalingGrid);
+                Shape9Slice shape = Shape9Slice.createShape(shapeOriginal, scalingGrid);
+                shape.setTriangleFunction(swf.getContainerVersion() == 5);
+                return shape;
             }
 
-            return Shape.createShape(shapeOriginal);
+            Shape shape = Shape.createShape(shapeOriginal);
+            shape.setTriangleFunction(swf.getContainerVersion() == 5);
+            return shape;
         }
 
         if (original instanceof MovieClipOriginal movieClipOriginal) {

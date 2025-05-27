@@ -1,6 +1,7 @@
 package com.vorono4ka.renderer.impl.swf.objects;
 
 import com.vorono4ka.editor.renderer.Stage;
+import com.vorono4ka.editor.renderer.impl.Triangulator;
 import com.vorono4ka.editor.renderer.texture.RenderableTexture;
 import com.vorono4ka.editor.renderer.texture.Texture;
 import com.vorono4ka.math.ReadonlyRect;
@@ -39,7 +40,7 @@ public final class ShapeDrawBitmapCommandRenderer {
 
         RenderableTexture texture = stage.getTextureByIndex(command.getTextureIndex());
         if (stage.startShape(bounds, texture, renderConfigBits)) {
-            stage.addTriangles(command.getTriangleCount(), command.getIndices());
+            stage.addTriangles(command.getTriangleCount(), getIndices(command, renderConfigBits));
 
             renderCommandVertices(stage, command, colorTransform, transformedPoints);
 
@@ -47,6 +48,12 @@ public final class ShapeDrawBitmapCommandRenderer {
         }
 
         return false;
+    }
+
+    private static int[] getIndices(ShapeDrawBitmapCommand command, int renderConfigBits) {
+        Triangulator triangulator = (renderConfigBits & 0x8000) != 0 ? Triangulator.TRIANGLE_FAN : Triangulator.TRIANGLE_STRIP;
+
+        return triangulator.getIndices(command.getTriangleCount());
     }
 
     private static void renderCommandVertices(Stage stage, ShapeDrawBitmapCommand command, ColorTransform colorTransform, float[] transformedPoints) {
