@@ -1,6 +1,7 @@
 package com.vorono4ka.editor;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.vorono4ka.editor.layout.dialogs.ExceptionDialog;
 import com.vorono4ka.editor.layout.windows.EditorWindow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +20,8 @@ public class Main {
         System.setProperty("apple.laf.useScreenMenuBar", "true");
 
         FlatLightLaf.setup();
+
+        ExceptionDialog.registerUncaughtExceptionHandler();
 
         SwingUtilities.invokeLater(() -> {
             Editor editor = new Editor();
