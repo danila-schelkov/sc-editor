@@ -51,7 +51,7 @@ public final class ShapeDrawBitmapCommandRenderer {
     }
 
     private static int[] getIndices(ShapeDrawBitmapCommand command, int renderConfigBits) {
-        Triangulator triangulator = (renderConfigBits & 0x8000) != 0 ? Triangulator.TRIANGLE_FAN : Triangulator.TRIANGLE_STRIP;
+        Triangulator triangulator = (renderConfigBits & 0x8000) == 0 ? Triangulator.TRIANGLE_FAN : Triangulator.TRIANGLE_STRIP;
 
         return triangulator.getIndices(command.getTriangleCount());
     }
