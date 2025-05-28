@@ -1,5 +1,6 @@
 package com.vorono4ka.editor.renderer.impl.texture;
 
+import com.vorono4ka.editor.layout.dialogs.ExceptionDialog;
 import com.vorono4ka.editor.renderer.gl.GLConstants;
 import com.vorono4ka.editor.renderer.gl.texture.GLTexture;
 import com.vorono4ka.editor.renderer.impl.EditorStage;
@@ -59,13 +60,13 @@ public final class GLImage {
             texture.setWrap(clampToEdge ? GLConstants.GL_CLAMP_TO_EDGE : GLConstants.GL_REPEAT);
             texture.setFilters(filter.getMinFilter(), filter.getMagFilter());
 
+            stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
+
             if (khronosTextureFileData != null) {
                 loadKhronosTexture(texture, BufferUtils.wrapDirect(khronosTextureFileData));
             } else if (sctxTexture != null) {
                 loadTexture(texture, sctxTexture);
             } else {
-                stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
-
                 loadImage(texture, pixels, pixelFormat, pixelType);
                 texture.generateMipMap();
             }
@@ -99,6 +100,7 @@ public final class GLImage {
             try {
                 khronosTextureLoader.load(texture, khronosTextureFileData);
             } catch (Exception e) {
+                ExceptionDialog.showExceptionDialog(Thread.currentThread(), e);
                 throw new RuntimeException(e);
             }
 
@@ -113,6 +115,7 @@ public final class GLImage {
             try {
                 sctxTextureLoader.load(texture, sctxTexture);
             } catch (Exception e) {
+                ExceptionDialog.showExceptionDialog(Thread.currentThread(), e);
                 throw new RuntimeException(e);
             }
 
