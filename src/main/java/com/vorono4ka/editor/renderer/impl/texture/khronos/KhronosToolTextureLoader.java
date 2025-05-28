@@ -2,6 +2,7 @@ package com.vorono4ka.editor.renderer.impl.texture.khronos;
 
 import com.vorono4ka.editor.renderer.gl.texture.GLTexture;
 import com.vorono4ka.editor.renderer.impl.texture.GLImage;
+import com.vorono4ka.utilities.BufferUtils;
 import com.vorono4ka.utilities.ImageUtils;
 import com.vorono4ka.utilities.PathUtils;
 import com.vorono4ka.utilities.SystemUtils;
@@ -18,6 +19,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
+import static com.vorono4ka.editor.renderer.gl.GLConstants.*;
+
 /// Wrapper over <a href="https://github.com/KhronosGroup/KTX-Software/tree/main/tools">KTX CLI tools</a>.
 public class KhronosToolTextureLoader implements KhronosTextureLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(KhronosToolTextureLoader.class);
@@ -26,26 +29,44 @@ public class KhronosToolTextureLoader implements KhronosTextureLoader {
     public static final String KTX = "ktx";
 
     private static void loadPngToGl(GLTexture texture, Path pngPath) {
-        BufferedImage bufferedImage = loadPngAsBufferedImage(pngPath);
+        BufferedImage image = loadPngAsBufferedImage(pngPath);
 
-        byte[] data = ((DataBufferByte) bufferedImage.getRaster().getDataBuffer()).getData();
-        for (int i = 0; i < data.length; i += 4) {
-            // Swap 1st and 4th component
-            byte b = data[i];
-            data[i] = data[i + 3];
-            data[i + 3] = b;
+        ByteBuffer pixelBuffer;
+        int format = texture.getFormat();
+        int pixelType = texture.getPixelType();
 
-            // Swap 2nd and 3rd component
-            b = data[i + 1];
-            data[i + 1] = data[i + 2];
-            data[i + 2] = b;
+        int numColorComponents = image.getColorModel().getNumColorComponents();
+        if (numColorComponents == 1 && format == GL_LUMINANCE) {
+            pixelBuffer = ImageUtils.getPixelBuffer(image);
+        } else if (numColorComponents == 2 && format == GL_LUMINANCE_ALPHA) {
+            pixelBuffer = ImageUtils.getPixelBuffer(image);
+        } else if (numColorComponents == 4 && format == GL_RGBA) {  // ARGB to RGBA
+            byte[] data = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+            for (int i = 0; i < data.length; i += 4) {
+                // Swap 1st and 4th component
+                byte b = data[i];
+                data[i] = data[i + 3];
+                data[i + 3] = b;
+
+                // Swap 2nd and 3rd component
+                b = data[i + 1];
+                data[i + 1] = data[i + 2];
+                data[i + 2] = b;
+            }
+
+            pixelBuffer = ImageUtils.getPixelBuffer(image);
+        } else {
+            int[] argb = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
+
+            pixelBuffer = intARGBtoByteRGBA(argb);
+            format = GL_RGBA;
+            pixelType = GL_UNSIGNED_BYTE;
         }
 
         // Note: here is a bug, if the texture is grayscale or kind of this,
         // you have to convert it by yourself, otherwise there won't be any images.
 
-        ByteBuffer pixelBuffer = ImageUtils.getPixelBuffer(bufferedImage);
-        GLImage.loadImage(texture, pixelBuffer, texture.getFormat(), texture.getPixelType());
+        GLImage.loadImage(texture, pixelBuffer, format, pixelType);
     }
 
     private static BufferedImage loadPngAsBufferedImage(Path pngPath) {
@@ -103,5 +124,18 @@ public class KhronosToolTextureLoader implements KhronosTextureLoader {
 
     private static void logProcessDone(String name, Process process) {
         LOGGER.info("{} done its work with code: {}", name, process.exitValue());
+    }
+
+    private static ByteBuffer intARGBtoByteRGBA(int[] argb) {
+        ByteBuffer rgba = BufferUtils.allocateDirect(argb.length * 4);
+
+        for (int i = 0; i < argb.length; i++) {
+            rgba.put(4 * i, (byte) ((argb[i] >> 16) & 0xff)); // R
+            rgba.put(4 * i + 1, (byte) ((argb[i] >> 8) & 0xff)); // G
+            rgba.put(4 * i + 2, (byte) ((argb[i]) & 0xff)); // B
+            rgba.put(4 * i + 3, (byte) ((argb[i] >> 24) & 0xff)); // A
+        }
+
+        return rgba;
     }
 }

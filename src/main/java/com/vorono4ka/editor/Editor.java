@@ -90,6 +90,9 @@ public class Editor {
         } catch (TextureFileNotFound e) {
             this.window.showErrorDialog(e.getMessage());
             return false;
+        } catch (Exception e) {
+            ExceptionDialog.showExceptionDialog(Thread.currentThread(), e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -109,6 +112,9 @@ public class Editor {
         } catch (TextureFileNotFound e) {
             this.window.showErrorDialog(e.getMessage());
             return false;
+        } catch (Exception e) {
+            ExceptionDialog.showExceptionDialog(Thread.currentThread(), e);
+            throw new RuntimeException(e);
         }
 
         SwingUtilities.invokeLater(this::updateObjectTable);
