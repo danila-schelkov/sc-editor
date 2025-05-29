@@ -4,12 +4,14 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.vorono4ka.editor.layout.dialogs.AboutDialog;
 import com.vorono4ka.editor.layout.dialogs.ExceptionDialog;
 import com.vorono4ka.editor.layout.windows.EditorWindow;
+import com.vorono4ka.editor.settings.EditorSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -24,22 +26,31 @@ public class Main {
 
         ExceptionDialog.registerUncaughtExceptionHandler();
 
-        SwingUtilities.invokeLater(() -> {
-            Editor editor = new Editor();
-            EditorWindow window = editor.getWindow();
-            window.initialize(EditorWindow.TITLE);
-            window.show();
+        SwingUtilities.invokeLater(() -> initializeEditor(args));
+    }
 
-            if (args.length > 0) {
-                Path path = Path.of(args[0]);
-                if (Files.exists(path)) {
-                    editor.openFile(path);
-                }
+    private static void initializeEditor(String[] args) {
+        EditorSettings settings;
+        try {
+            settings = EditorSettings.load(Path.of(".", "settings.properties"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        Editor editor = new Editor(settings);
+        EditorWindow window = editor.getWindow();
+        window.initialize(EditorWindow.TITLE);
+        window.show();
+
+        if (args.length > 0) {
+            Path path = Path.of(args[0]);
+            if (Files.exists(path)) {
+                editor.openFile(path);
             }
+        }
 
-            registerAboutHandler(editor);
-            registerOpenFileHandler(editor);
-        });
+        registerAboutHandler(editor);
+        registerOpenFileHandler(editor);
     }
 
     private static void registerOpenFileHandler(Editor editor) {
