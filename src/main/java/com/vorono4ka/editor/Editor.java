@@ -1,5 +1,17 @@
 package com.vorono4ka.editor;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import javax.swing.SwingUtilities;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vorono4ka.editor.displayObjects.SpriteSheet;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.dialogs.ExceptionDialog;
@@ -27,16 +39,6 @@ import com.vorono4ka.swf.movieclips.MovieClipOriginal;
 import com.vorono4ka.swf.shapes.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.shapes.ShapeOriginal;
 import com.vorono4ka.swf.textures.SWFTexture;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class Editor {
     private static final Logger LOGGER = LoggerFactory.getLogger(Editor.class);
@@ -319,6 +321,10 @@ public class Editor {
 
     public void setPixelSize(float pixelSize) {
         settings.setPixelSize(pixelSize);
+    }
+
+    public void setWireframeEnabled(boolean wireframeEnabled) {
+        EditorStage.getInstance().setWireframeEnabled(wireframeEnabled);
     }
 
     private void updateObjectTable() {

@@ -366,6 +366,11 @@ public class JoglRendererContext implements GLRendererContext {
     }
 
     @Override
+    public void glPolygonMode(int glFrontAndBack, int mode) {
+        gl.glPolygonMode(glFrontAndBack, mode);
+    }
+
+    @Override
     public String glGetString(int target) {
         return gl.glGetString(target);
     }

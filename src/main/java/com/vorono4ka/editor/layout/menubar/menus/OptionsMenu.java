@@ -12,6 +12,7 @@ public class OptionsMenu extends JMenu {
 
     private final JCheckBoxMenuItem renderPolygonsCheckBox;
     private final JSlider pixelSizeSlider;
+    private final JCheckBoxMenuItem wireframeModeCheckBox;
 
     public OptionsMenu(Editor editor) {
         super("Options");
@@ -38,10 +39,21 @@ public class OptionsMenu extends JMenu {
         this.add(renderPolygonsCheckBox);
 
         this.renderPolygonsCheckBox = renderPolygonsCheckBox;
+
+        JCheckBoxMenuItem wireframeModeCheckBox = new JCheckBoxMenuItem("Wireframe mode");
+        wireframeModeCheckBox.setMnemonic(KeyEvent.VK_W);
+        wireframeModeCheckBox.addActionListener(this::toggleWireframeMode);
+        this.add(wireframeModeCheckBox);
+
+        this.wireframeModeCheckBox = wireframeModeCheckBox;
     }
 
     private void togglePolygonRendering(ActionEvent event) {
         editor.setShouldDisplayPolygons(this.renderPolygonsCheckBox.getState());
+    }
+
+    private void toggleWireframeMode(ActionEvent event) {
+        editor.setWireframeEnabled(this.wireframeModeCheckBox.getState());
     }
 
     private void pixelSizeChanged(ChangeEvent changeEvent) {

@@ -152,4 +152,6 @@ public interface GLRendererContext {
     String glGetString(int i);
 
     int glGetError();
+
+    void glPolygonMode(int glFrontAndBack, int mode);
 }
