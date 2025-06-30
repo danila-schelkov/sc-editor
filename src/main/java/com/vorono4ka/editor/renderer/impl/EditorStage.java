@@ -75,6 +75,7 @@ public class EditorStage implements Stage {
     private boolean isCalculatingMaskBounds;
     private boolean isApplyingMaskBounds;
     private boolean isAnimationPaused;
+    private boolean isWireframeEnabled;
 
     private EditorStage() {
         this.stageSprite = new StageSprite(this);
@@ -183,6 +184,11 @@ public class EditorStage implements Stage {
     public void renderToFramebuffer(Framebuffer framebuffer) {
         framebuffer.bind();
         renderDisplayObject();
+        if (isWireframeEnabled) {
+            gl.glPolygonMode(GLConstants.GL_FRONT_AND_BACK, GLConstants.GL_LINE);
+            renderDisplayObject();
+            gl.glPolygonMode(GLConstants.GL_FRONT_AND_BACK, GLConstants.GL_FILL);
+        }
         framebuffer.unbind();
 
         this.unloadBatchesToPool();
@@ -491,6 +497,10 @@ public class EditorStage implements Stage {
 
     public void resumeAnimation() {
         isAnimationPaused = false;
+    }
+
+    public void setWireframeEnabled(boolean wireframeEnabled) {
+        isWireframeEnabled = wireframeEnabled;
     }
 
     private void renderDisplayObject() {

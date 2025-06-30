@@ -2,5 +2,10 @@
 /out/
 *.iml
 
+# Eclipse
+.settings
+.classpath
+.project
+
 screenshots/
 /target/
