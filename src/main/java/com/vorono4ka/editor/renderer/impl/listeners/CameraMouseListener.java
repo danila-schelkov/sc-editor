@@ -1,11 +1,9 @@
 package com.vorono4ka.editor.renderer.impl.listeners;
 
-import com.vorono4ka.editor.SystemInfo;
 import com.vorono4ka.editor.layout.ScalingUtils;
 import com.vorono4ka.editor.renderer.Camera;
 import com.vorono4ka.editor.renderer.impl.EditorStage;
 
-import java.awt.*;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;

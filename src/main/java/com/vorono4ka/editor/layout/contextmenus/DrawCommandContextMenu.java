@@ -5,8 +5,8 @@ import com.vorono4ka.editor.displayObjects.SpriteSheet;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.components.TablePopupMenuListener;
 import com.vorono4ka.editor.renderer.Framebuffer;
-import com.vorono4ka.editor.renderer.impl.RendererHelper;
 import com.vorono4ka.editor.renderer.impl.EditorStage;
+import com.vorono4ka.editor.renderer.impl.RendererHelper;
 import com.vorono4ka.math.ReadonlyRect;
 import com.vorono4ka.math.Rect;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
@@ -15,12 +15,14 @@ import com.vorono4ka.renderer.impl.swf.objects.ShapeDrawBitmapCommandRenderer;
 import com.vorono4ka.swf.ColorTransform;
 import com.vorono4ka.swf.shapes.ShapeDrawBitmapCommand;
 import com.vorono4ka.utilities.ImageUtils;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
+import java.util.function.Function;
 
 public class DrawCommandContextMenu extends ContextMenu {
     private static final ColorTransform EMPTY_COLOR_TRANSFORM = new ColorTransform();
@@ -35,13 +37,59 @@ public class DrawCommandContextMenu extends ContextMenu {
         this.table = table;
         this.editor = editor;
 
+        JMenuItem showOnViewportButton = this.add("Show on viewport", KeyEvent.VK_V);
+        showOnViewportButton.addActionListener(this::showOnViewport);
+
         JMenuItem showOnAtlasButton = this.add("Show on atlas", KeyEvent.VK_A);
         showOnAtlasButton.addActionListener(this::showOnAtlas);
 
-        JMenuItem exportFromAtlasButton = this.add("Export from atlas", KeyEvent.VK_A);
+        JMenuItem exportFromAtlasButton = this.add("Export from atlas", KeyEvent.VK_E);
         exportFromAtlasButton.addActionListener(this::exportFromAtlas);
 
+        this.addSeparator();
+
+        this.add("Toggle visibility", event -> this.changeVisibility(visible -> !visible));
+        this.add("Enable", event -> this.changeVisibility(visible -> true));
+        this.add("Disable", event -> this.changeVisibility(visible -> false));
+
         this.popupMenu.addPopupMenuListener(new TablePopupMenuListener(this.popupMenu, table, this::onRowSelected));
+    }
+
+    public void changeVisibility(Function<Boolean, Boolean> visibilityFunction) {
+        Shape shape = this.getShape();
+        if (shape == null) return;
+
+        int[] selectedRows = this.table.getSelectedRows();
+        for (int commandIndex : selectedRows) {
+            boolean visible = (boolean) this.table.getValueAt(commandIndex, 3);
+            boolean newVisibility = visibilityFunction.apply(visible);
+
+            shape.setCommandVisibility(commandIndex, newVisibility);
+
+            this.table.setValueAt(newVisibility, commandIndex, 3);
+        }
+    }
+
+    private void showOnViewport(ActionEvent actionEvent) {
+        Shape shape = getShape();
+        if (shape == null) return;
+
+        int commandIndex = getCommandIndex(this.table.getSelectedRow());
+        ShapeDrawBitmapCommand command = shape.getCommand(commandIndex);
+
+        Rect bounds = getDrawCommandBounds(command);
+
+        EditorStage stage = EditorStage.getInstance();
+        stage.getCamera().zoomToFit(bounds);
+
+        stage.doInRenderThread(stage::updatePMVMatrix);
+    }
+
+    private @Nullable Shape getShape() {
+        DisplayObject selectedObject = editor.getSelectedObject();
+        if (selectedObject == null) return null;
+
+        return (Shape) selectedObject;
     }
 
     private void showOnAtlas(ActionEvent actionEvent) {
@@ -58,7 +106,7 @@ public class DrawCommandContextMenu extends ContextMenu {
         Shape shape = (Shape) selectedObject;
         ShapeDrawBitmapCommand command = shape.getCommand(commandIndex);
 
-        Rect bounds = getDrawCommandBounds(command, spriteSheet);
+        Rect bounds = getDrawCommandTextureBounds(command, spriteSheet);
 
         EditorStage stage = EditorStage.getInstance();
         stage.getCamera().zoomToFit(bounds);
@@ -83,7 +131,7 @@ public class DrawCommandContextMenu extends ContextMenu {
         Shape shape = (Shape) selectedObject;
         ShapeDrawBitmapCommand command = shape.getCommand(commandIndex);
 
-        Rect bounds = getDrawCommandBounds(command, spriteSheet);
+        Rect bounds = getDrawCommandTextureBounds(command, spriteSheet);
 
         EditorStage stage = EditorStage.getInstance();
         ReadonlyRect viewport = stage.getCamera().getViewport();
@@ -103,7 +151,16 @@ public class DrawCommandContextMenu extends ContextMenu {
         RendererHelper.rollbackRenderer(stage, viewport);
     }
 
-    private Rect getDrawCommandBounds(ShapeDrawBitmapCommand command, SpriteSheet spriteSheet) {
+    private static Rect getDrawCommandBounds(ShapeDrawBitmapCommand command) {
+        Rect bounds = new Rect(100000, 100000, -100000, -100000);
+        for (int i = 0; i < command.getVertexCount(); i++) {
+            bounds.addPoint(command.getX(i), command.getY(i));
+        }
+
+        return bounds;
+    }
+
+    private static Rect getDrawCommandTextureBounds(ShapeDrawBitmapCommand command, SpriteSheet spriteSheet) {
         Rect bounds = new Rect(100000, 100000, -100000, -100000);
         for (int i = 0; i < command.getVertexCount(); i++) {
             bounds.addPoint((command.getU(i) - 0.5f) * spriteSheet.getWidth(), (command.getV(i) - 0.5f) * spriteSheet.getHeight());
