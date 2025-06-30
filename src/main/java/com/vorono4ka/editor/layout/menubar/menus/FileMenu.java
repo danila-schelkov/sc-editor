@@ -13,6 +13,7 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.prefs.Preferences;
 
 public class FileMenu extends JMenu {
     private final Editor editor;
@@ -87,7 +88,10 @@ public class FileMenu extends JMenu {
     }
 
     private void open(ActionEvent e) {
-        BetterFileChooser fileChooser = new BetterFileChooser();
+        Preferences preferences = Preferences.userRoot().node("sc-editor");
+        String lastDirectory = preferences.get("lastDirectory", null);
+
+        BetterFileChooser fileChooser = lastDirectory != null ? new BetterFileChooser(lastDirectory) : new BetterFileChooser();
         fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell Texture (*.sctx)", "sctx"));
         fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc, *.sc2)", "sc", "sc2"));
@@ -96,6 +100,8 @@ public class FileMenu extends JMenu {
         if (result != JFileChooser.APPROVE_OPTION) return;
 
         Path path = fileChooser.getSelectedFile().toPath();
+
+        preferences.put("lastDirectory", path.toAbsolutePath().getParent().toString());
 
         close(null);
 

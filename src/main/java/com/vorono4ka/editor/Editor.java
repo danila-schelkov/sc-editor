@@ -44,8 +44,7 @@ public class Editor {
     public static final String REPO_URL = "https://github.com/danila-schelkov/sc-editor";
 
     private final EditorWindow window = new EditorWindow(this);
-    // TODO: save into file somewhere
-    private final EditorSettings settings = new EditorSettings();
+    private final EditorSettings settings;
 
     private final List<UsagesWindow> usagesWindows = new ArrayList<>();
     private final List<SpriteSheet> spriteSheets = new ArrayList<>();
@@ -60,6 +59,10 @@ public class Editor {
     private SctxTexture sctxTexture;
 
     private String filename;
+
+    public Editor(EditorSettings settings) {
+        this.settings = settings;
+    }
 
     public void openFile(Path path) {
         this.filename = path.getFileName().toString();

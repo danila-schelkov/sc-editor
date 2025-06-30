@@ -18,6 +18,13 @@ public class BetterFileChooser extends JFileChooser {
         UIManager.put("FileChooser.noPlacesBar", Boolean.TRUE);
     }
 
+    public BetterFileChooser() {
+    }
+
+    public BetterFileChooser(String currentDirectoryPath) {
+        super(currentDirectoryPath);
+    }
+
     @Override
     public int showOpenDialog(Component parent) throws HeadlessException {
         FileFilter[] choosableFileFilters = getChoosableFileFilters();

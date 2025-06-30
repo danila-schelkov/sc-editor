@@ -107,11 +107,6 @@
             <version>3.5</version>
         </dependency>
         <dependency>
-            <groupId>io.humble</groupId>
-            <artifactId>humble-video-all</artifactId>
-            <version>0.3.0</version>
-        </dependency>
-        <dependency>
             <groupId>com.vorono4ka</groupId>
             <artifactId>sc-file</artifactId>
             <version>1.0.1</version>
