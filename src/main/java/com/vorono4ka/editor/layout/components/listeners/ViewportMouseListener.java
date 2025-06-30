@@ -1,6 +1,5 @@
 package com.vorono4ka.editor.layout.components.listeners;
 
-import com.vorono4ka.editor.SystemInfo;
 import com.vorono4ka.editor.layout.ScalingUtils;
 import com.vorono4ka.editor.renderer.Camera;
 import com.vorono4ka.editor.renderer.impl.EditorStage;
@@ -10,7 +9,6 @@ import com.vorono4ka.renderer.impl.swf.objects.StageSprite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -20,8 +18,9 @@ public class ViewportMouseListener extends MouseAdapter {
     @Override
     public void mouseClicked(MouseEvent e) {
         float dpiScalingFactor = ScalingUtils.getDpiScalingFactor();
-        int x = (int) (e.getX() * dpiScalingFactor);
-        int y = (int) (e.getY() * dpiScalingFactor);
+        // Ensure applying component scaling, e.g. macOS scaling
+        int x = (int) (e.getX() * dpiScalingFactor * ScalingUtils.getScaleX(e.getComponent()));
+        int y = (int) (e.getY() * dpiScalingFactor * ScalingUtils.getScaleY(e.getComponent()));
 
         EditorStage stage = EditorStage.getInstance();
         Camera camera = stage.getCamera();

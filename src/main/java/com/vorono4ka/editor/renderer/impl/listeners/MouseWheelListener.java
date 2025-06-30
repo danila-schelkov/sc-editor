@@ -18,16 +18,17 @@ public class MouseWheelListener implements java.awt.event.MouseWheelListener {
         CameraZoom zoom = camera.getZoom();
 
         int modifiersEx = e.getModifiersEx();
+        int wheelRotation = e.getWheelRotation();
         if ((modifiersEx & InputEvent.ALT_DOWN_MASK) != 0) {
-            int deltaStep = e.getWheelRotation() * SENSITIVE;
+            int deltaStep = wheelRotation * SENSITIVE;
             int step = zoom.getScaleStep() - deltaStep;
             if (step < 0) return;
 
             zoom.zoomTo(step);
         } else if ((modifiersEx & InputEvent.SHIFT_DOWN_MASK) != 0) {
-            camera.addOffset(e.getWheelRotation() * MOUSE_MOVE_SENSITIVE / zoom.getPointSize(), 0);
+            camera.addOffset(wheelRotation * MOUSE_MOVE_SENSITIVE / zoom.getPointSize(), 0);
         } else {
-            camera.addOffset(0, e.getWheelRotation() * MOUSE_MOVE_SENSITIVE / zoom.getPointSize());
+            camera.addOffset(0, wheelRotation * MOUSE_MOVE_SENSITIVE / zoom.getPointSize());
         }
 
         stage.doInRenderThread(stage::updatePMVMatrix);
