@@ -9,6 +9,8 @@ import com.vorono4ka.editor.layout.contextmenus.FrameTableContextMenu;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class MovieClipInfoPanel extends JPanel {
     private final Table timelineChildrenTable;
@@ -22,7 +24,7 @@ public class MovieClipInfoPanel extends JPanel {
         this.timelineChildrenTable = new Table("#", "Id", "Type", "Name", "Visible");
         this.timelineChildrenTable.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         this.timelineChildrenTable.addMouseListener(new ChildrenListMouseListener(this.timelineChildrenTable, editor));
-        new ChildrenTableContextMenu(this.timelineChildrenTable, editor);
+        ChildrenTableContextMenu childrenTableContextMenu = new ChildrenTableContextMenu(this.timelineChildrenTable, editor);
 
         this.framesTable = new Table("#", "Name");
         this.framesTable.addSelectionListener(new FrameSelectionListener(this.framesTable, editor));
@@ -37,6 +39,20 @@ public class MovieClipInfoPanel extends JPanel {
         this.add(new JScrollPane(this.framesTable), "Frames");
         this.add(new JScrollPane(this.frameElementsTable), "Frame elements");
         this.add(this.textInfoPanel, "Info");
+
+        this.timelineChildrenTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() < 2) {
+                    return;
+                }
+
+                int column = timelineChildrenTable.columnAtPoint(e.getPoint());
+                if (column == 4) {
+                    childrenTableContextMenu.changeVisibility(child -> !child.isVisible());
+                }
+            }
+        });
     }
 
     public void addTimelineChild(Object... rowData) {

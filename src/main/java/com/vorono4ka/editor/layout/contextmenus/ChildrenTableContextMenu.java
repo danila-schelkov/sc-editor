@@ -25,7 +25,7 @@ public class ChildrenTableContextMenu extends ContextMenu {
         this.popupMenu.addPopupMenuListener(new TablePopupMenuListener(this.popupMenu, table, rowIndex -> setMainComponentsEnabled(rowIndex != -1)));
     }
 
-    private void changeVisibility(Function<DisplayObject, Boolean> visibilityFunction) {
+    public void changeVisibility(Function<DisplayObject, Boolean> visibilityFunction) {
         MovieClip movieClip = this.getMovieClip();
         if (movieClip == null) return;
 
