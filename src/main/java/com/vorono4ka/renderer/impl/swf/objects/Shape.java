@@ -7,10 +7,14 @@ import com.vorono4ka.swf.shapes.ShapeDrawBitmapCommand;
 import com.vorono4ka.swf.shapes.ShapeOriginal;
 import com.vorono4ka.utilities.RenderConfig;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Shape extends DisplayObject {
     protected List<ShapeDrawBitmapCommand> commands;
+
+    private final Set<Integer> disabledCommands = new HashSet<>();
 
     public static Shape createShape(ShapeOriginal original) {
         Shape shape = new Shape();
@@ -36,7 +40,14 @@ public class Shape extends DisplayObject {
         Stage stage = this.getStage();
 
         boolean result = false;
-        for (ShapeDrawBitmapCommand command : this.commands) {
+        List<ShapeDrawBitmapCommand> shapeDrawBitmapCommands = this.commands;
+        for (int i = 0; i < shapeDrawBitmapCommands.size(); i++) {
+            ShapeDrawBitmapCommand command = shapeDrawBitmapCommands.get(i);
+
+            if (disabledCommands.contains(i)) {
+                continue;
+            }
+
             result |= ShapeDrawBitmapCommandRenderer.render(command, stage, matrixApplied, colorTransformApplied, renderConfigBits);
         }
 
@@ -54,7 +65,14 @@ public class Shape extends DisplayObject {
 
         boolean result = false;
 
-        for (ShapeDrawBitmapCommand command : this.commands) {
+        List<ShapeDrawBitmapCommand> shapeDrawBitmapCommands = this.commands;
+        for (int i = 0; i < shapeDrawBitmapCommands.size(); i++) {
+            ShapeDrawBitmapCommand command = shapeDrawBitmapCommands.get(i);
+
+            if (disabledCommands.contains(i)) {
+                continue;
+            }
+
             result |= ShapeDrawBitmapCommandRenderer.collisionRender(command, stage, matrixApplied, this.getColorTransform());
         }
 
@@ -76,5 +94,17 @@ public class Shape extends DisplayObject {
         }
 
         return null;
+    }
+
+    public void setCommandVisibility(int commandIndex, boolean isVisible) {
+        if (isVisible) {
+            disabledCommands.remove(commandIndex);
+        } else {
+            disabledCommands.add(commandIndex);
+        }
+    }
+
+    public boolean isCommandVisible(int commandIndex) {
+        return !disabledCommands.contains(commandIndex);
     }
 }
