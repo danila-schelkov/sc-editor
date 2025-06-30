@@ -93,7 +93,7 @@
         <dependency>
             <groupId>com.github.luben</groupId>
             <artifactId>zstd-jni</artifactId>
-            <version>1.5.6-3</version>
+            <version>1.5.7-3</version>
             <!--            <classifier>win_amd64</classifier>  &lt;!&ndash; TODO: build for each platform &ndash;&gt;-->
         </dependency>
         <dependency>
