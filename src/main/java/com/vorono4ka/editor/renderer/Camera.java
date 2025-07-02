@@ -65,6 +65,7 @@ public class Camera {
     }
 
     public float getWorldX(int screenX) {
+        // TODO: figure out what's wrong with macos rendering viewport width
         float viewportX = screenX - this.viewport.getWidth() / 2f;
         viewportX /= zoom.getPointSize();
 
@@ -72,6 +73,7 @@ public class Camera {
     }
 
     public float getWorldY(int screenY) {
+        // TODO: figure out what's wrong with macos rendering viewport height
         float viewportY = screenY - this.viewport.getHeight() / 2f;
         viewportY /= zoom.getPointSize();
 

@@ -5,6 +5,7 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 import com.vorono4ka.editor.Editor;
+import com.vorono4ka.editor.layout.GestureUtilities;
 import com.vorono4ka.editor.layout.components.EditorCanvas;
 import com.vorono4ka.editor.layout.components.Table;
 import com.vorono4ka.editor.layout.menubar.EditorMenuBar;
@@ -15,6 +16,9 @@ import com.vorono4ka.editor.layout.panels.TimelinePanel;
 import com.vorono4ka.editor.layout.panels.info.EditorInfoPanel;
 import com.vorono4ka.editor.layout.panels.info.MovieClipInfoPanel;
 import com.vorono4ka.editor.layout.panels.info.ShapeInfoPanel;
+import com.vorono4ka.editor.renderer.Camera;
+import com.vorono4ka.editor.renderer.CameraZoom;
+import com.vorono4ka.editor.renderer.impl.EditorStage;
 import com.vorono4ka.renderer.impl.swf.objects.DisplayObject;
 import com.vorono4ka.renderer.impl.swf.objects.MovieClip;
 import com.vorono4ka.renderer.impl.swf.objects.Shape;
@@ -63,9 +67,29 @@ public class EditorWindow extends Window {
         this.infoPanel = new EditorInfoPanel();
         this.tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
         this.canvas = new EditorCanvas(capabilities);
+
+        // Note: Apple's GestureUtilities works only with JComponent because of component client properties.
+        JPanel canvasPane = new JPanel();
+        canvasPane.setLayout(new BorderLayout());
+        canvasPane.add(canvas, BorderLayout.CENTER);
+
+        GestureUtilities.addMagnificationListenerTo(canvasPane, event -> {
+            EditorStage stage = EditorStage.getInstance();
+            Camera camera = stage.getCamera();
+            CameraZoom zoom = camera.getZoom();
+
+            float pointSize = zoom.getPointSize() + (float) event.getMagnification() * 2;
+            if (pointSize < 0) return;
+
+            zoom.setScaleStep(CameraZoom.estimateCurrentScaleStep(pointSize));
+            zoom.setPointSize(pointSize);
+
+            stage.doInRenderThread(stage::updatePMVMatrix);
+        });
+
         this.timelinePanel = new TimelinePanel();
 
-        this.timelineSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, this.canvas, this.timelinePanel);
+        this.timelineSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, canvasPane, this.timelinePanel);
 
         this.fpsAnimator = new FPSAnimator(this.canvas, 60);
         this.targetFps = fpsAnimator.getFPS();
@@ -90,6 +114,7 @@ public class EditorWindow extends Window {
         // We need to create a Dimension object for the JPanel minimum size to fix a GLCanvas resize bug.
         // The GLCanvas normally won't receive resize events that shrink a JPanel controlled by a JSplitPane.
         this.canvas.setMinimumSize(new Dimension());
+        canvasPane.setMinimumSize(new Dimension());
         this.timelineSplitPane.setMinimumSize(new Dimension());
 
         JSplitPane mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, this.tabbedPane, timelineSplitPane);
@@ -205,7 +230,7 @@ public class EditorWindow extends Window {
 
             for (int i = 0; i < shape.getCommandCount(); i++) {
                 ShapeDrawBitmapCommand command = shape.getCommand(i);
-                shapeInfoPanel.addCommandInfo(i, command.getTextureIndex(), command.getTag());
+                shapeInfoPanel.addCommandInfo(i, command.getTextureIndex(), command.getTag(), true);
             }
 
             return shapeInfoPanel;
