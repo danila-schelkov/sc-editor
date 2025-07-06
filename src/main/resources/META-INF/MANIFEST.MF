@@ -1,2 +1,2 @@
 Manifest-Version: 1.0
-Main-Class: com.vorono4ka.editor.Main
+Main-Class: dev.donutquine.editor.Main

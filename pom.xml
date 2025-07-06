@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.vorono4ka</groupId>
+    <groupId>dev.donutquine</groupId>
     <artifactId>sc-editor</artifactId>
     <version>1.5.0</version>
 
@@ -33,7 +33,7 @@
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>libs/</classpathPrefix>
                             <mainClass>
-                                com.vorono4ka.editor.Main
+                                dev.donutquine.editor.Main
                             </mainClass>
                         </manifest>
                     </archive>
@@ -61,7 +61,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.vorono4ka.editor.Main</mainClass>
+                            <mainClass>dev.donutquine.editor.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -100,14 +100,14 @@
             <version>3.6</version>
         </dependency>
         <dependency>
-            <groupId>com.vorono4ka</groupId>
+            <groupId>dev.donutquine</groupId>
             <artifactId>sc-file</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.3</version>
         </dependency>
         <dependency>
-            <groupId>com.vorono4ka</groupId>
+            <groupId>dev.donutquine</groupId>
             <artifactId>supercell-swf</artifactId>
-            <version>1.1.1</version>
+            <version>1.1.3</version>
         </dependency>
         <dependency>
             <groupId>com.vorono4ka</groupId>
