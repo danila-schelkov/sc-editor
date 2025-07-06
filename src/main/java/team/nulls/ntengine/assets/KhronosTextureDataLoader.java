@@ -1,6 +1,6 @@
 package team.nulls.ntengine.assets;
 
-import com.vorono4ka.utilities.BufferUtils;
+import dev.donutquine.utilities.BufferUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
