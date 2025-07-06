@@ -18,12 +18,12 @@ public class DisplayObjectFactory {
         if (original instanceof ShapeOriginal shapeOriginal) {
             if (scalingGrid != null) {
                 Shape9Slice shape = Shape9Slice.createShape(shapeOriginal, scalingGrid);
-                shape.setTriangleFunction(swf.getContainerVersion() == 5);
+                shape.setTriangleFunction(swf.getContainerVersion() >= 5);
                 return shape;
             }
 
             Shape shape = Shape.createShape(shapeOriginal);
-            shape.setTriangleFunction(swf.getContainerVersion() == 5);
+            shape.setTriangleFunction(swf.getContainerVersion() >= 5);
             return shape;
         }
 
