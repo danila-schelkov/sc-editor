@@ -153,7 +153,7 @@ public class ExceptionDialog extends JDialog {
     private static void showTestExceptionDialog() {
         try {
             throwTestException();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             showExceptionDialog(Thread.currentThread(), e);
         }
     }

@@ -95,7 +95,7 @@ public class Editor {
         } catch (TextureFileNotFound e) {
             this.window.showErrorDialog(e.getMessage());
             return false;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             ExceptionDialog.showExceptionDialog(Thread.currentThread(), e);
             throw new RuntimeException(e);
         }
@@ -117,7 +117,7 @@ public class Editor {
         } catch (TextureFileNotFound e) {
             this.window.showErrorDialog(e.getMessage());
             return false;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             ExceptionDialog.showExceptionDialog(Thread.currentThread(), e);
             throw new RuntimeException(e);
         }

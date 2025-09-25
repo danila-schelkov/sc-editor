@@ -99,7 +99,7 @@ public final class GLImage {
         if (khronosTextureLoader != null) {
             try {
                 khronosTextureLoader.load(texture, khronosTextureFileData);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 ExceptionDialog.showExceptionDialog(Thread.currentThread(), e);
                 throw new RuntimeException(e);
             }
@@ -114,7 +114,7 @@ public final class GLImage {
         if (sctxTextureLoader != null && sctxTextureLoader.isAvailable()) {
             try {
                 sctxTextureLoader.load(texture, sctxTexture);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 ExceptionDialog.showExceptionDialog(Thread.currentThread(), e);
                 throw new RuntimeException(e);
             }
