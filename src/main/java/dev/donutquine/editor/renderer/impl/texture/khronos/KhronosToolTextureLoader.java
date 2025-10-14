@@ -91,7 +91,8 @@ public class KhronosToolTextureLoader implements KhronosTextureLoader {
     public void load(GLTexture texture, ByteBuffer khronosTextureFileData) throws Exception {
         File ktx1File = File.createTempFile("texture", ".ktx1");
         try (FileOutputStream fileOutputStream = new FileOutputStream(ktx1File)) {
-            fileOutputStream.getChannel().write(khronosTextureFileData);
+            int written = fileOutputStream.getChannel().write(khronosTextureFileData);
+            assert written == khronosTextureFileData.capacity();
         }
 
         Path ktx1Path = ktx1File.toPath();

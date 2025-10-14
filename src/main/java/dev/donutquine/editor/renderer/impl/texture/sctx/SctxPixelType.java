@@ -26,9 +26,10 @@ public final class SctxPixelType {
         };
     }
 
+    /// This must be sized in KTX, so in OpenGL too I guess.
     public static int getInternalFormat(PixelType pixelType) {
         return switch (pixelType) {
-            case UNCOMPRESSED -> GLConstants.GL_RGBA;
+            case UNCOMPRESSED -> GLConstants.GL_RGBA8;
             case ASTC_SRGBA8_4x4 -> GLConstants.GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4;
             case ASTC_SRGBA8_5x4 -> GLConstants.GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4;
             case ASTC_SRGBA8_5x5 -> GLConstants.GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5;

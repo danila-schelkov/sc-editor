@@ -61,15 +61,12 @@ public class KhronosTextureDataLoader {
         int mipmapLevels = buffer.getInt();
         int dictSize = buffer.getInt();
         LOGGER.info("Dict: " + decodeDict(buffer, dictSize));
-        ByteBuffer[] levels = new ByteBuffer[mipmapLevels];
+        byte[][] levels = new byte[mipmapLevels][];
         for (int i = 0; i < mipmapLevels; i++) {
             int dataChunkSize = addPadding4(buffer.getInt());
             byte[] dataChunk = new byte[dataChunkSize];
             buffer.get(dataChunk);
-            ByteBuffer dataBuffer = BufferUtils.allocateDirect(dataChunkSize);
-            dataBuffer.put(dataChunk);
-            dataBuffer.position(0);
-            levels[i] = dataBuffer;
+            levels[i] = dataChunk;
         }
 
         return new KhronosTexture(glType, glTypeSize, glFormat, glInternalFormat, glBaseInternalFormat, width, height, levels);
