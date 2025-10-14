@@ -1,21 +1,25 @@
 package dev.donutquine.editor.renderer.impl.texture;
 
+import com.vorono4ka.sctx.MipMapData;
+import com.vorono4ka.sctx.PixelType;
+import com.vorono4ka.sctx.SctxTexture;
 import dev.donutquine.editor.layout.dialogs.ExceptionDialog;
 import dev.donutquine.editor.renderer.gl.GLConstants;
 import dev.donutquine.editor.renderer.gl.texture.GLTexture;
 import dev.donutquine.editor.renderer.impl.EditorStage;
+import dev.donutquine.editor.renderer.impl.texture.khronos.KhronosTextureDataSaver;
 import dev.donutquine.editor.renderer.impl.texture.khronos.KhronosTextureLoader;
-import dev.donutquine.editor.renderer.impl.texture.sctx.SctxTextureLoader;
-import com.vorono4ka.sctx.SctxTexture;
+import dev.donutquine.editor.renderer.impl.texture.sctx.SctxPixelType;
 import dev.donutquine.utilities.BufferUtils;
+import team.nulls.ntengine.assets.KhronosTexture;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.List;
 
 public final class GLImage {
     public static KhronosTextureLoader khronosTextureLoader;
-    public static SctxTextureLoader sctxTextureLoader;
 
     private GLImage() {
     }
@@ -111,17 +115,37 @@ public final class GLImage {
     }
 
     private static void loadTexture(GLTexture texture, SctxTexture sctxTexture) {
-        if (sctxTextureLoader != null && sctxTextureLoader.isAvailable()) {
-            try {
-                sctxTextureLoader.load(texture, sctxTexture);
-            } catch (Throwable e) {
-                ExceptionDialog.showExceptionDialog(Thread.currentThread(), e);
-                throw new RuntimeException(e);
-            }
+        PixelType pixelType = sctxTexture.getPixelType();
 
-            return;
+        int glFormat = SctxPixelType.getFormat(pixelType);
+        int glInternalFormat = SctxPixelType.getInternalFormat(pixelType);
+        int glPixelType = SctxPixelType.getPixelType(pixelType);
+
+        List<MipMapData> mipMaps = sctxTexture.getMipMaps();
+        byte[][] levels = new byte[mipMaps.size()][];
+
+        for (int level = 0; level < mipMaps.size(); level++) {
+            MipMapData mipMap = mipMaps.get(level);
+            assert mipMap.width() == (sctxTexture.getWidth() >> level);
+            assert mipMap.height() == (sctxTexture.getHeight() >> level);
+            levels[level] = mipMap.data();
         }
 
-        throw new RuntimeException("ASTC textures aren't supported on your device.");
+        KhronosTexture ktx = new KhronosTexture(
+            pixelType == PixelType.UNCOMPRESSED ? glPixelType : 0,
+            // For texture data which does not depend on platform endianness, including compressed texture data, glTypeSize must equal 1.
+            // https://registry.khronos.org/KTX/specs/1.0/ktxspec.v1.html
+            1,
+            pixelType == PixelType.UNCOMPRESSED ? glFormat : 0,
+            glInternalFormat,
+            glFormat,
+            sctxTexture.getWidth(),
+            sctxTexture.getHeight(),
+            levels
+        );
+
+        ByteBuffer khronosTextureFileData = KhronosTextureDataSaver.encodeKtx(ktx);
+
+        loadKhronosTexture(texture, khronosTextureFileData);
     }
 }

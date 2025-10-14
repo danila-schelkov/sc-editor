@@ -6,7 +6,7 @@
 
     <groupId>dev.donutquine</groupId>
     <artifactId>sc-editor</artifactId>
-    <version>1.5.2</version>
+    <version>1.5.3</version>
 
     <repositories>
         <repository>

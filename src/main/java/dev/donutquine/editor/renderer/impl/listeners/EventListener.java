@@ -3,7 +3,6 @@ package dev.donutquine.editor.renderer.impl.listeners;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
-import dev.donutquine.editor.SystemInfo;
 import dev.donutquine.editor.layout.ScalingUtils;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.editor.renderer.impl.gl.GLShaderLoader;
@@ -11,10 +10,7 @@ import dev.donutquine.editor.renderer.impl.gl.JoglRendererContext;
 import dev.donutquine.editor.renderer.impl.texture.GLImage;
 import dev.donutquine.editor.renderer.impl.texture.khronos.ExtensionKhronosTextureLoader;
 import dev.donutquine.editor.renderer.impl.texture.khronos.KhronosTextureLoaders;
-import dev.donutquine.editor.renderer.impl.texture.sctx.ExtensionSctxTextureLoader;
 import dev.donutquine.resources.AssetManager;
-
-import java.awt.*;
 
 public class EventListener implements GLEventListener {
     private ExtensionKhronosTextureLoader extensionKhronosTextureLoader;
@@ -29,7 +25,6 @@ public class EventListener implements GLEventListener {
         KhronosTextureLoaders.registerLoader(extensionKhronosTextureLoader);
 
         GLImage.khronosTextureLoader = KhronosTextureLoaders.getLoader();
-        GLImage.sctxTextureLoader = new ExtensionSctxTextureLoader(rendererContext);
 
         AssetManager assetManager = new AssetManager(new GLShaderLoader(rendererContext));
 
