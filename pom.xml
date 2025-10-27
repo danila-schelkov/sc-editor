@@ -117,9 +117,9 @@
             <version>1.1.4</version>
         </dependency>
         <dependency>
-            <groupId>com.vorono4ka</groupId>
+            <groupId>dev.donutquine</groupId>
             <artifactId>supercell-texture</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>

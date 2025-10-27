@@ -1,8 +1,8 @@
 package dev.donutquine.editor.renderer.impl.texture;
 
-import com.vorono4ka.sctx.MipMapData;
-import com.vorono4ka.sctx.PixelType;
-import com.vorono4ka.sctx.SctxTexture;
+import dev.donutquine.sctx.MipMapData;
+import dev.donutquine.sctx.PixelType;
+import dev.donutquine.sctx.SctxTexture;
 import dev.donutquine.editor.layout.dialogs.ExceptionDialog;
 import dev.donutquine.editor.renderer.gl.GLConstants;
 import dev.donutquine.editor.renderer.gl.texture.GLTexture;
