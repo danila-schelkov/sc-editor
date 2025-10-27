@@ -1,7 +1,7 @@
 package dev.donutquine.editor.renderer.impl.texture.sctx;
 
 import dev.donutquine.editor.renderer.gl.GLConstants;
-import com.vorono4ka.sctx.PixelType;
+import dev.donutquine.sctx.PixelType;
 
 public final class SctxPixelType {
     private SctxPixelType() {
