@@ -5,6 +5,7 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
 import dev.donutquine.editor.Editor;
+import dev.donutquine.editor.layout.EditorDropTarget;
 import dev.donutquine.editor.layout.GestureUtilities;
 import dev.donutquine.editor.layout.components.EditorCanvas;
 import dev.donutquine.editor.layout.components.Table;
@@ -27,6 +28,8 @@ import dev.donutquine.swf.shapes.ShapeDrawBitmapCommand;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
 import java.util.List;
 
 public class EditorWindow extends Window {
@@ -86,6 +89,8 @@ public class EditorWindow extends Window {
 
             stage.doInRenderThread(stage::updatePMVMatrix);
         });
+
+        new DropTarget(this.frame, DnDConstants.ACTION_COPY, new EditorDropTarget(editor));
 
         this.timelinePanel = new TimelinePanel();
 
