@@ -29,16 +29,10 @@ public class EditorDropTarget implements DropTargetListener {
             return;
         }
 
-        List<File> transferData;
-        try {
-            transferData = getFiles(e.getTransferable());
-        } catch (UnsupportedFlavorException | IOException ex) {
-            throw new RuntimeException(ex);
-        }
+        // On macOS, transferData is null despite the @NotNull annotation,
+        // so I cannot check file count here
 
-        if (transferData.size() == 1) {
-            e.acceptDrag(e.getDropAction());
-        }
+        e.acceptDrag(e.getDropAction());
     }
 
     @Override
@@ -73,7 +67,8 @@ public class EditorDropTarget implements DropTargetListener {
 
         try {
             List<File> transferData = getFiles(e.getTransferable());
-            assert transferData.size() == 1;
+            assert !transferData.isEmpty() : "Empty file list transferred wtf";
+            assert transferData.size() == 1 : "Only one file can be transferred now";
 
             // TODO: allow merging several files via DnD as an option
             editor.closeFile();
