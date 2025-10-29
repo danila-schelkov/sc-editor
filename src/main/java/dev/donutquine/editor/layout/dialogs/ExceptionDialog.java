@@ -2,6 +2,7 @@ package dev.donutquine.editor.layout.dialogs;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import dev.donutquine.editor.Editor;
+import dev.donutquine.editor.Version;
 import dev.donutquine.editor.layout.components.LinkLabel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,7 @@ public class ExceptionDialog extends JDialog {
         c.insets = new Insets(2, 5, 5, 5);
 
         Map<String, String> details = new LinkedHashMap<>();
-        // TODO: fetch version from manifest
+        details.put("Version", Version.getVersion());
         details.put("Java version", System.getProperty("java.version", "?"));
         details.put("Java VM", String.format("%s %s", System.getProperty("java.vm.vendor", "?"), System.getProperty("java.vm.name", "?")));
         details.put("Platform", String.format("%s (%s %s)", System.getProperty("os.name", "?"), System.getProperty("os.version", "?"), System.getProperty("os.arch", "?")));

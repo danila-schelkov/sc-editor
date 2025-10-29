@@ -12,6 +12,7 @@ public class HelpMenu extends JMenu {
         this.setMnemonic(KeyEvent.VK_H);
 
         JMenuItem about = new JMenuItem("About", KeyEvent.VK_A);
+        about.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
 
         about.addActionListener((e) -> AboutDialog.showAboutDialog(frame));
 

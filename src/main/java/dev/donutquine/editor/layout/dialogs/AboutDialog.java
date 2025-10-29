@@ -3,6 +3,7 @@ package dev.donutquine.editor.layout.dialogs;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.FlatLightLaf;
 import dev.donutquine.editor.Editor;
+import dev.donutquine.editor.Version;
 import dev.donutquine.editor.layout.components.LinkLabel;
 import dev.donutquine.editor.layout.windows.EditorWindow;
 
@@ -12,7 +13,7 @@ import java.time.Year;
 
 public class AboutDialog {
     public static void showAboutDialog(Component parent) {
-        JLabel titleLabel = new JLabel(EditorWindow.TITLE);
+        JLabel titleLabel = new JLabel("%s %s".formatted(EditorWindow.TITLE, Version.getVersion()));
         titleLabel.putClientProperty(FlatClientProperties.STYLE_CLASS, "h1");
 
         JOptionPane.showMessageDialog(
