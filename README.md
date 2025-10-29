@@ -18,6 +18,11 @@ And to build jar file with all dependencies built-in use following command:
 mvn clean compile assembly:single
 ```
 
+To build for all Operating Systems:
+```shell
+make release
+```
+
 ## Running
 
 1. Download jar from [releases](https://github.com/danila-schelkov/sc-editor/releases)
