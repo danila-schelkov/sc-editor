@@ -1,4 +1,4 @@
-DISABLE_AUTOPROFILE := -Dskip.auto.profiles=true
+DISABLE_AUTOPROFILE = -Dskip.auto.profiles=true
 
 VERSION := $(shell git describe --tags)
 
