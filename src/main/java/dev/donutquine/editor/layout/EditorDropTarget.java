@@ -19,7 +19,8 @@ public class EditorDropTarget implements DropTargetListener {
     }
 
     private static void onDrag(DropTargetDragEvent e) {
-        if ((e.getDropAction() & DnDConstants.ACTION_MOVE) == 0) {
+        // On Wayland there is no MOVE action...
+        if ((e.getDropAction() & DnDConstants.ACTION_COPY_OR_MOVE) == 0) {
             e.rejectDrag();
             return;
         }
