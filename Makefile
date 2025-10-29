@@ -1,4 +1,9 @@
 DISABLE_AUTOPROFILE = -Dskip.auto.profiles=true
+ifeq ($(OS),Windows_NT)
+	MAVEN_EXECUTABLE = mvnw.cmd
+else
+	MAVEN_EXECUTABLE = ./mvnw
+endif
 
 VERSION := $(shell git describe --tags)
 
@@ -13,15 +18,15 @@ release: clean build-windows build-linux build-macos
 
 .PHONY: build-windows
 build-windows:
-	mvnw -DreleaseVersion=${VERSION} compile -Pwindows ${DISABLE_AUTOPROFILE} assembly:single
+	${MAVEN_EXECUTABLE} -DreleaseVersion=${VERSION} compile -Pwindows ${DISABLE_AUTOPROFILE} assembly:single
 
 .PHONY: build-linux
 build-linux:
-	mvnw -DreleaseVersion=${VERSION} compile -Plinux ${DISABLE_AUTOPROFILE} assembly:single
+	${MAVEN_EXECUTABLE} -DreleaseVersion=${VERSION} compile -Plinux ${DISABLE_AUTOPROFILE} assembly:single
 
 .PHONY: build-macos
 build-macos:
-	mvnw -DreleaseVersion=${VERSION} compile -Pmacos ${DISABLE_AUTOPROFILE} assembly:single
+	${MAVEN_EXECUTABLE} -DreleaseVersion=${VERSION} compile -Pmacos ${DISABLE_AUTOPROFILE} assembly:single
 
 .PHONY: run
 run: build
@@ -29,8 +34,8 @@ run: build
 
 .PHONY: build
 build:
-	mvnw -DreleaseVersion=${VERSION} package
+	${MAVEN_EXECUTABLE} -DreleaseVersion=${VERSION} package
 
 .PHONY: clean
 clean:
-	mvnw clean
+	${MAVEN_EXECUTABLE} clean
