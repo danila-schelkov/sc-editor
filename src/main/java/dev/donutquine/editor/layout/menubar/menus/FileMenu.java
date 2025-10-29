@@ -3,7 +3,7 @@ package dev.donutquine.editor.layout.menubar.menus;
 import dev.donutquine.editor.Editor;
 import dev.donutquine.editor.layout.filechooser.BetterFileChooser;
 import dev.donutquine.editor.layout.shortcut.KeyboardUtils;
-import dev.donutquine.resources.ResourceManager;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -12,10 +12,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.prefs.Preferences;
 
 public class FileMenu extends JMenu {
+    private static final String LAST_DIRECTORY_KEY = "lastDirectory";
+    private static final String SAVE_DIRECTORY_KEY = "saveDirectory";
+
     private final Editor editor;
 
     private final JFrame frame;
@@ -89,19 +93,22 @@ public class FileMenu extends JMenu {
 
     private void open(ActionEvent e) {
         Preferences preferences = Preferences.userRoot().node("sc-editor");
-        String lastDirectory = preferences.get("lastDirectory", null);
 
-        BetterFileChooser fileChooser = lastDirectory != null ? new BetterFileChooser(lastDirectory) : new BetterFileChooser();
+        BetterFileChooser fileChooser = createFileChooser(preferences, LAST_DIRECTORY_KEY);
         fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell Texture (*.sctx)", "sctx"));
         fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc, *.sc2)", "sc", "sc2"));
+        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Supercell Texture (*.sctx)", "sctx"));
 
         int result = fileChooser.showOpenDialog(this.frame);
         if (result != JFileChooser.APPROVE_OPTION) return;
 
-        Path path = fileChooser.getSelectedFile().toPath();
+        Path path = fileChooser.getPathWithExtension(null);
+        if (!Files.exists(path)) {
+            editor.getWindow().showErrorDialog("File %s does not exist".formatted(path));
+            return;
+        }
 
-        preferences.put("lastDirectory", path.toAbsolutePath().getParent().toString());
+        preferences.put(LAST_DIRECTORY_KEY, path.toAbsolutePath().getParent().toString());
 
         close(null);
 
@@ -122,48 +129,23 @@ public class FileMenu extends JMenu {
     }
 
     private void save(ActionEvent actionEvent) {
-        BetterFileChooser fileChooser = new BetterFileChooser();
+        Preferences preferences = Preferences.userRoot().node("sc-editor");
+        BetterFileChooser fileChooser = createFileChooser(preferences, SAVE_DIRECTORY_KEY);
         fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc)", "sc"));
 
-        int result = fileChooser.showSaveDialog(this.frame);
-        if (result != JFileChooser.APPROVE_OPTION) return;
+        Path path = BetterFileChooser.showSaveDialog(fileChooser, this.frame, null);
+        if (path == null) return;
 
-        String path = getPathWithExtension(fileChooser);
+        preferences.put(SAVE_DIRECTORY_KEY, path.toAbsolutePath().getParent().toString());
 
-        if (ResourceManager.doesFileExist(path)) {
-            Object[] options = {"Yes", "Cancel"};
-            int warningResult = JOptionPane.showOptionDialog(
-                this.frame,
-                "There is already a file with that name.\n" +
-                    "Do you want to replace it?",
-                "Answer the question",
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.WARNING_MESSAGE,
-                null,
-                options,
-                options[0]
-            );
-
-            if (warningResult != JOptionPane.OK_OPTION) return;
-        }
-
-        editor.saveFile(path);
+        editor.saveFile(path.toString());
     }
 
-    private static String getPathWithExtension(BetterFileChooser fileChooser) {
-        String path = fileChooser.getSelectedFile().getPath();
-        if (fileChooser.getFileFilter() instanceof FileNameExtensionFilter extensionFilter) {
-            String extension = extensionFilter.getExtensions()[0];
-            if (!path.endsWith("." + extension)) {
-                path += "." + extension;
-            }
-        } else {
-            // TODO: choose extension depending on the file format
-            if (!path.endsWith(".sc")) {
-                path += ".sc";
-            }
-        }
-        return path;
+    private static @NotNull BetterFileChooser createFileChooser(Preferences preferences, String saveDirectoryKey) {
+        String lastDirectoryString = preferences.get(saveDirectoryKey, null);
+        Path lastDirectory = lastDirectoryString != null ? Path.of(lastDirectoryString) : null;
+
+        return new BetterFileChooser(lastDirectory);
     }
 }

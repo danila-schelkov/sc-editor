@@ -4,12 +4,11 @@ import dev.donutquine.editor.renderer.Camera;
 import dev.donutquine.editor.renderer.Framebuffer;
 import dev.donutquine.editor.renderer.gl.GLFramebuffer;
 import dev.donutquine.math.ReadonlyRect;
-import dev.donutquine.math.Rect;
 
 public final class RendererHelper {
     private RendererHelper() {}
 
-    public static Framebuffer prepareStageForRendering(EditorStage stage, Rect bounds) {
+    public static Framebuffer prepareStageForRendering(EditorStage stage, ReadonlyRect bounds) {
         Camera camera = stage.getCamera();
         camera.reset();
         camera.init((int) bounds.getWidth(), (int) bounds.getHeight());

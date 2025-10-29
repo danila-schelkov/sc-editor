@@ -1,13 +1,19 @@
 package dev.donutquine.utilities;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.swing.*;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 public class SystemUtils {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SystemUtils.class);
+
+    private SystemUtils() {}
+
     public static boolean canExecute(Object... commandArgs) {
         try {
             Process process = SystemUtils.runProcess(commandArgs);
@@ -26,6 +32,8 @@ public class SystemUtils {
         for (int i = 0; i < commandArgs.length; i++) {
             stringArgs[i] = commandArgs[i].toString();
         }
+
+        LOGGER.info(String.join(" ", stringArgs));
 
         return Runtime.getRuntime().exec(stringArgs);
     }
