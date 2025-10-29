@@ -3,7 +3,6 @@ package dev.donutquine.editor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
@@ -29,10 +28,12 @@ public class Version {
 
         // Honestly, I don't like hardcoded path
         try (InputStream in = aClass.getResourceAsStream("/META-INF/maven/dev.donutquine/sc-editor/pom.properties")) {
-            Properties properties = new Properties();
-            properties.load(in);
-            return properties.getProperty("version");
-        } catch (IOException e) {
+            if (in != null) {
+                Properties properties = new Properties();
+                properties.load(in);
+                return properties.getProperty("version");
+            }
+        } catch (Throwable e) {
             LOGGER.error("Can't get maven pom file", e);
         }
 
@@ -50,7 +51,7 @@ public class Version {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.error("Can't get manifest file", e);
         }
 
