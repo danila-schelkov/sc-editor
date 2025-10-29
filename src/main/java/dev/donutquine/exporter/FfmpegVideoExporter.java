@@ -16,19 +16,19 @@ import java.util.stream.Stream;
 public class FfmpegVideoExporter implements VideoExporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(FfmpegVideoExporter.class);
 
+    private final VideoFormat format;
     private final Path filepath;
-    private final String codecName;
     private final int fps;
     private final Path framesDirectory;
 
     private boolean isClosed;
 
-    public FfmpegVideoExporter(Path directory, String filename, String formatName, String codecName, int fps) {
-        this.codecName = codecName;
+    public FfmpegVideoExporter(VideoFormat format, Path path, int fps) {
+        this.format = format;
         this.fps = fps;
 
-        filepath = directory.resolve(String.join(".", filename, formatName));
-        framesDirectory = directory.resolve(String.join("_", filename, "frames"));
+        filepath = path;
+        framesDirectory = path.getParent().resolve(String.join("_", path.getFileName().toString(), "frames"));
 
         framesDirectory.toFile().mkdirs();
     }
@@ -51,8 +51,8 @@ public class FfmpegVideoExporter implements VideoExporter {
                 "-framerate", fps,
                 "-i", framesDirectory.resolve("%d.png").toAbsolutePath(),
                 "-pattern_type", "glob",
-                "-c:v", codecName,
-                "-pix_fmt", "yuva420p",
+                "-c:v", format.codec(),
+                "-pix_fmt", format.pixelFormat(),
                 "-lossless", 1,
                 filepath.toAbsolutePath()
             ),
@@ -60,6 +60,24 @@ public class FfmpegVideoExporter implements VideoExporter {
             (process) -> {
                 LOGGER.info("ffmpeg done its work with code: {}", process.exitValue());
 
+                if (process.exitValue() != 0) {
+                    try {
+                        String output = new String(process.getInputStream().readAllBytes());
+                        if (!output.isEmpty()) {
+                            LOGGER.error(output);
+                        }
+
+                        String errorOutput = new String(process.getErrorStream().readAllBytes());
+                        if (!errorOutput.isEmpty()) {
+                            LOGGER.error(errorOutput);
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                    return;
+                }
+
+                // TODO: Let user decide whether delete files or not
                 try (Stream<Path> files = Files.walk(framesDirectory)) {
                     files.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
                 } catch (IOException e) {

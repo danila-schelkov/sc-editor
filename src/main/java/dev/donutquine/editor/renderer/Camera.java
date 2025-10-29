@@ -18,7 +18,7 @@ public class Camera {
         this.offsetY = 0;
     }
 
-    public void init(Rect rect) {
+    public void init(ReadonlyRect rect) {
         init(rect.getLeft(), rect.getTop(), rect.getRight(), rect.getBottom());
     }
 
@@ -80,7 +80,7 @@ public class Camera {
         return viewportY + offsetY;
     }
 
-    public void zoomToFit(Rect bounds) {
+    public void zoomToFit(ReadonlyRect bounds) {
         reset();
 
         float pointSize = Math.min(viewport.getWidth() / bounds.getWidth(), viewport.getHeight() / bounds.getHeight());
@@ -94,7 +94,7 @@ public class Camera {
         addOffset(offsetX, offsetY);
     }
 
-    public void moveToFit(Rect bounds) {
+    public void moveToFit(ReadonlyRect bounds) {
         reset();
 
         float offsetX = bounds.getMidX() - viewport.getMidX();
