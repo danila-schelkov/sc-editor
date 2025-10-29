@@ -6,7 +6,7 @@
 
     <groupId>dev.donutquine</groupId>
     <artifactId>sc-editor</artifactId>
-    <version>1.5.5</version>
+    <version>${releaseVersion}</version>
 
     <repositories>
         <repository>
@@ -31,6 +31,7 @@
         <flatlafVersion>3.6.2</flatlafVersion>
         <main.class>dev.donutquine.editor.Main</main.class>
         <finalName>${project.artifactId}-${project.version}</finalName>
+        <releaseVersion>undefined</releaseVersion>
     </properties>
     <build>
         <finalName>${finalName}</finalName>
@@ -45,6 +46,9 @@
                             <classpathPrefix>libs/</classpathPrefix>
                             <mainClass>${main.class}</mainClass>
                         </manifest>
+                        <manifestEntries>
+                            <SC-Editor-Version>${releaseVersion}</SC-Editor-Version>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
@@ -76,6 +80,9 @@
                         <manifest>
                             <mainClass>${main.class}</mainClass>
                         </manifest>
+                        <manifestEntries>
+                            <SC-Editor-Version>${releaseVersion}</SC-Editor-Version>
+                        </manifestEntries>
                     </archive>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
