@@ -2,6 +2,7 @@ package dev.donutquine.editor.renderer;
 
 import dev.donutquine.math.ReadonlyRect;
 
+// Note: more like GPU context, not actually rendering anything, but rather changing states
 public interface Renderer {
     void printInfo();
 

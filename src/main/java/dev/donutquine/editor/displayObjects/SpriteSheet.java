@@ -33,18 +33,18 @@ public class SpriteSheet extends DisplayObject {
 
     @Override
     public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, float deltaTime) {
-        Stage renderer = this.getStage();
-        if (renderer.startShape(this.bounds, this.texture, 0)) {
-            renderer.addTriangles(2, INDICES);
+        Stage stage = this.getStage();
+        if (stage.startShape(this.bounds, this.texture, 0)) {
+            stage.addTriangles(2, INDICES);
 
-            renderer.addVertex(this.bounds.getLeft(), this.bounds.getTop(), 0, 0, 1, 1, 1, 1, 0, 0, 0);
-            renderer.addVertex(this.bounds.getLeft(), this.bounds.getBottom(), 0, 1, 1, 1, 1, 1, 0, 0, 0);
-            renderer.addVertex(this.bounds.getRight(), this.bounds.getBottom(), 1, 1, 1, 1, 1, 1, 0, 0, 0);
-            renderer.addVertex(this.bounds.getRight(), this.bounds.getTop(), 1, 0, 1, 1, 1, 1, 0, 0, 0);
+            stage.addVertex(this.bounds.getLeft(), this.bounds.getTop(), 0, 0, 1, 1, 1, 1, 0, 0, 0);
+            stage.addVertex(this.bounds.getLeft(), this.bounds.getBottom(), 0, 1, 1, 1, 1, 1, 0, 0, 0);
+            stage.addVertex(this.bounds.getRight(), this.bounds.getBottom(), 1, 1, 1, 1, 1, 1, 0, 0, 0);
+            stage.addVertex(this.bounds.getRight(), this.bounds.getTop(), 1, 0, 1, 1, 1, 1, 0, 0, 0);
 
             if (this.shouldDisplayPolygons) {
                 for (ShapeDrawBitmapCommand command : this.drawBitmapCommands) {
-                    ShapeDrawBitmapCommandRenderer.renderUV(command, renderer, UV_COLOR_TRANSFORM, 0);
+                    ShapeDrawBitmapCommandRenderer.renderUV(command, stage, UV_COLOR_TRANSFORM, 0);
                 }
             }
 

@@ -11,6 +11,8 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 public class GLShader extends Shader {
+    private static int currentProgram = 0;
+
     private final GLRendererContext gl;
     private final int programId;
     // Note: maybe should replace it with int[] shaderIds
@@ -28,11 +30,18 @@ public class GLShader extends Shader {
 
     @Override
     public void bind() {
+        if (currentProgram == programId) return;
+
+        currentProgram = this.programId;
         gl.glUseProgram(this.programId);
     }
 
     @Override
     public void unbind() {
+        // Note: are you sure? maybe unbind anyway?
+        if (currentProgram != programId) return;
+
+        currentProgram = 0;
         gl.glUseProgram(0);
     }
 

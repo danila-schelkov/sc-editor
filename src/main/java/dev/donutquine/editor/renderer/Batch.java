@@ -79,7 +79,9 @@ public class Batch {
             this.isDirty = false;
         }
 
+        this.shader.bind();
         this.vertexBuffer.render(0, this.triangleCount * 3);
+//        this.shader.unbind();  // FIXME: too many unbinds
     }
 
     public void reset() {

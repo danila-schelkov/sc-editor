@@ -29,7 +29,7 @@ public final class ShapeDrawBitmapCommandRenderer {
     }
 
     public static boolean renderUV(ShapeDrawBitmapCommand command, Stage stage, ColorTransform colorTransform, int renderConfigBits) {
-        UvTransformer vertexTransformer = new UvTransformer(command, stage.getTextureByIndex(command.getTextureIndex()));
+        VertexTransformer vertexTransformer = new UvTransformer(command, stage.getTextureByIndex(command.getTextureIndex()));
 
         return render0(stage, command, vertexTransformer, colorTransform, renderConfigBits);
     }

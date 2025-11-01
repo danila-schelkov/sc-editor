@@ -11,7 +11,6 @@ import dev.donutquine.editor.renderer.impl.texture.sctx.SctxPixelType;
 import dev.donutquine.editor.renderer.shader.Attribute;
 import dev.donutquine.editor.renderer.shader.Shader;
 import dev.donutquine.editor.renderer.texture.RenderableTexture;
-import dev.donutquine.math.ReadonlyRect;
 import dev.donutquine.math.Rect;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
@@ -37,7 +36,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class EditorStage implements Stage {
@@ -53,18 +54,15 @@ public class EditorStage implements Stage {
 
     private final ConcurrentLinkedQueue<Runnable> tasks = new ConcurrentLinkedQueue<>();
     private final Map<Integer, GLTexture> textures = new HashMap<>();
-    private final List<Batch> batches = new ArrayList<>();
     private final Camera camera = new Camera();
-    private final BatchPool batchPool = new BatchPool(this::constructBatch);
     private final StageSprite stageSprite;
 
     private boolean initialized;
     private Shader shader, screenShader;
     private AssetManager assetManager;
     private GLRendererContext gl;
-    private Renderer renderer;
+    private BatchedRenderer renderer;
 
-    private Batch currentBatch;
     private Batch screenBatch;
     private GLTexture gradientTexture;
     private Framebuffer framebuffer;
@@ -182,6 +180,7 @@ public class EditorStage implements Stage {
     }
 
     public void renderToFramebuffer(Framebuffer framebuffer) {
+        this.renderer.beginRendering();
         framebuffer.bind();
         renderDisplayObject();
         if (isWireframeEnabled) {
@@ -190,8 +189,7 @@ public class EditorStage implements Stage {
             gl.glPolygonMode(GLConstants.GL_FRONT_AND_BACK, GLConstants.GL_FILL);
         }
         framebuffer.unbind();
-
-        this.unloadBatchesToPool();
+        this.renderer.endRendering();
     }
 
     public Rect calculateBoundsForAllFrames(DisplayObject displayObject) {
@@ -236,7 +234,7 @@ public class EditorStage implements Stage {
             this.gradientTexture = null;
         }
 
-        this.clearBatches();
+        this.renderer.reset();
 
         this.initialized = false;
         this.gl.glDisableVertexAttribArray(0);
@@ -247,21 +245,14 @@ public class EditorStage implements Stage {
         this.renderer.bindBlendMode(BlendMode.DISABLED);
     }
 
-    public void clearBatches() {
-        for (Batch batch : this.batches) {
-            batch.delete();
-        }
-
-        this.batches.clear();
+    @Override
+    public void reset() {
+        this.renderer.reset();
+        this.removeAllChildren();
     }
 
     @Override
     public boolean startShape(Rect rect, RenderableTexture texture, int renderConfigBits) {
-        return startShape(shader, rect, texture, renderConfigBits, camera.getClipArea());
-    }
-
-    @Override
-    public boolean startShape(Shader shader, Rect rect, RenderableTexture texture, int renderConfigBits, ReadonlyRect clipArea) {
         if (this.isCalculatingBounds) {
             if (this.isCalculatingMaskBounds) {
                 this.maskBounds.mergeBounds(rect);
@@ -279,46 +270,17 @@ public class EditorStage implements Stage {
             return false;
         }
 
-        if (clipArea != null && !clipArea.overlaps(rect)) {
-            return false;
-        }
-
-        this.currentBatch = null;
-
-        if (!this.batches.isEmpty()) {
-            Batch lastBatch = this.batches.get(this.batches.size() - 1);
-            if (lastBatch.hasSame(shader, texture)) {
-                this.currentBatch = lastBatch;
-            }
-        }
-
-        if (this.currentBatch == null) {
-            this.currentBatch = this.batchPool.createOrPopBatch(shader, texture, RenderStencilState.NONE);
-            this.batches.add(this.currentBatch);
-        }
-
-        return this.currentBatch.startShape(renderConfigBits);
+        return renderer.startShape(shader, rect, texture, renderConfigBits, camera.getClipArea());
     }
 
     @Override
     public void addTriangles(int count, int[] indices) {
-        if (this.currentBatch == null) return;
-
-        this.currentBatch.addTriangles(count, indices);
-    }
-
-    @Override
-    public void addVertex(float... parameters) {
-        if (this.currentBatch == null) return;
-
-        this.currentBatch.addVertex(parameters);
+        this.renderer.addTriangles(count, indices);
     }
 
     @Override
     public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float alpha, float redAdd, float greenAdd, float blueAdd) {
-        if (this.currentBatch == null) return;
-
-        this.currentBatch.addVertex(x, y, u, v, redMul, greenMul, blueMul, alpha, redAdd, greenAdd, blueAdd);
+        this.renderer.addVertex(x, y, u, v, redMul, greenMul, blueMul, alpha, redAdd, greenAdd, blueAdd);
     }
 
     @Override
@@ -339,7 +301,7 @@ public class EditorStage implements Stage {
             return;
         }
 
-        this.batches.add(this.batchPool.createOrPopBatch(shader, null, state));
+        renderer.setStencilRenderingState(shader, state);
     }
 
     @Override
@@ -423,7 +385,7 @@ public class EditorStage implements Stage {
     public void setGlContext(GLRendererContext glRendererContext) {
         gl = glRendererContext;
 
-        this.renderer = new GLRenderer(glRendererContext);
+        this.renderer = new BatchedRenderer(this::constructBatch, new GLRenderer(glRendererContext));
         this.renderer.printInfo();
     }
 
@@ -509,36 +471,17 @@ public class EditorStage implements Stage {
 
         this.renderer.clearStencil();
 
-        this.shader.bind();
-        this.renderBuckets();
-        this.shader.unbind();
+        this.renderer.flush();
     }
 
     private void renderScreen() {
         this.renderer.clearColor(.5f, .5f, .5f, 1);
         this.renderer.clear(GLConstants.GL_COLOR_BUFFER_BIT | GLConstants.GL_DEPTH_BUFFER_BIT | GLConstants.GL_STENCIL_BUFFER_BIT);
 
+        // TODO: change to renderer.drawTexture(framebuffer.getTexture(), viewport)
         this.screenShader.bind();
         this.screenBatch.render();
         this.screenShader.unbind();
-    }
-
-    private void renderBuckets() {
-        for (Batch batch : this.batches) {
-            this.renderer.setRenderStencilState(batch.getStencilRenderingState());
-            batch.render();
-        }
-    }
-
-    private void unloadBatchesToPool() {
-        for (Batch batch : this.batches) {
-            batch.reset();
-        }
-
-        this.batchPool.pullBatches(this.batches);
-        this.batches.clear();
-
-        this.currentBatch = null;
     }
 
     private Batch initScreenBatch(Shader shader, RenderableTexture texture, Rect rect) {
