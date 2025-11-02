@@ -12,5 +12,5 @@ public interface DrawApi {
 
     void drawRectangle(Rect rect, Color color);
 
-    void drawLine(float x1, float y1, float x2, float y2, float thickness, Color red);
+    void drawLine(float x1, float y1, float x2, float y2, float thickness, Color color);
 }

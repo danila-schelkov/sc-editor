@@ -84,6 +84,7 @@ public class ViewportMouseListener extends MouseAdapter {
 
         EditorStage stage = EditorStage.getInstance();
         Camera camera = stage.getCamera();
+        if (camera.getViewport() == null) return;
 
         float worldX = camera.getWorldX(x);
         float worldY = camera.getWorldY(y);

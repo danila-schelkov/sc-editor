@@ -301,6 +301,11 @@ public class EditorStage implements Stage {
         return this.textures.get(index);
     }
 
+    @Override
+    public DrawApi getDrawApi() {
+        return this.drawApi;
+    }
+
     public int getTextureCount() {
         return this.textures.size();
     }
