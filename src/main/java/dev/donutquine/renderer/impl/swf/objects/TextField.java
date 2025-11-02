@@ -52,7 +52,6 @@ public class TextField extends DisplayObject {
     }
 
     private boolean shapeRender(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, boolean noBounds) {
-        DrawApi drawApi = stage.getDrawApi();
         Rect transformedBounds = new Rect(
             matrix.applyX(bounds.getLeft(), bounds.getTop()),
             matrix.applyY(bounds.getLeft(), bounds.getTop()),
@@ -60,9 +59,14 @@ public class TextField extends DisplayObject {
             matrix.applyY(bounds.getRight(), bounds.getBottom())
         );
 
-        Color color = new Color(colorTransform.getRedMultiplier(), colorTransform.getGreenMultiplier(), colorTransform.getBlueMultiplier(), colorTransform.getAlpha() / 2);
-        drawApi.drawRectangleLines(transformedBounds, color, 1);
-        return true;
+        if (stage.startShape(transformedBounds, null, renderConfigBits)) {
+            DrawApi drawApi = stage.getDrawApi();
+            Color color = new Color(colorTransform.getRedMultiplier(), colorTransform.getGreenMultiplier(), colorTransform.getBlueMultiplier(), colorTransform.getAlpha() / 2);
+            drawApi.drawRectangleLines(transformedBounds, color, 1);
+            return true;
+        }
+
+        return false;
     }
 
     public void setId(int id) {

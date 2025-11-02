@@ -68,6 +68,7 @@ public class Batch {
     public void delete() {
         if (this.vertexBuffer != null) {
             this.vertexBuffer.delete();
+            this.vertexBuffer = null;
         }
     }
 
