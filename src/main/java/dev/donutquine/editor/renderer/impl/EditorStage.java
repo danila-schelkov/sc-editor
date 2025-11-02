@@ -40,11 +40,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Consumer;
 
 public class EditorStage implements Stage {
     private static final Logger LOGGER = LoggerFactory.getLogger(EditorStage.class);
 
-    private static final Rect VIEWPORT_RECT = new Rect(-1, -1, 1, 1);
     private static final Matrix2x3 DEFAULT_MATRIX = new Matrix2x3();
     private static final ColorTransform DEFAULT_COLOR_TRANSFORM = new ColorTransform();
 
@@ -73,6 +73,7 @@ public class EditorStage implements Stage {
     private boolean isApplyingMaskBounds;
     private boolean isAnimationPaused;
     private boolean isWireframeEnabled;
+    private Consumer<FloatBuffer> extraPMVMatrixConsumer;
 
     private EditorStage() {
         this.stageSprite = new StageSprite(this);
@@ -161,19 +162,24 @@ public class EditorStage implements Stage {
         renderToFramebuffer(this.framebuffer);
 
         renderScreen();
+
+        // TODO: gizmos
+        // this.renderer.beginRendering();
+        // this.drawApi.drawRectangle(new Rect(100, 100), Color.RED);
+        // this.renderer.endRendering();
     }
 
     public void renderToFramebuffer(Framebuffer framebuffer) {
-        this.renderer.beginRendering();
         framebuffer.bind();
+        this.renderer.beginRendering();
         renderDisplayObject();
         if (isWireframeEnabled) {
             gl.glPolygonMode(GLConstants.GL_FRONT_AND_BACK, GLConstants.GL_LINE);
             renderDisplayObject();
             gl.glPolygonMode(GLConstants.GL_FRONT_AND_BACK, GLConstants.GL_FILL);
         }
+        this.renderer.endRendering();  // flushes renderer image to screen
         framebuffer.unbind();
-        this.renderer.endRendering();
     }
 
     public Rect calculateBoundsForAllFrames(DisplayObject displayObject) {
@@ -316,6 +322,10 @@ public class EditorStage implements Stage {
         this.shader.bind();
         this.shader.setUniformMatrix4f("pmv", matrixBuffer);
         this.shader.unbind();
+
+        if (this.extraPMVMatrixConsumer != null) {
+            this.extraPMVMatrixConsumer.accept(matrixBuffer);
+        }
     }
 
     public void doInRenderThread(Runnable task) {
@@ -357,7 +367,9 @@ public class EditorStage implements Stage {
         this.rendererContext.printInfo();
 
         this.renderer = new BatchedRenderer(this::constructBatch);
-        this.drawApi = new BasicDrawApi(this.renderer, this.assetManager);
+        BasicDrawApi basicDrawApi = new BasicDrawApi(this.renderer, this.assetManager);
+        extraPMVMatrixConsumer = basicDrawApi::setPMVMatrix;
+        this.drawApi = basicDrawApi;
     }
 
     public RendererContext getRendererContext() {
@@ -441,16 +453,15 @@ public class EditorStage implements Stage {
         this.rendererContext.clear(GLConstants.GL_COLOR_BUFFER_BIT | GLConstants.GL_DEPTH_BUFFER_BIT | GLConstants.GL_STENCIL_BUFFER_BIT);
 
         this.rendererContext.clearStencil();
-
-        this.renderer.flush();
     }
 
     private void renderScreen() {
         this.rendererContext.clearColor(.5f, .5f, .5f, 1);
         this.rendererContext.clear(GLConstants.GL_COLOR_BUFFER_BIT | GLConstants.GL_DEPTH_BUFFER_BIT | GLConstants.GL_STENCIL_BUFFER_BIT);
 
-        this.drawApi.drawTexture(framebuffer.getTexture(), VIEWPORT_RECT);
-        this.renderer.flush();
+        this.renderer.beginRendering();
+        this.drawApi.drawTexture(framebuffer.getTexture(), (Rect) camera.getClipArea());
+        this.renderer.endRendering();
     }
 
     private Batch constructBatch(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState) {

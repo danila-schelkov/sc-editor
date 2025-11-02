@@ -25,6 +25,7 @@ public class BatchedRenderer implements Renderer {
 
     @Override
     public void endRendering() {
+        this.flush();
         this.unloadBatchesToPool();
     }
 
