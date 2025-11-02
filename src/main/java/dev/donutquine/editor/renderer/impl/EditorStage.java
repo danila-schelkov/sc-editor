@@ -178,6 +178,7 @@ public class EditorStage implements Stage {
         this.renderer.beginRendering();
         renderDisplayObject();
         if (isWireframeEnabled) {
+            // TODO: redo with lines
             gl.glPolygonMode(GLConstants.GL_FRONT_AND_BACK, GLConstants.GL_LINE);
             renderDisplayObject();
             gl.glPolygonMode(GLConstants.GL_FRONT_AND_BACK, GLConstants.GL_FILL);
@@ -452,6 +453,10 @@ public class EditorStage implements Stage {
 
     public void setWireframeEnabled(boolean wireframeEnabled) {
         isWireframeEnabled = wireframeEnabled;
+    }
+
+    public Gizmos getGizmos() {
+        return gizmos;
     }
 
     private void renderDisplayObject() {
