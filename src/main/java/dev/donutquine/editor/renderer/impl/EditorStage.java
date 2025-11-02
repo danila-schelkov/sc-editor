@@ -14,6 +14,7 @@ import dev.donutquine.editor.renderer.texture.RenderableTexture;
 import dev.donutquine.math.Rect;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
+import dev.donutquine.renderer.impl.swf.objects.Shape;
 import dev.donutquine.renderer.impl.swf.objects.StageSprite;
 import dev.donutquine.resources.AssetManager;
 import dev.donutquine.sctx.FlatSctxTextureLoader;
@@ -54,6 +55,7 @@ public class EditorStage implements Stage {
     private final Map<Integer, GLTexture> textures = new HashMap<>();
     private final Camera camera = new Camera();
     private final StageSprite stageSprite;
+    private final Gizmos gizmos = new Gizmos(camera);
 
     private boolean initialized;
     private Shader shader;
@@ -163,10 +165,12 @@ public class EditorStage implements Stage {
 
         renderScreen();
 
-        // TODO: gizmos
-        // this.renderer.beginRendering();
-        // this.drawApi.drawRectangle(new Rect(100, 100), Color.RED);
-        // this.renderer.endRendering();
+        if (this.stageSprite.getChildrenCount() > 0) {
+            DisplayObject child = this.stageSprite.getChild(0);
+            if (child.isShape()) {
+                this.gizmos.drawShapeWireframe((Shape) child);
+            }
+        }
     }
 
     public void renderToFramebuffer(Framebuffer framebuffer) {
@@ -370,6 +374,8 @@ public class EditorStage implements Stage {
         BasicDrawApi basicDrawApi = new BasicDrawApi(this.renderer, this.assetManager);
         extraPMVMatrixConsumer = basicDrawApi::setPMVMatrix;
         this.drawApi = basicDrawApi;
+
+        this.gizmos.setRenderer(this.renderer, this.drawApi);
     }
 
     public RendererContext getRendererContext() {

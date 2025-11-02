@@ -33,6 +33,8 @@ public class SpriteSheet extends DisplayObject {
 
     @Override
     public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, float deltaTime) {
+        renderConfigBits |= this.getRenderConfigBits();
+
         Stage stage = this.getStage();
         if (stage.startShape(this.bounds, this.texture, 0)) {
             stage.addTriangles(2, INDICES);
@@ -44,7 +46,7 @@ public class SpriteSheet extends DisplayObject {
 
             if (this.shouldDisplayPolygons) {
                 for (ShapeDrawBitmapCommand command : this.drawBitmapCommands) {
-                    ShapeDrawBitmapCommandRenderer.renderUV(command, stage, UV_COLOR_TRANSFORM, 0);
+                    ShapeDrawBitmapCommandRenderer.renderUV(command, stage, UV_COLOR_TRANSFORM, renderConfigBits);
                 }
             }
 

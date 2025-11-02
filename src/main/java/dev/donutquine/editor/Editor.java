@@ -368,6 +368,7 @@ public class Editor {
                 texturesTable.addRow(i, texture.getWidth(), texture.getHeight(), texture.getFormat());
 
                 SpriteSheet spriteSheet = new SpriteSheet(texture, getDrawBitmapsOfTexture(i));
+                spriteSheet.setTriangleFunction(swf.getContainerVersion() >= 5);
                 this.spriteSheets.add(spriteSheet);
 
                 taskTracker.setValue(i);

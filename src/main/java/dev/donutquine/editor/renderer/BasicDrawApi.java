@@ -11,7 +11,7 @@ import java.awt.*;
 import java.nio.FloatBuffer;
 
 public class BasicDrawApi implements DrawApi {
-    private static final int[] RECT_INDICES = {0, 1, 2, 0, 2, 3};
+    private static final int[] RECT_INDICES = {0, 1, 2, 1, 2, 3};  // FAN order
     
     private final Renderer renderer;
     private final Shader textureShader;
@@ -42,8 +42,8 @@ public class BasicDrawApi implements DrawApi {
 
             this.renderer.addVertex(rect.getLeft(), rect.getTop(), 0, 1);
             this.renderer.addVertex(rect.getLeft(), rect.getBottom(), 0, 0);
-            this.renderer.addVertex(rect.getRight(), rect.getBottom(), 1, 0);
             this.renderer.addVertex(rect.getRight(), rect.getTop(), 1, 1);
+            this.renderer.addVertex(rect.getRight(), rect.getBottom(), 1, 0);
         }
     }
 
@@ -58,8 +58,33 @@ public class BasicDrawApi implements DrawApi {
 
             this.renderer.addVertex(rect.getLeft(), rect.getTop(), rgba[0], rgba[1], rgba[2], rgba[3]);
             this.renderer.addVertex(rect.getLeft(), rect.getBottom(), rgba[0], rgba[1], rgba[2], rgba[3]);
-            this.renderer.addVertex(rect.getRight(), rect.getBottom(), rgba[0], rgba[1], rgba[2], rgba[3]);
             this.renderer.addVertex(rect.getRight(), rect.getTop(), rgba[0], rgba[1], rgba[2], rgba[3]);
+            this.renderer.addVertex(rect.getRight(), rect.getBottom(), rgba[0], rgba[1], rgba[2], rgba[3]);
+        }
+    }
+
+    @Override
+    public void drawLine(float x1, float y1, float x2, float y2, float thickness, Color color) {
+        Rect bounds = new Rect(x1, y1, x2, y2);
+        if (this.renderer.startShape(colorShader, bounds, null, 0, null)) {
+            this.renderer.addTriangles(2, RECT_INDICES);
+
+            float[] rgba = new float[4];
+            rgba[3] = 1;
+            color.getColorComponents(rgba);
+
+            // TODO: make ends thickness/2 longer
+            float dx = x2 - x1;
+            float dy = y2 - y1;
+            double length = Math.sqrt(dx*dx + dy*dy);
+            double scale = thickness / (2 * length);
+            float radiusX = (float) (-dy * scale);
+            float radiusY = (float) (dx * scale);
+
+            this.renderer.addVertex(x1 - radiusX, y1 - radiusY, rgba[0], rgba[1], rgba[2], rgba[3]);
+            this.renderer.addVertex(x1 + radiusX, y1 + radiusY, rgba[0], rgba[1], rgba[2], rgba[3]);
+            this.renderer.addVertex(x2 - radiusX, y2 - radiusY, rgba[0], rgba[1], rgba[2], rgba[3]);
+            this.renderer.addVertex(x2 + radiusX, y2 + radiusY, rgba[0], rgba[1], rgba[2], rgba[3]);
         }
     }
 

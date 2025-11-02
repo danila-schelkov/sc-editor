@@ -11,4 +11,6 @@ public interface DrawApi {
     void drawTexture(RenderableTexture texture, Rect rect);
 
     void drawRectangle(Rect rect, Color color);
+
+    void drawLine(float x1, float y1, float x2, float y2, float thickness, Color red);
 }
