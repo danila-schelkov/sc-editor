@@ -1,6 +1,7 @@
 package dev.donutquine.editor.renderer;
 
 import dev.donutquine.editor.renderer.texture.RenderableTexture;
+import dev.donutquine.math.ReadonlyRect;
 import dev.donutquine.math.Rect;
 
 import java.awt.*;
@@ -11,6 +12,8 @@ public interface DrawApi {
     void drawTexture(RenderableTexture texture, Rect rect);
 
     void drawRectangle(Rect rect, Color color);
+
+    void drawRectangleLines(ReadonlyRect rect, Color color, int thickness);
 
     void drawLine(float x1, float y1, float x2, float y2, float thickness, Color color);
 }

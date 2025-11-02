@@ -61,11 +61,7 @@ public class TextField extends DisplayObject {
         );
 
         Color color = new Color(colorTransform.getRedMultiplier(), colorTransform.getGreenMultiplier(), colorTransform.getBlueMultiplier(), colorTransform.getAlpha() / 2);
-        int thickness = 1;
-        drawApi.drawLine(transformedBounds.getLeft(), transformedBounds.getTop(), transformedBounds.getRight(), transformedBounds.getTop(), thickness, color);
-        drawApi.drawLine(transformedBounds.getLeft(), transformedBounds.getBottom(), transformedBounds.getLeft(), transformedBounds.getTop(), thickness, color);
-        drawApi.drawLine(transformedBounds.getLeft(), transformedBounds.getBottom(), transformedBounds.getRight(), transformedBounds.getBottom(), thickness, color);
-        drawApi.drawLine(transformedBounds.getRight(), transformedBounds.getTop(), transformedBounds.getRight(), transformedBounds.getBottom(), thickness, color);
+        drawApi.drawRectangleLines(transformedBounds, color, 1);
         return true;
     }
 

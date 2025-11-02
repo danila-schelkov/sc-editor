@@ -4,6 +4,7 @@ import dev.donutquine.editor.renderer.gl.GLConstants;
 import dev.donutquine.editor.renderer.shader.Attribute;
 import dev.donutquine.editor.renderer.shader.Shader;
 import dev.donutquine.editor.renderer.texture.RenderableTexture;
+import dev.donutquine.math.ReadonlyRect;
 import dev.donutquine.math.Rect;
 import dev.donutquine.resources.AssetManager;
 
@@ -61,6 +62,14 @@ public class BasicDrawApi implements DrawApi {
             this.renderer.addVertex(rect.getRight(), rect.getTop(), rgba[0], rgba[1], rgba[2], rgba[3]);
             this.renderer.addVertex(rect.getRight(), rect.getBottom(), rgba[0], rgba[1], rgba[2], rgba[3]);
         }
+    }
+
+    @Override
+    public void drawRectangleLines(ReadonlyRect rect, Color color, int thickness) {
+        this.drawLine(rect.getLeft(), rect.getTop(), rect.getRight(), rect.getTop(), thickness, color);
+        this.drawLine(rect.getLeft(), rect.getBottom(), rect.getLeft(), rect.getTop(), thickness, color);
+        this.drawLine(rect.getLeft(), rect.getBottom(), rect.getRight(), rect.getBottom(), thickness, color);
+        this.drawLine(rect.getRight(), rect.getTop(), rect.getRight(), rect.getBottom(), thickness, color);
     }
 
     @Override
