@@ -1,6 +1,6 @@
 package dev.donutquine.editor.renderer.impl.texture.khronos;
 
-import dev.donutquine.editor.renderer.gl.GLRendererContext;
+import dev.donutquine.editor.renderer.gl.GLContext;
 import dev.donutquine.editor.renderer.gl.texture.GLTexture;
 import dev.donutquine.utilities.BufferUtils;
 import team.nulls.ntengine.assets.KhronosTexture;
@@ -9,9 +9,9 @@ import team.nulls.ntengine.assets.KhronosTextureDataLoader;
 import java.nio.ByteBuffer;
 
 public class ExtensionKhronosTextureLoader implements KhronosTextureLoader {
-    private final GLRendererContext gl;
+    private final GLContext gl;
 
-    public ExtensionKhronosTextureLoader(GLRendererContext gl) {
+    public ExtensionKhronosTextureLoader(GLContext gl) {
         this.gl = gl;
     }
 

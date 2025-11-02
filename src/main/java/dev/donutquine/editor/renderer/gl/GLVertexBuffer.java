@@ -9,7 +9,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 public class GLVertexBuffer extends VertexBuffer {
-    private final GLRendererContext gl;
+    private final GLContext gl;
     private final int usage;
     private final int glDrawMode;
 
@@ -17,7 +17,7 @@ public class GLVertexBuffer extends VertexBuffer {
     private FloatBufferObject vbo;
     private IntBufferObject ebo;
 
-    public GLVertexBuffer(GLRendererContext gl, int usage, Attribute... attributes) {
+    public GLVertexBuffer(GLContext gl, int usage, Attribute... attributes) {
         super(attributes);
 
         this.gl = gl;

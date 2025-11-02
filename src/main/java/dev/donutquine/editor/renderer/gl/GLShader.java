@@ -13,12 +13,12 @@ import java.nio.IntBuffer;
 public class GLShader extends Shader {
     private static int currentProgram = 0;
 
-    private final GLRendererContext gl;
+    private final GLContext gl;
     private final int programId;
     // Note: maybe should replace it with int[] shaderIds
     private final int vertexShaderId, fragmentShaderId;
 
-    public GLShader(GLRendererContext gl, String vertexFile, String fragmentFile, Attribute... attributes) {
+    public GLShader(GLContext gl, String vertexFile, String fragmentFile, Attribute... attributes) {
         super(attributes);
         this.gl = gl;
 
@@ -63,7 +63,7 @@ public class GLShader extends Shader {
         return gl.glGetUniformLocation(this.programId, name);
     }
 
-    private static int loadShader(GLRendererContext gl, int shaderType, String shaderFilename, String shaderTypeName) {
+    private static int loadShader(GLContext gl, int shaderType, String shaderFilename, String shaderTypeName) {
         int shader = gl.glCreateShader(shaderType);
         gl.glShaderSource(shader, ResourceManager.loadString(shaderFilename));
         gl.glCompileShader(shader);
@@ -71,7 +71,7 @@ public class GLShader extends Shader {
         return shader;
     }
 
-    private static int createProgram(GLRendererContext gl, int vertexShaderId, int fragmentShaderId) {
+    private static int createProgram(GLContext gl, int vertexShaderId, int fragmentShaderId) {
         int programId = gl.glCreateProgram();
         gl.glAttachShader(programId, vertexShaderId);
         gl.glAttachShader(programId, fragmentShaderId);
@@ -80,7 +80,7 @@ public class GLShader extends Shader {
         return programId;
     }
 
-    private static void checkShaderCompiled(GLRendererContext gl, int shader, String type) {
+    private static void checkShaderCompiled(GLContext gl, int shader, String type) {
         IntBuffer hasCompiled = IntBuffer.allocate(1);
         gl.glGetShaderiv(shader, GLConstants.GL_COMPILE_STATUS, hasCompiled);
         if (hasCompiled.get() == GLConstants.GL_TRUE) return;
@@ -95,7 +95,7 @@ public class GLShader extends Shader {
         throw new ShaderCompilationException("Shader (%s) compilation failed:\n%s", type, new String(logBuffer.array()).trim());
     }
 
-    private static void checkProgramLinked(GLRendererContext gl, int program) {
+    private static void checkProgramLinked(GLContext gl, int program) {
         IntBuffer hasCompiled = IntBuffer.allocate(1);
         gl.glGetProgramiv(program, GLConstants.GL_LINK_STATUS, hasCompiled);
         if (hasCompiled.get() == GLConstants.GL_TRUE) return;

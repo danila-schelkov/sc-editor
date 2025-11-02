@@ -3,10 +3,10 @@ package dev.donutquine.editor.renderer.gl;
 import dev.donutquine.editor.renderer.gl.buffers.BufferObject;
 
 public class Vao implements BufferObject {
-    private final GLRendererContext gl;
+    private final GLContext gl;
     private final int id;
 
-    public Vao(GLRendererContext gl) {
+    public Vao(GLContext gl) {
         this.gl = gl;
 
         this.id = gl.glGenVertexArray();

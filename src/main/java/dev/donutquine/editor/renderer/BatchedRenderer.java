@@ -8,49 +8,14 @@ import dev.donutquine.math.Rect;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BatchedRenderer implements Renderer, TrueRenderer {
+public class BatchedRenderer implements Renderer {
     private final List<Batch> batches = new ArrayList<>();
     private final BatchPool batchPool;
-    private final Renderer renderer;
 
     private Batch currentBatch;
 
-    public BatchedRenderer(BatchPool.BatchConstructor constructBatch, Renderer innerRenderer) {
+    public BatchedRenderer(BatchPool.BatchConstructor constructBatch) {
         batchPool = new BatchPool(constructBatch);
-        renderer = innerRenderer;
-    }
-
-    public void clearBatches() {
-        for (Batch batch : this.batches) {
-            batch.delete();
-        }
-
-        this.batches.clear();
-    }
-
-    @Override
-    public void printInfo() {
-        this.renderer.printInfo();
-    }
-
-    @Override
-    public void setViewport(int x, int y, int width, int height) {
-        this.renderer.setViewport(x, y, width, height);
-    }
-
-    @Override
-    public ReadonlyRect getViewport() {
-        return this.renderer.getViewport();
-    }
-
-    @Override
-    public void setRenderStencilState(RenderStencilState state) {
-        this.renderer.setRenderStencilState(state);
-    }
-
-    @Override
-    public boolean bindBlendMode(BlendMode blendMode) {
-        return this.renderer.bindBlendMode(blendMode);
     }
 
     @Override
@@ -64,23 +29,12 @@ public class BatchedRenderer implements Renderer, TrueRenderer {
     }
 
     @Override
-    public void clear(int flags) {
-        this.renderer.clear(flags);
-    }
-
-    @Override
-    public void clearColor(float r, float g, float b, float a) {
-        this.renderer.clearColor(r, g, b, a);
-    }
-
-    @Override
-    public void clearStencil() {
-        this.renderer.clearStencil();
-    }
-
-    @Override
     public void reset() {
-        this.clearBatches();
+        for (Batch batch : this.batches) {
+            batch.delete();
+        }
+
+        this.batches.clear();
     }
 
     @Override
@@ -127,7 +81,9 @@ public class BatchedRenderer implements Renderer, TrueRenderer {
 
     @Override
     public void flush() {
-        this.renderBuckets();
+        for (Batch batch : this.batches) {
+            batch.render();
+        }
     }
 
     private void unloadBatchesToPool() {
@@ -139,12 +95,5 @@ public class BatchedRenderer implements Renderer, TrueRenderer {
         this.batches.clear();
 
         this.currentBatch = null;
-    }
-
-    private void renderBuckets() {
-        for (Batch batch : this.batches) {
-            this.renderer.setRenderStencilState(batch.getStencilRenderingState());
-            batch.render();
-        }
     }
 }

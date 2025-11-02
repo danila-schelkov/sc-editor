@@ -1,22 +1,25 @@
 package dev.donutquine.editor.renderer;
 
+import dev.donutquine.editor.renderer.shader.Shader;
+import dev.donutquine.editor.renderer.texture.RenderableTexture;
 import dev.donutquine.math.ReadonlyRect;
+import dev.donutquine.math.Rect;
 
-// Note: more like GPU context, not actually rendering anything, but rather changing states
 public interface Renderer {
-    void printInfo();
+    void reset();
 
-    void setViewport(int x, int y, int width, int height);
+    void beginRendering();
 
-    ReadonlyRect getViewport();
+    void endRendering();
 
-    void setRenderStencilState(RenderStencilState state);
+    /// Returns whether to render the given object or not
+    boolean startShape(Shader shader, Rect rect, RenderableTexture texture, int renderConfigBits, ReadonlyRect clipArea);
 
-    boolean bindBlendMode(BlendMode blendMode);
+    void addTriangles(int count, int[] indices);
 
-    void clear(int flags);
+    void addVertex(float... vertexData);
 
-    void clearColor(float r, float g, float b, float a);
+    void setStencilRenderingState(Shader shader, RenderStencilState stencilRenderingState);
 
-    void clearStencil();
+    void flush();
 }
