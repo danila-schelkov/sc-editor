@@ -25,7 +25,7 @@ public class Gizmos {
     private final Stage stage;
     private final StageSprite stageSprite;
 
-    private CursorStateListener cursorStateListener;
+    private @Nullable CursorStateListener cursorStateListener;
 
     private Renderer renderer;
     private DrawApi drawApi;
@@ -33,6 +33,12 @@ public class Gizmos {
     private boolean mousePressed;
     private int commandIndex;
     private int pointIndex;
+
+    // Note: cannot use mouse dx, dy due to inaccuracy
+    private float mouseStartX, mouseStartY;
+    private boolean dragging;
+    private Rect initialBounds;
+    private Matrix2x3 initialMatrix;
 
     // TODO: add a keyboard shortcut to switch between allowed modes
     private Mode mode;
@@ -64,6 +70,24 @@ public class Gizmos {
 
     public void setMousePressed(boolean mousePressed) {
         this.mousePressed = mousePressed;
+        CursorType cursor = CursorType.DEFAULT_CURSOR;
+        if (mousePressed && this.touchedObject != null && this.touchedObjectBounds.containsPoint(this.mouseX, this.mouseY)) {
+            this.mouseStartX = this.mouseX;
+            this.mouseStartY = this.mouseY;
+            this.dragging = true;
+
+            cursor = CursorType.MOVE_CURSOR;
+            this.initialMatrix = this.touchedObject.getMatrix();
+            this.initialBounds = this.touchedObjectBounds;
+        } else {
+            this.initialMatrix = null;
+            this.initialBounds = null;
+            this.dragging = false;
+        }
+
+        if (this.cursorStateListener != null) {
+            this.cursorStateListener.setCursor(cursor);
+        }
     }
 
     public void mouseClicked(float worldX, float worldY, int clickCount) {
@@ -145,20 +169,22 @@ public class Gizmos {
             default -> {
                 if (touchedObject != null) {
                     this.drawApi.drawRectangleLines(touchedObjectBounds, Color.WHITE, 1);
+
+                    // FIXME: For some reason, object bounds are not only moved, but also resized
+                    if (this.dragging) {
+                        // TODO: make it persistent — save it to the original object.
+                        float dx = mouseX - mouseStartX;
+                        float dy = mouseY - mouseStartY;
+                        this.touchedObject.setMatrix(new Matrix2x3(this.initialMatrix));
+                        this.touchedObject.getMatrix().move(dx, dy);
+                        this.touchedObjectBounds = new Rect(this.initialBounds);
+                        this.touchedObjectBounds.movePosition(dx, dy);
+                    }
                 }
             }
         }
 
         this.renderer.endRendering();
-    }
-
-    public static void drawWireframe(DrawApi drawApi, Shape shape, Matrix2x3 matrix, Color wireframeColor, float thickness) {
-        boolean useStrip = (shape.getRenderConfigBits() & 0x8000) != 0;
-
-        for (int i = 0; i < shape.getCommandCount(); i++) {
-            ShapeDrawBitmapCommand command = shape.getCommand(i);
-            drawCommandWireframe(drawApi, command, matrix, wireframeColor, thickness, useStrip);
-        }
     }
 
     public static void drawCommandWireframe(DrawApi drawApi, ShapeDrawBitmapCommand command, Matrix2x3 matrix, Color wireframeColor, float thickness, boolean useStrip) {
@@ -185,15 +211,14 @@ public class Gizmos {
         float pixelSize = 1 / stage.getPixelSize();
         float thickness = 4 * pixelSize;
 
-        Matrix2x3 matrix = shape.getMatrix();
-        DisplayObject parent = shape.getParent();
-        while (parent != null) {
-            // Oh, so it's commutative?
-            matrix.multiply(parent.getMatrix());
-            parent = parent.getParent();
-        }
+        // Note: Identity matrix for standalone Shape object, maybe shouldn't allow to edit points in MovieClips (?)
+        Matrix2x3 matrix = getObjectFinalMatrix(shape);
 
-        drawWireframe(this.drawApi, shape, matrix, wireframeColor, thickness);
+        boolean useStrip = (shape.getRenderConfigBits() & 0x8000) != 0;
+
+        for (int i = 0; i < shape.getCommandCount(); i++) {
+            drawCommandWireframe(drawApi, shape.getCommand(i), matrix, wireframeColor, thickness, useStrip);
+        }
 
         if (!mousePressed) {
             commandIndex = -1;
@@ -245,5 +270,18 @@ public class Gizmos {
 
     public enum Mode {
         DEFAULT, EDIT_POINTS,
+    }
+
+    /// Returns a new matrix, composed of {@link DisplayObject} matrices.
+    private static Matrix2x3 getObjectFinalMatrix(DisplayObject shape) {
+        Matrix2x3 matrix = new Matrix2x3(shape.getMatrix());
+        DisplayObject parent = shape.getParent();
+        while (parent != null) {
+            // Oh, so it's commutative?
+            matrix.multiply(parent.getMatrix());
+            parent = parent.getParent();
+        }
+
+        return matrix;
     }
 }
