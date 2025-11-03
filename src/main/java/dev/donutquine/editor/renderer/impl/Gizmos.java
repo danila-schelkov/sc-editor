@@ -1,5 +1,7 @@
 package dev.donutquine.editor.renderer.impl;
 
+import dev.donutquine.editor.layout.cursor.CursorStateListener;
+import dev.donutquine.editor.layout.cursor.CursorType;
 import dev.donutquine.editor.renderer.DrawApi;
 import dev.donutquine.editor.renderer.Renderer;
 import dev.donutquine.editor.renderer.Stage;
@@ -17,6 +19,9 @@ public class Gizmos {
     private static final Logger LOGGER = LoggerFactory.getLogger(Gizmos.class);
 
     private final Stage stage;
+    private final StageSprite stageSprite;
+
+    private CursorStateListener cursorStateListener;
 
     private Renderer renderer;
     private DrawApi drawApi;
@@ -27,11 +32,16 @@ public class Gizmos {
 
     public Gizmos(Stage stage) {
         this.stage = stage;
+        this.stageSprite = stage.getStageSprite();
     }
 
     public void setRenderer(Renderer renderer, DrawApi drawApi) {
         this.renderer = renderer;
         this.drawApi = drawApi;
+    }
+
+    public void setCursorListener(CursorStateListener listener) {
+        this.cursorStateListener = listener;
     }
 
     public void setMousePosition(float x, float y) {
@@ -67,9 +77,11 @@ public class Gizmos {
     public void render() {
         this.renderer.beginRendering();
 
-        DisplayObject child = stage.getStageSprite().getChild(0);
-        if (child.isShape()) {
-            this.drawShapeWireframe((Shape) child);
+        if (stageSprite.getChildrenCount() > 0) {
+            DisplayObject child = stageSprite.getChild(0);
+            if (child.isShape()) {
+                this.drawShapeWireframe((Shape) child);
+            }
         }
 
         this.renderer.endRendering();
@@ -108,7 +120,6 @@ public class Gizmos {
             pointIndex = -1;
         }
 
-        // TODO: make the points functional
         float size = 10 * pixelSize;
         for (int i = 0; i < shape.getCommandCount(); i++) {
             ShapeDrawBitmapCommand command = shape.getCommand(i);
@@ -119,21 +130,34 @@ public class Gizmos {
                 float left = x - size / 2;
                 float top = y - size / 2;
                 Rect bounds = new Rect(left - size * 0.2f, top - size * 0.2f, left + size * 1.2f, top + size * 1.2f);
-                this.drawApi.drawRectangle(bounds, Color.BLACK);
+                Rect innerRect = new Rect(left, top, left + size, top + size);
+
+                Color color = Color.WHITE;
                 if (bounds.containsPoint(mouseX, mouseY) && commandIndex == -1) {
-                    this.drawApi.drawRectangle(new Rect(left, top, left + size, top + size), Color.RED);
+                    color = Color.RED;
                     commandIndex = i;
                     pointIndex = j;
-                } else {
-                    this.drawApi.drawRectangle(new Rect(left, top, left + size, top + size), Color.WHITE);
                 }
+
+                this.drawApi.drawRectangle(bounds, Color.BLACK);
+                this.drawApi.drawRectangle(innerRect, color);
             }
         }
 
-        if (pointIndex != -1 && this.mousePressed) {
-            ShapeDrawBitmapCommand command = shape.getCommand(commandIndex);
-            command.setXY(pointIndex, mouseX, mouseY);
+        CursorType cursor = CursorType.DEFAULT_CURSOR;
+        if (pointIndex != -1) {
+            cursor = CursorType.HAND_CURSOR;
+
+            if (this.mousePressed) {
+                cursor = CursorType.MOVE_CURSOR;
+
+                ShapeDrawBitmapCommand command = shape.getCommand(commandIndex);
+                command.setXY(pointIndex, mouseX, mouseY);
+            }
         }
 
+        if (cursorStateListener != null) {
+            cursorStateListener.setCursor(cursor);
+        }
     }
 }

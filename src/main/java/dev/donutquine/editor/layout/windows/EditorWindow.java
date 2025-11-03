@@ -9,6 +9,7 @@ import dev.donutquine.editor.layout.EditorDropTarget;
 import dev.donutquine.editor.layout.GestureUtilities;
 import dev.donutquine.editor.layout.components.EditorCanvas;
 import dev.donutquine.editor.layout.components.Table;
+import dev.donutquine.editor.layout.cursor.Cursors;
 import dev.donutquine.editor.layout.menubar.EditorMenuBar;
 import dev.donutquine.editor.layout.panels.DisplayObjectListPanel;
 import dev.donutquine.editor.layout.panels.StatusBar;
@@ -89,6 +90,8 @@ public class EditorWindow extends Window {
 
             stage.doInRenderThread(stage::updatePMVMatrix);
         });
+
+        EditorStage.getInstance().getGizmos().setCursorListener(Cursors.getListener(this.canvas));
 
         new DropTarget(this.frame, DnDConstants.ACTION_COPY, new EditorDropTarget(editor));
 

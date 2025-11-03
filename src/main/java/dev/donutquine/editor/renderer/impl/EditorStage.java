@@ -165,9 +165,7 @@ public class EditorStage implements Stage {
 
         renderScreen();
 
-        if (this.stageSprite.getChildrenCount() > 0) {
-            this.gizmos.render();
-        }
+        this.gizmos.render();
     }
 
     public void renderToFramebuffer(Framebuffer framebuffer) {
