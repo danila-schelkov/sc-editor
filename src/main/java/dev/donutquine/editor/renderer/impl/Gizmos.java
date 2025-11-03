@@ -73,7 +73,11 @@ public class Gizmos {
             if (this.touchedObject.isShape()) {
                 this.mode = Mode.EDIT_POINTS;
                 return;
-            } else if (this.touchedObject.isSprite()) {
+            // FIXME: There is a bug in animations, caused by non-static Stage instance.
+            //  When you spam-click on animated object, which may be removed next frame from its parent,
+            //  NPE will be thrown since its parent set to null.
+            //  As a potential fix just stop all animations if an object selected.
+            } else if (this.touchedObject.isSprite() && this.touchedObject.getStage() != null) {
                 rootObject = this.touchedObject;
             } else if (this.touchedObjectBounds.containsPoint(worldX, worldY)) {
                 return;
