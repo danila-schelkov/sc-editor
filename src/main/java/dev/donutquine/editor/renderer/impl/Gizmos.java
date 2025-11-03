@@ -5,11 +5,15 @@ import dev.donutquine.editor.layout.cursor.CursorType;
 import dev.donutquine.editor.renderer.DrawApi;
 import dev.donutquine.editor.renderer.Renderer;
 import dev.donutquine.editor.renderer.Stage;
+import dev.donutquine.math.Point;
 import dev.donutquine.math.Rect;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.Shape;
+import dev.donutquine.renderer.impl.swf.objects.Sprite;
 import dev.donutquine.renderer.impl.swf.objects.StageSprite;
+import dev.donutquine.swf.Matrix2x3;
 import dev.donutquine.swf.shapes.ShapeDrawBitmapCommand;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +37,8 @@ public class Gizmos {
     // TODO: add a keyboard shortcut to switch between allowed modes
     private Mode mode;
 
-    private DisplayObject touchedObject;
+    private @Nullable DisplayObject touchedObject;
+    // TODO: may be moving, it would be better to stop animation since EDIT_POINTS turned on ig
     private Rect touchedObjectBounds;
 
     public Gizmos(Stage stage) {
@@ -62,20 +67,38 @@ public class Gizmos {
     }
 
     public void mouseClicked(float worldX, float worldY, int clickCount) {
-        StageSprite stageSprite = this.stage.getStageSprite();
+        DisplayObject rootObject = this.stageSprite;
+        // TODO: improve it, so I could go to any depth like in Figma
+        if (this.touchedObject != null && clickCount >= 2) {
+            if (this.touchedObject.isShape()) {
+                this.mode = Mode.EDIT_POINTS;
+                return;
+            } else if (this.touchedObject.isSprite()) {
+                rootObject = this.touchedObject;
+            } else if (this.touchedObjectBounds.containsPoint(worldX, worldY)) {
+                return;
+            }
+        }
 
         DisplayObject touchedObject = null;
         Rect bounds = null;
 
-        int childrenCount = stageSprite.getChildrenCount();
-        for (int i = childrenCount - 1; i >= 0; i--) {
-            DisplayObject child = stageSprite.getChild(i);
-            bounds = this.stage.getDisplayObjectBounds(child);
+        if (rootObject.isSprite()) {
+            Sprite sprite = (Sprite) rootObject;
 
-            if (bounds.containsPoint(worldX, worldY)) {
-                touchedObject = child;
-                break;
+            int childrenCount = sprite.getChildrenCount();
+            for (int i = childrenCount - 1; i >= 0; i--) {
+                DisplayObject child = sprite.getChild(i);
+                bounds = this.stage.getDisplayObjectBounds(child);
+
+                if (bounds.containsPoint(worldX, worldY)) {
+                    touchedObject = child;
+                    break;
+                }
             }
+        // TODO: make it to edit TextField content when font renderer will be introduced
+        } else {
+            assert false : "Not implemented yet";
         }
 
         boolean targetChanged = this.touchedObject != touchedObject;
@@ -89,10 +112,6 @@ public class Gizmos {
 
         if (touchedObject != null) {
             LOGGER.info("{} at {}, {}", touchedObject, worldX, worldY);
-
-            if (!targetChanged && touchedObject.isShape() && clickCount == 2) {
-                this.mode = Mode.EDIT_POINTS;
-            }
         }
     }
 
@@ -115,11 +134,8 @@ public class Gizmos {
 
         switch (this.mode) {
             case EDIT_POINTS -> {
-                if (stageSprite.getChildrenCount() > 0) {
-                    DisplayObject child = stageSprite.getChild(0);
-                    if (child.isShape()) {
-                        this.drawShapeWireframe((Shape) child);
-                    }
+                if (touchedObject != null && touchedObject.isShape()) {
+                    this.drawShapeWireframe((Shape) touchedObject);
                 }
             }
             default -> {
@@ -137,18 +153,25 @@ public class Gizmos {
 
         for (int i = 0; i < shape.getCommandCount(); i++) {
             ShapeDrawBitmapCommand command = shape.getCommand(i);
-            drawCommandWireframe(drawApi, command, wireframeColor, thickness, useStrip);
+            drawCommandWireframe(drawApi, command, shape.getMatrix(), wireframeColor, thickness, useStrip);
         }
     }
 
-    public static void drawCommandWireframe(DrawApi drawApi, ShapeDrawBitmapCommand command, Color wireframeColor, float thickness, boolean useStrip) {
+    public static void drawCommandWireframe(DrawApi drawApi, ShapeDrawBitmapCommand command, Matrix2x3 matrix, Color wireframeColor, float thickness, boolean useStrip) {
         if (command.getVertexCount() < 3) return;
 
-        drawApi.drawLine(command.getX(0), command.getY(0), command.getX(1), command.getY(1), thickness, wireframeColor);
+        Point p1 = new Point(command.getX(0), command.getY(0));
+        Point p2 = new Point(command.getX(1), command.getY(1));
+
+        drawApi.drawLine(matrix.apply(p1), matrix.apply(p2), thickness, wireframeColor);
 
         for (int j = 2; j < command.getVertexCount(); j++) {
-            drawApi.drawLine(command.getX(useStrip ? j - 2 : 0), command.getY(useStrip ? j - 2 : 0), command.getX(j), command.getY(j), thickness, wireframeColor);
-            drawApi.drawLine(command.getX(j - 1), command.getY(j - 1), command.getX(j), command.getY(j), thickness, wireframeColor);
+            p1 = new Point(command.getX(j), command.getY(j));
+            p2 = new Point(command.getX(useStrip ? j - 2 : 0), command.getY(useStrip ? j - 2 : 0));
+
+            drawApi.drawLine(matrix.apply(p1), matrix.apply(p2), thickness, wireframeColor);
+            p2 = new Point(command.getX(j - 1), command.getY(j - 1));
+            drawApi.drawLine(matrix.apply(p1), matrix.apply(p2), thickness, wireframeColor);
         }
     }
 
@@ -165,13 +188,15 @@ public class Gizmos {
             pointIndex = -1;
         }
 
+        Matrix2x3 matrix = shape.getMatrix();
+
         float size = 10 * pixelSize;
         for (int i = 0; i < shape.getCommandCount(); i++) {
             ShapeDrawBitmapCommand command = shape.getCommand(i);
             if (command.getVertexCount() < 3) continue;
             for (int j = 0; j < command.getVertexCount(); j++) {
-                float x = command.getX(j);
-                float y = command.getY(j);
+                float x = matrix.applyX(command.getX(j), command.getY(j));
+                float y = matrix.applyY(command.getX(j), command.getY(j));
                 float left = x - size / 2;
                 float top = y - size / 2;
                 Rect bounds = new Rect(left - size * 0.2f, top - size * 0.2f, left + size * 1.2f, top + size * 1.2f);
@@ -197,7 +222,9 @@ public class Gizmos {
                 cursor = CursorType.MOVE_CURSOR;
 
                 ShapeDrawBitmapCommand command = shape.getCommand(commandIndex);
-                command.setXY(pointIndex, mouseX, mouseY);
+                Matrix2x3 inverseMatrix = new Matrix2x3(matrix);
+                inverseMatrix.inverse();
+                command.setXY(pointIndex, inverseMatrix.applyX(mouseX, mouseY), inverseMatrix.applyY(mouseX, mouseY));
             }
         }
 
@@ -207,7 +234,6 @@ public class Gizmos {
     }
 
     public enum Mode {
-        DEFAULT,
-        EDIT_POINTS,
+        DEFAULT, EDIT_POINTS,
     }
 }
