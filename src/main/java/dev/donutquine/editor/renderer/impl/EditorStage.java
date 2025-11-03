@@ -11,10 +11,10 @@ import dev.donutquine.editor.renderer.impl.texture.sctx.SctxPixelType;
 import dev.donutquine.editor.renderer.shader.Attribute;
 import dev.donutquine.editor.renderer.shader.Shader;
 import dev.donutquine.editor.renderer.texture.RenderableTexture;
+import dev.donutquine.math.ReadonlyRect;
 import dev.donutquine.math.Rect;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
-import dev.donutquine.renderer.impl.swf.objects.Shape;
 import dev.donutquine.renderer.impl.swf.objects.StageSprite;
 import dev.donutquine.resources.AssetManager;
 import dev.donutquine.sctx.FlatSctxTextureLoader;
@@ -55,7 +55,7 @@ public class EditorStage implements Stage {
     private final Map<Integer, GLTexture> textures = new HashMap<>();
     private final Camera camera = new Camera();
     private final StageSprite stageSprite;
-    private final Gizmos gizmos = new Gizmos(camera);
+    private final Gizmos gizmos = new Gizmos(this);
 
     private boolean initialized;
     private Shader shader;
@@ -166,10 +166,7 @@ public class EditorStage implements Stage {
         renderScreen();
 
         if (this.stageSprite.getChildrenCount() > 0) {
-            DisplayObject child = this.stageSprite.getChild(0);
-            if (child.isShape()) {
-                this.gizmos.drawShapeWireframe((Shape) child);
-            }
+            this.gizmos.render();
         }
     }
 
@@ -244,7 +241,7 @@ public class EditorStage implements Stage {
     }
 
     @Override
-    public boolean startShape(Rect rect, RenderableTexture texture, int renderConfigBits) {
+    public boolean startShape(ReadonlyRect rect, RenderableTexture texture, int renderConfigBits) {
         if (this.isCalculatingBounds) {
             if (this.isCalculatingMaskBounds) {
                 this.maskBounds.mergeBounds(rect);
@@ -253,7 +250,9 @@ public class EditorStage implements Stage {
 
             if (this.bounds != null) {
                 if (this.isApplyingMaskBounds) {
-                    rect.clamp(this.maskBounds);
+                    Rect copy = new Rect(rect);
+                    copy.clamp(this.maskBounds);
+                    rect = copy;
                 }
 
                 this.bounds.mergeBounds(rect);
@@ -358,6 +357,7 @@ public class EditorStage implements Stage {
         return camera;
     }
 
+    @Override
     public StageSprite getStageSprite() {
         return stageSprite;
     }
@@ -423,6 +423,7 @@ public class EditorStage implements Stage {
         }
     }
 
+    @Override
     public Rect getDisplayObjectBounds(DisplayObject displayObject) {
         Rect bounds = new Rect();
 
@@ -446,6 +447,11 @@ public class EditorStage implements Stage {
         this.bounds = null;
 
         return bounds;
+    }
+
+    @Override
+    public float getPixelSize() {
+        return camera.getZoom().getPointSize();
     }
 
     public void pauseAnimation() {
@@ -476,7 +482,8 @@ public class EditorStage implements Stage {
         this.rendererContext.clear(GLConstants.GL_COLOR_BUFFER_BIT | GLConstants.GL_DEPTH_BUFFER_BIT | GLConstants.GL_STENCIL_BUFFER_BIT);
 
         this.renderer.beginRendering();
-        this.drawApi.drawTexture(framebuffer.getTexture(), (Rect) camera.getClipArea());
+        // Note: OpenGL textures are flipped, so drawing with flipped V coordinates of UV
+        this.drawApi.drawTextureFlipped(framebuffer.getTexture(), camera.getClipArea());
         this.renderer.endRendering();
     }
 

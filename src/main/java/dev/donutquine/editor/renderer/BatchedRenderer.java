@@ -3,7 +3,6 @@ package dev.donutquine.editor.renderer;
 import dev.donutquine.editor.renderer.shader.Shader;
 import dev.donutquine.editor.renderer.texture.RenderableTexture;
 import dev.donutquine.math.ReadonlyRect;
-import dev.donutquine.math.Rect;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +38,7 @@ public class BatchedRenderer implements Renderer {
     }
 
     @Override
-    public boolean startShape(Shader shader, Rect rect, RenderableTexture texture, int renderConfigBits, ReadonlyRect clipArea) {
+    public boolean startShape(Shader shader, ReadonlyRect rect, RenderableTexture texture, int renderConfigBits, ReadonlyRect clipArea) {
         if (clipArea != null && !clipArea.overlaps(rect)) {
             return false;
         }

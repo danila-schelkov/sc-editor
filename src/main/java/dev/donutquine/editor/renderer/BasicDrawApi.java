@@ -13,7 +13,7 @@ import java.nio.FloatBuffer;
 
 public class BasicDrawApi implements DrawApi {
     private static final int[] RECT_INDICES = {0, 1, 2, 1, 2, 3};  // FAN order
-    
+
     private final Renderer renderer;
     private final Shader textureShader;
     private final Shader colorShader;
@@ -37,7 +37,19 @@ public class BasicDrawApi implements DrawApi {
     }
 
     @Override
-    public void drawTexture(RenderableTexture texture, Rect rect) {
+    public void drawTexture(RenderableTexture texture, ReadonlyRect rect) {
+        if (this.renderer.startShape(textureShader, rect, texture, 0, null)) {
+            this.renderer.addTriangles(2, RECT_INDICES);
+
+            this.renderer.addVertex(rect.getLeft(), rect.getTop(), 0, 0);
+            this.renderer.addVertex(rect.getLeft(), rect.getBottom(), 0, 1);
+            this.renderer.addVertex(rect.getRight(), rect.getTop(), 1, 0);
+            this.renderer.addVertex(rect.getRight(), rect.getBottom(), 1, 1);
+        }
+    }
+
+    @Override
+    public void drawTextureFlipped(RenderableTexture texture, ReadonlyRect rect) {
         if (this.renderer.startShape(textureShader, rect, texture, 0, null)) {
             this.renderer.addTriangles(2, RECT_INDICES);
 
@@ -49,7 +61,7 @@ public class BasicDrawApi implements DrawApi {
     }
 
     @Override
-    public void drawRectangle(Rect rect, Color color) {
+    public void drawRectangle(ReadonlyRect rect, Color color) {
         if (this.renderer.startShape(colorShader, rect, null, 0, null)) {
             this.renderer.addTriangles(2, RECT_INDICES);
 
@@ -85,7 +97,7 @@ public class BasicDrawApi implements DrawApi {
             // TODO: make ends thickness/2 longer
             float dx = x2 - x1;
             float dy = y2 - y1;
-            double length = Math.sqrt(dx*dx + dy*dy);
+            double length = Math.sqrt(dx * dx + dy * dy);
             double scale = thickness / (2 * length);
             float radiusX = (float) (-dy * scale);
             float radiusY = (float) (dx * scale);

@@ -3,7 +3,6 @@ package dev.donutquine.editor.renderer;
 import dev.donutquine.editor.renderer.shader.Shader;
 import dev.donutquine.editor.renderer.texture.RenderableTexture;
 import dev.donutquine.math.ReadonlyRect;
-import dev.donutquine.math.Rect;
 
 public interface Renderer {
     void reset();
@@ -13,7 +12,7 @@ public interface Renderer {
     void endRendering();
 
     /// Returns whether to render the given object or not
-    boolean startShape(Shader shader, Rect rect, RenderableTexture texture, int renderConfigBits, ReadonlyRect clipArea);
+    boolean startShape(Shader shader, ReadonlyRect rect, RenderableTexture texture, int renderConfigBits, ReadonlyRect clipArea);
 
     void addTriangles(int count, int[] indices);
 
