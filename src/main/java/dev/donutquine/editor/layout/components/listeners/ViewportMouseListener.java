@@ -39,7 +39,7 @@ public class ViewportMouseListener extends MouseAdapter {
         assert point != null : "Stage is not in a valid state";
 
         Gizmos gizmos = EditorStage.getInstance().getGizmos();
-        gizmos.mouseClicked(point.getX(), point.getY());
+        gizmos.mouseClicked(point.getX(), point.getY(), e.getClickCount());
     }
 
     private static void updateMousePosition(MouseEvent e) {

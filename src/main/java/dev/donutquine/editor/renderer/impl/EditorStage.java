@@ -54,7 +54,7 @@ public class EditorStage implements Stage {
     private final ConcurrentLinkedQueue<Runnable> tasks = new ConcurrentLinkedQueue<>();
     private final Map<Integer, GLTexture> textures = new HashMap<>();
     private final Camera camera = new Camera();
-    private final StageSprite stageSprite;
+    private final StageSprite stageSprite = new StageSprite(this);
     private final Gizmos gizmos = new Gizmos(this);
 
     private boolean initialized;
@@ -77,9 +77,7 @@ public class EditorStage implements Stage {
     private boolean isWireframeEnabled;
     private Consumer<FloatBuffer> extraPMVMatrixConsumer;
 
-    private EditorStage() {
-        this.stageSprite = new StageSprite(this);
-    }
+    private EditorStage() { }
 
     public static EditorStage getInstance() {
         if (INSTANCE == null) {
@@ -234,6 +232,7 @@ public class EditorStage implements Stage {
 
     @Override
     public void reset() {
+        this.gizmos.reset();
         this.renderer.reset();
         this.removeAllChildren();
     }

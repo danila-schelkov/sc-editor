@@ -30,9 +30,17 @@ public class Gizmos {
     private int commandIndex;
     private int pointIndex;
 
+    // TODO: add a keyboard shortcut to switch between allowed modes
+    private Mode mode;
+
+    private DisplayObject touchedObject;
+    private Rect touchedObjectBounds;
+
     public Gizmos(Stage stage) {
         this.stage = stage;
         this.stageSprite = stage.getStageSprite();
+
+        this.reset();
     }
 
     public void setRenderer(Renderer renderer, DrawApi drawApi) {
@@ -53,15 +61,16 @@ public class Gizmos {
         this.mousePressed = mousePressed;
     }
 
-    public void mouseClicked(float worldX, float worldY) {
-        StageSprite stageSprite = stage.getStageSprite();
+    public void mouseClicked(float worldX, float worldY, int clickCount) {
+        StageSprite stageSprite = this.stage.getStageSprite();
 
         DisplayObject touchedObject = null;
+        Rect bounds = null;
 
         int childrenCount = stageSprite.getChildrenCount();
         for (int i = childrenCount - 1; i >= 0; i--) {
             DisplayObject child = stageSprite.getChild(i);
-            Rect bounds = stage.getDisplayObjectBounds(child);
+            bounds = this.stage.getDisplayObjectBounds(child);
 
             if (bounds.containsPoint(worldX, worldY)) {
                 touchedObject = child;
@@ -69,18 +78,54 @@ public class Gizmos {
             }
         }
 
-        if (touchedObject == null) return;
+        boolean targetChanged = this.touchedObject != touchedObject;
 
-        LOGGER.info("{} at {}, {}", touchedObject, worldX, worldY);
+        this.touchedObject = touchedObject;
+        this.touchedObjectBounds = bounds;
+
+        if (targetChanged) {
+            this.mode = Mode.DEFAULT;
+        }
+
+        if (touchedObject != null) {
+            LOGGER.info("{} at {}, {}", touchedObject, worldX, worldY);
+
+            if (!targetChanged && touchedObject.isShape() && clickCount == 2) {
+                this.mode = Mode.EDIT_POINTS;
+            }
+        }
+    }
+
+    public void reset() {
+        this.touchedObject = null;
+        this.touchedObjectBounds = null;
+
+        this.commandIndex = -1;
+        this.pointIndex = -1;
+
+        this.mode = Mode.DEFAULT;
+
+        if (this.cursorStateListener != null) {
+            this.cursorStateListener.setCursor(CursorType.DEFAULT_CURSOR);
+        }
     }
 
     public void render() {
         this.renderer.beginRendering();
 
-        if (stageSprite.getChildrenCount() > 0) {
-            DisplayObject child = stageSprite.getChild(0);
-            if (child.isShape()) {
-                this.drawShapeWireframe((Shape) child);
+        switch (this.mode) {
+            case EDIT_POINTS -> {
+                if (stageSprite.getChildrenCount() > 0) {
+                    DisplayObject child = stageSprite.getChild(0);
+                    if (child.isShape()) {
+                        this.drawShapeWireframe((Shape) child);
+                    }
+                }
+            }
+            default -> {
+                if (touchedObject != null) {
+                    this.drawApi.drawRectangleLines(touchedObjectBounds, Color.WHITE, 1);
+                }
             }
         }
 
@@ -159,5 +204,10 @@ public class Gizmos {
         if (cursorStateListener != null) {
             cursorStateListener.setCursor(cursor);
         }
+    }
+
+    public enum Mode {
+        DEFAULT,
+        EDIT_POINTS,
     }
 }
