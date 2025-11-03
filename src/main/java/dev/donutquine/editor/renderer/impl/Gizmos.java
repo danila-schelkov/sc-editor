@@ -148,12 +148,12 @@ public class Gizmos {
         this.renderer.endRendering();
     }
 
-    public static void drawWireframe(DrawApi drawApi, Shape shape, Color wireframeColor, float thickness) {
+    public static void drawWireframe(DrawApi drawApi, Shape shape, Matrix2x3 matrix, Color wireframeColor, float thickness) {
         boolean useStrip = (shape.getRenderConfigBits() & 0x8000) != 0;
 
         for (int i = 0; i < shape.getCommandCount(); i++) {
             ShapeDrawBitmapCommand command = shape.getCommand(i);
-            drawCommandWireframe(drawApi, command, shape.getMatrix(), wireframeColor, thickness, useStrip);
+            drawCommandWireframe(drawApi, command, matrix, wireframeColor, thickness, useStrip);
         }
     }
 
@@ -181,14 +181,20 @@ public class Gizmos {
         float pixelSize = 1 / stage.getPixelSize();
         float thickness = 4 * pixelSize;
 
-        drawWireframe(this.drawApi, shape, wireframeColor, thickness);
+        Matrix2x3 matrix = shape.getMatrix();
+        DisplayObject parent = shape.getParent();
+        while (parent != null) {
+            // Oh, so it's commutative?
+            matrix.multiply(parent.getMatrix());
+            parent = parent.getParent();
+        }
+
+        drawWireframe(this.drawApi, shape, matrix, wireframeColor, thickness);
 
         if (!mousePressed) {
             commandIndex = -1;
             pointIndex = -1;
         }
-
-        Matrix2x3 matrix = shape.getMatrix();
 
         float size = 10 * pixelSize;
         for (int i = 0; i < shape.getCommandCount(); i++) {
