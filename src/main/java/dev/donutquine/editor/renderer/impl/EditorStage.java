@@ -1,6 +1,7 @@
 package dev.donutquine.editor.renderer.impl;
 
 import com.jogamp.opengl.util.PMVMatrix;
+import dev.donutquine.editor.gizmos.Gizmos;
 import dev.donutquine.editor.renderer.*;
 import dev.donutquine.editor.renderer.gl.*;
 import dev.donutquine.editor.renderer.gl.exceptions.ShaderCompilationException;

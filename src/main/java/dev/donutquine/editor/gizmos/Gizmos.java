@@ -1,5 +1,9 @@
-package dev.donutquine.editor.renderer.impl;
+package dev.donutquine.editor.gizmos;
 
+import dev.donutquine.editor.commands.CommandManager;
+import dev.donutquine.editor.commands.UndoRedoManager;
+import dev.donutquine.editor.gizmos.commands.MoveDrawCommandPointCommand;
+import dev.donutquine.editor.gizmos.commands.SetDisplayObjectMatrixCommand;
 import dev.donutquine.editor.layout.cursor.CursorStateListener;
 import dev.donutquine.editor.layout.cursor.CursorType;
 import dev.donutquine.editor.renderer.DrawApi;
@@ -19,11 +23,15 @@ import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 
-public class Gizmos {
+public class Gizmos implements UndoRedoManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(Gizmos.class);
 
     private final Stage stage;
     private final StageSprite stageSprite;
+
+    // TODO: pass command manager from within the editor,
+    //  so all commands (action) history is shared between everything in the app
+    private final CommandManager commandManager;
 
     private @Nullable CursorStateListener cursorStateListener;
 
@@ -31,11 +39,11 @@ public class Gizmos {
     private DrawApi drawApi;
     private float mouseX, mouseY;
     private boolean mousePressed;
-    private int commandIndex;
+    private ShapeDrawBitmapCommand targetShapeDrawCommand;
     private int pointIndex;
 
     // Note: cannot use mouse dx, dy due to inaccuracy
-    private float mouseStartX, mouseStartY;
+    private float startX, startY;
     private boolean dragging;
     private Rect initialBounds;
     private Matrix2x3 initialMatrix;
@@ -50,6 +58,7 @@ public class Gizmos {
     public Gizmos(Stage stage) {
         this.stage = stage;
         this.stageSprite = stage.getStageSprite();
+        this.commandManager = new CommandManager();
 
         this.reset();
     }
@@ -71,18 +80,55 @@ public class Gizmos {
     public void setMousePressed(boolean mousePressed) {
         this.mousePressed = mousePressed;
         CursorType cursor = CursorType.DEFAULT_CURSOR;
-        if (mousePressed && this.touchedObject != null && this.touchedObjectBounds.containsPoint(this.mouseX, this.mouseY)) {
-            this.mouseStartX = this.mouseX;
-            this.mouseStartY = this.mouseY;
-            this.dragging = true;
+        if (this.touchedObject != null) {
+            if (mousePressed && this.targetShapeDrawCommand != null) {
+                this.startX = this.targetShapeDrawCommand.getX(this.pointIndex);
+                this.startY = this.targetShapeDrawCommand.getY(this.pointIndex);
+                this.dragging = true;
 
-            cursor = CursorType.MOVE_CURSOR;
-            this.initialMatrix = this.touchedObject.getMatrix();
-            this.initialBounds = this.touchedObjectBounds;
-        } else {
-            this.initialMatrix = null;
-            this.initialBounds = null;
-            this.dragging = false;
+                cursor = CursorType.MOVE_CURSOR;
+            } else if (mousePressed && this.touchedObjectBounds.containsPoint(this.mouseX, this.mouseY)) {
+                this.initialMatrix = this.touchedObject.getMatrix();
+                this.initialBounds = this.touchedObjectBounds;
+
+                this.startX = this.mouseX;
+                this.startY = this.mouseY;
+                this.dragging = true;
+
+                cursor = CursorType.MOVE_CURSOR;
+            } else if (!mousePressed) {
+                if (this.dragging) {
+                    // Note: It is forbidden to move object while you're editing points.
+                    if (this.touchedObject.isShape() && this.mode == Mode.EDIT_POINTS) {
+                        if (this.targetShapeDrawCommand != null) {
+                            Matrix2x3 inverseMatrix = getObjectFinalMatrix(this.touchedObject);
+                            inverseMatrix.inverse();
+                            float x = mouseX;
+                            float y = mouseY;
+                            this.commandManager.execute(new MoveDrawCommandPointCommand(targetShapeDrawCommand,
+                                pointIndex,
+                                this.startX,
+                                this.startY,
+                                inverseMatrix.applyX(x, y),
+                                inverseMatrix.applyY(x, y)));
+                        }
+                    } else {
+                        float dx = mouseX - startX;
+                        float dy = mouseY - startY;
+                        Matrix2x3 newMatrix = new Matrix2x3(this.initialMatrix);
+                        newMatrix.move(dx, dy);
+
+                        // TODO: somehow undo touchedObject preview movement
+                        //  so I could pass it without resetting the matrix to initial
+                        this.touchedObject.setMatrix(this.initialMatrix);
+                        this.commandManager.execute(new SetDisplayObjectMatrixCommand(touchedObject, newMatrix));
+                    }
+                }
+
+                this.initialMatrix = null;
+                this.initialBounds = null;
+                this.dragging = false;
+            }
         }
 
         if (this.cursorStateListener != null) {
@@ -136,6 +182,8 @@ public class Gizmos {
 
         if (targetChanged) {
             this.mode = Mode.DEFAULT;
+            this.targetShapeDrawCommand = null;
+            this.pointIndex = -1;
         }
 
         if (touchedObject != null) {
@@ -147,8 +195,10 @@ public class Gizmos {
         this.touchedObject = null;
         this.touchedObjectBounds = null;
 
-        this.commandIndex = -1;
+        this.targetShapeDrawCommand = null;
         this.pointIndex = -1;
+
+        this.commandManager.reset();
 
         this.mode = Mode.DEFAULT;
 
@@ -172,8 +222,14 @@ public class Gizmos {
 
                     if (this.dragging) {
                         // TODO: make it persistent — save it to the original object.
-                        float dx = mouseX - mouseStartX;
-                        float dy = mouseY - mouseStartY;
+                        float dx = mouseX - startX;
+                        float dy = mouseY - startY;
+                        // TODO: Maybe form command here already and then just push it on dragging end?
+                        //  I could create a Matrix2x3 and store it, so I will be able to modify it and
+                        //  it will be immediately updated in the Command instance
+
+                        // TODO: maybe display only bounds movement and leave an object as is.
+                        //  You could also duplicate an object and render it separately
                         this.touchedObject.setMatrix(new Matrix2x3(this.initialMatrix));
                         this.touchedObject.getMatrix().move(dx, dy);
                         this.touchedObjectBounds = new Rect(this.initialBounds);
@@ -219,8 +275,8 @@ public class Gizmos {
             drawCommandWireframe(drawApi, shape.getCommand(i), matrix, wireframeColor, thickness, useStrip);
         }
 
-        if (!mousePressed) {
-            commandIndex = -1;
+        if (!dragging) {
+            targetShapeDrawCommand = null;
             pointIndex = -1;
         }
 
@@ -237,9 +293,9 @@ public class Gizmos {
                 Rect innerRect = new Rect(left, top, left + size, top + size);
 
                 Color color = Color.WHITE;
-                if (bounds.containsPoint(mouseX, mouseY) && commandIndex == -1) {
+                if (bounds.containsPoint(mouseX, mouseY) && targetShapeDrawCommand == null && !dragging) {
                     color = Color.RED;
-                    commandIndex = i;
+                    targetShapeDrawCommand = command;
                     pointIndex = j;
                 }
 
@@ -252,19 +308,40 @@ public class Gizmos {
         if (pointIndex != -1) {
             cursor = CursorType.HAND_CURSOR;
 
-            if (this.mousePressed) {
+            if (dragging) {
                 cursor = CursorType.MOVE_CURSOR;
 
-                ShapeDrawBitmapCommand command = shape.getCommand(commandIndex);
-                Matrix2x3 inverseMatrix = new Matrix2x3(matrix);
+                // Not used after so no need to copy it
+                //noinspection UnnecessaryLocalVariable
+                Matrix2x3 inverseMatrix = matrix;
                 inverseMatrix.inverse();
-                command.setXY(pointIndex, inverseMatrix.applyX(mouseX, mouseY), inverseMatrix.applyY(mouseX, mouseY));
+                this.targetShapeDrawCommand.setXY(pointIndex, inverseMatrix.applyX(mouseX, mouseY), inverseMatrix.applyY(mouseX, mouseY));
             }
         }
 
         if (cursorStateListener != null) {
             cursorStateListener.setCursor(cursor);
         }
+    }
+
+    // TODO: invalidate and recalculate bounds
+    public boolean undo() {
+        return this.commandManager.undo();
+    }
+
+    // TODO: invalidate and recalculate bounds
+    public boolean redo() {
+        return this.commandManager.redo();
+    }
+
+    @Override
+    public void addUndoableListener(UndoableListener listener) {
+        this.commandManager.addUndoableListener(listener);
+    }
+
+    @Override
+    public void addRedoableListener(RedoableListener listener) {
+        this.commandManager.addRedoableListener(listener);
     }
 
     public enum Mode {

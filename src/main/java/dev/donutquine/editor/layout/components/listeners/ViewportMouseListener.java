@@ -3,7 +3,7 @@ package dev.donutquine.editor.layout.components.listeners;
 import dev.donutquine.editor.layout.ScalingUtils;
 import dev.donutquine.editor.renderer.Camera;
 import dev.donutquine.editor.renderer.impl.EditorStage;
-import dev.donutquine.editor.renderer.impl.Gizmos;
+import dev.donutquine.editor.gizmos.Gizmos;
 import dev.donutquine.math.Point;
 import org.jetbrains.annotations.Nullable;
 

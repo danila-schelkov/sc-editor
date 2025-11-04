@@ -1,9 +1,11 @@
 package dev.donutquine.editor.layout.menubar.menus;
 
 import dev.donutquine.editor.Editor;
+import dev.donutquine.editor.gizmos.Gizmos;
 import dev.donutquine.editor.layout.components.Table;
 import dev.donutquine.editor.layout.shortcut.KeyboardUtils;
 import dev.donutquine.editor.layout.windows.EditorWindow;
+import dev.donutquine.editor.renderer.impl.EditorStage;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -42,8 +44,26 @@ public class EditMenu extends JMenu {
         this.previous.setEnabled(false);
         this.next.setEnabled(false);
 
+        JMenuItem undo = new JMenuItem("Undo", KeyEvent.VK_U);
+        undo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyboardUtils.ctrlButton()));
+        JMenuItem redo = new JMenuItem("Redo", KeyEvent.VK_R);
+        redo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, KeyboardUtils.ctrlButton() | InputEvent.SHIFT_DOWN_MASK));
+
+        undo.addActionListener(this::undo);
+        redo.addActionListener(this::redo);
+
+        undo.setEnabled(false);
+        redo.setEnabled(false);
+
+        Gizmos gizmos = EditorStage.getInstance().getGizmos();
+        gizmos.addUndoableListener(undo::setEnabled);
+        gizmos.addRedoableListener(redo::setEnabled);
+
         this.add(find);
         this.add(findUsages);
+        this.addSeparator();
+        this.add(undo);
+        this.add(redo);
         this.addSeparator();
         this.add(this.previous);
         this.add(this.next);
@@ -72,6 +92,16 @@ public class EditMenu extends JMenu {
 
     private void next(ActionEvent e) {
         editor.selectNext();
+    }
+
+    private void undo(ActionEvent e) {
+        Gizmos gizmos = EditorStage.getInstance().getGizmos();
+        gizmos.undo();
+    }
+
+    private void redo(ActionEvent e) {
+        Gizmos gizmos = EditorStage.getInstance().getGizmos();
+        gizmos.redo();
     }
 
     public void checkPreviousAvailable() {
