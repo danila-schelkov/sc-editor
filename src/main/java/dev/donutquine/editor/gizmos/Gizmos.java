@@ -170,7 +170,6 @@ public class Gizmos {
                 if (touchedObject != null) {
                     this.drawApi.drawRectangleLines(touchedObjectBounds, Color.WHITE, 1);
 
-                    // FIXME: For some reason, object bounds are not only moved, but also resized
                     if (this.dragging) {
                         // TODO: make it persistent — save it to the original object.
                         float dx = mouseX - mouseStartX;

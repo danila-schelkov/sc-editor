@@ -186,7 +186,7 @@ public class EditorStage implements Stage {
 
             // FIXME: very inefficient way out of recursion
             if (movieClip.getFrameCountRecursive() > 1) {
-                Rect bounds = new Rect();
+                Rect bounds = new Rect(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
 
                 // Saving last movie clip state
                 int loopFrame = movieClip.getLoopFrame();
@@ -277,7 +277,7 @@ public class EditorStage implements Stage {
             switch (state) {
                 case ENABLED -> {
                     this.isCalculatingMaskBounds = true;
-                    this.maskBounds = new Rect();
+                    this.maskBounds = new Rect(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
                 }
                 case RENDERING_MASKED -> {
                     this.isCalculatingMaskBounds = false;
@@ -422,7 +422,7 @@ public class EditorStage implements Stage {
 
     @Override
     public Rect getDisplayObjectBounds(DisplayObject displayObject) {
-        Rect bounds = new Rect();
+        Rect bounds = new Rect(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
 
         this.isCalculatingBounds = true;
         this.bounds = bounds;
