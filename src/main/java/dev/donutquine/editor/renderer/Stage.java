@@ -25,6 +25,7 @@ public interface Stage {
 
     StageSprite getStageSprite();
 
+    /// MUST be callable without any stage (rendering) context
     Rect getDisplayObjectBounds(DisplayObject displayObject);
 
     float getPixelSize();

@@ -81,15 +81,15 @@ public class Gizmos implements UndoRedoManager {
         this.mousePressed = mousePressed;
         CursorType cursor = CursorType.DEFAULT_CURSOR;
         if (this.touchedObject != null) {
-            if (mousePressed && this.targetShapeDrawCommand != null) {
+            if (mousePressed && this.targetShapeDrawCommand != null && !this.dragging) {
                 this.startX = this.targetShapeDrawCommand.getX(this.pointIndex);
                 this.startY = this.targetShapeDrawCommand.getY(this.pointIndex);
                 this.dragging = true;
 
                 cursor = CursorType.MOVE_CURSOR;
-            } else if (mousePressed && this.touchedObjectBounds.containsPoint(this.mouseX, this.mouseY)) {
+            } else if (mousePressed && this.touchedObjectBounds.containsPoint(this.mouseX, this.mouseY) && !this.dragging) {
                 this.initialMatrix = this.touchedObject.getMatrix();
-                this.initialBounds = this.touchedObjectBounds;
+                this.initialBounds = new Rect(this.touchedObjectBounds);
 
                 this.startX = this.mouseX;
                 this.startY = this.mouseY;
@@ -222,18 +222,30 @@ public class Gizmos implements UndoRedoManager {
 
                     if (this.dragging) {
                         // TODO: make it persistent — save it to the original object.
-                        float dx = mouseX - startX;
-                        float dy = mouseY - startY;
+                        float x = mouseX - startX;
+                        float y = mouseY - startY;
                         // TODO: Maybe form command here already and then just push it on dragging end?
                         //  I could create a Matrix2x3 and store it, so I will be able to modify it and
                         //  it will be immediately updated in the Command instance
 
                         // TODO: maybe display only bounds movement and leave an object as is.
                         //  You could also duplicate an object and render it separately
+                        // Perhaps should apply same optimization as below
                         this.touchedObject.setMatrix(new Matrix2x3(this.initialMatrix));
-                        this.touchedObject.getMatrix().move(dx, dy);
-                        this.touchedObjectBounds = new Rect(this.initialBounds);
-                        this.touchedObjectBounds.movePosition(dx, dy);
+                        this.touchedObject.getMatrix().move(x, y);
+
+                        // TODO: benchmark this piece of code
+                        float lastDx = this.touchedObjectBounds.getLeft() - this.initialBounds.getLeft();
+                        float lastDy = this.touchedObjectBounds.getTop() - this.initialBounds.getTop();
+                        this.touchedObjectBounds.movePosition(x - lastDx, y - lastDy);
+
+                        // Copying 4 floats instead of math
+                        // this.touchedObjectBounds.copyFrom(this.initialBounds);
+                        // this.touchedObjectBounds.movePosition(x, y);
+
+                        // Or even copying Rect class (initial idea)
+                        // this.touchedObjectBounds = new Rect(initialBounds)
+                        // this.touchedObjectBounds.movePosition(x, y);
                     }
                 }
             }
