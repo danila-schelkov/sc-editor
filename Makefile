@@ -1,8 +1,17 @@
 DISABLE_AUTOPROFILE = -Dskip.auto.profiles=true
+
+JAVA_EXECUTABLE = java
+JVM_FLAGS=--add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.java2d=ALL-UNNAMED
+
 ifeq ($(OS),Windows_NT)
 	MAVEN_EXECUTABLE = mvnw.cmd
 else
 	MAVEN_EXECUTABLE = ./mvnw
+
+	UNAME_S := $(shell uname -s)
+	ifeq ($(UNAME_S),Darwin)
+		JVM_FLAGS += --add-opens=java.desktop/com.apple.eawt.event=ALL-UNNAMED
+	endif
 endif
 
 VERSION := $(shell git describe --tags)
@@ -30,7 +39,7 @@ build-macos:
 
 .PHONY: run
 run: build
-	${JAVA_HOME}/bin/java --add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.java2d=ALL-UNNAMED -jar target/sc-editor-${VERSION}.jar
+	${JAVA_EXECUTABLE} ${JVM_FLAGS} -jar target/sc-editor-${VERSION}.jar
 
 .PHONY: build
 build:
