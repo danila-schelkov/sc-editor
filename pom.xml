@@ -28,7 +28,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <joglVersion>2.6.0</joglVersion>
         <zstdJniVersion>1.5.7-6</zstdJniVersion>
-        <flatlafVersion>3.6.2</flatlafVersion>
+        <flatlafVersion>3.7</flatlafVersion>
         <main.class>dev.donutquine.editor.Main</main.class>
         <finalName>${project.artifactId}-${project.version}</finalName>
         <releaseVersion>undefined</releaseVersion>
