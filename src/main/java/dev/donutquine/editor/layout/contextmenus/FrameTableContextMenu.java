@@ -1,6 +1,8 @@
 package dev.donutquine.editor.layout.contextmenus;
 
 import dev.donutquine.editor.Editor;
+import dev.donutquine.editor.ModConfiguration;
+import dev.donutquine.editor.ModFunctionality;
 import dev.donutquine.editor.layout.components.Table;
 import dev.donutquine.editor.layout.components.TablePopupMenuListener;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
@@ -17,6 +19,12 @@ public class FrameTableContextMenu extends ContextMenu {
 
         this.table = table;
         this.editor = editor;
+
+        
+        if (ModConfiguration.copyAnyCell) {
+            this.add(ModFunctionality.COPY_VALUE_TO_CLIPBOARD, event -> ModFunctionality.copyValueToClipboard(editor, table));
+            this.addSeparator();
+        }
 
         this.add("Goto and play", this::gotoAndPlay);
         this.add("Goto and stop", this::gotoAndStop);

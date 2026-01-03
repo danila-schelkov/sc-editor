@@ -29,10 +29,12 @@ import dev.donutquine.utilities.ByteArrayFlavor;
 import dev.donutquine.utilities.ImageUtils;
 import dev.donutquine.utilities.MovieClipHelper;
 import dev.donutquine.utilities.PathUtils;
+
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
+
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -44,6 +46,9 @@ import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.Objects;
 import java.util.prefs.Preferences;
+
+import dev.donutquine.editor.ModConfiguration;
+import dev.donutquine.editor.ModFunctionality;
 
 public class DisplayObjectContextMenu extends ContextMenu {
     private static final Clipboard SYSTEM_CLIPBOARD = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -63,6 +68,12 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         this.table = table;
         this.editor = editor;
+
+        if (ModConfiguration.copyAnyCell) {
+            JMenuItem copyAnyCellButton = this.add(ModFunctionality.COPY_VALUE_TO_CLIPBOARD, null);
+            copyAnyCellButton.addActionListener(this::copyAnyCell);
+            this.addSeparator();
+        }
 
         JMenuItem copyExportNameButton = this.add("Copy Export Name", KeyEvent.VK_E);
         copyExportNameButton.addActionListener(this::copyExportName);
@@ -94,6 +105,10 @@ public class DisplayObjectContextMenu extends ContextMenu {
         this.add("Properties");
 
         this.popupMenu.addPopupMenuListener(new TablePopupMenuListener(this.popupMenu, table, this::onRowSelected));
+    }
+
+    private void copyAnyCell(ActionEvent actionEvent) {
+        ModFunctionality.copyValueToClipboard(this.editor, this.table);
     }
 
     private void onRowSelected(int rowIndex) {

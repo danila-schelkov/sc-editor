@@ -5,6 +5,8 @@ import java.awt.datatransfer.StringSelection;
 import java.util.function.Function;
 
 import dev.donutquine.editor.Editor;
+import dev.donutquine.editor.ModConfiguration;
+import dev.donutquine.editor.ModFunctionality;
 import dev.donutquine.editor.layout.components.Table;
 import dev.donutquine.editor.layout.components.TablePopupMenuListener;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
@@ -20,6 +22,10 @@ public class ChildrenTableContextMenu extends ContextMenu {
         this.table = table;
         this.editor = editor;
 
+        if (ModConfiguration.copyAnyCell) {
+            this.add(ModFunctionality.COPY_VALUE_TO_CLIPBOARD, event -> ModFunctionality.copyValueToClipboard(editor, table));
+            this.addSeparator();
+        }
         this.add("Toggle visibility", event -> this.changeVisibility(child -> !child.isVisible()));
         this.add("Enable", event -> this.changeVisibility(child -> true));
         this.add("Disable", event -> this.changeVisibility(child -> false));
@@ -38,20 +44,6 @@ public class ChildrenTableContextMenu extends ContextMenu {
                 null
             );
         }
-    }
-
-    // FEATURE IDEA: copy any cell value to clipboard
-    private void copyValueToClipboard() {
-        MovieClip movieClip = this.getMovieClip();
-        if (movieClip == null) return;
-
-        int selectedRow = this.table.getSelectedRow();
-        int selectedColumn = this.table.getSelectedColumn();
-        String cellName = this.table.getValueAt(selectedRow, selectedColumn).toString();
-        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
-            new StringSelection(cellName),
-            null
-        );
     }
 
     public void changeVisibility(Function<DisplayObject, Boolean> visibilityFunction) {

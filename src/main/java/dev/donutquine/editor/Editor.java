@@ -61,12 +61,18 @@ public class Editor {
     private SctxTexture sctxTexture;
 
     private String filename;
+    private String path;
 
     public Editor(EditorSettings settings) {
         this.settings = settings;
     }
 
+    public String getPath() {
+        return path;
+    }
+
     public void openFile(Path path) {
+        this.path = path.toString();
         this.filename = path.getFileName().toString();
         this.window.setTitle(EditorWindow.TITLE + " - " + filename);
 

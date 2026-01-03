@@ -1,6 +1,8 @@
 package dev.donutquine.editor.layout.contextmenus;
 
 import dev.donutquine.editor.Editor;
+import dev.donutquine.editor.ModConfiguration;
+import dev.donutquine.editor.ModFunctionality;
 import dev.donutquine.editor.layout.components.Table;
 import dev.donutquine.editor.layout.components.TablePopupMenuListener;
 import dev.donutquine.editor.renderer.gl.GLConstants;
@@ -25,7 +27,11 @@ public class TextureTableContextMenu extends ContextMenu {
 
         this.table = table;
         this.editor = editor;
-
+        
+        if (ModConfiguration.copyAnyCell) {
+            this.add(ModFunctionality.COPY_VALUE_TO_CLIPBOARD, event -> ModFunctionality.copyValueToClipboard(editor, table));
+            this.addSeparator();
+        }
         JMenuItem exportButton = this.add("Export", KeyEvent.VK_E);
         exportButton.addActionListener(this::export);
 
