@@ -139,7 +139,7 @@ public class DrawCommandContextMenu extends ContextMenu {
         stage.doInRenderThread(() -> {
             Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, bounds);
 
-            ShapeDrawBitmapCommandRenderer.renderUV(command, stage, EMPTY_COLOR_TRANSFORM, 0);
+            ShapeDrawBitmapCommandRenderer.renderUV(command, stage, EMPTY_COLOR_TRANSFORM, shape.getRenderConfigBits());
             stage.renderToFramebuffer(framebuffer);
 
             BufferedImage screenshot = ImageUtils.createBufferedImageFromPixels(framebuffer.getWidth(), framebuffer.getHeight(), framebuffer.getPixelArray(true), false);

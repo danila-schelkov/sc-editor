@@ -1,6 +1,7 @@
 package dev.donutquine.renderer.impl.swf.objects;
 
 import dev.donutquine.editor.renderer.Stage;
+import dev.donutquine.math.ReadonlyRect;
 import dev.donutquine.math.Rect;
 import dev.donutquine.swf.ColorTransform;
 import dev.donutquine.swf.Matrix2x3;
@@ -11,11 +12,11 @@ import dev.donutquine.utilities.RenderConfig;
 public class Shape9Slice extends Shape {
     private final Rect scalingGrid;
 
-    public Shape9Slice(Rect scalingGrid) {
-        this.scalingGrid = scalingGrid;
+    public Shape9Slice(ReadonlyRect scalingGrid) {
+        this.scalingGrid = new Rect(scalingGrid);
     }
 
-    public static Shape9Slice createShape(ShapeOriginal original, Rect scalingGrid) {
+    public static Shape9Slice createShape(ShapeOriginal original, ReadonlyRect scalingGrid) {
         Shape9Slice shape9Slice = new Shape9Slice(scalingGrid);
 
         shape9Slice.id = original.getId();

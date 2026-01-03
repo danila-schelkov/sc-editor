@@ -1,16 +1,16 @@
 package dev.donutquine.editor.renderer.gl.buffers;
 
 import dev.donutquine.editor.renderer.gl.GLConstants;
-import dev.donutquine.editor.renderer.gl.GLRendererContext;
+import dev.donutquine.editor.renderer.gl.GLContext;
 
 import java.nio.IntBuffer;
 
 /// Element Buffer Object
 public class Ebo implements IntBufferObject {
-    private final GLRendererContext gl;
+    private final GLContext gl;
     private final int id;
 
-    public Ebo(GLRendererContext gl, int capacity, int usage) {
+    public Ebo(GLContext gl, int capacity, int usage) {
         this.gl = gl;
 
         this.id = gl.glGenBuffer();

@@ -18,7 +18,7 @@ public final class ShapeDrawBitmapCommandRenderer {
         return render0(stage, command, new Matrix2x3Transformer(command, matrix), colorTransform, renderConfigBits);
     }
 
-    public static boolean render9Slice(ShapeDrawBitmapCommand command, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, Rect safeArea, Rect shapeBounds, float width, float height) {
+    public static boolean render9Slice(ShapeDrawBitmapCommand command, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, ReadonlyRect safeArea, ReadonlyRect shapeBounds, float width, float height) {
         NineSliceTransformer vertexTransformer = new NineSliceTransformer(command, matrix, safeArea, shapeBounds, width, height);
 
         return render0(stage, command, vertexTransformer, colorTransform, renderConfigBits);
@@ -29,7 +29,7 @@ public final class ShapeDrawBitmapCommandRenderer {
     }
 
     public static boolean renderUV(ShapeDrawBitmapCommand command, Stage stage, ColorTransform colorTransform, int renderConfigBits) {
-        UvTransformer vertexTransformer = new UvTransformer(command, stage.getTextureByIndex(command.getTextureIndex()));
+        VertexTransformer vertexTransformer = new UvTransformer(command, stage.getTextureByIndex(command.getTextureIndex()));
 
         return render0(stage, command, vertexTransformer, colorTransform, renderConfigBits);
     }

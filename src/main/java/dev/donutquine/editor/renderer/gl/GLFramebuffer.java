@@ -9,12 +9,12 @@ public class GLFramebuffer extends Framebuffer {
     protected final RenderableTexture texture, stencilTexture;
     protected final Renderbuffer renderbuffer;
 
-    private final GLRendererContext gl;
+    private final GLContext gl;
     private final int id;
 
     private int previousFramebuffer;
 
-    public GLFramebuffer(GLRendererContext gl, int width, int height) {
+    public GLFramebuffer(GLContext gl, int width, int height) {
         super(width, height);
 
         this.gl = gl;

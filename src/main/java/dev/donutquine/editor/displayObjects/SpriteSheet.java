@@ -1,5 +1,6 @@
 package dev.donutquine.editor.displayObjects;
 
+import dev.donutquine.editor.renderer.DrawApi;
 import dev.donutquine.editor.renderer.Stage;
 import dev.donutquine.editor.renderer.texture.RenderableTexture;
 import dev.donutquine.math.Rect;
@@ -33,25 +34,21 @@ public class SpriteSheet extends DisplayObject {
 
     @Override
     public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, float deltaTime) {
-        Stage renderer = this.getStage();
-        if (renderer.startShape(this.bounds, this.texture, 0)) {
-            renderer.addTriangles(2, INDICES);
+        renderConfigBits |= this.getRenderConfigBits();
 
-            renderer.addVertex(this.bounds.getLeft(), this.bounds.getTop(), 0, 0, 1, 1, 1, 1, 0, 0, 0);
-            renderer.addVertex(this.bounds.getLeft(), this.bounds.getBottom(), 0, 1, 1, 1, 1, 1, 0, 0, 0);
-            renderer.addVertex(this.bounds.getRight(), this.bounds.getBottom(), 1, 1, 1, 1, 1, 1, 0, 0, 0);
-            renderer.addVertex(this.bounds.getRight(), this.bounds.getTop(), 1, 0, 1, 1, 1, 1, 0, 0, 0);
+        Stage stage = this.getStage();
+        stage.addTriangles(2, INDICES);
 
-            if (this.shouldDisplayPolygons) {
-                for (ShapeDrawBitmapCommand command : this.drawBitmapCommands) {
-                    ShapeDrawBitmapCommandRenderer.renderUV(command, renderer, UV_COLOR_TRANSFORM, 0);
-                }
+        DrawApi drawApi = stage.getDrawApi();
+        drawApi.drawTexture(this.texture, this.bounds);
+
+        if (this.shouldDisplayPolygons) {
+            for (ShapeDrawBitmapCommand command : this.drawBitmapCommands) {
+                ShapeDrawBitmapCommandRenderer.renderUV(command, stage, UV_COLOR_TRANSFORM, renderConfigBits);
             }
-
-            return true;
         }
 
-        return false;
+        return true;
     }
 
     @Override

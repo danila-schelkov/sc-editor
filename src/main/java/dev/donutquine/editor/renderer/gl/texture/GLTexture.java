@@ -1,7 +1,7 @@
 package dev.donutquine.editor.renderer.gl.texture;
 
 import dev.donutquine.editor.renderer.gl.GLConstants;
-import dev.donutquine.editor.renderer.gl.GLRendererContext;
+import dev.donutquine.editor.renderer.gl.GLContext;
 import dev.donutquine.editor.renderer.texture.RenderableTexture;
 import dev.donutquine.utilities.BufferUtils;
 
@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 public class GLTexture implements RenderableTexture {
-    private final GLRendererContext gl;
+    private final GLContext gl;
     private final int width, height;
 
     private int id;
@@ -18,7 +18,7 @@ public class GLTexture implements RenderableTexture {
     private int internalFormat, format;
     private int pixelType;
 
-    public GLTexture(GLRendererContext gl, int width, int height) {
+    public GLTexture(GLContext gl, int width, int height) {
         this.gl = gl;
         this.width = width;
         this.height = height;
