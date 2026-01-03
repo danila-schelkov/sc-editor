@@ -31,10 +31,10 @@ public class ChildrenTableContextMenu extends ContextMenu {
     private void copyChildName() {
         int selectedRow = this.table.getSelectedRow();
 
-        Object exportName = this.table.getValueAt(selectedRow, this.table.getColumnIndexByName("Name"));
-        if (exportName != null) {
+        Object childName = this.table.getValueAt(selectedRow, this.table.getColumnIndexByName("Name"));
+        if (childName != null) {
             Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
-                new StringSelection(exportName.toString()),
+                new StringSelection(childName.toString()),
                 null
             );
         }
