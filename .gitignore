@@ -9,3 +9,6 @@
 
 screenshots/
 /target/
+
+# macOS Garbage file
+.DS_Store
