@@ -1,5 +1,19 @@
 package dev.donutquine.editor.layout.menubar.menus;
 
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JSplitPane;
+import javax.swing.KeyStroke;
+
 import dev.donutquine.editor.layout.panels.TimelinePanel;
 import dev.donutquine.editor.layout.shortcut.KeyboardUtils;
 import dev.donutquine.editor.layout.windows.EditorWindow;
@@ -7,14 +21,6 @@ import dev.donutquine.editor.renderer.Camera;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.math.Rect;
 import dev.donutquine.renderer.impl.swf.objects.StageSprite;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 public class ViewMenu extends JMenu {
     private final EditorWindow editorWindow;
@@ -79,7 +85,7 @@ public class ViewMenu extends JMenu {
         zoom.setMnemonic(KeyEvent.VK_Z);
 
         JMenuItem zoomIn = new JMenuItem("Zoom in", KeyEvent.VK_I);
-        zoomIn.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, KeyboardUtils.ctrlButton()));
+        zoomIn.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, KeyboardUtils.ctrlButton() | InputEvent.SHIFT_DOWN_MASK));
         zoomIn.addActionListener(ViewMenu::zoomIn);
         zoom.add(zoomIn);
 
