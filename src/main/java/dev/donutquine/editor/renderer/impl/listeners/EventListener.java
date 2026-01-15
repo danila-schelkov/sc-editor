@@ -6,7 +6,7 @@ import com.jogamp.opengl.GLEventListener;
 import dev.donutquine.editor.layout.ScalingUtils;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.editor.renderer.impl.gl.GLShaderLoader;
-import dev.donutquine.editor.renderer.impl.gl.JoglRendererContext;
+import dev.donutquine.editor.renderer.impl.gl.JoglContext;
 import dev.donutquine.editor.renderer.impl.texture.GLImage;
 import dev.donutquine.editor.renderer.impl.texture.khronos.ExtensionKhronosTextureLoader;
 import dev.donutquine.editor.renderer.impl.texture.khronos.KhronosTextureLoaders;
@@ -19,7 +19,7 @@ public class EventListener implements GLEventListener {
     public void init(GLAutoDrawable canvas) {
         GL3 gl = canvas.getGL().getGL3();
 
-        JoglRendererContext rendererContext = new JoglRendererContext(gl);
+        JoglContext rendererContext = new JoglContext(gl);
 
         extensionKhronosTextureLoader = new ExtensionKhronosTextureLoader(rendererContext);
         KhronosTextureLoaders.registerLoader(extensionKhronosTextureLoader);

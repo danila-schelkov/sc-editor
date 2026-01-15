@@ -7,10 +7,12 @@ import dev.donutquine.utilities.BufferUtils;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.function.Consumer;
 
 public class Batch {
     protected static final int SIZE = 512;
 
+    private final Consumer<RenderStencilState> renderStencilStateConsumer;
     private final VertexBufferProducer vertexBufferProducer;
     private final Attribute[] attributes;
     private final RenderableTexture texture;
@@ -34,11 +36,12 @@ public class Batch {
 
     private boolean isDirty;
 
-    public Batch(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState, VertexBufferProducer vertexBufferProducer) {
+    public Batch(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState, VertexBufferProducer vertexBufferProducer, Consumer<RenderStencilState> renderStencilStateConsumer) {
         this.shader = shader;
         this.texture = texture;
         this.stencilRenderingState = stencilRenderingState;
         this.vertexBufferProducer = vertexBufferProducer;
+        this.renderStencilStateConsumer = renderStencilStateConsumer;
 
         this.capacity = SIZE;
         this.attributes = shader.getAttributes();
@@ -65,6 +68,7 @@ public class Batch {
     public void delete() {
         if (this.vertexBuffer != null) {
             this.vertexBuffer.delete();
+            this.vertexBuffer = null;
         }
     }
 
@@ -79,7 +83,10 @@ public class Batch {
             this.isDirty = false;
         }
 
+        this.shader.bind();
+        this.renderStencilStateConsumer.accept(this.stencilRenderingState);
         this.vertexBuffer.render(0, this.triangleCount * 3);
+//        this.shader.unbind();  // FIXME: too many unbinds
     }
 
     public void reset() {
@@ -157,10 +164,6 @@ public class Batch {
 
     public boolean hasSame(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState) {
         return this.shader == shader && this.texture == texture && this.stencilRenderingState == stencilRenderingState;
-    }
-
-    public RenderStencilState getStencilRenderingState() {
-        return stencilRenderingState;
     }
 
     @Override

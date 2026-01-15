@@ -1,6 +1,6 @@
 package dev.donutquine.renderer.impl.swf.objects;
 
-import dev.donutquine.math.Rect;
+import dev.donutquine.math.ReadonlyRect;
 import dev.donutquine.swf.DisplayObjectOriginal;
 import dev.donutquine.swf.SupercellSWF;
 import dev.donutquine.swf.exceptions.UnableToFindObjectException;
@@ -10,7 +10,7 @@ import dev.donutquine.swf.shapes.ShapeOriginal;
 import dev.donutquine.swf.textfields.TextFieldOriginal;
 
 public class DisplayObjectFactory {
-    public static DisplayObject createFromOriginal(DisplayObjectOriginal original, SupercellSWF swf, Rect scalingGrid) throws UnableToFindObjectException {
+    public static DisplayObject createFromOriginal(DisplayObjectOriginal original, SupercellSWF swf, ReadonlyRect scalingGrid) throws UnableToFindObjectException {
         if (original instanceof MovieClipModifierOriginal movieClipModifierOriginal) {
             return MovieClipModifier.createModifier(movieClipModifierOriginal);
         }

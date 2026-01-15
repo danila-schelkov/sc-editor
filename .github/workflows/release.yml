@@ -25,6 +25,10 @@ jobs:
         run: |
           echo "VERSION=${GITHUB_REF#refs/*/v}" >> $GITHUB_ENV
 
+      - name: Make mvnw executable
+        run: |
+          chmod +x mvnw
+
       - name: Build via Makefile
         run: |
           make release VERSION=${{env.VERSION}}

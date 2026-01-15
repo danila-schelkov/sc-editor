@@ -1,11 +1,14 @@
 package dev.donutquine.renderer.impl.swf.objects;
 
+import dev.donutquine.editor.renderer.DrawApi;
 import dev.donutquine.editor.renderer.Stage;
 import dev.donutquine.math.Rect;
 import dev.donutquine.swf.ColorTransform;
 import dev.donutquine.swf.Matrix2x3;
 import dev.donutquine.swf.textfields.TextFieldOriginal;
 import dev.donutquine.utilities.RenderConfig;
+
+import java.awt.*;
 
 public class TextField extends DisplayObject {
     private boolean isInteractive;
@@ -15,6 +18,7 @@ public class TextField extends DisplayObject {
     public static DisplayObject createTextField(TextFieldOriginal original) {
         TextField textField = new TextField();
         textField.id = original.getId();
+        textField.bounds = original.getBounds();
         return textField;
     }
 
@@ -48,6 +52,20 @@ public class TextField extends DisplayObject {
     }
 
     private boolean shapeRender(Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, boolean noBounds) {
+        Rect transformedBounds = new Rect(
+            matrix.applyX(bounds.getLeft(), bounds.getTop()),
+            matrix.applyY(bounds.getLeft(), bounds.getTop()),
+            matrix.applyX(bounds.getRight(), bounds.getBottom()),
+            matrix.applyY(bounds.getRight(), bounds.getBottom())
+        );
+
+        if (stage.startShape(transformedBounds, null, renderConfigBits)) {
+            DrawApi drawApi = stage.getDrawApi();
+            Color color = new Color(colorTransform.getRedMultiplier(), colorTransform.getGreenMultiplier(), colorTransform.getBlueMultiplier(), colorTransform.getAlpha() / 2);
+            drawApi.drawRectangleLines(transformedBounds, color, 1);
+            return true;
+        }
+
         return false;
     }
 

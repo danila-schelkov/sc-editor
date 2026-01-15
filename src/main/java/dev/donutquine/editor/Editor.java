@@ -175,8 +175,7 @@ public class Editor {
             stage.doInRenderThread(() -> stage.getGlContext().glDeleteTextures(textureIds.length, textureIds, 0));
         }
 
-        stage.clearBatches();
-        stage.removeAllChildren();
+        stage.reset();
 
         this.swf = null;
         this.sctxTexture = null;
@@ -227,8 +226,7 @@ public class Editor {
         editMenu.checkNextAvailable();
 
         EditorStage stage = EditorStage.getInstance();
-        stage.clearBatches();
-        stage.removeAllChildren();
+        stage.reset();
         stage.addChild(displayObject);
     }
 
@@ -370,6 +368,7 @@ public class Editor {
                 texturesTable.addRow(i, texture.getWidth(), texture.getHeight(), texture.getFormat());
 
                 SpriteSheet spriteSheet = new SpriteSheet(texture, getDrawBitmapsOfTexture(i));
+                spriteSheet.setTriangleFunction(swf.getContainerVersion() >= 5);
                 this.spriteSheets.add(spriteSheet);
 
                 taskTracker.setValue(i);

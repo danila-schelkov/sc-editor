@@ -1,157 +1,143 @@
 package dev.donutquine.editor.renderer.gl;
 
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-
-public interface GLRendererContext {
-    // Vertex Array Object
-    int glGenVertexArray();
-
-    void glBindVertexArray(int id);
-
-    void glDeleteVertexArray(int id);
-
-    void glEnableVertexAttribArray(int index);
-
-    void glDisableVertexAttribArray(int index);
-
-    void glVertexAttribPointer(int layout, int size, int type, boolean normalized, int stride, int offset);
-
-    // Buffers
-    int glGenBuffer();
-
-    void glBindBuffer(int bufferType, int id);
-
-    void glDeleteBuffer(int id);
-
-    void glBufferData(int bufferType, long byteLength, Buffer buffer, int usage);
-
-    void glBufferSubData(int bufferType, int offset, long byteLength, Buffer buffer);
-
-    void glDrawElements(int drawMode, int elementCount, int glUnsignedInt, int indices);
-
-    // Textures
-    int glGenTexture();
-
-    void glActiveTexture(int textureSlot);
-
-    void glBindTexture(int textureType, int id);
-
-    void glDeleteTexture(int id);
-
-    void glDeleteTextures(int count, int[] ids, int offset);
-
-    void glGenerateMipmap(int textureType);
-
-    void glGetTexImage(int textureType, int level, int internalFormat, int pixelType, IntBuffer pixels);
-
-    void glGetTexLevelParameteriv(int textureType, int level, int type, IntBuffer result);
-
-    void glGetCompressedTexImage(int textureType, int level, IntBuffer data);
-
-    void glTexParameteri(int textureType, int type, int value);
-
-    void glTexParameteriv(int textureType, int type, IntBuffer value);
-
-    void glTexImage2D(int textureType, int level, int internalFormat, int width, int height, int border, int format, int pixelType, Buffer data);
-
-    void glCompressedTexImage2D(int textureType, int level, int internalFormat, int width, int height, int border, int byteLength, ByteBuffer data);
-
-    void glTexSubImage2D(int target, int level, int xOffset, int yOffset, int width, int height, int format, int pixelType, Buffer pixels);
-
-    // Framebuffer
-    int glGenFramebuffer();
-
-    void glBindFramebuffer(int target, int id);
-
-    void glDeleteFramebuffer(int id);
-
-    void glFramebufferRenderbuffer(int target, int attachmentType, int renderbufferTarget, int renderbuffer);
-
-    void glFramebufferTexture2D(int target, int attachmentType, int textureTarget, int texture, int level);
-
-    int getBoundFramebuffer(int target);
-
-    int glCheckFramebufferStatus(int target);
-
-    // Renderbuffer
-    int glGenRenderbuffer();
-
-    void glBindRenderbuffer(int bufferType, int id);
-
-    void glDeleteRenderbuffer(int id);
-
-    void glRenderbufferStorage(int target, int internalFormat, int width, int height);
-
-    void glEnable(int capability);
-
-    void glDisable(int capability);
-
-    void glBlendEquation(int mode);
-
-    void glBlendFunc(int sFactor, int dFactor);
-
-    void glClear(int buffersMask);
-
-    void glClearColor(float r, float g, float b, float a);
-
-    void glViewport(int x, int y, int width, int height);
-
-    void glStencilMask(int mask);
-
-    void glClearStencil(int index);
-
-    void glStencilFunc(int func, int ref, int mask);
-
-    void glStencilOp(int sFail, int dpFail, int dpPass);
-
-    void glColorMask(boolean r, boolean g, boolean b, boolean a);
-
-    void glDepthMask(boolean enabled);
-
-    // Shader
-    int glCreateShader(int shaderType);
-
-    void glDeleteShader(int shader);
-
-    void glShaderSource(int shader, String source);
-
-    void glCompileShader(int shader);
-
-    void glGetShaderInfoLog(int shader, int logBufferLength, IntBuffer length, ByteBuffer logBuffer);
-
-    void glGetShaderiv(int shader, int parameter, IntBuffer result);
-
-    // Shader Program
-    int glCreateProgram();
-
-    void glUseProgram(int program);
-
-    void glDeleteProgram(int program);
-
-    void glAttachShader(int program, int shader);
-
-    void glLinkProgram(int program);
-
-    void glGetProgramiv(int program, int parameter, IntBuffer result);
-
-    void glGetProgramInfoLog(int program, int logBufferLength, IntBuffer length, ByteBuffer logBuffer);
-
-    // Program Uniforms
-    int glGetUniformLocation(int program, String uniformName);
-
-    void glUniformMatrix4fv(int uniformLocation, int count, boolean transpose, FloatBuffer matrixBuffer);
-
-    void glPixelStorei(int parameter, int value);
-
-    boolean isExtensionAvailable(String extension);
-
-    // Some getters
-    String glGetString(int i);
-
-    int glGetError();
-
-    void glPolygonMode(int glFrontAndBack, int mode);
+import dev.donutquine.editor.renderer.BlendMode;
+import dev.donutquine.editor.renderer.RenderStencilState;
+import dev.donutquine.editor.renderer.RendererContext;
+import dev.donutquine.math.ReadonlyRect;
+import dev.donutquine.math.Rect;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class GLRendererContext implements RendererContext {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GLRendererContext.class);
+
+    protected final GLContext gl;
+
+    private Rect viewport;
+    private BlendMode blendMode;
+    private boolean blendingEnabled;
+
+    public GLRendererContext(GLContext context) {
+        this.gl = context;
+    }
+
+    @Override
+    public void printInfo() {
+        LOGGER.debug("Rendering API: OpenGL");
+        LOGGER.debug("GL {} = {}", "Version", gl.glGetString(GLConstants.GL_VERSION));
+        LOGGER.debug("GL {} = {}", "Vendor", gl.glGetString(GLConstants.GL_VENDOR));
+        LOGGER.debug("GL {} = {}", "Renderer", gl.glGetString(GLConstants.GL_RENDERER));
+        LOGGER.debug("GL {} = {}", "Extensions", gl.glGetString(GLConstants.GL_EXTENSIONS));
+    }
+
+    @Override
+    public void setViewport(int x, int y, int width, int height) {
+        gl.glViewport(x, y, width, height);
+
+        this.viewport = new Rect(x, y, width, height);
+    }
+
+    @Override
+    public ReadonlyRect getViewport() {
+        return viewport;
+    }
+
+    @Override
+    public void setRenderStencilState(RenderStencilState state) {
+        switch (state) {
+            case NONE -> {}
+            case SCISSORS -> {
+                // TODO:
+            }
+            case ENABLED -> {
+                this.gl.glEnable(GLConstants.GL_STENCIL_TEST);
+                this.gl.glStencilFunc(GLConstants.GL_ALWAYS, 1, 0xFF); // каждый фрагмент обновит трафаретный буфер
+                this.gl.glStencilOp(GLConstants.GL_KEEP, GLConstants.GL_KEEP, GLConstants.GL_REPLACE);
+                this.gl.glStencilMask(0xFF); // включить запись в трафаретный буфер
+                this.gl.glColorMask(false, false, false, false);
+
+                this.gl.glDepthMask(false);
+                this.gl.glClear(GLConstants.GL_STENCIL_BUFFER_BIT); // Clear stencil buffer (0 by default)
+            }
+            case RENDERING_MASKED -> {
+                this.gl.glStencilFunc(GLConstants.GL_EQUAL, 1, 0xFF);
+                this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
+                this.gl.glColorMask(true, true, true, true);
+            }
+            case DISABLED -> this.gl.glDisable(GLConstants.GL_STENCIL_TEST);
+            case RENDERING_UNMASKED -> {
+                this.gl.glStencilFunc(GLConstants.GL_NOTEQUAL, 1, 0xFF);
+                this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
+                this.gl.glColorMask(true, true, true, true);
+            }
+        }
+    }
+
+    @Override
+    public boolean bindBlendMode(BlendMode blendMode) {
+        if (blendMode == BlendMode.DISABLED) {
+            this.blendMode = BlendMode.DISABLED;
+
+            if (this.blendingEnabled) {
+                this.blendingEnabled = false;
+                this.gl.glDisable(GLConstants.GL_BLEND);
+            }
+
+            return true;
+        }
+
+        boolean stateChanged = false;
+        if (!this.blendingEnabled) {
+            this.gl.glEnable(GLConstants.GL_BLEND);
+            this.gl.glBlendEquation(GLConstants.GL_FUNC_ADD);
+            this.blendingEnabled = true;
+
+            stateChanged = true;
+        }
+
+        if (this.blendMode == blendMode) {
+            return stateChanged;
+        }
+
+        this.blendMode = blendMode;
+
+        int sFactor = switch (blendMode) {
+            case ADDITIVE, MULTIPLY, PREMULTIPLIED_ALPHA -> GLConstants.GL_ONE;
+            case ALPHA_DARKEN -> GLConstants.GL_ONE_MINUS_SRC_ALPHA;
+            case ALPHA -> GLConstants.GL_SRC_ALPHA;
+            case DISABLED -> throw new IllegalStateException("Unexpected value: " + blendMode);
+        };
+
+        int dFactor = switch (blendMode) {
+            case ADDITIVE -> GLConstants.GL_ONE;
+            case ALPHA_DARKEN, PREMULTIPLIED_ALPHA, ALPHA -> GLConstants.GL_ONE_MINUS_SRC_ALPHA;
+            case MULTIPLY -> GLConstants.GL_ONE_MINUS_SRC_COLOR;
+            case DISABLED -> throw new IllegalStateException("Unexpected value: " + blendMode);
+        };
+
+        this.gl.glBlendFunc(sFactor, dFactor);
+
+        return true;
+    }
+
+    @Override
+    public void clear(int flags) {
+        this.gl.glClear(flags);
+    }
+
+    @Override
+    public void clearColor(float r, float g, float b, float a) {
+        assert r >= 0 && r <= 1;
+        assert g >= 0 && g <= 1;
+        assert b >= 0 && b <= 1;
+        assert a >= 0 && a <= 1;
+        this.gl.glClearColor(r, g, b, a);
+    }
+
+    @Override
+    public void clearStencil() {
+        this.gl.glStencilMask(0xFF);
+        this.gl.glClearStencil(0);
+        this.gl.glStencilMask(0);
+    }
 }

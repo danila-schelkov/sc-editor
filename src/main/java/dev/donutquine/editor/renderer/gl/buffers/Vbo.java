@@ -1,16 +1,16 @@
 package dev.donutquine.editor.renderer.gl.buffers;
 
 import dev.donutquine.editor.renderer.gl.GLConstants;
-import dev.donutquine.editor.renderer.gl.GLRendererContext;
+import dev.donutquine.editor.renderer.gl.GLContext;
 
 import java.nio.FloatBuffer;
 
 /// Vertex Buffer Object
 public class Vbo implements FloatBufferObject {
-    private final GLRendererContext gl;
+    private final GLContext gl;
     private final int id;
 
-    public Vbo(GLRendererContext gl, int capacity, int usage) {
+    public Vbo(GLContext gl, int capacity, int usage) {
         this.gl = gl;
 
         this.id = gl.glGenBuffer();

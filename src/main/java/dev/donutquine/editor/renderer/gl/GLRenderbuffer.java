@@ -3,10 +3,10 @@ package dev.donutquine.editor.renderer.gl;
 import dev.donutquine.editor.renderer.Renderbuffer;
 
 public class GLRenderbuffer extends Renderbuffer {
-    private final GLRendererContext gl;
+    private final GLContext gl;
     private final int id;
 
-    public GLRenderbuffer(GLRendererContext gl, int width, int height) {
+    public GLRenderbuffer(GLContext gl, int width, int height) {
         super(width, height);
 
         this.gl = gl;
