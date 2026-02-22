@@ -41,3 +41,4 @@ jobs:
         with:
           name: ${{ github.event.repository.name }}-${{ env.VERSION }}
           files: target/sc-editor-*.jar
+          generate_release_notes: true
