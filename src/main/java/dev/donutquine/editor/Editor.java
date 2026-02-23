@@ -6,11 +6,18 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.prefs.Preferences;
 
+import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 
 import dev.donutquine.editor.displayObjects.SpriteSheet;
 import dev.donutquine.editor.layout.components.Table;
@@ -61,12 +68,25 @@ public class Editor {
     private SctxTexture sctxTexture;
 
     private String filename;
+    private String path;
 
     public Editor(EditorSettings settings) {
         this.settings = settings;
+        Preferences preferences = Preferences.userRoot().node("sc-editor");
+        boolean isDarkMode = preferences.getBoolean("DARK_MODE", false);
+        if (isDarkMode) {
+            this.setDarkMode();
+        } else {
+            this.setLightMode();
+        }
+    }
+
+    public String getPath() {
+        return path;
     }
 
     public void openFile(Path path) {
+        this.path = path.toString();
         this.filename = path.getFileName().toString();
         this.window.setTitle(EditorWindow.TITLE + " - " + filename);
 
@@ -79,6 +99,9 @@ public class Editor {
                 return;
             }
         }
+
+        Preferences preferences = Preferences.userRoot().node("sc-editor");
+        preferences.put("LAST_OPENED_FILE", path.toAbsolutePath().toString());
 
         FileMenu fileMenu = this.window.getMenubar().getFileMenu();
         fileMenu.checkCanSave();
@@ -248,8 +271,11 @@ public class Editor {
 
             row = objectsTable.indexOf(displayObject.getId(), 0);
         }
-
-        objectsTable.select(row);
+        try { // Note: There's a bug when viewing MovieClipModifier that causes an ExceptionDialog to show up.
+            objectsTable.select(row);
+        } catch (Exception e) {
+            //e.printStackTrace();
+        }
     }
 
     public void findUsages(int displayObjectId, String name) {
@@ -442,5 +468,40 @@ public class Editor {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void setTheme(FlatLaf theme) {
+        try {
+            UIManager.setLookAndFeel(theme);
+            FlatLaf.updateUI();
+
+            for (java.awt.Window window : java.awt.Window.getWindows()) {
+                if (window instanceof JFrame frame && frame.isDisplayable()) {
+
+                    boolean maximized =
+                        (frame.getExtendedState() & JFrame.MAXIMIZED_BOTH) != 0;
+
+                    if (!maximized) {
+                        frame.pack();
+                    }
+
+                    frame.revalidate();
+                    frame.repaint();
+                }
+            }
+        } catch (Exception e) {
+        }
+    }
+
+	public void setLightMode() {
+        Preferences preferences = Preferences.userRoot().node("sc-editor");
+        this.setTheme(new FlatLightLaf());
+        preferences.putBoolean("DARK_MODE", false);
+	}
+
+    public void setDarkMode() {
+        Preferences preferences = Preferences.userRoot().node("sc-editor");
+        this.setTheme(new FlatDarkLaf());
+        preferences.putBoolean("DARK_MODE", true);
     }
 }

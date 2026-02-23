@@ -1,13 +1,6 @@
 package dev.donutquine.editor.layout.menubar.menus;
 
-import dev.donutquine.editor.Editor;
-import dev.donutquine.editor.layout.filechooser.BetterFileChooser;
-import dev.donutquine.editor.layout.shortcut.KeyboardUtils;
-import org.jetbrains.annotations.NotNull;
-
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.*;
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -15,6 +8,21 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.prefs.Preferences;
+
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingWorker;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.jetbrains.annotations.NotNull;
+
+import dev.donutquine.editor.Editor;
+import dev.donutquine.editor.layout.filechooser.BetterFileChooser;
+import dev.donutquine.editor.layout.shortcut.KeyboardUtils;
 
 public class FileMenu extends JMenu {
     private static final String LAST_DIRECTORY_KEY = "lastDirectory";
@@ -44,6 +52,14 @@ public class FileMenu extends JMenu {
 
         this.saveAsButton = new JMenuItem("Save as...", KeyEvent.VK_O);
         this.saveAsButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyboardUtils.ctrlButton() | InputEvent.SHIFT_DOWN_MASK));
+        
+        
+        Preferences preferences = Preferences.userRoot().node("sc-editor");
+        JMenuItem lastOpenedFile = new JMenuItem("Reopen last opened file", KeyEvent.VK_R);
+        lastOpenedFile.setEnabled(preferences.get("LAST_OPENED_FILE", null) != null);
+        lastOpenedFile.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyboardUtils.ctrlButton()));
+        lastOpenedFile.addActionListener(this::openLastFile);
+
         JMenuItem close = new JMenuItem("Close", KeyEvent.VK_C);
         JMenuItem exit = new JMenuItem("Exit");
 
@@ -65,6 +81,7 @@ public class FileMenu extends JMenu {
         this.add(open);
         this.add(this.saveButton);
         this.add(this.saveAsButton);
+        this.add(lastOpenedFile);
         this.add(close);
 
         this.addSeparator();
@@ -89,6 +106,17 @@ public class FileMenu extends JMenu {
 
         this.saveButton.setEnabled(canSave);
         this.saveAsButton.setEnabled(canSave);
+    }
+
+    private void openLastFile(ActionEvent e) {
+        Preferences preferences = Preferences.userRoot().node("sc-editor");
+        String lastOpenedFilePath = preferences.get("LAST_OPENED_FILE", null);
+        if (lastOpenedFilePath != null) {
+            Path path = Path.of(lastOpenedFilePath);
+            if (Files.exists(path)) {
+                editor.openFile(path);
+            }
+        }
     }
 
     private void open(ActionEvent e) {
@@ -140,6 +168,7 @@ public class FileMenu extends JMenu {
         preferences.put(SAVE_DIRECTORY_KEY, path.toAbsolutePath().getParent().toString());
 
         editor.saveFile(path.toString());
+        System.out.println(path.toString());
     }
 
     private static @NotNull BetterFileChooser createFileChooser(Preferences preferences, String saveDirectoryKey) {

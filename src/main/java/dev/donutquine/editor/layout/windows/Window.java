@@ -1,7 +1,10 @@
 package dev.donutquine.editor.layout.windows;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Dimension;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.WindowConstants;
 
 public class Window {
     public static final Dimension CANVAS_SIZE = new Dimension(680, 640);

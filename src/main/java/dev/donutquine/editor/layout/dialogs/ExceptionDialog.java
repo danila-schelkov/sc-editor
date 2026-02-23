@@ -1,14 +1,14 @@
 package dev.donutquine.editor.layout.dialogs;
 
-import com.formdev.flatlaf.FlatLightLaf;
-import dev.donutquine.editor.Editor;
-import dev.donutquine.editor.Version;
-import dev.donutquine.editor.layout.components.LinkLabel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -18,6 +18,25 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.formdev.flatlaf.FlatLightLaf;
+
+import dev.donutquine.editor.Editor;
+import dev.donutquine.editor.Version;
+import dev.donutquine.editor.layout.components.LinkLabel;
 
 public class ExceptionDialog extends JDialog {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionDialog.class);

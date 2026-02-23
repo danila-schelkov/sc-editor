@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>dev.donutquine</groupId>
-    <artifactId>sc-editor</artifactId>
+    <artifactId>sc-editor-${releaseVersion}</artifactId>
     <version>${releaseVersion}</version>
 
     <repositories>
@@ -30,8 +30,8 @@
         <zstdJniVersion>1.5.7-6</zstdJniVersion>
         <flatlafVersion>3.7</flatlafVersion>
         <main.class>dev.donutquine.editor.Main</main.class>
-        <finalName>${project.artifactId}-${project.version}</finalName>
-        <releaseVersion>undefined</releaseVersion>
+        <finalName>${project.artifactId}</finalName>
+        <releaseVersion>1.5.7</releaseVersion>
     </properties>
     <build>
         <finalName>${finalName}</finalName>
@@ -74,7 +74,7 @@
                 <configuration>
                     <appendAssemblyId>false</appendAssemblyId>
                     <finalName>
-                        ${project.artifactId}-${project.version}-${activatedProfile}
+                        ${project.artifactId}
                     </finalName>
                     <archive>
                         <manifest>

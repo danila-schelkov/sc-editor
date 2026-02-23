@@ -1,20 +1,24 @@
 package dev.donutquine.editor;
 
-import com.formdev.flatlaf.FlatLightLaf;
-import dev.donutquine.editor.layout.dialogs.AboutDialog;
-import dev.donutquine.editor.layout.dialogs.ExceptionDialog;
-import dev.donutquine.editor.layout.windows.EditorWindow;
-import dev.donutquine.editor.settings.EditorSettings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.formdev.flatlaf.FlatLightLaf;
+
+import dev.donutquine.editor.layout.dialogs.AboutDialog;
+import dev.donutquine.editor.layout.dialogs.ExceptionDialog;
+import dev.donutquine.editor.layout.windows.EditorWindow;
+import dev.donutquine.editor.settings.EditorSettings;
 
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
@@ -30,6 +34,10 @@ public class Main {
     }
 
     private static void initializeEditor(String[] args) {
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf());
+        } catch (Exception e) {
+        }
         EditorSettings settings;
         try {
             settings = EditorSettings.load(Path.of(".", "settings.properties"));

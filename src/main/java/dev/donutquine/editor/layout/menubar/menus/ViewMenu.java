@@ -14,6 +14,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 
+import dev.donutquine.editor.Configuration;
 import dev.donutquine.editor.layout.panels.TimelinePanel;
 import dev.donutquine.editor.layout.shortcut.KeyboardUtils;
 import dev.donutquine.editor.layout.windows.EditorWindow;
@@ -80,6 +81,12 @@ public class ViewMenu extends JMenu {
         });
     }
 
+    private static void toggleInfiniteZoom(ActionEvent actionEvent) {
+        Configuration.infiniteZoom = ((JCheckBoxMenuItem) actionEvent.getSource()).isSelected();
+        EditorStage stage = EditorStage.getInstance();
+        stage.updatePMVMatrix();
+    }
+
     private void initializeZoomMenu() {
         JMenuItem zoom = new JMenu("Zoom");
         zoom.setMnemonic(KeyEvent.VK_Z);
@@ -98,6 +105,11 @@ public class ViewMenu extends JMenu {
         zoomToFit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyboardUtils.ctrlButton()));
         zoomToFit.addActionListener(ViewMenu::zoomToFit);
         zoom.add(zoomToFit);
+
+        JCheckBoxMenuItem infiniteZoom = new JCheckBoxMenuItem("Infinite zoom");
+        infiniteZoom.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, 0));
+        infiniteZoom.addActionListener(ViewMenu::toggleInfiniteZoom);
+        zoom.add(infiniteZoom);
 
         JMenuItem reset = new JMenuItem("Reset zoom", KeyEvent.VK_R);
         reset.addActionListener(ViewMenu::resetZoom);

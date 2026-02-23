@@ -1,0 +1,1 @@
+.\mvnw.cmd clean compile assembly:single

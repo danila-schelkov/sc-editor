@@ -1,5 +1,7 @@
 # SC Editor
 
+## Technical Requirements
+
 [Technical Requirements (ru)](./docs/technical_requirements.md)
 
 ## Building

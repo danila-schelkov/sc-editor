@@ -1,12 +1,12 @@
 package dev.donutquine.editor.layout.contextmenus;
 
+import java.awt.event.ActionEvent;
+
 import dev.donutquine.editor.Editor;
 import dev.donutquine.editor.layout.components.Table;
 import dev.donutquine.editor.layout.components.TablePopupMenuListener;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
-
-import java.awt.event.ActionEvent;
 
 public class FrameTableContextMenu extends ContextMenu {
     private final Table table;
@@ -17,6 +17,7 @@ public class FrameTableContextMenu extends ContextMenu {
 
         this.table = table;
         this.editor = editor;
+        
 
         this.add("Goto and play", this::gotoAndPlay);
         this.add("Goto and stop", this::gotoAndStop);

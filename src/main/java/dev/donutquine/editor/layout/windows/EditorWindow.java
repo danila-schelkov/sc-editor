@@ -1,9 +1,22 @@
 package dev.donutquine.editor.layout.windows;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTarget;
+import java.util.List;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.WindowConstants;
+
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 import com.jogamp.opengl.util.FPSAnimator;
+
 import dev.donutquine.editor.Editor;
 import dev.donutquine.editor.layout.EditorDropTarget;
 import dev.donutquine.editor.layout.GestureUtilities;
@@ -18,6 +31,7 @@ import dev.donutquine.editor.layout.panels.TimelinePanel;
 import dev.donutquine.editor.layout.panels.info.EditorInfoPanel;
 import dev.donutquine.editor.layout.panels.info.MovieClipInfoPanel;
 import dev.donutquine.editor.layout.panels.info.ShapeInfoPanel;
+import dev.donutquine.editor.layout.shortcut.RotationUtils;
 import dev.donutquine.editor.renderer.Camera;
 import dev.donutquine.editor.renderer.CameraZoom;
 import dev.donutquine.editor.renderer.impl.EditorStage;
@@ -26,12 +40,6 @@ import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 import dev.donutquine.renderer.impl.swf.objects.Shape;
 import dev.donutquine.swf.movieclips.MovieClipFrame;
 import dev.donutquine.swf.shapes.ShapeDrawBitmapCommand;
-
-import javax.swing.*;
-import java.awt.*;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.util.List;
 
 public class EditorWindow extends Window {
     public static final String TITLE = "SC Editor";
@@ -132,12 +140,18 @@ public class EditorWindow extends Window {
         this.frame.setMinimumSize(MINIMUM_SIZE);
         this.frame.setSize(this.frame.getContentPane().getPreferredSize());
         this.frame.pack();
+        EditorStage.getInstance().setEditorWindow(this);
+        RotationUtils.init(this);
     }
 
     public void show() {
         super.show();
 
         this.canvas.getAnimator().start();
+    }
+
+    public Editor getEditor() {
+        return this.editor;
     }
 
     public EditorMenuBar getMenubar() {
@@ -225,7 +239,7 @@ public class EditorWindow extends Window {
             }
 
             movieClipInfoPanel.setTextInfo(
-                "Export name: " + movieClip.getExportName(),
+                "Export name: " + (movieClip.getExportName() == null ? "(ID) " + String.valueOf(movieClip.getId()) : movieClip.getExportName()),
                 "FPS: " + movieClip.getFps(),
                 String.format("Duration: %.2fs", movieClip.getDuration())
             );

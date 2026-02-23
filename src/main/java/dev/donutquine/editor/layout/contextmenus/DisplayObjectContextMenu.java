@@ -1,5 +1,27 @@
 package dev.donutquine.editor.layout.contextmenus;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.DecimalFormat;
+import java.util.Objects;
+import java.util.prefs.Preferences;
+
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.JSlider;
+import javax.swing.ListSelectionModel;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
+import org.jetbrains.annotations.NotNull;
+
 import dev.donutquine.editor.Editor;
 import dev.donutquine.editor.layout.components.Table;
 import dev.donutquine.editor.layout.components.TablePopupMenuListener;
@@ -8,6 +30,7 @@ import dev.donutquine.editor.renderer.Framebuffer;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.editor.renderer.impl.RendererHelper;
 import dev.donutquine.exporter.FfmpegVideoExporter;
+import dev.donutquine.exporter.GifExporter;
 import dev.donutquine.exporter.VideoExporter;
 import dev.donutquine.exporter.VideoFormat;
 import dev.donutquine.exporter.VideoFormats;
@@ -29,21 +52,6 @@ import dev.donutquine.utilities.ByteArrayFlavor;
 import dev.donutquine.utilities.ImageUtils;
 import dev.donutquine.utilities.MovieClipHelper;
 import dev.donutquine.utilities.PathUtils;
-import org.jetbrains.annotations.NotNull;
-
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.text.DecimalFormat;
-import java.util.Objects;
-import java.util.prefs.Preferences;
 
 public class DisplayObjectContextMenu extends ContextMenu {
     private static final Clipboard SYSTEM_CLIPBOARD = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -56,6 +64,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
     private final Editor editor;
 
     private final JMenuItem exportAsVideoButton;
+    private final JMenuItem exportAsGifButton;
     private final JMenu exportAsMenu;
 
     public DisplayObjectContextMenu(Table table, Editor editor) {
@@ -83,6 +92,9 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         exportAsVideoButton = this.add(exportAsMenu, "Export as video", KeyEvent.VK_V);
         exportAsVideoButton.addActionListener(this::exportAsVideoCallback);
+
+        exportAsGifButton = this.add(exportAsMenu, "Export as GIF", KeyEvent.VK_G);
+        exportAsGifButton.addActionListener(this::exportAsGifButtonCallback);
 
         this.addSeparator();
 
@@ -265,6 +277,45 @@ public class DisplayObjectContextMenu extends ContextMenu {
         RendererHelper.rollbackRenderer(stage, viewport);
     }
 
+    private void exportAsGifButtonCallback(ActionEvent actionEvent) {
+        if (this.table.getSelectedRowCount() == 0) return;
+
+        int displayObjectId = getDisplayObjectId(this.table.getSelectedRow());
+
+        EditorStage stage = EditorStage.getInstance();
+        ReadonlyRect viewport = stage.getCamera().getViewport();
+
+        Preferences preferences = Preferences.userRoot().node("sc-editor");
+        String lastDirectoryString = preferences.get(SCREENSHOT_DIRECTORY_KEY, null);
+        Path lastDirectory = lastDirectoryString != null ? Path.of(lastDirectoryString) : null;
+        if (lastDirectory == null || !Files.exists(lastDirectory)) {
+            lastDirectory = DEFAULT_SCREENSHOT_FOLDER;
+        }
+
+        BetterFileChooser fileChooser = new BetterFileChooser(lastDirectory);
+        fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        fileChooser.setFileFilter(new FileNameExtensionFilter("GIF image", "gif"));
+        fileChooser.setSelectedFile(new File(this.getDisplayObjectName(this.table.getSelectedRow())));
+
+        Path path = BetterFileChooser.showSaveDialog(fileChooser, this.editor.getWindow().getFrame(), null);
+        if (path == null) return;
+
+        preferences.put(SCREENSHOT_DIRECTORY_KEY, path.toAbsolutePath().getParent().toString());
+
+        VideoFormat format = new VideoFormat("gif", "gif", "rgba", false);
+        
+        JSlider pixelSizeSlider = editor.getWindow().getMenubar().getOptionsMenu().getPixelSizeSlider();
+        if (pixelSizeSlider.getValue() == 100) { // to avoid low quality gif exports if the pixel size is default
+            editor.setPixelSize(500 / 100f);
+        };
+
+        exportAsGif(path, (MovieClip) getRenderableObject(displayObjectId), format);
+        
+        editor.setPixelSize(pixelSizeSlider.getValue() / 100f); // pixel size rollback as nothing happened :D
+
+        RendererHelper.rollbackRenderer(stage, viewport);
+    }
+
     private DisplayObject getRenderableObject(int displayObjectId) {
         SupercellSWF swf = editor.getSwf();
 
@@ -312,6 +363,57 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
             BufferedImage screenshot = ImageUtils.createBufferedImageFromPixels(framebuffer.getWidth(), framebuffer.getHeight(), framebuffer.getPixelArray(true), false);
             ImageUtils.saveImage(DEFAULT_SCREENSHOT_FOLDER.resolve(getDisplayObjectFilename(displayObject, pixelSize)), screenshot);
+
+            framebuffer.delete();
+        });
+    }
+    
+    private void exportAsGif(Path path, MovieClip movieClip, VideoFormat format) {
+        EditorStage stage = EditorStage.getInstance();
+
+        Rect bounds = stage.calculateBoundsForAllFrames(movieClip);
+
+        float pixelSize = editor.getPixelSize();
+        bounds.scale(pixelSize);
+
+        ReadonlyRect ceilBounds = roundBounds(bounds, format.requiresSizeDividableByTwo());
+
+        Matrix2x3 matrix = new Matrix2x3();
+        matrix.scaleMultiply(pixelSize, pixelSize);
+
+        stage.doInRenderThread(() -> {
+            Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, ceilBounds);
+
+            // Note: Passing own sprite as parent to provide Stage reference
+            boolean parentSet = false;
+            if (movieClip.getParent() == null) {
+                movieClip.setParent(stage.getStageSprite());
+                parentSet = true;
+            }
+            try (GifExporter gifExporter = new GifExporter(path, movieClip.getFps())) {
+                MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> {
+                    movieClip.gotoAbsoluteTimeRecursive(frameIndex * movieClip.getMsPerFrame());
+                    movieClip.render(matrix, new ColorTransform(), 0, 0);
+                    stage.renderToFramebuffer(framebuffer);
+
+                    BufferedImage image = ImageUtils.createBufferedImageFromPixels(
+                        framebuffer.getWidth(),
+                        framebuffer.getHeight(),
+                        framebuffer.getPixelArray(true),
+                        false
+                    );
+
+                    try {
+                        gifExporter.addFrame(image);
+                    } catch (IOException ignored) {}
+                });
+
+                gifExporter.finish();
+            } catch (IOException ignored) {}
+
+            if (parentSet) {
+                movieClip.setParent(null);
+            }
 
             framebuffer.delete();
         });

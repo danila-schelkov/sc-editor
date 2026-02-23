@@ -1,10 +1,18 @@
 package dev.donutquine.renderer.impl.swf.objects;
 
-import dev.donutquine.swf.*;
-import dev.donutquine.swf.exceptions.UnableToFindObjectException;
-import dev.donutquine.swf.movieclips.*;
-
 import java.util.List;
+
+import dev.donutquine.swf.ColorTransform;
+import dev.donutquine.swf.DisplayObjectOriginal;
+import dev.donutquine.swf.Matrix2x3;
+import dev.donutquine.swf.ScMatrixBank;
+import dev.donutquine.swf.SupercellSWF;
+import dev.donutquine.swf.exceptions.UnableToFindObjectException;
+import dev.donutquine.swf.movieclips.MovieClipChild;
+import dev.donutquine.swf.movieclips.MovieClipFrame;
+import dev.donutquine.swf.movieclips.MovieClipFrameElement;
+import dev.donutquine.swf.movieclips.MovieClipOriginal;
+import dev.donutquine.swf.movieclips.MovieClipState;
 
 public class MovieClip extends Sprite {
     private String exportName;

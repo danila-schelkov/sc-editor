@@ -1,9 +1,41 @@
 package dev.donutquine.editor.renderer.impl;
 
+import java.awt.image.BufferedImage;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.FloatBuffer;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Consumer;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jogamp.opengl.util.PMVMatrix;
+
 import dev.donutquine.editor.gizmos.Gizmos;
-import dev.donutquine.editor.renderer.*;
-import dev.donutquine.editor.renderer.gl.*;
+import dev.donutquine.editor.layout.windows.EditorWindow;
+import dev.donutquine.editor.renderer.BasicDrawApi;
+import dev.donutquine.editor.renderer.Batch;
+import dev.donutquine.editor.renderer.BatchedRenderer;
+import dev.donutquine.editor.renderer.BlendMode;
+import dev.donutquine.editor.renderer.Camera;
+import dev.donutquine.editor.renderer.DrawApi;
+import dev.donutquine.editor.renderer.Framebuffer;
+import dev.donutquine.editor.renderer.RenderStencilState;
+import dev.donutquine.editor.renderer.Renderer;
+import dev.donutquine.editor.renderer.RendererContext;
+import dev.donutquine.editor.renderer.Stage;
+import dev.donutquine.editor.renderer.VertexBuffer;
+import dev.donutquine.editor.renderer.gl.GLConstants;
+import dev.donutquine.editor.renderer.gl.GLContext;
+import dev.donutquine.editor.renderer.gl.GLFramebuffer;
+import dev.donutquine.editor.renderer.gl.GLRendererContext;
+import dev.donutquine.editor.renderer.gl.GLVertexBuffer;
 import dev.donutquine.editor.renderer.gl.exceptions.ShaderCompilationException;
 import dev.donutquine.editor.renderer.gl.texture.GLTexture;
 import dev.donutquine.editor.renderer.impl.texture.GLImage;
@@ -29,20 +61,6 @@ import dev.donutquine.swf.textures.SWFTexture;
 import dev.donutquine.utilities.BufferUtils;
 import dev.donutquine.utilities.ImageUtils;
 import dev.donutquine.utilities.MovieClipHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.awt.image.BufferedImage;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.FloatBuffer;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Consumer;
 
 public class EditorStage implements Stage {
     private static final Logger LOGGER = LoggerFactory.getLogger(EditorStage.class);
@@ -77,6 +95,8 @@ public class EditorStage implements Stage {
     private boolean isAnimationPaused;
     private boolean isWireframeEnabled;
     private Consumer<FloatBuffer> extraPMVMatrixConsumer;
+    
+    private EditorWindow window;
 
     private EditorStage() { }
 
@@ -86,6 +106,14 @@ public class EditorStage implements Stage {
         }
 
         return INSTANCE;
+    }
+
+    public void setEditorWindow(EditorWindow window) {
+        this.window = window;
+    }
+
+    public EditorWindow getEditorWindow() {
+        return this.window;
     }
 
     private static byte[] getTextureFileBytes(Path directory, String compressedTextureFilename) throws TextureFileNotFound {

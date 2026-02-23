@@ -1,6 +1,7 @@
 package dev.donutquine.editor.layout.components;
 
-import javax.swing.*;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
@@ -50,5 +51,15 @@ public class Table extends JTable {
 
     public boolean isCellEditable(int row, int column){
         return false;
+    }
+
+    public int getColumnIndexByName(String columnName) {
+        for (int i = 0; i < this.getColumnCount(); i++) {
+            if (this.getColumnName(i).equals(columnName)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 }

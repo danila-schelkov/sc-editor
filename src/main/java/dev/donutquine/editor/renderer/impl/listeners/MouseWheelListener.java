@@ -1,11 +1,12 @@
 package dev.donutquine.editor.renderer.impl.listeners;
 
+import java.awt.event.InputEvent;
+import java.awt.event.MouseWheelEvent;
+
+import dev.donutquine.editor.layout.shortcut.RotationUtils;
 import dev.donutquine.editor.renderer.Camera;
 import dev.donutquine.editor.renderer.CameraZoom;
 import dev.donutquine.editor.renderer.impl.EditorStage;
-
-import java.awt.event.InputEvent;
-import java.awt.event.MouseWheelEvent;
 
 public class MouseWheelListener implements java.awt.event.MouseWheelListener {
     public static final float MOUSE_MOVE_SENSITIVE = 15;
@@ -19,7 +20,10 @@ public class MouseWheelListener implements java.awt.event.MouseWheelListener {
 
         int modifiersEx = e.getModifiersEx();
         int wheelRotation = e.getWheelRotation();
-        if ((modifiersEx & InputEvent.ALT_DOWN_MASK) != 0) {
+        if (RotationUtils.rotateTrigger) {
+            stage.getEditorWindow().getEditor().getSelectedObject().getMatrix().rotate(wheelRotation * MOUSE_MOVE_SENSITIVE / 2);
+        }
+        else if ((modifiersEx & InputEvent.ALT_DOWN_MASK) != 0) {
             int deltaStep = wheelRotation * SENSITIVE;
             int step = zoom.getScaleStep() - deltaStep;
             if (step < 0) return;
