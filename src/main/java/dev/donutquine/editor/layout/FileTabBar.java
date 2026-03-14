@@ -1,59 +1,48 @@
 package dev.donutquine.editor.layout;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import javax.swing.JPanel;
+import java.awt.Insets;
+import java.util.List;
+import com.formdev.flatlaf.extras.components.FlatTabbedPane;
 import dev.donutquine.editor.assets.AssetFile;
 import dev.donutquine.editor.assets.AssetFileManager;
 
-public final class FileTabBar extends JPanel {
-    private static final int TAB_BAR_HEIGHT = 28;
-
+public final class FileTabBar extends FlatTabbedPane {
     private final AssetFileManager manager;
 
     public FileTabBar(AssetFileManager manager) {
+        setTabLayoutPolicy(FlatTabbedPane.SCROLL_TAB_LAYOUT);
+
         this.manager = manager;
 
-        setLayout(new FlowLayout(FlowLayout.LEFT, 4, 2));
-        setPreferredSize(new Dimension(0, TAB_BAR_HEIGHT));
-        setMinimumSize(new Dimension(0, TAB_BAR_HEIGHT));
-        setMaximumSize(new Dimension(Integer.MAX_VALUE, TAB_BAR_HEIGHT));
-    }
+        manager.registerOpenedEventListener((openedEvent) -> {
+            addTab(openedEvent.file().getName(), null);
+        });
 
-    public void rebuild() {
-        removeAll();
+        addChangeListener((_changeEvent) -> {
+            int selectedIndex = this.getSelectedIndex();
+            if (selectedIndex == -1) return;
 
-        for (AssetFile<?> file : manager.getFiles()) {
-            FileTab<?> tab = new FileTab<>(file, () -> selectFile(file), () -> closeFile(file));
-            add(tab);
-        }
+            selectFile(manager.getFiles().get(selectedIndex));
+        });
 
-        updateSelectionHighlight();
-        revalidate();
-        repaint();
+        this.setTabsClosable(true);
+        this.setTabCloseToolTipText("Close");
+        this.setTabCloseCallback((_tab, index) -> {
+            closeFile(index);
+        });
+        this.setTabType(TabType.underlined);
+        this.setTabInsets(new Insets(0, 8, 0, 8));
     }
 
     private void selectFile(AssetFile<?> file) {
         manager.setActiveFile(file);
-        updateSelectionHighlight();
     }
 
-    private void closeFile(AssetFile<?> file) {
-        manager.closeFile(file);
-        rebuild();
-    }
+    private void closeFile(int fileIndex) {
+        List<AssetFile<?>> files = manager.getFiles();
 
-    private void updateSelectionHighlight() {
-        for (Component c : getComponents()) {
-            if (c instanceof FileTab tab) {
-                boolean active = tab.getFile() == manager.getActiveFile();
-                tab.setBackground(active ? Color.LIGHT_GRAY : null);
-                tab.setOpaque(active);
-            } else {
-                assert false;
-            }
-        }
+        this.removeTabAt(fileIndex);
+
+        manager.closeFile(files.get(fileIndex));
     }
 }

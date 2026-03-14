@@ -5,10 +5,8 @@ import java.awt.Dimension;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 import java.nio.file.Path;
-import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.WindowConstants;
@@ -123,13 +121,9 @@ public class EditorWindow extends Window {
 
         JSplitPane mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, this.tabbedPane, canvasSplitPane);
 
-        tabBar = new FileTabBar(editor.getAssetFileManager());
-        JScrollPane tabBarScrollPane = new JScrollPane(tabBar, JScrollPane.VERTICAL_SCROLLBAR_NEVER, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        tabBar = new FileTabBar(this.editor.getAssetFileManager());
 
-        tabBarScrollPane.setBorder(BorderFactory.createEmptyBorder());
-        tabBarScrollPane.getHorizontalScrollBar().setUnitIncrement(16);
-
-        this.frame.getContentPane().add(tabBarScrollPane, BorderLayout.NORTH);
+        this.frame.getContentPane().add(tabBar, BorderLayout.NORTH);
         this.frame.getContentPane().add(mainSplitPane);
         // this.frame.getContentPane().add(statusBar, BorderLayout.SOUTH);
         this.frame.setMinimumSize(MINIMUM_SIZE);
@@ -151,8 +145,6 @@ public class EditorWindow extends Window {
                 title += " - " + e.file().getName();
             }
             this.setTitle(title);
-
-            tabBar.rebuild();
 
             this.menubar.getFileMenu().checkCanSave();
 

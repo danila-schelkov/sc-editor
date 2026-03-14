@@ -1,6 +1,7 @@
 package dev.donutquine.editor;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
 import dev.donutquine.editor.layout.dialogs.AboutDialog;
 import dev.donutquine.editor.layout.dialogs.ExceptionDialog;
 import dev.donutquine.editor.layout.windows.EditorWindow;
@@ -23,6 +24,10 @@ public class Main {
         System.setProperty("apple.laf.useScreenMenuBar", "true");
 
         FlatLightLaf.setup();
+        
+        UIManager.put( "TabbedPane.closeArc", 999 );
+        UIManager.put( "TabbedPane.closeCrossFilledSize", 5.5f );
+        UIManager.put( "TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon() );
 
         ExceptionDialog.registerUncaughtExceptionHandler();
 
