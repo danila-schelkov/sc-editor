@@ -2,6 +2,7 @@ package dev.donutquine.editor;
 
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
+import com.formdev.flatlaf.util.SystemFileChooser;
 import dev.donutquine.editor.layout.dialogs.AboutDialog;
 import dev.donutquine.editor.layout.dialogs.ExceptionDialog;
 import dev.donutquine.editor.layout.windows.EditorWindow;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.prefs.Preferences;
 
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
@@ -28,6 +30,23 @@ public class Main {
         UIManager.put( "TabbedPane.closeArc", 999 );
         UIManager.put( "TabbedPane.closeCrossFilledSize", 5.5f );
         UIManager.put( "TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon() );
+
+        SystemFileChooser.setStateStore(new SystemFileChooser.StateStore() {
+            private static final String KEY_PREFIX = "fileChooser.";
+
+            private final static Preferences state = Preferences.userRoot().node("sc-editor");
+
+            @Override
+            public String get( String key, String def ) {
+                return state.get(KEY_PREFIX + key, def);
+            }
+
+            @Override
+            public void put( String key, String value ) {
+                if (value != null) state.put(KEY_PREFIX + key, value);
+                else state.remove(KEY_PREFIX + key);
+            }
+        });
 
         ExceptionDialog.registerUncaughtExceptionHandler();
 

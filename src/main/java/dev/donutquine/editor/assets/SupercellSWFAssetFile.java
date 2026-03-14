@@ -24,7 +24,7 @@ import dev.donutquine.swf.shapes.ShapeDrawBitmapCommand;
 import dev.donutquine.swf.shapes.ShapeOriginal;
 import dev.donutquine.swf.textures.SWFTexture;
 
-public class SupercellSWFAssetFile extends AssetFile<SupercellSWF> implements NavigableAsset<Integer, DisplayObject>, TextureAsset {
+public class SupercellSWFAssetFile extends AssetFile<SupercellSWF> implements NavigableAsset<Integer, DisplayObject>, TextureAsset, SavableAsset {
     private final Map<Integer, DisplayObject> clonedObjects = new HashMap<>();
 
     private final List<SpriteSheet> spriteSheets = new ArrayList<>();
@@ -138,4 +138,9 @@ public class SupercellSWFAssetFile extends AssetFile<SupercellSWF> implements Na
             texture.getPixels(), sctxTexture, ktxData
         );
     }
+
+	@Override
+	public void save(Path path) {
+        this.asset.save(path.toString(), null);
+	}
 }
