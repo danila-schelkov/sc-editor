@@ -1,7 +1,6 @@
 package dev.donutquine.editor.layout;
 
 import java.awt.Insets;
-import java.util.List;
 import com.formdev.flatlaf.extras.components.FlatTabbedPane;
 import dev.donutquine.editor.assets.AssetFile;
 import dev.donutquine.editor.assets.AssetFileManager;
@@ -16,6 +15,11 @@ public final class FileTabBar extends FlatTabbedPane {
 
         manager.registerOpenedEventListener((openedEvent) -> {
             addTab(openedEvent.file().getName(), null);
+            setSelectedIndex(manager.getFiles().size() - 1);
+        });
+
+        manager.registerClosedEventListener((closedEvent) -> {
+            this.removeTabAt(closedEvent.fileIndex());
         });
 
         addChangeListener((_changeEvent) -> {
@@ -39,10 +43,8 @@ public final class FileTabBar extends FlatTabbedPane {
     }
 
     private void closeFile(int fileIndex) {
-        List<AssetFile<?>> files = manager.getFiles();
-
         this.removeTabAt(fileIndex);
 
-        manager.closeFile(files.get(fileIndex));
+        manager.closeFile(manager.getFiles().get(fileIndex));
     }
 }

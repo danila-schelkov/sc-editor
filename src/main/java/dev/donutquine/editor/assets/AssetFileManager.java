@@ -38,7 +38,7 @@ public class AssetFileManager {
         int index = files.indexOf(file);
         files.remove(file);
         file.close();
-        fileClosedEventBus.fire(new AssetFileClosedEvent());
+        fileClosedEventBus.fire(new AssetFileClosedEvent(index));
 
         if (file == activeFile) {
             if (!files.isEmpty()) {
