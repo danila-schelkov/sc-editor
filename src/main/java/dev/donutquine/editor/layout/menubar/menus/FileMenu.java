@@ -1,17 +1,6 @@
 package dev.donutquine.editor.layout.menubar.menus;
 
-import dev.donutquine.editor.Editor;
-import dev.donutquine.editor.assets.AssetFile;
-import dev.donutquine.editor.assets.AssetFileManager;
-import dev.donutquine.editor.assets.SavableAsset;
-import dev.donutquine.editor.layout.filechooser.BetterFileChooser;
-import dev.donutquine.editor.layout.shortcut.KeyboardUtils;
-import dev.donutquine.editor.layout.windows.EditorWindow;
-import org.jetbrains.annotations.NotNull;
-
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.*;
+import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
@@ -21,10 +10,24 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
+import javax.swing.SwingWorker;
+import org.jetbrains.annotations.NotNull;
+import com.formdev.flatlaf.util.SystemFileChooser;
+import com.formdev.flatlaf.util.SystemFileChooser.FileFilter;
+import com.formdev.flatlaf.util.SystemFileChooser.FileNameExtensionFilter;
+import dev.donutquine.editor.assets.AssetFile;
+import dev.donutquine.editor.assets.AssetFileManager;
+import dev.donutquine.editor.assets.SavableAsset;
+import dev.donutquine.editor.layout.filechooser.BetterFileChooser;
+import dev.donutquine.editor.layout.shortcut.KeyboardUtils;
+import dev.donutquine.editor.layout.windows.EditorWindow;
+import dev.donutquine.utilities.PathUtils;
 
 public class FileMenu extends JMenu {
-    private static final String LAST_DIRECTORY_KEY = "lastDirectory";
-    private static final String SAVE_DIRECTORY_KEY = "saveDirectory";
+    private static final String EXTSEP = ".";
 
     private final EditorWindow window;
 
@@ -113,26 +116,21 @@ public class FileMenu extends JMenu {
     }
 
     private void open(ActionEvent e) {
-        Preferences preferences = Preferences.userRoot().node("sc-editor");
-
-        BetterFileChooser fileChooser = createFileChooser(preferences, LAST_DIRECTORY_KEY);
-        fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        fileChooser.setFileFilter(
-                new FileNameExtensionFilter("Supercell SWF (*.sc, *.sc2)", "sc", "sc2"));
-        fileChooser.addChoosableFileFilter(
-                new FileNameExtensionFilter("Supercell Texture (*.sctx)", "sctx"));
+        SystemFileChooser fileChooser = new SystemFileChooser();
+        fileChooser.setStateStoreID("open");
+        fileChooser.setFileSelectionMode(SystemFileChooser.FILES_ONLY);
+        fileChooser.setMultiSelectionEnabled(false);
+        fileChooser.addChoosableFileFilter(new SystemFileChooser.FileNameExtensionFilter("Supercell SWF (*.sc, *.sc2)", "sc", "sc2"));
+        fileChooser.addChoosableFileFilter(new SystemFileChooser.FileNameExtensionFilter("Supercell Texture (*.sctx)", "sctx"));
 
         int result = fileChooser.showOpenDialog(this.window.getFrame());
-        if (result != JFileChooser.APPROVE_OPTION)
-            return;
+        if (result != SystemFileChooser.APPROVE_OPTION) return;
 
-        Path path = fileChooser.getPathWithExtension(null);
+        Path path = getPathWithExtension(fileChooser, null);
         if (!Files.exists(path)) {
             this.window.showErrorDialog("File %s does not exist".formatted(path));
             return;
         }
-
-        preferences.put(LAST_DIRECTORY_KEY, path.toAbsolutePath().getParent().toString());
 
         SwingWorker<Integer, Integer> worker = new SwingWorker<>() {
             @Override
@@ -152,16 +150,17 @@ public class FileMenu extends JMenu {
 
     private void save(ActionEvent actionEvent) {
         if (window.getEditor().getAssetFileManager().getActiveFile() instanceof SavableAsset savableAsset) {
-            Preferences preferences = Preferences.userRoot().node("sc-editor");
-            BetterFileChooser fileChooser = createFileChooser(preferences, SAVE_DIRECTORY_KEY);
-            fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc)", "sc"));
+            SystemFileChooser fileChooser = new SystemFileChooser();
+            fileChooser.setStateStoreID("save");
+            fileChooser.setFileSelectionMode(SystemFileChooser.FILES_ONLY);
+            fileChooser.setMultiSelectionEnabled(false);
+            fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc)", "sc"));
 
-            Path path = BetterFileChooser.showSaveDialog(fileChooser, this.window.getFrame(), null);
-            if (path == null)
-                return;
+            int result = fileChooser.showSaveDialog(this.window.getFrame());
+            if (result != SystemFileChooser.APPROVE_OPTION) return;
 
-            preferences.put(SAVE_DIRECTORY_KEY, path.toAbsolutePath().getParent().toString());
+            Path path = getPathWithExtension(fileChooser, null);
+            if (path == null) return;
 
             savableAsset.save(path);
         }
@@ -172,5 +171,35 @@ public class FileMenu extends JMenu {
         Path lastDirectory = lastDirectoryString != null ? Path.of(lastDirectoryString) : null;
 
         return new BetterFileChooser(lastDirectory);
+    }
+
+    public Path getPathWithExtension(SystemFileChooser fileChooser, String defaultExtension) {
+        Path path = fileChooser.getSelectedFile().toPath();
+        String fileExtension = PathUtils.getFileExtension(path.getFileName().toString());
+        if (fileExtension != null) {
+            for (FileFilter fileFilter : fileChooser.getChoosableFileFilters()) {
+                if (fileFilter instanceof FileNameExtensionFilter extensionFilter) {
+                    for (String extension : extensionFilter.getExtensions()) {
+                        if (fileExtension.equals(extension)) {
+                            return path;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (fileChooser.getFileFilter() instanceof FileNameExtensionFilter extensionFilter) {
+            for (String extension : extensionFilter.getExtensions()) {
+                if (path.endsWith(EXTSEP + extension)) {
+                    return path;
+                }
+            }
+
+            return path.resolveSibling( path.getFileName() + EXTSEP + extensionFilter.getExtensions()[0]);
+        } else if (defaultExtension != null && !path.endsWith(EXTSEP + defaultExtension)) {
+            return path.resolveSibling(path.getFileName() + EXTSEP + defaultExtension);
+        }
+
+        return path;
     }
 }
