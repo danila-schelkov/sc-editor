@@ -6,20 +6,18 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.Objects;
-import java.util.prefs.Preferences;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.ListSelectionModel;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import org.jetbrains.annotations.NotNull;
+import com.formdev.flatlaf.util.SystemFileChooser;
+import com.formdev.flatlaf.util.SystemFileChooser.FileNameExtensionFilter;
 import dev.donutquine.editor.layout.SupercellSWFLayoutController;
+import dev.donutquine.editor.layout.SystemFileChooserUtil;
 import dev.donutquine.editor.layout.components.Table;
 import dev.donutquine.editor.layout.components.TablePopupMenuListener;
-import dev.donutquine.editor.layout.filechooser.BetterFileChooser;
 import dev.donutquine.editor.renderer.Framebuffer;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.editor.renderer.impl.RendererHelper;
@@ -224,24 +222,20 @@ public class DisplayObjectContextMenu extends ContextMenu {
         EditorStage stage = EditorStage.getInstance();
         ReadonlyRect viewport = stage.getCamera().getViewport();
 
-        Preferences preferences = Preferences.userRoot().node("sc-editor");
-        String lastDirectoryString = preferences.get(SCREENSHOT_DIRECTORY_KEY, null);
-        Path lastDirectory = lastDirectoryString != null ? Path.of(lastDirectoryString) : null;
-        if (lastDirectory == null || !Files.exists(lastDirectory)) {
-            lastDirectory = DEFAULT_SCREENSHOT_FOLDER;
-        }
-
-        BetterFileChooser fileChooser = new BetterFileChooser(lastDirectory);
-        fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        fileChooser.setFileFilter(new FileNameExtensionFilter("WEBM video", "webm"));
+        SystemFileChooser fileChooser = new SystemFileChooser();
+        fileChooser.setStateStoreID("exportVideo");
+        fileChooser.setFileSelectionMode(SystemFileChooser.FILES_ONLY);
+        fileChooser.setMultiSelectionEnabled(false);
+        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("WEBM video", "webm"));
         fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("HEVC video", "hevc"));
         fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("AV1 video", "avi"));
         fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("MP4 video (no transparency)", "mp4"));
 
-        Path path = BetterFileChooser.showSaveDialog(fileChooser, swfLayoutController.window.getFrame(), null);
-        if (path == null) return;
+        int result = fileChooser.showSaveDialog(swfLayoutController.window.getFrame());
+        if (result != SystemFileChooser.APPROVE_OPTION) return;
 
-        preferences.put(SCREENSHOT_DIRECTORY_KEY, path.toAbsolutePath().getParent().toString());
+        Path path = SystemFileChooserUtil.getPathWithExtension(fileChooser, null);
+        if (path == null) return;
 
         String formatExtension = PathUtils.getFileExtension(path.getFileName().toString());
         VideoFormat format = VideoFormats.getVideoFormatByName(formatExtension);

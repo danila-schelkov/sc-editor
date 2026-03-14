@@ -9,26 +9,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.prefs.Preferences;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.SwingWorker;
-import org.jetbrains.annotations.NotNull;
 import com.formdev.flatlaf.util.SystemFileChooser;
-import com.formdev.flatlaf.util.SystemFileChooser.FileFilter;
 import com.formdev.flatlaf.util.SystemFileChooser.FileNameExtensionFilter;
 import dev.donutquine.editor.assets.AssetFile;
 import dev.donutquine.editor.assets.AssetFileManager;
 import dev.donutquine.editor.assets.SavableAsset;
-import dev.donutquine.editor.layout.filechooser.BetterFileChooser;
+import dev.donutquine.editor.layout.SystemFileChooserUtil;
 import dev.donutquine.editor.layout.shortcut.KeyboardUtils;
 import dev.donutquine.editor.layout.windows.EditorWindow;
-import dev.donutquine.utilities.PathUtils;
 
 public class FileMenu extends JMenu {
-    private static final String EXTSEP = ".";
-
     private final EditorWindow window;
 
     private final JMenuItem saveButton;
@@ -126,7 +120,7 @@ public class FileMenu extends JMenu {
         int result = fileChooser.showOpenDialog(this.window.getFrame());
         if (result != SystemFileChooser.APPROVE_OPTION) return;
 
-        Path path = getPathWithExtension(fileChooser, null);
+        Path path = SystemFileChooserUtil.getPathWithExtension(fileChooser, null);
         if (!Files.exists(path)) {
             this.window.showErrorDialog("File %s does not exist".formatted(path));
             return;
@@ -159,47 +153,10 @@ public class FileMenu extends JMenu {
             int result = fileChooser.showSaveDialog(this.window.getFrame());
             if (result != SystemFileChooser.APPROVE_OPTION) return;
 
-            Path path = getPathWithExtension(fileChooser, null);
+            Path path = SystemFileChooserUtil.getPathWithExtension(fileChooser, null);
             if (path == null) return;
 
             savableAsset.save(path);
         }
-    }
-
-    private static @NotNull BetterFileChooser createFileChooser(Preferences preferences, String saveDirectoryKey) {
-        String lastDirectoryString = preferences.get(saveDirectoryKey, null);
-        Path lastDirectory = lastDirectoryString != null ? Path.of(lastDirectoryString) : null;
-
-        return new BetterFileChooser(lastDirectory);
-    }
-
-    public Path getPathWithExtension(SystemFileChooser fileChooser, String defaultExtension) {
-        Path path = fileChooser.getSelectedFile().toPath();
-        String fileExtension = PathUtils.getFileExtension(path.getFileName().toString());
-        if (fileExtension != null) {
-            for (FileFilter fileFilter : fileChooser.getChoosableFileFilters()) {
-                if (fileFilter instanceof FileNameExtensionFilter extensionFilter) {
-                    for (String extension : extensionFilter.getExtensions()) {
-                        if (fileExtension.equals(extension)) {
-                            return path;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (fileChooser.getFileFilter() instanceof FileNameExtensionFilter extensionFilter) {
-            for (String extension : extensionFilter.getExtensions()) {
-                if (path.endsWith(EXTSEP + extension)) {
-                    return path;
-                }
-            }
-
-            return path.resolveSibling( path.getFileName() + EXTSEP + extensionFilter.getExtensions()[0]);
-        } else if (defaultExtension != null && !path.endsWith(EXTSEP + defaultExtension)) {
-            return path.resolveSibling(path.getFileName() + EXTSEP + defaultExtension);
-        }
-
-        return path;
     }
 }
