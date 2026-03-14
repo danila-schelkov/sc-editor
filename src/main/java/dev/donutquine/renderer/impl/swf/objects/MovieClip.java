@@ -1,5 +1,6 @@
 package dev.donutquine.renderer.impl.swf.objects;
 
+import dev.donutquine.editor.assets.TextureAsset;
 import dev.donutquine.swf.*;
 import dev.donutquine.swf.exceptions.UnableToFindObjectException;
 import dev.donutquine.swf.movieclips.*;
@@ -23,7 +24,7 @@ public class MovieClip extends Sprite {
         this.loopFrame = -1;
     }
 
-    public static MovieClip createMovieClip(MovieClipOriginal original, SupercellSWF swf) throws UnableToFindObjectException {
+    public static MovieClip createMovieClip(MovieClipOriginal original, SupercellSWF swf, TextureAsset textureAsset) throws UnableToFindObjectException {
         original.createTimelineChildren(swf);
 
         MovieClip movieClip = new MovieClip();
@@ -35,7 +36,7 @@ public class MovieClip extends Sprite {
         DisplayObject[] timelineChildren = new DisplayObject[clipChildren.size()];
         for (int i = 0; i < timelineChildren.length; i++) {
             DisplayObjectOriginal child = timelineChildrenOriginal[i];
-            DisplayObject displayObject = DisplayObjectFactory.createFromOriginal(child, swf, original.getScalingGrid());
+            DisplayObject displayObject = DisplayObjectFactory.createFromOriginal(child, swf, original.getScalingGrid(), textureAsset);
             displayObject.setVisibleRecursive((clipChildren.get(i).blend() & 64) == 0);
             displayObject.setInteractiveRecursive(true);
 

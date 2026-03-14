@@ -1,5 +1,6 @@
 package dev.donutquine.renderer.impl.swf.objects;
 
+import dev.donutquine.editor.assets.TextureAsset;
 import dev.donutquine.editor.renderer.Stage;
 import dev.donutquine.math.ReadonlyRect;
 import dev.donutquine.math.Rect;
@@ -16,11 +17,12 @@ public class Shape9Slice extends Shape {
         this.scalingGrid = new Rect(scalingGrid);
     }
 
-    public static Shape9Slice createShape(ShapeOriginal original, ReadonlyRect scalingGrid) {
+    public static Shape9Slice createShape(ShapeOriginal original, TextureAsset textureAsset, ReadonlyRect scalingGrid) {
         Shape9Slice shape9Slice = new Shape9Slice(scalingGrid);
 
         shape9Slice.id = original.getId();
         shape9Slice.commands = original.getCommands();
+        shape9Slice.textureAsset = textureAsset;
 
         return shape9Slice;
     }
@@ -71,7 +73,7 @@ public class Shape9Slice extends Shape {
 
         Stage stage = this.getStage();
         for (ShapeDrawBitmapCommand command : this.commands) {
-            result |= ShapeDrawBitmapCommandRenderer.render9Slice(command, stage, matrixApplied, colorTransformApplied, renderConfigBits, movedGrid, bounds, scaledWidth, scaledHeight);
+            result |= ShapeDrawBitmapCommandRenderer.render9Slice(command, this.textureAsset, stage, matrixApplied, colorTransformApplied, renderConfigBits, movedGrid, bounds, scaledWidth, scaledHeight);
         }
 
         return result;

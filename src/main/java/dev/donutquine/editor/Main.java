@@ -1,6 +1,7 @@
 package dev.donutquine.editor;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
 import dev.donutquine.editor.layout.dialogs.AboutDialog;
 import dev.donutquine.editor.layout.dialogs.ExceptionDialog;
 import dev.donutquine.editor.layout.windows.EditorWindow;
@@ -23,6 +24,10 @@ public class Main {
         System.setProperty("apple.laf.useScreenMenuBar", "true");
 
         FlatLightLaf.setup();
+        
+        UIManager.put( "TabbedPane.closeArc", 999 );
+        UIManager.put( "TabbedPane.closeCrossFilledSize", 5.5f );
+        UIManager.put( "TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon() );
 
         ExceptionDialog.registerUncaughtExceptionHandler();
 
@@ -38,22 +43,22 @@ public class Main {
         }
 
         Editor editor = new Editor(settings);
-        EditorWindow window = editor.getWindow();
-        window.initialize(EditorWindow.TITLE);
+        EditorWindow window = new EditorWindow(editor);
+        window.initialize();
         window.show();
 
         if (args.length > 0) {
             Path path = Path.of(args[0]);
             if (Files.exists(path)) {
-                editor.openFile(path);
+                window.openFile(path);
             }
         }
 
-        registerAboutHandler(editor);
-        registerOpenFileHandler(editor);
+        registerAboutHandler(window);
+        registerOpenFileHandler(window);
     }
 
-    private static void registerOpenFileHandler(Editor editor) {
+    private static void registerOpenFileHandler(EditorWindow window) {
         try {
             if (Desktop.isDesktopSupported()) {
                 Desktop desktop = Desktop.getDesktop();
@@ -64,7 +69,7 @@ public class Main {
                             LOGGER.warn("Loading multiple files is not supported!");
                         }
 
-                        editor.openFile(paths.get(0));
+                        window.openFile(paths.get(0));
                     });
                 }
             }
@@ -73,13 +78,13 @@ public class Main {
         }
     }
 
-    private static void registerAboutHandler(Editor editor) {
+    private static void registerAboutHandler(EditorWindow window) {
         try {
             if (Desktop.isDesktopSupported()) {
                 Desktop desktop = Desktop.getDesktop();
                 if (desktop.isSupported(Desktop.Action.APP_ABOUT)) {
                     desktop.setAboutHandler(e -> {
-                        AboutDialog.showAboutDialog(editor.getWindow().getFrame());
+                        AboutDialog.showAboutDialog(window.getFrame());
                     });
                 }
             }

@@ -1,34 +1,42 @@
 package dev.donutquine.editor.layout.panels;
 
-import dev.donutquine.editor.Editor;
-import dev.donutquine.editor.layout.components.Table;
-import dev.donutquine.editor.layout.components.listeners.DisplayObjectListMouseListener;
-import dev.donutquine.editor.layout.contextmenus.DisplayObjectContextMenu;
-
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.RowFilter;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
+import dev.donutquine.editor.layout.SupercellSWFLayoutController;
+import dev.donutquine.editor.layout.components.Table;
+import dev.donutquine.editor.layout.components.listeners.DisplayObjectListMouseListener;
+import dev.donutquine.editor.layout.contextmenus.DisplayObjectContextMenu;
 
 public class DisplayObjectListPanel extends JPanel {
+    private static final Object[] COLUMN_NAMES = {"Id", "Name", "Type"};
+
     private final TableRowSorter<TableModel> sorter;
     private final Table table;
 
     private final JTextField textField;
 
-    public DisplayObjectListPanel(Editor editor) {
-        this.table = new Table("Id", "Name", "Type");
+    public DisplayObjectListPanel(SupercellSWFLayoutController controller, Object[][] data) {
+        this.table = new Table(data, COLUMN_NAMES);
         this.table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         this.sorter = new TableRowSorter<>(this.table.getModel());
 
-        new DisplayObjectContextMenu(this.table, editor);
-        this.table.addMouseListener(new DisplayObjectListMouseListener(this.table, editor));
+        new DisplayObjectContextMenu(this.table, controller);
+        this.table.addMouseListener(new DisplayObjectListMouseListener(this.table, controller));
         this.table.setRowSorter(this.sorter);
 
         List<RowSorter.SortKey> sortKeys = new ArrayList<>();
@@ -80,6 +88,17 @@ public class DisplayObjectListPanel extends JPanel {
 
     public Table getTable() {
         return table;
+    }
+
+    public void selectObjectById(int id) {
+        int row = this.table.indexOf(id, 0);
+        if (row == -1) {
+            this.resetFilter();
+
+            row = this.table.indexOf(id, 0);
+        }
+
+        this.table.select(row);
     }
 
     public void setFocusOnTextField() {

@@ -116,6 +116,12 @@
             <!--            <classifier>no-natives</classifier>-->
         </dependency>
         <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf-extras</artifactId>
+            <version>${flatlafVersion}</version>
+            <!--            <classifier>no-natives</classifier>-->
+        </dependency>
+        <dependency>
             <groupId>dev.donutquine</groupId>
             <artifactId>sc-file</artifactId>
             <version>1.0.3</version>

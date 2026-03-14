@@ -1,22 +1,21 @@
 package dev.donutquine.editor.layout.contextmenus;
 
-import dev.donutquine.editor.Editor;
+import java.util.function.Function;
+import dev.donutquine.editor.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.layout.components.Table;
 import dev.donutquine.editor.layout.components.TablePopupMenuListener;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 
-import java.util.function.Function;
-
 public class ChildrenTableContextMenu extends ContextMenu {
     private final Table table;
-    private final Editor editor;
+    private final SupercellSWFLayoutController swfLayoutController;
 
-    public ChildrenTableContextMenu(Table table, Editor editor) {
+    public ChildrenTableContextMenu(Table table, SupercellSWFLayoutController swfLayoutController) {
         super(table, null);
 
         this.table = table;
-        this.editor = editor;
+        this.swfLayoutController = swfLayoutController;
 
         this.add("Toggle visibility", event -> this.changeVisibility(child -> !child.isVisible()));
         this.add("Enable", event -> this.changeVisibility(child -> true));
@@ -40,11 +39,9 @@ public class ChildrenTableContextMenu extends ContextMenu {
     }
 
     private MovieClip getMovieClip() {
-        DisplayObject selectedObject = editor.getSelectedObject();
-        if (selectedObject.isMovieClip()) {
-            return (MovieClip) selectedObject;
-        }
+        DisplayObject selectedObject = this.swfLayoutController.getSelectedObject();
+        assert selectedObject.isMovieClip();
 
-        return null;
+        return (MovieClip) selectedObject;
     }
 }

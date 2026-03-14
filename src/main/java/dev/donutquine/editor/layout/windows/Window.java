@@ -4,19 +4,9 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Window {
-    public static final Dimension CANVAS_SIZE = new Dimension(680, 640);
-    public static final Dimension MINIMUM_SIZE = new Dimension(CANVAS_SIZE);
+    public static final Dimension MINIMUM_SIZE = new Dimension(680, 640);
 
     protected JFrame frame;
-
-    public void initialize(String title) {
-        this.frame = new JFrame(title);
-
-        this.frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-
-        this.frame.setMinimumSize(MINIMUM_SIZE);
-        this.frame.setSize(this.frame.getContentPane().getPreferredSize());
-    }
 
     public void show() {
         this.frame.pack();

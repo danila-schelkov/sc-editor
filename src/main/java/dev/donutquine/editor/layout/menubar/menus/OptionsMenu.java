@@ -1,23 +1,25 @@
 package dev.donutquine.editor.layout.menubar.menus;
 
-import dev.donutquine.editor.Editor;
-
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import dev.donutquine.editor.layout.windows.EditorWindow;
+import dev.donutquine.editor.renderer.impl.EditorStage;
+import dev.donutquine.editor.settings.EditorSettings;
 
 public class OptionsMenu extends JMenu {
-    private final Editor editor;
+	private final EditorSettings editorSettings;
 
-    private final JCheckBoxMenuItem renderPolygonsCheckBox;
     private final JSlider pixelSizeSlider;
     private final JCheckBoxMenuItem wireframeModeCheckBox;
 
-    public OptionsMenu(Editor editor) {
+    public OptionsMenu(EditorWindow window) {
         super("Options");
 
-        this.editor = editor;
+        this.editorSettings = window.getEditor().getSettings();
 
         setMnemonic(KeyEvent.VK_O);
 
@@ -33,13 +35,6 @@ public class OptionsMenu extends JMenu {
 
         this.pixelSizeSlider = pixelSizeSlider;
 
-        JCheckBoxMenuItem renderPolygonsCheckBox = new JCheckBoxMenuItem("Render polygons");
-        renderPolygonsCheckBox.setMnemonic(KeyEvent.VK_P);
-        renderPolygonsCheckBox.addActionListener(this::togglePolygonRendering);
-        this.add(renderPolygonsCheckBox);
-
-        this.renderPolygonsCheckBox = renderPolygonsCheckBox;
-
         JCheckBoxMenuItem wireframeModeCheckBox = new JCheckBoxMenuItem("Wireframe mode");
         wireframeModeCheckBox.setMnemonic(KeyEvent.VK_W);
         wireframeModeCheckBox.addActionListener(this::toggleWireframeMode);
@@ -48,12 +43,8 @@ public class OptionsMenu extends JMenu {
         this.wireframeModeCheckBox = wireframeModeCheckBox;
     }
 
-    private void togglePolygonRendering(ActionEvent event) {
-        editor.setShouldDisplayPolygons(this.renderPolygonsCheckBox.getState());
-    }
-
     private void toggleWireframeMode(ActionEvent event) {
-        editor.setWireframeEnabled(this.wireframeModeCheckBox.getState());
+        EditorStage.getInstance().setWireframeEnabled(this.wireframeModeCheckBox.getState());
     }
 
     private void pixelSizeChanged(ChangeEvent changeEvent) {
@@ -61,7 +52,7 @@ public class OptionsMenu extends JMenu {
             return;
         }
 
-        editor.setPixelSize(getPixelSizeFactor());
+        this.editorSettings.setPixelSize(getPixelSizeFactor());
     }
 
     /// Converts pixel size slider value from percentage to a factor

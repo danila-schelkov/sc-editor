@@ -8,7 +8,6 @@ import java.awt.Color;
 
 // Note: actually I don't like separation of DrawApi and Renderer, but then I have to rename Renderer to something
 public interface DrawApi {
-    // Note: ReadonlyRect will be definitely a better choice
     void drawTexture(RenderableTexture texture, ReadonlyRect rect);
 
     void drawTextureFlipped(RenderableTexture texture, ReadonlyRect rect);

@@ -30,7 +30,7 @@ public class Gizmos implements UndoRedoManager {
     private final StageSprite stageSprite;
 
     // TODO: pass command manager from within the editor,
-    //  so all commands (action) history is shared between everything in the app
+    // so all commands (action) history is shared between everything in the app
     private final CommandManager commandManager;
 
     private @Nullable CursorStateListener cursorStateListener;
@@ -52,7 +52,8 @@ public class Gizmos implements UndoRedoManager {
     private Mode mode;
 
     private @Nullable DisplayObject touchedObject;
-    // TODO: may be moving, it would be better to stop animation since EDIT_POINTS turned on ig
+    // TODO: may be moving, it would be better to stop animation since EDIT_POINTS
+    // turned on ig
     private Rect touchedObjectBounds;
 
     public Gizmos(Stage stage) {
@@ -87,7 +88,8 @@ public class Gizmos implements UndoRedoManager {
                 this.dragging = true;
 
                 cursor = CursorType.MOVE_CURSOR;
-            } else if (mousePressed && this.touchedObjectBounds.containsPoint(this.mouseX, this.mouseY) && !this.dragging) {
+            } else if (mousePressed && this.touchedObjectBounds.containsPoint(this.mouseX, this.mouseY)
+                    && !this.dragging) {
                 this.initialMatrix = this.touchedObject.getMatrix();
                 this.initialBounds = new Rect(this.touchedObjectBounds);
 
@@ -106,11 +108,11 @@ public class Gizmos implements UndoRedoManager {
                             float x = mouseX;
                             float y = mouseY;
                             this.commandManager.execute(new MoveDrawCommandPointCommand(targetShapeDrawCommand,
-                                pointIndex,
-                                this.startX,
-                                this.startY,
-                                inverseMatrix.applyX(x, y),
-                                inverseMatrix.applyY(x, y)));
+                                    pointIndex,
+                                    this.startX,
+                                    this.startY,
+                                    inverseMatrix.applyX(x, y),
+                                    inverseMatrix.applyY(x, y)));
                         }
                     } else {
                         float dx = mouseX - startX;
@@ -119,7 +121,7 @@ public class Gizmos implements UndoRedoManager {
                         newMatrix.move(dx, dy);
 
                         // TODO: somehow undo touchedObject preview movement
-                        //  so I could pass it without resetting the matrix to initial
+                        // so I could pass it without resetting the matrix to initial
                         this.touchedObject.setMatrix(this.initialMatrix);
                         this.commandManager.execute(new SetDisplayObjectMatrixCommand(touchedObject, newMatrix));
                     }
@@ -143,10 +145,11 @@ public class Gizmos implements UndoRedoManager {
             if (this.touchedObject.isShape()) {
                 this.mode = Mode.EDIT_POINTS;
                 return;
-            // FIXME: There is a bug in animations, caused by non-static Stage instance.
-            //  When you spam-click on animated object, which may be removed next frame from its parent,
-            //  NPE will be thrown since its parent set to null.
-            //  As a potential fix just stop all animations if an object selected.
+                // FIXME: There is a bug in animations, caused by non-static Stage instance.
+                // When you spam-click on animated object, which may be removed next frame from
+                // its parent,
+                // NPE will be thrown since its parent set to null.
+                // As a potential fix just stop all animations if an object selected.
             } else if (this.touchedObject.isSprite() && this.touchedObject.getStage() != null) {
                 rootObject = this.touchedObject;
             } else if (this.touchedObjectBounds.containsPoint(worldX, worldY)) {
@@ -170,7 +173,7 @@ public class Gizmos implements UndoRedoManager {
                     break;
                 }
             }
-        // TODO: make it to edit TextField content when font renderer will be introduced
+            // TODO: make it to edit TextField content when font renderer will be introduced
         } else {
             assert false : "Not implemented yet";
         }
@@ -225,11 +228,11 @@ public class Gizmos implements UndoRedoManager {
                         float x = mouseX - startX;
                         float y = mouseY - startY;
                         // TODO: Maybe form command here already and then just push it on dragging end?
-                        //  I could create a Matrix2x3 and store it, so I will be able to modify it and
-                        //  it will be immediately updated in the Command instance
+                        // I could create a Matrix2x3 and store it, so I will be able to modify it and
+                        // it will be immediately updated in the Command instance
 
                         // TODO: maybe display only bounds movement and leave an object as is.
-                        //  You could also duplicate an object and render it separately
+                        // You could also duplicate an object and render it separately
                         // Perhaps should apply same optimization as below
                         this.touchedObject.setMatrix(new Matrix2x3(this.initialMatrix));
                         this.touchedObject.getMatrix().move(x, y);
@@ -254,8 +257,10 @@ public class Gizmos implements UndoRedoManager {
         this.renderer.endRendering();
     }
 
-    public static void drawCommandWireframe(DrawApi drawApi, ShapeDrawBitmapCommand command, Matrix2x3 matrix, Color wireframeColor, float thickness, boolean useStrip) {
-        if (command.getVertexCount() < 3) return;
+    public static void drawCommandWireframe(DrawApi drawApi, ShapeDrawBitmapCommand command, Matrix2x3 matrix,
+            Color wireframeColor, float thickness, boolean useStrip) {
+        if (command.getVertexCount() < 3)
+            return;
 
         Point p1 = new Point(command.getX(0), command.getY(0));
         Point p2 = new Point(command.getX(1), command.getY(1));
@@ -278,7 +283,8 @@ public class Gizmos implements UndoRedoManager {
         float pixelSize = 1 / stage.getPixelSize();
         float thickness = 4 * pixelSize;
 
-        // Note: Identity matrix for standalone Shape object, maybe shouldn't allow to edit points in MovieClips (?)
+        // Note: Identity matrix for standalone Shape object, maybe shouldn't allow to
+        // edit points in MovieClips (?)
         Matrix2x3 matrix = getObjectFinalMatrix(shape);
 
         boolean useStrip = (shape.getRenderConfigBits() & 0x8000) != 0;
@@ -295,7 +301,8 @@ public class Gizmos implements UndoRedoManager {
         float size = 10 * pixelSize;
         for (int i = 0; i < shape.getCommandCount(); i++) {
             ShapeDrawBitmapCommand command = shape.getCommand(i);
-            if (command.getVertexCount() < 3) continue;
+            if (command.getVertexCount() < 3)
+                continue;
             for (int j = 0; j < command.getVertexCount(); j++) {
                 float x = matrix.applyX(command.getX(j), command.getY(j));
                 float y = matrix.applyY(command.getX(j), command.getY(j));
@@ -324,10 +331,11 @@ public class Gizmos implements UndoRedoManager {
                 cursor = CursorType.MOVE_CURSOR;
 
                 // Not used after so no need to copy it
-                //noinspection UnnecessaryLocalVariable
+                // noinspection UnnecessaryLocalVariable
                 Matrix2x3 inverseMatrix = matrix;
                 inverseMatrix.inverse();
-                this.targetShapeDrawCommand.setXY(pointIndex, inverseMatrix.applyX(mouseX, mouseY), inverseMatrix.applyY(mouseX, mouseY));
+                this.targetShapeDrawCommand.setXY(pointIndex, inverseMatrix.applyX(mouseX, mouseY),
+                        inverseMatrix.applyY(mouseX, mouseY));
             }
         }
 

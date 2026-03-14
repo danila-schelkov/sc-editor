@@ -1,21 +1,24 @@
 package dev.donutquine.editor.layout;
 
-import dev.donutquine.editor.Editor;
-import org.jetbrains.annotations.NotNull;
-
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.*;
+import java.awt.dnd.DnDConstants;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
+import dev.donutquine.editor.layout.windows.EditorWindow;
 
 public class EditorDropTarget implements DropTargetListener {
-    private final Editor editor;
+    private final EditorWindow editorWindow;
 
-    public EditorDropTarget(Editor editor) {
-        this.editor = editor;
+    public EditorDropTarget(EditorWindow editorWindow) {
+        this.editorWindow = editorWindow;
     }
 
     private static void onDrag(DropTargetDragEvent e) {
@@ -72,8 +75,7 @@ public class EditorDropTarget implements DropTargetListener {
             assert transferData.size() == 1 : "Only one file can be transferred now";
 
             // TODO: allow merging several files via DnD as an option
-            editor.closeFile();
-            this.editor.openFile(transferData.get(0).toPath());
+            this.editorWindow.openFile(transferData.get(0).toPath());
         } catch (UnsupportedFlavorException | IOException ex) {
             throw new RuntimeException(ex);
         }

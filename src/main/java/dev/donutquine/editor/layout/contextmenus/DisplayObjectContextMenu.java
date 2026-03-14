@@ -1,6 +1,22 @@
 package dev.donutquine.editor.layout.contextmenus;
 
-import dev.donutquine.editor.Editor;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.text.DecimalFormat;
+import java.util.Objects;
+import java.util.prefs.Preferences;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.ListSelectionModel;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import org.jetbrains.annotations.NotNull;
+import dev.donutquine.editor.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.layout.components.Table;
 import dev.donutquine.editor.layout.components.TablePopupMenuListener;
 import dev.donutquine.editor.layout.filechooser.BetterFileChooser;
@@ -14,7 +30,6 @@ import dev.donutquine.exporter.VideoFormats;
 import dev.donutquine.math.ReadonlyRect;
 import dev.donutquine.math.Rect;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
-import dev.donutquine.renderer.impl.swf.objects.DisplayObjectFactory;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 import dev.donutquine.streams.ByteStream;
 import dev.donutquine.swf.ColorTransform;
@@ -29,21 +44,6 @@ import dev.donutquine.utilities.ByteArrayFlavor;
 import dev.donutquine.utilities.ImageUtils;
 import dev.donutquine.utilities.MovieClipHelper;
 import dev.donutquine.utilities.PathUtils;
-import org.jetbrains.annotations.NotNull;
-
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.text.DecimalFormat;
-import java.util.Objects;
-import java.util.prefs.Preferences;
 
 public class DisplayObjectContextMenu extends ContextMenu {
     private static final Clipboard SYSTEM_CLIPBOARD = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -53,16 +53,16 @@ public class DisplayObjectContextMenu extends ContextMenu {
     private static final String SCREENSHOT_DIRECTORY_KEY = "screenshotsDirectory";
 
     private final Table table;
-    private final Editor editor;
+    private final SupercellSWFLayoutController swfLayoutController;
 
     private final JMenuItem exportAsVideoButton;
     private final JMenu exportAsMenu;
 
-    public DisplayObjectContextMenu(Table table, Editor editor) {
+    public DisplayObjectContextMenu(Table table, SupercellSWFLayoutController swfLayoutController) {
         super(table, null);
 
         this.table = table;
-        this.editor = editor;
+        this.swfLayoutController = swfLayoutController;
 
         JMenuItem copyExportNameButton = this.add("Copy Export Name", KeyEvent.VK_E);
         copyExportNameButton.addActionListener(this::copyExportName);
@@ -97,7 +97,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
     }
 
     private void onRowSelected(int rowIndex) {
-        SupercellSWF swf = editor.getSwf();
+        SupercellSWF swf = this.swfLayoutController.assetFile.asset;
         if (swf == null) return;
 
         if (rowIndex != -1) {
@@ -142,7 +142,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
         int displayObjectId = getDisplayObjectId(selectedRow);
         String displayObjectName = getDisplayObjectName(selectedRow);
 
-        editor.findUsages(displayObjectId, displayObjectName);
+        this.swfLayoutController.findUsages(displayObjectId, displayObjectName);
     }
 
     private void copyExportName(ActionEvent event) {
@@ -151,17 +151,14 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         String displayObjectName = getDisplayObjectName(selectedRow);
 
-        SYSTEM_CLIPBOARD.setContents(
-            new StringSelection(displayObjectName),
-            null
-        );
+        SYSTEM_CLIPBOARD.setContents(new StringSelection(displayObjectName), null);
     }
 
     private void copyAsBytes(ActionEvent event) {
         int selectedRow = this.table.getSelectedRow();
         if (selectedRow == -1) return;
 
-        SupercellSWF swf = editor.getSwf();
+        SupercellSWF swf = this.swfLayoutController.assetFile.asset;
         if (swf == null) return;
 
         int displayObjectId = getDisplayObjectId(selectedRow);
@@ -170,10 +167,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
             ByteStream stream = new ByteStream();
             originalDisplayObject.save(stream);
 
-            SYSTEM_CLIPBOARD.setContents(
-                new ByteArrayFlavor(stream.getData()),
-                null
-            );
+            SYSTEM_CLIPBOARD.setContents(new ByteArrayFlavor(stream.getData()), null);
         } catch (UnableToFindObjectException e) {
             throw new RuntimeException(e);
         }
@@ -182,6 +176,8 @@ public class DisplayObjectContextMenu extends ContextMenu {
     private void export(ActionEvent actionEvent) {
         EditorStage stage = EditorStage.getInstance();
         ReadonlyRect viewport = stage.getCamera().getViewport();
+
+        float pixelSize = swfLayoutController.window.getEditor().getSettings().getPixelSize();
 
         for (int row : this.table.getSelectedRows()) {
             int displayObjectId = getDisplayObjectId(row);
@@ -195,13 +191,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
                 MovieClip movieClip = (MovieClip) renderableObject;
 
-                String filename = getClipFilename(
-                    movieClip,
-                    movieClip.getState(),
-                    movieClip.getCurrentFrame(),
-                    movieClip.getLoopFrame(),
-                    editor.getPixelSize()
-                );
+                String filename = getClipFilename(movieClip, movieClip.getState(), movieClip.getCurrentFrame(), movieClip.getLoopFrame(), pixelSize);
 
                 Path path = DEFAULT_SCREENSHOT_FOLDER.resolve(String.join(".", filename, format.name()));
                 exportAsVideo(path, movieClip, format);
@@ -248,7 +238,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
         fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("AV1 video", "avi"));
         fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("MP4 video (no transparency)", "mp4"));
 
-        Path path = BetterFileChooser.showSaveDialog(fileChooser, this.editor.getWindow().getFrame(), null);
+        Path path = BetterFileChooser.showSaveDialog(fileChooser, swfLayoutController.window.getFrame(), null);
         if (path == null) return;
 
         preferences.put(SCREENSHOT_DIRECTORY_KEY, path.toAbsolutePath().getParent().toString());
@@ -256,7 +246,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
         String formatExtension = PathUtils.getFileExtension(path.getFileName().toString());
         VideoFormat format = VideoFormats.getVideoFormatByName(formatExtension);
         if (format == null) {
-            editor.getWindow().setTitle("Unknown format " + formatExtension);
+            swfLayoutController.window.showErrorDialog("Unknown format " + formatExtension);
             return;
         }
 
@@ -266,16 +256,13 @@ public class DisplayObjectContextMenu extends ContextMenu {
     }
 
     private DisplayObject getRenderableObject(int displayObjectId) {
-        SupercellSWF swf = editor.getSwf();
-
-        DisplayObject selectedObject = editor.getSelectedObject();
+        DisplayObject selectedObject = swfLayoutController.getSelectedObject();
         if (selectedObject != null && selectedObject.getId() == displayObjectId) {
             return selectedObject;
         }
 
         try {
-            DisplayObjectOriginal displayObjectOriginal = swf.getOriginalDisplayObject(displayObjectId, null);
-            return DisplayObjectFactory.createFromOriginal(displayObjectOriginal, swf, null);
+            return swfLayoutController.assetFile.getOrCreate(displayObjectId, null);
         } catch (UnableToFindObjectException e) {
             throw new RuntimeException(e);
         }
@@ -286,7 +273,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         Rect bounds = stage.calculateBoundsForAllFrames(displayObject);
 
-        float pixelSize = editor.getPixelSize();
+        float pixelSize = swfLayoutController.window.getEditor().getSettings().getPixelSize();
         bounds.scale(pixelSize);
 
         Matrix2x3 matrix = new Matrix2x3();
@@ -322,7 +309,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         Rect bounds = stage.calculateBoundsForAllFrames(movieClip);
 
-        float pixelSize = editor.getPixelSize();
+        float pixelSize = swfLayoutController.window.getEditor().getSettings().getPixelSize();
         bounds.scale(pixelSize);
 
         ReadonlyRect ceilBounds = roundBounds(bounds, format.requiresSizeDividableByTwo());

@@ -1,8 +1,12 @@
 package dev.donutquine.editor.layout.menubar.menus;
 
 import dev.donutquine.editor.Editor;
+import dev.donutquine.editor.assets.AssetFile;
+import dev.donutquine.editor.assets.AssetFileManager;
+import dev.donutquine.editor.assets.SavableAsset;
 import dev.donutquine.editor.layout.filechooser.BetterFileChooser;
 import dev.donutquine.editor.layout.shortcut.KeyboardUtils;
+import dev.donutquine.editor.layout.windows.EditorWindow;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -14,23 +18,23 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 public class FileMenu extends JMenu {
     private static final String LAST_DIRECTORY_KEY = "lastDirectory";
     private static final String SAVE_DIRECTORY_KEY = "saveDirectory";
 
-    private final Editor editor;
+    private final EditorWindow window;
 
-    private final JFrame frame;
     private final JMenuItem saveButton;
     private final JMenuItem saveAsButton;
 
-    public FileMenu(JFrame frame, Editor editor) {
+    public FileMenu(EditorWindow window) {
         super("File");
 
-        this.frame = frame;
-        this.editor = editor;
+        this.window = window;
 
         setMnemonic(KeyEvent.VK_F);
 
@@ -45,6 +49,9 @@ public class FileMenu extends JMenu {
         this.saveAsButton = new JMenuItem("Save as...", KeyEvent.VK_O);
         this.saveAsButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyboardUtils.ctrlButton() | InputEvent.SHIFT_DOWN_MASK));
         JMenuItem close = new JMenuItem("Close", KeyEvent.VK_C);
+        close.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyboardUtils.ctrlButton()));
+        JMenuItem closeAll = new JMenuItem("Close All", KeyEvent.VK_C);
+        closeAll.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyboardUtils.ctrlButton() | InputEvent.SHIFT_DOWN_MASK));
         JMenuItem exit = new JMenuItem("Exit");
 
         open.addActionListener(this::open);
@@ -60,12 +67,14 @@ public class FileMenu extends JMenu {
             }
         });
         close.addActionListener(this::close);
+        closeAll.addActionListener(this::closeAll);
         exit.addActionListener(FileMenu::exit);
 
         this.add(open);
         this.add(this.saveButton);
         this.add(this.saveAsButton);
         this.add(close);
+        this.add(closeAll);
 
         this.addSeparator();
         this.add(openScreenshotsFolderButton);
@@ -77,7 +86,19 @@ public class FileMenu extends JMenu {
     }
 
     private void close(ActionEvent e) {
-        editor.closeFile();
+        AssetFileManager assetFileManager = this.window.getEditor().getAssetFileManager();
+        AssetFile<?> activeFile = assetFileManager.getActiveFile();
+        assert activeFile != null;
+
+        assetFileManager.closeFile(activeFile);
+    }
+
+    private void closeAll(ActionEvent e) {
+        AssetFileManager assetFileManager = this.window.getEditor().getAssetFileManager();
+        List<AssetFile<?>> files = new ArrayList<>(assetFileManager.getFiles());
+        for (AssetFile<?> file : files) {
+            assetFileManager.closeFile(file);
+        }
     }
 
     private static void exit(ActionEvent e) {
@@ -85,7 +106,7 @@ public class FileMenu extends JMenu {
     }
 
     public void checkCanSave() {
-        boolean canSave = editor.getSwf() != null;
+        boolean canSave = window.getEditor().getAssetFileManager().getActiveFile() instanceof SavableAsset;
 
         this.saveButton.setEnabled(canSave);
         this.saveAsButton.setEnabled(canSave);
@@ -96,26 +117,27 @@ public class FileMenu extends JMenu {
 
         BetterFileChooser fileChooser = createFileChooser(preferences, LAST_DIRECTORY_KEY);
         fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc, *.sc2)", "sc", "sc2"));
-        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("Supercell Texture (*.sctx)", "sctx"));
+        fileChooser.setFileFilter(
+                new FileNameExtensionFilter("Supercell SWF (*.sc, *.sc2)", "sc", "sc2"));
+        fileChooser.addChoosableFileFilter(
+                new FileNameExtensionFilter("Supercell Texture (*.sctx)", "sctx"));
 
-        int result = fileChooser.showOpenDialog(this.frame);
-        if (result != JFileChooser.APPROVE_OPTION) return;
+        int result = fileChooser.showOpenDialog(this.window.getFrame());
+        if (result != JFileChooser.APPROVE_OPTION)
+            return;
 
         Path path = fileChooser.getPathWithExtension(null);
         if (!Files.exists(path)) {
-            editor.getWindow().showErrorDialog("File %s does not exist".formatted(path));
+            this.window.showErrorDialog("File %s does not exist".formatted(path));
             return;
         }
 
         preferences.put(LAST_DIRECTORY_KEY, path.toAbsolutePath().getParent().toString());
 
-        close(null);
-
         SwingWorker<Integer, Integer> worker = new SwingWorker<>() {
             @Override
             protected Integer doInBackground() {
-                editor.openFile(path);
+                window.openFile(path);
                 return 0;
             }
 
@@ -129,17 +151,20 @@ public class FileMenu extends JMenu {
     }
 
     private void save(ActionEvent actionEvent) {
-        Preferences preferences = Preferences.userRoot().node("sc-editor");
-        BetterFileChooser fileChooser = createFileChooser(preferences, SAVE_DIRECTORY_KEY);
-        fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc)", "sc"));
+        if (window.getEditor().getAssetFileManager().getActiveFile() instanceof SavableAsset savableAsset) {
+            Preferences preferences = Preferences.userRoot().node("sc-editor");
+            BetterFileChooser fileChooser = createFileChooser(preferences, SAVE_DIRECTORY_KEY);
+            fileChooser.setFileSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            fileChooser.setFileFilter(new FileNameExtensionFilter("Supercell SWF (*.sc)", "sc"));
 
-        Path path = BetterFileChooser.showSaveDialog(fileChooser, this.frame, null);
-        if (path == null) return;
+            Path path = BetterFileChooser.showSaveDialog(fileChooser, this.window.getFrame(), null);
+            if (path == null)
+                return;
 
-        preferences.put(SAVE_DIRECTORY_KEY, path.toAbsolutePath().getParent().toString());
+            preferences.put(SAVE_DIRECTORY_KEY, path.toAbsolutePath().getParent().toString());
 
-        editor.saveFile(path.toString());
+            savableAsset.save(path);
+        }
     }
 
     private static @NotNull BetterFileChooser createFileChooser(Preferences preferences, String saveDirectoryKey) {
