@@ -1,5 +1,6 @@
 package dev.donutquine.renderer.impl.swf.objects;
 
+import dev.donutquine.editor.assets.TextureAsset;
 import dev.donutquine.editor.renderer.Stage;
 import dev.donutquine.swf.ColorTransform;
 import dev.donutquine.swf.Matrix2x3;
@@ -13,14 +14,16 @@ import java.util.Set;
 
 public class Shape extends DisplayObject {
     protected List<ShapeDrawBitmapCommand> commands;
+    protected TextureAsset textureAsset;
 
     private final Set<Integer> disabledCommands = new HashSet<>();
 
-    public static Shape createShape(ShapeOriginal original) {
+    public static Shape createShape(ShapeOriginal original, TextureAsset textureAsset) {
         Shape shape = new Shape();
 
         shape.id = original.getId();
         shape.commands = original.getCommands();
+        shape.textureAsset = textureAsset;
 
         return shape;
     }
@@ -48,7 +51,7 @@ public class Shape extends DisplayObject {
                 continue;
             }
 
-            result |= ShapeDrawBitmapCommandRenderer.render(command, stage, matrixApplied, colorTransformApplied, renderConfigBits);
+            result |= ShapeDrawBitmapCommandRenderer.render(command, this.textureAsset, stage, matrixApplied, colorTransformApplied, renderConfigBits);
         }
 
         return result;
@@ -73,7 +76,7 @@ public class Shape extends DisplayObject {
                 continue;
             }
 
-            result |= ShapeDrawBitmapCommandRenderer.collisionRender(command, stage, matrixApplied, this.getColorTransform());
+            result |= ShapeDrawBitmapCommandRenderer.collisionRender(command, this.textureAsset, stage, matrixApplied, this.getColorTransform());
         }
 
         return result;

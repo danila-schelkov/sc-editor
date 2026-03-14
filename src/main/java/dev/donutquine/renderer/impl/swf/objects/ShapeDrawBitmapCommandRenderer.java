@@ -1,5 +1,6 @@
 package dev.donutquine.renderer.impl.swf.objects;
 
+import dev.donutquine.editor.assets.TextureAsset;
 import dev.donutquine.editor.renderer.Stage;
 import dev.donutquine.editor.renderer.impl.Triangulator;
 import dev.donutquine.editor.renderer.texture.RenderableTexture;
@@ -14,31 +15,33 @@ public final class ShapeDrawBitmapCommandRenderer {
     private ShapeDrawBitmapCommandRenderer() {
     }
 
-    public static boolean render(ShapeDrawBitmapCommand command, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits) {
-        return render0(stage, command, new Matrix2x3Transformer(command, matrix), colorTransform, renderConfigBits);
+    public static boolean render(ShapeDrawBitmapCommand command, TextureAsset textureAsset, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits) {
+        RenderableTexture texture = textureAsset.getSpriteSheet(command.getTextureIndex()).getTexture();
+        return render0(stage, command, texture, new Matrix2x3Transformer(command, matrix), colorTransform, renderConfigBits);
     }
 
-    public static boolean render9Slice(ShapeDrawBitmapCommand command, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, ReadonlyRect safeArea, ReadonlyRect shapeBounds, float width, float height) {
+    public static boolean render9Slice(ShapeDrawBitmapCommand command, TextureAsset textureAsset, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, ReadonlyRect safeArea, ReadonlyRect shapeBounds, float width, float height) {
+        RenderableTexture texture = textureAsset.getSpriteSheet(command.getTextureIndex()).getTexture();
         NineSliceTransformer vertexTransformer = new NineSliceTransformer(command, matrix, safeArea, shapeBounds, width, height);
 
-        return render0(stage, command, vertexTransformer, colorTransform, renderConfigBits);
+        return render0(stage, command, texture, vertexTransformer, colorTransform, renderConfigBits);
     }
 
-    public static boolean collisionRender(ShapeDrawBitmapCommand command, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform) {
-        return render(command, stage, matrix, colorTransform, 0);
+    public static boolean collisionRender(ShapeDrawBitmapCommand command, TextureAsset textureAsset, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform) {
+        return render(command, textureAsset, stage, matrix, colorTransform, 0);
     }
 
-    public static boolean renderUV(ShapeDrawBitmapCommand command, Stage stage, ColorTransform colorTransform, int renderConfigBits) {
-        VertexTransformer vertexTransformer = new UvTransformer(command, stage.getTextureByIndex(command.getTextureIndex()));
+    public static boolean renderUV(ShapeDrawBitmapCommand command, TextureAsset textureAsset, Stage stage, ColorTransform colorTransform, int renderConfigBits) {
+        RenderableTexture texture = textureAsset.getSpriteSheet(command.getTextureIndex()).getTexture();
+        VertexTransformer vertexTransformer = new UvTransformer(command, texture);
 
-        return render0(stage, command, vertexTransformer, colorTransform, renderConfigBits);
+        return render0(stage, command, texture, vertexTransformer, colorTransform, renderConfigBits);
     }
 
-    private static boolean render0(Stage stage, ShapeDrawBitmapCommand command, VertexTransformer vertexTransformer, ColorTransform colorTransform, int renderConfigBits) {
+    private static boolean render0(Stage stage, ShapeDrawBitmapCommand command, RenderableTexture texture, VertexTransformer vertexTransformer, ColorTransform colorTransform, int renderConfigBits) {
         float[] transformedPoints = new float[command.getVertexCount() * 2];
         Rect bounds = transformPoints(vertexTransformer, transformedPoints);
 
-        RenderableTexture texture = stage.getTextureByIndex(command.getTextureIndex());
         if (stage.startShape(bounds, texture, renderConfigBits)) {
             stage.addTriangles(command.getTriangleCount(), getIndices(command, renderConfigBits));
 

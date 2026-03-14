@@ -19,8 +19,6 @@ public interface Stage {
 
     void setStencilRenderingState(RenderStencilState state);
 
-    RenderableTexture getTextureByIndex(int textureIndex);
-
     DrawApi getDrawApi();
 
     StageSprite getStageSprite();

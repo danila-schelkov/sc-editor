@@ -1,20 +1,15 @@
 package dev.donutquine.editor.layout.menubar.menus;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
-
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
-
-import dev.donutquine.editor.layout.panels.TimelinePanel;
+import dev.donutquine.editor.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.layout.shortcut.KeyboardUtils;
 import dev.donutquine.editor.layout.windows.EditorWindow;
 import dev.donutquine.editor.renderer.Camera;
@@ -23,18 +18,14 @@ import dev.donutquine.math.Rect;
 import dev.donutquine.renderer.impl.swf.objects.StageSprite;
 
 public class ViewMenu extends JMenu {
-    private final EditorWindow editorWindow;
+    private final EditorWindow window;
 
-    private final JCheckBoxMenuItem timelineToggle;
-
-    public ViewMenu(EditorWindow editorWindow) {
+    public ViewMenu(EditorWindow window) {
         super("View");
 
-        this.editorWindow = editorWindow;
+        this.window = window;
 
         setMnemonic(KeyEvent.VK_V);
-
-        this.timelineToggle = new JCheckBoxMenuItem("Timeline");
 
         initializeZoomMenu();
         initializeToolsMenu();
@@ -72,7 +63,8 @@ public class ViewMenu extends JMenu {
     private static void zoomToFit(ActionEvent actionEvent) {
         updateCamera((stage, camera) -> {
             StageSprite stageSprite = stage.getStageSprite();
-            if (stageSprite.getChildrenCount() == 0) return;
+            if (stageSprite.getChildrenCount() == 0)
+                return;
 
             Rect bounds = stage.calculateBoundsForAllFrames(stageSprite.getChild(0));
 
@@ -110,24 +102,22 @@ public class ViewMenu extends JMenu {
     }
 
     private void initializeToolsMenu() {
-        this.timelineToggle.addActionListener(this::toggleTimeline);
+        JCheckBoxMenuItem timelineToggle = new JCheckBoxMenuItem("Timeline");
+        timelineToggle.addActionListener(this::toggleTimeline);
 
         JMenuItem tools = new JMenu("Tools");
-        tools.add(this.timelineToggle);
+        tools.add(timelineToggle);
         this.add(tools);
     }
 
     private void toggleTimeline(ActionEvent actionEvent) {
-        boolean visible = this.timelineToggle.getState();
+        JCheckBoxMenuItem toggle = (JCheckBoxMenuItem) actionEvent.getSource();
+        boolean visible = toggle.getState();
 
-        JFrame frame = editorWindow.getFrame();
-        Dimension minimumSize = frame.getMinimumSize();
-        frame.setMinimumSize(minimumSize);
+        if (this.window.getLayoutController() instanceof SupercellSWFLayoutController swfLayoutController) {
+            swfLayoutController.setTimelineVisible(visible);
+        }
 
-        TimelinePanel timelinePanel = editorWindow.getTimelinePanel();
-        timelinePanel.setVisible(visible);
-
-        JSplitPane timelineSplitPane = editorWindow.getTimelineSplitPane();
-        timelineSplitPane.setDividerLocation(0.7f);
+        // TODO: disable or hide button if on other controller creation
     }
 }

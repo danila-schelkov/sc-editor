@@ -1,19 +1,17 @@
 package dev.donutquine.editor.layout.components.listeners;
 
-import dev.donutquine.editor.Editor;
-import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
-
-import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.JTable;
+import dev.donutquine.editor.layout.TextureLayoutController;
 
 public class TextureListMouseListener extends MouseAdapter {
     private final JTable table;
-    private final Editor editor;
+    private final TextureLayoutController<?> layoutController;
 
-    public TextureListMouseListener(JTable table, Editor editor) {
+    public TextureListMouseListener(JTable table, TextureLayoutController<?> layoutController) {
         this.table = table;
-        this.editor = editor;
+        this.layoutController = layoutController;
     }
 
     @Override
@@ -26,8 +24,6 @@ public class TextureListMouseListener extends MouseAdapter {
 
         int textureIndex = (int) this.table.getValueAt(selectedRow, 0);
 
-        DisplayObject displayObject = editor.getSpriteSheet(textureIndex);
-
-        editor.selectObject(displayObject);
+        layoutController.openSpriteSheet(textureIndex);
     }
 }

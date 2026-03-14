@@ -1,51 +1,35 @@
 package dev.donutquine.editor.layout.components.listeners;
 
-import dev.donutquine.editor.Editor;
-import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
-import dev.donutquine.renderer.impl.swf.objects.DisplayObjectFactory;
-import dev.donutquine.swf.DisplayObjectOriginal;
-import dev.donutquine.swf.SupercellSWF;
-import dev.donutquine.swf.exceptions.UnableToFindObjectException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import javax.swing.JTable;
+import dev.donutquine.editor.layout.SupercellSWFLayoutController;
 
 public class ChildrenListMouseListener extends MouseAdapter {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChildrenListMouseListener.class);
-
     private final JTable table;
-    private final Editor editor;
+    private final SupercellSWFLayoutController controller;
 
-    public ChildrenListMouseListener(JTable table, Editor editor) {
+    public ChildrenListMouseListener(JTable table, SupercellSWFLayoutController controller) {
         this.table = table;
-        this.editor = editor;
+        this.controller = controller;
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
         int selectedRow = this.table.getSelectedRow();
-        if (selectedRow == -1) return;
+        if (selectedRow == -1)
+            return;
 
         int selectedColumn = this.table.getSelectedColumn();
-        if (selectedColumn != 1) return;
+        if (selectedColumn != 1)
+            return;
 
         int clickCount = e.getClickCount();
-        if (clickCount < 2) return;
+        if (clickCount < 2)
+            return;
 
         int id = (int) this.table.getValueAt(selectedRow, selectedColumn);
 
-        SupercellSWF swf = editor.getSwf();
-        try {
-            DisplayObjectOriginal displayObjectOriginal = swf.getOriginalDisplayObject(id, null);
-            DisplayObject displayObject = DisplayObjectFactory.createFromOriginal(displayObjectOriginal, swf, null);
-
-            editor.selectObject(displayObject);
-            editor.selectObjectInTable(editor.getSelectedObject());
-        } catch (UnableToFindObjectException exception) {
-            LOGGER.error(exception.getMessage(), exception);
-        }
+        this.controller.selectObject(id, null);
     }
 }

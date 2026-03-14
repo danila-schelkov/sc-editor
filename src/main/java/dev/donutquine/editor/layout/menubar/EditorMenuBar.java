@@ -1,9 +1,12 @@
 package dev.donutquine.editor.layout.menubar;
 
-import dev.donutquine.editor.Editor;
-import dev.donutquine.editor.layout.menubar.menus.*;
-
-import javax.swing.*;
+import javax.swing.JMenuBar;
+import dev.donutquine.editor.layout.menubar.menus.EditMenu;
+import dev.donutquine.editor.layout.menubar.menus.FileMenu;
+import dev.donutquine.editor.layout.menubar.menus.HelpMenu;
+import dev.donutquine.editor.layout.menubar.menus.OptionsMenu;
+import dev.donutquine.editor.layout.menubar.menus.ViewMenu;
+import dev.donutquine.editor.layout.windows.EditorWindow;
 
 public class EditorMenuBar extends JMenuBar {
     private final FileMenu fileMenu;
@@ -12,14 +15,12 @@ public class EditorMenuBar extends JMenuBar {
     private final OptionsMenu optionsMenu;
     private final HelpMenu helpMenu;
 
-    public EditorMenuBar(Editor editor) {
-        JFrame frame = editor.getWindow().getFrame();
-
-        this.fileMenu = new FileMenu(frame, editor);
-        this.editMenu = new EditMenu(editor);
-        this.viewMenu = new ViewMenu(editor.getWindow());
-        this.optionsMenu = new OptionsMenu(editor);
-        this.helpMenu = new HelpMenu(frame);
+    public EditorMenuBar(EditorWindow window) {
+        this.fileMenu = new FileMenu(window);
+        this.editMenu = new EditMenu(window);
+        this.viewMenu = new ViewMenu(window);
+        this.optionsMenu = new OptionsMenu(window);
+        this.helpMenu = new HelpMenu(window.getFrame());
 
         this.add(this.fileMenu);
         this.add(this.editMenu);

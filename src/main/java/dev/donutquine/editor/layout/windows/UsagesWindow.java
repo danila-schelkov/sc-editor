@@ -1,30 +1,24 @@
 package dev.donutquine.editor.layout.windows;
 
-import dev.donutquine.editor.Editor;
+import java.awt.Dimension;
+import java.util.List;
+import javax.swing.JFrame;
+import javax.swing.WindowConstants;
+import dev.donutquine.editor.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.layout.components.Table;
 import dev.donutquine.editor.layout.panels.DisplayObjectListPanel;
 
-import javax.swing.*;
-import java.awt.*;
-
 public class UsagesWindow extends Window {
-    public static final Dimension CANVAS_SIZE = new Dimension(300, 0);
-    public static final Dimension MINIMUM_SIZE = new Dimension(CANVAS_SIZE);
-
-    private final Editor editor;
+    private static final Dimension MINIMUM_SIZE = new Dimension(300, 0);
 
     private DisplayObjectListPanel displayObjectPanel;
 
-    public UsagesWindow(Editor editor) {
-        this.editor = editor;
-    }
-
-    public void initialize(String title) {
+    public UsagesWindow(String title, List<Object[]> usagesRows, SupercellSWFLayoutController controller) {
         this.frame = new JFrame(title);
 
         this.frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-        this.displayObjectPanel = new DisplayObjectListPanel(editor);
+        this.displayObjectPanel = new DisplayObjectListPanel(controller, usagesRows.toArray(Object[][]::new));
         this.frame.getContentPane().add(this.displayObjectPanel);
         this.frame.setMinimumSize(MINIMUM_SIZE);
         this.frame.setSize(this.frame.getContentPane().getPreferredSize());

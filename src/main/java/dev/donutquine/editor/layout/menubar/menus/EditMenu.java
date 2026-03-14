@@ -1,43 +1,42 @@
 package dev.donutquine.editor.layout.menubar.menus;
 
-import dev.donutquine.editor.Editor;
-import dev.donutquine.editor.gizmos.Gizmos;
-import dev.donutquine.editor.layout.components.Table;
-import dev.donutquine.editor.layout.shortcut.KeyboardUtils;
-import dev.donutquine.editor.layout.windows.EditorWindow;
-import dev.donutquine.editor.renderer.impl.EditorStage;
-
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import javax.swing.KeyStroke;
+import dev.donutquine.editor.assets.AssetFile;
+import dev.donutquine.editor.gizmos.Gizmos;
+import dev.donutquine.editor.layout.SearchableLayoutController;
+import dev.donutquine.editor.layout.shortcut.KeyboardUtils;
+import dev.donutquine.editor.layout.windows.EditorWindow;
+import dev.donutquine.editor.navigation.NavigableAsset;
+import dev.donutquine.editor.navigation.NavigationHistory;
+import dev.donutquine.editor.renderer.impl.EditorStage;
 
 public class EditMenu extends JMenu {
-    private final Editor editor;
+    private final EditorWindow window;
 
     private final JMenuItem previous;
     private final JMenuItem next;
 
-    public EditMenu(Editor editor) {
+    public EditMenu(EditorWindow window) {
         super("Edit");
 
-        this.editor = editor;
+        this.window = window;
 
         setMnemonic(KeyEvent.VK_E);
 
         JMenuItem find = new JMenuItem("Find", KeyEvent.VK_F);
         find.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyboardUtils.ctrlButton()));
 
-        JMenuItem findUsages = new JMenuItem("Find Usages");
-        findUsages.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, KeyboardUtils.ctrlButton()));
-
         this.previous = new JMenuItem("Previous", KeyEvent.VK_P);
         this.previous.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, KeyboardUtils.ctrlButton() | InputEvent.ALT_DOWN_MASK));
         this.next = new JMenuItem("Next", KeyEvent.VK_N);
         this.next.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, KeyboardUtils.ctrlButton() | InputEvent.ALT_DOWN_MASK));
 
-        find.addActionListener(this::find);
-        findUsages.addActionListener(this::findUsages);
+        find.addActionListener(this::focusFind);
         this.previous.addActionListener(this::previous);
         this.next.addActionListener(this::next);
 
@@ -60,7 +59,6 @@ public class EditMenu extends JMenu {
         gizmos.addRedoableListener(redo::setEnabled);
 
         this.add(find);
-        this.add(findUsages);
         this.addSeparator();
         this.add(undo);
         this.add(redo);
@@ -69,29 +67,33 @@ public class EditMenu extends JMenu {
         this.add(this.next);
     }
 
-    private void find(ActionEvent actionEvent) {
-        EditorWindow window = editor.getWindow();
-        window.getTabbedPane().setSelectedIndex(0);
-        window.getDisplayObjectPanel().setFocusOnTextField();
+    public void updateNavigationButtons(NavigationHistory<?> navigationHistory) {
+        this.previous.setEnabled(navigationHistory != null && navigationHistory.hasPrevious());
+        this.next.setEnabled(navigationHistory != null && navigationHistory.hasNext());
     }
 
-    private void findUsages(ActionEvent event) {
-        Table objectsTable = editor.getWindow().getObjectsTable();
-        int selectedRow = objectsTable.getSelectedRow();
-        if (selectedRow == -1) return;
-
-        int displayObjectId = (int) objectsTable.getValueAt(selectedRow, 0);
-        String displayObjectName = (String) objectsTable.getValueAt(selectedRow, 1);
-
-        editor.findUsages(displayObjectId, displayObjectName);
+    private void focusFind(ActionEvent actionEvent) {
+        if (this.window.getLayoutController() instanceof SearchableLayoutController searchableLayoutController) {
+            searchableLayoutController.focusOnSearchField();
+        }
     }
 
     private void previous(ActionEvent e) {
-        editor.selectPrevious();
+        AssetFile<?> activeFile = window.getEditor().getAssetFileManager().getActiveFile();
+        if (activeFile instanceof NavigableAsset<?, ?> navigableAsset) {
+            navigableAsset.getNavigationHistory().navigateToPrevious();
+        } else {
+            assert false : "The previous button must be disabled if navigation to previous is not available";
+        }
     }
 
     private void next(ActionEvent e) {
-        editor.selectNext();
+        AssetFile<?> activeFile = window.getEditor().getAssetFileManager().getActiveFile();
+        if (activeFile instanceof NavigableAsset<?, ?> navigableAsset) {
+            navigableAsset.getNavigationHistory().navigateToNext();
+        } else {
+            assert false : "The next button must be disabled if navigation to next is not available";
+        }
     }
 
     private void undo(ActionEvent e) {
@@ -102,13 +104,5 @@ public class EditMenu extends JMenu {
     private void redo(ActionEvent e) {
         Gizmos gizmos = EditorStage.getInstance().getGizmos();
         gizmos.redo();
-    }
-
-    public void checkPreviousAvailable() {
-        this.previous.setEnabled(editor.getSelectedIndex() > 0);
-    }
-
-    public void checkNextAvailable() {
-        this.next.setEnabled(editor.getSelectedIndex() + 1 < editor.getClonedObjectCount());
     }
 }

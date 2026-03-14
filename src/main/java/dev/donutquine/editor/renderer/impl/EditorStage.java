@@ -1,9 +1,34 @@
 package dev.donutquine.editor.renderer.impl;
 
+import java.awt.image.BufferedImage;
+import java.nio.FloatBuffer;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.jogamp.opengl.util.PMVMatrix;
 import dev.donutquine.editor.gizmos.Gizmos;
-import dev.donutquine.editor.renderer.*;
-import dev.donutquine.editor.renderer.gl.*;
+import dev.donutquine.editor.renderer.BasicDrawApi;
+import dev.donutquine.editor.renderer.Batch;
+import dev.donutquine.editor.renderer.BatchedRenderer;
+import dev.donutquine.editor.renderer.BlendMode;
+import dev.donutquine.editor.renderer.Camera;
+import dev.donutquine.editor.renderer.DrawApi;
+import dev.donutquine.editor.renderer.Framebuffer;
+import dev.donutquine.editor.renderer.RenderStencilState;
+import dev.donutquine.editor.renderer.Renderer;
+import dev.donutquine.editor.renderer.RendererContext;
+import dev.donutquine.editor.renderer.Stage;
+import dev.donutquine.editor.renderer.VertexBuffer;
+import dev.donutquine.editor.renderer.gl.GLConstants;
+import dev.donutquine.editor.renderer.gl.GLContext;
+import dev.donutquine.editor.renderer.gl.GLFramebuffer;
+import dev.donutquine.editor.renderer.gl.GLRendererContext;
+import dev.donutquine.editor.renderer.gl.GLVertexBuffer;
 import dev.donutquine.editor.renderer.gl.exceptions.ShaderCompilationException;
 import dev.donutquine.editor.renderer.gl.texture.GLTexture;
 import dev.donutquine.editor.renderer.impl.texture.GLImage;
@@ -18,31 +43,14 @@ import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 import dev.donutquine.renderer.impl.swf.objects.StageSprite;
 import dev.donutquine.resources.AssetManager;
-import dev.donutquine.sctx.FlatSctxTextureLoader;
 import dev.donutquine.sctx.SctxTexture;
 import dev.donutquine.swf.ColorTransform;
 import dev.donutquine.swf.Matrix2x3;
-import dev.donutquine.swf.exceptions.TextureFileNotFound;
-import dev.donutquine.swf.file.compression.Zstandard;
 import dev.donutquine.swf.movieclips.MovieClipState;
 import dev.donutquine.swf.textures.SWFTexture;
 import dev.donutquine.utilities.BufferUtils;
 import dev.donutquine.utilities.ImageUtils;
 import dev.donutquine.utilities.MovieClipHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.awt.image.BufferedImage;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.FloatBuffer;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Consumer;
 
 public class EditorStage implements Stage {
     private static final Logger LOGGER = LoggerFactory.getLogger(EditorStage.class);
@@ -53,7 +61,6 @@ public class EditorStage implements Stage {
     private static EditorStage INSTANCE;
 
     private final ConcurrentLinkedQueue<Runnable> tasks = new ConcurrentLinkedQueue<>();
-    private final Map<Integer, GLTexture> textures = new HashMap<>();
     private final Camera camera = new Camera();
     private final StageSprite stageSprite = new StageSprite(this);
     private final Gizmos gizmos = new Gizmos(this);
@@ -78,7 +85,7 @@ public class EditorStage implements Stage {
     private boolean isWireframeEnabled;
     private Consumer<FloatBuffer> extraPMVMatrixConsumer;
 
-    private EditorStage() { }
+    private EditorStage() {}
 
     public static EditorStage getInstance() {
         if (INSTANCE == null) {
@@ -88,36 +95,20 @@ public class EditorStage implements Stage {
         return INSTANCE;
     }
 
-    private static byte[] getTextureFileBytes(Path directory, String compressedTextureFilename) throws TextureFileNotFound {
-        Path filepath = directory.resolve(compressedTextureFilename);
-
-        byte[] compressedData;
-        try (FileInputStream fis = new FileInputStream(filepath.toFile())) {
-            compressedData = fis.readAllBytes();
-        } catch (FileNotFoundException e) {
-            throw new TextureFileNotFound(filepath.toString());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        return compressedData;
-    }
-
     public void init(int x, int y, int width, int height) throws ShaderCompilationException {
-        this.shader = assetManager.getShader(
-            "objects.vertex.glsl",
-            "objects.fragment.glsl",
-            new Attribute(0, 2, Float.BYTES, GLConstants.GL_FLOAT),
-            new Attribute(1, 2, Float.BYTES, GLConstants.GL_FLOAT),
-            new Attribute(2, 4, Float.BYTES, GLConstants.GL_FLOAT),
-            new Attribute(3, 3, Float.BYTES, GLConstants.GL_FLOAT)
-        );
+        this.shader = assetManager.getShader("objects.vertex.glsl", "objects.fragment.glsl",
+                new Attribute(0, 2, Float.BYTES, GLConstants.GL_FLOAT),
+                new Attribute(1, 2, Float.BYTES, GLConstants.GL_FLOAT),
+                new Attribute(2, 4, Float.BYTES, GLConstants.GL_FLOAT),
+                new Attribute(3, 3, Float.BYTES, GLConstants.GL_FLOAT));
 
         BufferedImage imageBuffer = assetManager.getImageBuffer("gradient_texture.png");
         assert imageBuffer != null : "Gradient texture not found.";
 
         if (this.gradientTexture == null) {
-            this.gradientTexture = GLImage.createWithFormat(256, 2, true, ImageFilter.LINEAR, GLConstants.GL_LUMINANCE_ALPHA, GLConstants.GL_UNSIGNED_BYTE, ImageUtils.getPixelBuffer(imageBuffer), null, null);
+            this.gradientTexture = GLImage.createWithFormat(256, 2, true, ImageFilter.LINEAR,
+                    GLConstants.GL_LUMINANCE_ALPHA, GLConstants.GL_UNSIGNED_BYTE,
+                    ImageUtils.getPixelBuffer(imageBuffer), null, null);
         }
 
         this.camera.init(width, height);
@@ -133,7 +124,8 @@ public class EditorStage implements Stage {
     }
 
     public void update() {
-        if (!this.initialized) return;
+        if (!this.initialized)
+            return;
 
         Iterator<Runnable> iterator = this.tasks.iterator();
         while (iterator.hasNext()) {
@@ -177,7 +169,7 @@ public class EditorStage implements Stage {
             renderDisplayObject();
             gl.glPolygonMode(GLConstants.GL_FRONT_AND_BACK, GLConstants.GL_FILL);
         }
-        this.renderer.endRendering();  // flushes renderer image to screen
+        this.renderer.endRendering(); // flushes renderer image to screen
         framebuffer.unbind();
     }
 
@@ -187,7 +179,8 @@ public class EditorStage implements Stage {
 
             // FIXME: very inefficient way out of recursion
             if (movieClip.getFrameCountRecursive() > 1) {
-                Rect bounds = new Rect(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
+                Rect bounds = new Rect(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
+                        Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
 
                 // Saving last movie clip state
                 int loopFrame = movieClip.getLoopFrame();
@@ -195,7 +188,8 @@ public class EditorStage implements Stage {
                 MovieClipState state = movieClip.getState();
 
                 // Calculating bounds for all frames
-                MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> bounds.mergeBounds(getDisplayObjectBounds(movieClip)));
+                MovieClipHelper.doForAllFrames(movieClip,
+                        (frameIndex) -> bounds.mergeBounds(getDisplayObjectBounds(movieClip)));
 
                 // Rolling movie clip state back
                 movieClip.gotoAbsoluteTimeRecursive(currentFrame * movieClip.getMsPerFrame());
@@ -209,7 +203,8 @@ public class EditorStage implements Stage {
     }
 
     public void unbindRender() {
-        if (!this.initialized) return;
+        if (!this.initialized)
+            return;
 
         if (this.framebuffer != null) {
             this.framebuffer.delete();
@@ -268,8 +263,10 @@ public class EditorStage implements Stage {
     }
 
     @Override
-    public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float alpha, float redAdd, float greenAdd, float blueAdd) {
-        this.renderer.addVertex(x, y, u, v, redMul, greenMul, blueMul, alpha, redAdd, greenAdd, blueAdd);
+    public void addVertex(float x, float y, float u, float v, float redMul, float greenMul,
+            float blueMul, float alpha, float redAdd, float greenAdd, float blueAdd) {
+        this.renderer.addVertex(x, y, u, v, redMul, greenMul, blueMul, alpha, redAdd, greenAdd,
+                blueAdd);
     }
 
     @Override
@@ -278,7 +275,8 @@ public class EditorStage implements Stage {
             switch (state) {
                 case ENABLED -> {
                     this.isCalculatingMaskBounds = true;
-                    this.maskBounds = new Rect(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
+                    this.maskBounds = new Rect(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
+                            Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
                 }
                 case RENDERING_MASKED -> {
                     this.isCalculatingMaskBounds = false;
@@ -294,17 +292,8 @@ public class EditorStage implements Stage {
     }
 
     @Override
-    public GLTexture getTextureByIndex(int index) {
-        return this.textures.get(index);
-    }
-
-    @Override
     public DrawApi getDrawApi() {
         return this.drawApi;
-    }
-
-    public int getTextureCount() {
-        return this.textures.size();
     }
 
     public void updatePMVMatrix() {
@@ -312,16 +301,12 @@ public class EditorStage implements Stage {
 
         PMVMatrix matrix = new PMVMatrix();
         matrix.glLoadIdentity();
-        matrix.glOrthof(
-            clipArea.getLeft(),
-            clipArea.getRight(),
-            clipArea.getBottom(),
-            clipArea.getTop(),
-            // near
-            -1,
-            // far
-            1
-        );
+        matrix.glOrthof(clipArea.getLeft(), clipArea.getRight(), clipArea.getBottom(),
+                clipArea.getTop(),
+                // near
+                -1,
+                // far
+                1);
 
         FloatBuffer matrixBuffer = BufferUtils.allocateDirectFloat(16);
         matrix.glGetFloatv(matrix.glGetMatrixMode(), matrixBuffer);
@@ -386,44 +371,10 @@ public class EditorStage implements Stage {
         return rendererContext;
     }
 
-    public GLTexture createGLTexture(SWFTexture texture, Path directory) throws TextureFileNotFound {
-        byte[] ktxData = texture.getKtxData();
-        String textureFilename = texture.getTextureFilename();
-        SctxTexture sctxTexture = null;
-
-        if (ktxData == null && textureFilename != null) {
-            if (textureFilename.endsWith(".zktx")) {
-                byte[] compressedData = getTextureFileBytes(directory, textureFilename);
-                ktxData = Zstandard.decompress(compressedData, 0);
-            } else if (textureFilename.endsWith(".sctx")) {
-                sctxTexture = loadSctxTexture(directory, textureFilename);
-            }
-        }
-
-        GLTexture image = GLImage.createWithFormat(texture.getWidth(), texture.getHeight(), true, ImageFilter.values()[texture.getInitialTag().getTextureFilter()], texture.getType().glFormat, texture.getType().glType, texture.getPixels(), sctxTexture, ktxData);
-        this.textures.put(texture.getIndex(), image);
-
-        return image;
-    }
-
-    public GLTexture createGLTexture(SctxTexture texture, int index) {
-        GLTexture image = GLImage.createWithFormat(texture.getWidth(), texture.getHeight(), true, ImageFilter.LINEAR, SctxPixelType.getFormat(texture.getPixelType()), SctxPixelType.getPixelType(texture.getPixelType()), null, texture, null);
-        this.textures.put(index, image);
-
-        return image;
-    }
-
-    private static SctxTexture loadSctxTexture(Path directory, String textureFilename) {
-        try (FileInputStream inputStream = new FileInputStream(directory.resolve(textureFilename).toFile())) {
-            return FlatSctxTextureLoader.getInstance().load(inputStream);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     @Override
     public Rect getDisplayObjectBounds(DisplayObject displayObject) {
-        Rect bounds = new Rect(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
+        Rect bounds = new Rect(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
+                Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
 
         this.isCalculatingBounds = true;
         this.bounds = bounds;
@@ -470,23 +421,28 @@ public class EditorStage implements Stage {
 
     private void renderDisplayObject() {
         this.rendererContext.clearColor(0, 0, 0, 0);
-        this.rendererContext.clear(GLConstants.GL_COLOR_BUFFER_BIT | GLConstants.GL_DEPTH_BUFFER_BIT | GLConstants.GL_STENCIL_BUFFER_BIT);
+        this.rendererContext.clear(GLConstants.GL_COLOR_BUFFER_BIT | GLConstants.GL_DEPTH_BUFFER_BIT
+                | GLConstants.GL_STENCIL_BUFFER_BIT);
 
         this.rendererContext.clearStencil();
     }
 
     private void renderScreen() {
         this.rendererContext.clearColor(.5f, .5f, .5f, 1);
-        this.rendererContext.clear(GLConstants.GL_COLOR_BUFFER_BIT | GLConstants.GL_DEPTH_BUFFER_BIT | GLConstants.GL_STENCIL_BUFFER_BIT);
+        this.rendererContext.clear(GLConstants.GL_COLOR_BUFFER_BIT | GLConstants.GL_DEPTH_BUFFER_BIT
+                | GLConstants.GL_STENCIL_BUFFER_BIT);
 
         this.renderer.beginRendering();
-        // Note: OpenGL textures are flipped, so drawing with flipped V coordinates of UV
+        // Note: OpenGL textures are flipped, so drawing with flipped V coordinates of
+        // UV
         this.drawApi.drawTextureFlipped(framebuffer.getTexture(), camera.getClipArea());
         this.renderer.endRendering();
     }
 
-    private Batch constructBatch(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState) {
-        return new Batch(shader, texture, stencilRenderingState, this::createDynamicVertexBuffer, rendererContext::setRenderStencilState);
+    private Batch constructBatch(Shader shader, RenderableTexture texture,
+            RenderStencilState stencilRenderingState) {
+        return new Batch(shader, texture, stencilRenderingState, this::createDynamicVertexBuffer,
+                rendererContext::setRenderStencilState);
     }
 
     private VertexBuffer createDynamicVertexBuffer(Attribute... attributes) {

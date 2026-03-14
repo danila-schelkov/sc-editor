@@ -1,7 +1,13 @@
 package dev.donutquine.editor.layout.contextmenus;
 
-import dev.donutquine.editor.Editor;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.nio.file.Path;
+import java.util.function.Function;
+import javax.swing.JMenuItem;
 import dev.donutquine.editor.displayObjects.SpriteSheet;
+import dev.donutquine.editor.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.layout.components.Table;
 import dev.donutquine.editor.layout.components.TablePopupMenuListener;
 import dev.donutquine.editor.renderer.Framebuffer;
@@ -15,27 +21,21 @@ import dev.donutquine.renderer.impl.swf.objects.ShapeDrawBitmapCommandRenderer;
 import dev.donutquine.swf.ColorTransform;
 import dev.donutquine.swf.shapes.ShapeDrawBitmapCommand;
 import dev.donutquine.utilities.ImageUtils;
-import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
-import java.nio.file.Path;
-import java.util.function.Function;
 
 public class DrawCommandContextMenu extends ContextMenu {
     private static final ColorTransform EMPTY_COLOR_TRANSFORM = new ColorTransform();
     private static final Path SCREENSHOT_FOLDER = Path.of("screenshots").toAbsolutePath();
 
     private final Table table;
-    private final Editor editor;
+    private final SupercellSWFLayoutController swfLayoutController;
+	private final Shape shape;
 
-    public DrawCommandContextMenu(Table table, Editor editor) {
+    public DrawCommandContextMenu(Table table, SupercellSWFLayoutController swfLayoutController, Shape shape) {
         super(table, null);
 
         this.table = table;
-        this.editor = editor;
+        this.swfLayoutController = swfLayoutController;
+        this.shape = shape;
 
         JMenuItem showOnViewportButton = this.add("Show on viewport", KeyEvent.VK_V);
         showOnViewportButton.addActionListener(this::showOnViewport);
@@ -56,26 +56,20 @@ public class DrawCommandContextMenu extends ContextMenu {
     }
 
     public void changeVisibility(Function<Boolean, Boolean> visibilityFunction) {
-        Shape shape = this.getShape();
-        if (shape == null) return;
-
         int[] selectedRows = this.table.getSelectedRows();
         for (int commandIndex : selectedRows) {
             boolean visible = (boolean) this.table.getValueAt(commandIndex, 3);
             boolean newVisibility = visibilityFunction.apply(visible);
 
-            shape.setCommandVisibility(commandIndex, newVisibility);
+            this.shape.setCommandVisibility(commandIndex, newVisibility);
 
             this.table.setValueAt(newVisibility, commandIndex, 3);
         }
     }
 
     private void showOnViewport(ActionEvent actionEvent) {
-        Shape shape = getShape();
-        if (shape == null) return;
-
         int commandIndex = getCommandIndex(this.table.getSelectedRow());
-        ShapeDrawBitmapCommand command = shape.getCommand(commandIndex);
+        ShapeDrawBitmapCommand command = this.shape.getCommand(commandIndex);
 
         Rect bounds = getDrawCommandBounds(command);
 
@@ -85,15 +79,8 @@ public class DrawCommandContextMenu extends ContextMenu {
         stage.doInRenderThread(stage::updatePMVMatrix);
     }
 
-    private @Nullable Shape getShape() {
-        DisplayObject selectedObject = editor.getSelectedObject();
-        if (selectedObject == null) return null;
-
-        return (Shape) selectedObject;
-    }
-
     private void showOnAtlas(ActionEvent actionEvent) {
-        DisplayObject selectedObject = editor.getSelectedObject();
+        DisplayObject selectedObject = swfLayoutController.getSelectedObject();
         if (selectedObject == null) return;
 
         int selectedRow = this.table.getSelectedRow();
@@ -101,7 +88,7 @@ public class DrawCommandContextMenu extends ContextMenu {
         int commandIndex = getCommandIndex(selectedRow);
         int textureIndex = getTextureIndex(selectedRow);
 
-        SpriteSheet spriteSheet = editor.getSpriteSheet(textureIndex);
+        SpriteSheet spriteSheet = swfLayoutController.assetFile.getSpriteSheet(textureIndex);
 
         Shape shape = (Shape) selectedObject;
         ShapeDrawBitmapCommand command = shape.getCommand(commandIndex);
@@ -112,24 +99,20 @@ public class DrawCommandContextMenu extends ContextMenu {
         stage.getCamera().zoomToFit(bounds);
 
         stage.doInRenderThread(() -> {
-            editor.selectObject(spriteSheet);
+            swfLayoutController.openSpriteSheet(textureIndex);
             stage.updatePMVMatrix();
         });
     }
 
     private void exportFromAtlas(ActionEvent actionEvent) {
-        DisplayObject selectedObject = editor.getSelectedObject();
-        if (selectedObject == null) return;
-
         int selectedRow = this.table.getSelectedRow();
 
         int commandIndex = getCommandIndex(selectedRow);
         int textureIndex = getTextureIndex(selectedRow);
 
-        SpriteSheet spriteSheet = editor.getSpriteSheet(textureIndex);
+        SpriteSheet spriteSheet = swfLayoutController.assetFile.getSpriteSheet(textureIndex);
 
-        Shape shape = (Shape) selectedObject;
-        ShapeDrawBitmapCommand command = shape.getCommand(commandIndex);
+        ShapeDrawBitmapCommand command = this.shape.getCommand(commandIndex);
 
         Rect bounds = getDrawCommandTextureBounds(command, spriteSheet);
 
@@ -139,11 +122,11 @@ public class DrawCommandContextMenu extends ContextMenu {
         stage.doInRenderThread(() -> {
             Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, bounds);
 
-            ShapeDrawBitmapCommandRenderer.renderUV(command, stage, EMPTY_COLOR_TRANSFORM, shape.getRenderConfigBits());
+            ShapeDrawBitmapCommandRenderer.renderUV(command, swfLayoutController.assetFile, stage, EMPTY_COLOR_TRANSFORM, this.shape.getRenderConfigBits());
             stage.renderToFramebuffer(framebuffer);
 
             BufferedImage screenshot = ImageUtils.createBufferedImageFromPixels(framebuffer.getWidth(), framebuffer.getHeight(), framebuffer.getPixelArray(true), false);
-            ImageUtils.saveImage(SCREENSHOT_FOLDER.resolve(shape.getId() + "_" + commandIndex + ".png"), screenshot);
+            ImageUtils.saveImage(SCREENSHOT_FOLDER.resolve(this.shape.getId() + "_" + commandIndex + ".png"), screenshot);
 
             framebuffer.delete();
         });

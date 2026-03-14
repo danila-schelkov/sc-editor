@@ -1,28 +1,25 @@
 package dev.donutquine.editor.displayObjects;
 
+import java.util.List;
 import dev.donutquine.editor.renderer.DrawApi;
 import dev.donutquine.editor.renderer.Stage;
 import dev.donutquine.editor.renderer.texture.RenderableTexture;
 import dev.donutquine.math.Rect;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
-import dev.donutquine.renderer.impl.swf.objects.ShapeDrawBitmapCommandRenderer;
 import dev.donutquine.swf.ColorTransform;
 import dev.donutquine.swf.Matrix2x3;
 import dev.donutquine.swf.shapes.ShapeDrawBitmapCommand;
 
-import java.util.List;
-
 public class SpriteSheet extends DisplayObject {
     private static final int[] INDICES = {0, 1, 2, 0, 2, 3};
-    private static final ColorTransform UV_COLOR_TRANSFORM = new ColorTransform((byte) 255, (byte) 0, (byte) 0, (byte) 128, (byte) 255, (byte) 0, (byte) 0);
 
+    private final int index;
     private final RenderableTexture texture;
     private final Rect bounds;
     private final List<ShapeDrawBitmapCommand> drawBitmapCommands;
 
-    private boolean shouldDisplayPolygons;
-
-    public SpriteSheet(RenderableTexture texture, List<ShapeDrawBitmapCommand> drawBitmapCommands) {
+    public SpriteSheet(int index, RenderableTexture texture, List<ShapeDrawBitmapCommand> drawBitmapCommands) {
+        this.index = index;
         this.texture = texture;
         this.drawBitmapCommands = drawBitmapCommands;
 
@@ -42,18 +39,16 @@ public class SpriteSheet extends DisplayObject {
         DrawApi drawApi = stage.getDrawApi();
         drawApi.drawTexture(this.texture, this.bounds);
 
-        if (this.shouldDisplayPolygons) {
-            for (ShapeDrawBitmapCommand command : this.drawBitmapCommands) {
-                ShapeDrawBitmapCommandRenderer.renderUV(command, stage, UV_COLOR_TRANSFORM, renderConfigBits);
-            }
-        }
-
         return true;
     }
 
     @Override
     public boolean collisionRender(Matrix2x3 matrix) {
         return false;
+    }
+
+    public int getIndex() {
+        return this.index;
     }
 
     public int getWidth() {
@@ -64,7 +59,11 @@ public class SpriteSheet extends DisplayObject {
         return texture.getHeight();
     }
 
-    public void setShouldDisplayPolygons(boolean shouldDisplayPolygons) {
-        this.shouldDisplayPolygons = shouldDisplayPolygons;
+	public RenderableTexture getTexture() {
+		return texture;
+	}
+
+	public List<ShapeDrawBitmapCommand> getDrawBitmapCommands() {
+        return drawBitmapCommands;
     }
 }

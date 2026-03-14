@@ -1,22 +1,36 @@
 package dev.donutquine.editor.layout.panels;
 
-import dev.donutquine.editor.Editor;
+import java.awt.BorderLayout;
+import java.util.List;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import dev.donutquine.editor.displayObjects.SpriteSheet;
+import dev.donutquine.editor.layout.TextureLayoutController;
 import dev.donutquine.editor.layout.components.Table;
-import dev.donutquine.editor.layout.contextmenus.TextureTableContextMenu;
 import dev.donutquine.editor.layout.components.listeners.TextureListMouseListener;
-
-import javax.swing.*;
-import java.awt.*;
+import dev.donutquine.editor.layout.contextmenus.TextureTableContextMenu;
+import dev.donutquine.editor.renderer.gl.texture.GLTexture;
 
 public class TexturesPanel extends JPanel {
+    private static final Object[] COLUMN_NAMES = {"Index", "Width", "Height", "Type"};
+
     private final Table table;
 
-    public TexturesPanel(Editor editor) {
-        this.table = new Table("Index", "Width", "Height", "Type");
+    public TexturesPanel(TextureLayoutController<?> layoutController) {
+        List<SpriteSheet> spriteSheets = layoutController.getAssetFile().getSpriteSheets();
+        Object[][] textureRows = new Object[spriteSheets.size()][];
 
-        new TextureTableContextMenu(this.table, editor);
+        for (int i = 0; i < spriteSheets.size(); i++) {
+            GLTexture texture = (GLTexture) spriteSheets.get(i).getTexture();
+            textureRows[i] = new Object[] {i, texture.getWidth(), texture.getHeight(), texture.getFormat()};
+        }
+
+        this.table = new Table(textureRows, COLUMN_NAMES);
+
+        new TextureTableContextMenu(this.table, layoutController);
         this.table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        this.table.addMouseListener(new TextureListMouseListener(this.table, editor));
+        this.table.addMouseListener(new TextureListMouseListener(this.table, layoutController));
 
         setLayout(new BorderLayout());
         this.add(new JScrollPane(this.table), BorderLayout.CENTER);

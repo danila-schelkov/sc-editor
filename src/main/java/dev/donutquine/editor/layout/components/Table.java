@@ -5,11 +5,16 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 public class Table extends JTable {
-    public Table(Object... columnNames) {
-        DefaultTableModel tableModel = new DefaultTableModel();
-        tableModel.setColumnIdentifiers(columnNames);
+    public Table(Object[][] data, Object[] columnNames) {
+        this.setModel(new DefaultTableModel(data, columnNames));
+        this.tableHeader.setReorderingAllowed(false);
 
-        this.setModel(tableModel);
+        this.selectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        setColumnSelectionAllowed(true);
+    }
+
+    public Table(Object... columnNames) {
+        this.setModel(new DefaultTableModel(columnNames, 0));
 
         this.tableHeader.setReorderingAllowed(false);
 
