@@ -132,14 +132,32 @@ public class BasicDrawApi implements DrawApi {
     }
 
     @Override
-    public void drawDashedLine(Point p1, Point p2, float thickness, float step, Color color) {
-        this.drawDashedLine(p1.getX(), p1.getY(), p2.getX(), p2.getY(), thickness, step, color);
+    public void drawDashedLine(Point p1, Point p2, float thickness, float dashLength, Color color) {
+        this.drawDashedLine(p1.getX(), p1.getY(), p2.getX(), p2.getY(), thickness, dashLength, color);
     }
 
     @Override
-    public void drawDashedLine(float x1, float y1, float x2, float y2, float thickness, float step, Color color) {
-        assert step > 0;
+    public void drawDashedLine(float x1, float y1, float x2, float y2, float thickness, float dashLength, Color color) {
+        assert dashLength > 0;
 
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+
+        double length = Math.sqrt(dx * dx + dy * dy);
+
+        int dashCount = (int) (length / (2 * dashLength) + 1);
+
+        float gapLength;
+        if (dashCount == 1) {
+            gapLength = 0;
+        } else {
+            gapLength = (float) ((length - dashCount * dashLength) / (dashCount - 1));
+        }
+
+        this.drawDashedLine(x1, y1, x2, y2, thickness, dashLength, gapLength, color);
+    }
+
+    public void drawDashedLine(float x1, float y1, float x2, float y2, float thickness, float dashLength, float gapLength, Color color) {
         float dx = x2 - x1;
         float dy = y2 - y1;
 
@@ -148,9 +166,6 @@ public class BasicDrawApi implements DrawApi {
 
         double dirX = dx / length;
         double dirY = dy / length;
-
-        double dashLength = step - thickness;
-        double gapLength = step;
 
         for (double path = 0; path < length; path += dashLength + gapLength) {
             double start = path;
@@ -182,7 +197,7 @@ public class BasicDrawApi implements DrawApi {
     }
     
     @Override
-    public void drawDashedPath(Iterable<Point> points, float thickness, float step, Color color) {
+    public void drawDashedPath(Iterable<Point> points, float thickness, float dashLength, Color color) {
         Iterator<Point> iterator = points.iterator();
         assert iterator.hasNext();
 
@@ -192,8 +207,7 @@ public class BasicDrawApi implements DrawApi {
         while (iterator.hasNext()) {
             lastPoint = point;
             point = iterator.next();
-            // TODO: save path returned from function call and start next dashed line from the same segment type (and length)
-            this.drawDashedLine(lastPoint, point, thickness, step, color);
+            this.drawDashedLine(lastPoint, point, thickness, dashLength, color);
         }
     }
 
