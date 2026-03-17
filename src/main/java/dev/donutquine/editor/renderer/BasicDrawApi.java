@@ -100,18 +100,33 @@ public class BasicDrawApi implements DrawApi {
             rgba[3] = 1;
             color.getColorComponents(rgba);
 
-            // TODO: make ends thickness/2 longer
             float dx = x2 - x1;
             float dy = y2 - y1;
+
             double length = Math.sqrt(dx * dx + dy * dy);
-            double scale = thickness / (2 * length);
+            if (length <= 1e-3) return;
+
+            double halfThickness = thickness / 2.0;
+
+            double dirX = dx / length;
+            double dirY = dy / length;
+
+            double scale = halfThickness / length;
             float radiusX = (float) (-dy * scale);
             float radiusY = (float) (dx * scale);
 
-            this.renderer.addVertex(x1 - radiusX, y1 - radiusY, rgba[0], rgba[1], rgba[2], rgba[3]);
-            this.renderer.addVertex(x1 + radiusX, y1 + radiusY, rgba[0], rgba[1], rgba[2], rgba[3]);
-            this.renderer.addVertex(x2 - radiusX, y2 - radiusY, rgba[0], rgba[1], rgba[2], rgba[3]);
-            this.renderer.addVertex(x2 + radiusX, y2 + radiusY, rgba[0], rgba[1], rgba[2], rgba[3]);
+            double extendX = dirX * halfThickness;
+            double extendY = dirY * halfThickness;
+
+            float x1e = (float) (x1 - extendX);
+            float y1e = (float) (y1 - extendY);
+            float x2e = (float) (x2 + extendX);
+            float y2e = (float) (y2 + extendY);
+
+            this.renderer.addVertex(x1e - radiusX, y1e - radiusY, rgba[0], rgba[1], rgba[2], rgba[3]);
+            this.renderer.addVertex(x1e + radiusX, y1e + radiusY, rgba[0], rgba[1], rgba[2], rgba[3]);
+            this.renderer.addVertex(x2e - radiusX, y2e - radiusY, rgba[0], rgba[1], rgba[2], rgba[3]);
+            this.renderer.addVertex(x2e + radiusX, y2e + radiusY, rgba[0], rgba[1], rgba[2], rgba[3]);
         }
     }
 
