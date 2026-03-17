@@ -277,8 +277,30 @@ public class Gizmos implements UndoRedoManager {
     }
 
     private Iterable<Point> getIterableCommandPoints(SpriteSheet spriteSheet, ShapeDrawBitmapCommand command) {
-        // TODO: strip points order
-        // boolean isStrip = (spriteSheet.getRenderConfigBits() & 0x8000) != 0;
+        boolean isStrip = (spriteSheet.getRenderConfigBits() & 0x8000) != 0;
+        if (isStrip) {
+            return new Iterable<Point>() {
+                @Override
+                public Iterator<Point> iterator() {
+                    return new Iterator<Point>() {
+                        int index = 0;
+                        int count = command.getVertexCount();
+
+                        @Override
+                        public boolean hasNext() {
+                            return index <= count;
+                        }
+
+                        @Override
+                        public Point next() {
+                            int index = getStripPointIndex((this.index++) % count, count);
+                            return new Point((command.getU(index) - 0.5f) * spriteSheet.getWidth(), (command.getV(index) - 0.5f) * spriteSheet.getHeight());
+                        }
+                    };
+                }
+            };
+        }
+
         return new Iterable<Point>() {
             @Override
             public Iterator<Point> iterator() {
@@ -301,11 +323,19 @@ public class Gizmos implements UndoRedoManager {
     }
 
     private ShapeDrawBitmapCommand getHoveroverCommand(SpriteSheet spriteSheet) {
+        BiFunction<ShapeDrawBitmapCommand, Integer, Float> getX = ShapeDrawBitmapCommand::getU;
+        BiFunction<ShapeDrawBitmapCommand, Integer, Float> getY = ShapeDrawBitmapCommand::getV;
+
+        if ((spriteSheet.getRenderConfigBits() & 0x8000) != 0) {
+            getX = (command, i) -> command.getU(getStripPointIndex(i, command.getVertexCount()));
+            getY = (command, i) -> command.getV(getStripPointIndex(i, command.getVertexCount()));
+        }
+        
         float mouseX = this.mouseX / spriteSheet.getWidth() + 0.5f;
         float mouseY = this.mouseY / spriteSheet.getHeight() + 0.5f;
         List<ShapeDrawBitmapCommand> commands = spriteSheet.getDrawBitmapCommands();
         for (ShapeDrawBitmapCommand command : commands) {
-            if (isInside(command, mouseX, mouseY, ShapeDrawBitmapCommand::getU, ShapeDrawBitmapCommand::getV)) {
+            if (isInside(command, mouseX, mouseY, getX, getY)) {
                 return command;
             }
         }
@@ -456,5 +486,14 @@ public class Gizmos implements UndoRedoManager {
         }
 
         return inside;
+    }
+
+    private static int getStripPointIndex(int index, int count) {
+        if (2 * index < count) {
+            return 2 * index;
+        } else {
+            int i = index - count / 2;
+            return count - 1 - 2 * i;
+        }
     }
 }
