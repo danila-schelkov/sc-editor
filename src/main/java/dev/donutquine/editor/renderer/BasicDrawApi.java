@@ -130,6 +130,41 @@ public class BasicDrawApi implements DrawApi {
         }
     }
 
+    @Override
+    public void drawDashedLine(Point p1, Point p2, float thickness, float step, Color color) {
+        this.drawDashedLine(p1.getX(), p1.getY(), p2.getX(), p2.getY(), thickness, step, color);
+    }
+
+    @Override
+    public void drawDashedLine(float x1, float y1, float x2, float y2, float thickness, float step, Color color) {
+        assert step > 0;
+
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+
+        double length = Math.sqrt(dx * dx + dy * dy);
+        if (length <= 1e-3) return;
+
+        double dirX = dx / length;
+        double dirY = dy / length;
+
+        double dashLength = step - thickness;
+        double gapLength = step;
+
+        for (double path = 0; path < length; path += dashLength + gapLength) {
+            double start = path;
+            double end = Math.min(path + dashLength, length);
+
+            float sx = (float) (x1 + dirX * start);
+            float sy = (float) (y1 + dirY * start);
+
+            float ex = (float) (x1 + dirX * end);
+            float ey = (float) (y1 + dirY * end);
+
+            this.drawLine(sx, sy, ex, ey, thickness, color);
+        }
+    }
+
     public void setPMVMatrix(FloatBuffer matrixBuffer) {
         this.colorShader.bind();
         this.colorShader.setUniformMatrix4f("pmv", matrixBuffer);

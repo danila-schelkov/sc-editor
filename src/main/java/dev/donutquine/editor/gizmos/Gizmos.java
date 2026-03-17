@@ -257,8 +257,7 @@ public class Gizmos implements UndoRedoManager {
         this.renderer.endRendering();
     }
 
-    public static void drawCommandWireframe(DrawApi drawApi, ShapeDrawBitmapCommand command, Matrix2x3 matrix,
-            Color wireframeColor, float thickness, boolean useStrip) {
+    public static void drawCommandWireframe(DrawApi drawApi, ShapeDrawBitmapCommand command, Matrix2x3 matrix, Color wireframeColor, float thickness, boolean useStrip) {
         if (command.getVertexCount() < 3)
             return;
 
