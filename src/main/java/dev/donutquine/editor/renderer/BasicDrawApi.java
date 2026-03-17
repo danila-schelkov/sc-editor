@@ -11,6 +11,7 @@ import dev.donutquine.resources.AssetManager;
 
 import java.awt.*;
 import java.nio.FloatBuffer;
+import java.util.Iterator;
 
 public class BasicDrawApi implements DrawApi {
     private static final int[] RECT_INDICES = {0, 1, 2, 1, 2, 3};  // FAN order
@@ -130,12 +131,126 @@ public class BasicDrawApi implements DrawApi {
         }
     }
 
+    @Override
+    public void drawDashedLine(Point p1, Point p2, float thickness, float dashLength, Color color) {
+        this.drawDashedLine(p1.getX(), p1.getY(), p2.getX(), p2.getY(), thickness, dashLength, color);
+    }
+
+    @Override
+    public void drawDashedLine(float x1, float y1, float x2, float y2, float thickness, float dashLength, Color color) {
+        assert dashLength > 0;
+
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+
+        double length = Math.sqrt(dx * dx + dy * dy);
+
+        float gapLength = calculateGapLength(dashLength, length);
+
+        this.drawDashedLine(x1, y1, x2, y2, thickness, dashLength, gapLength, color);
+    }
+
+    @Override
+    public void drawDashedLine(float x1, float y1, float x2, float y2, float thickness, float dashLength, float gapLength, Color color) {
+        drawDashedLine(x1, y1, x2, y2, thickness, dashLength, gapLength, 0, color);
+    }
+
+    @Override
+    public float drawDashedLine(float x1, float y1, float x2, float y2, float thickness, float dashLength, float gapLength, float pathStart, Color color) {
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+
+        double length = Math.sqrt(dx * dx + dy * dy);
+        if (length <= 1e-3) return 0;
+
+        double dirX = dx / length;
+        double dirY = dy / length;
+
+        double segmentLength = dashLength + gapLength;
+        double path = pathStart;
+        for (; path < length; path += segmentLength) {
+            double start = Math.max(0, path);
+            double end = Math.min(path + dashLength, length);
+
+            float sx = (float) (x1 + dirX * start);
+            float sy = (float) (y1 + dirY * start);
+
+            float ex = (float) (x1 + dirX * end);
+            float ey = (float) (y1 + dirY * end);
+
+            this.drawLine(sx, sy, ex, ey, thickness, color);
+        }
+
+        double leftover = path - length;
+        if (leftover < gapLength) {
+            return (float) leftover;
+        }
+
+        return (float) (leftover - segmentLength);
+    }
+
+    @Override
+    public void drawPath(Iterable<Point> points, float thickness, Color color) {
+        Iterator<Point> iterator = points.iterator();
+        assert iterator.hasNext();
+
+        Point lastPoint = null;
+        Point point = iterator.next();
+
+        while (iterator.hasNext()) {
+            lastPoint = point;
+            point = iterator.next();
+            this.drawLine(lastPoint, point, thickness, color);
+        }
+    }
+    
+    @Override
+    public void drawDashedPath(Iterable<Point> points, float thickness, float dashLength, Color color) {
+        Iterator<Point> iterator = points.iterator();
+        assert iterator.hasNext();
+
+        Point lastPoint = null;
+        Point point = iterator.next();
+
+        double totalLength = 0;
+        while (iterator.hasNext()) {
+            lastPoint = point;
+            point = iterator.next();
+            
+            float dx = point.getX() - lastPoint.getX();
+            float dy = point.getY() - lastPoint.getY();
+            double length = Math.sqrt(dx * dx + dy * dy);
+            totalLength += length;
+        }
+
+        iterator = points.iterator();
+
+        lastPoint = null;
+        point = iterator.next();
+
+        float gapLength = calculateGapLength(dashLength, totalLength);
+
+        float leftover = 0;
+        while (iterator.hasNext()) {
+            lastPoint = point;
+            point = iterator.next();
+            leftover = this.drawDashedLine(lastPoint.getX(), lastPoint.getY(), point.getX(), point.getY(), thickness, dashLength, gapLength, leftover, color);
+        }
+    }
+
     public void setPMVMatrix(FloatBuffer matrixBuffer) {
         this.colorShader.bind();
         this.colorShader.setUniformMatrix4f("pmv", matrixBuffer);
-        // this.colorShader.bind();
+        // this.colorShader.unbind();
         this.textureShader.bind();
         this.textureShader.setUniformMatrix4f("pmv", matrixBuffer);
         this.textureShader.unbind();
+    }
+
+    private static float calculateGapLength(float dashLength, double length) {
+        int dashCount = (int) (length / (2 * dashLength) + 1);
+        if (dashCount == 1) return 0;
+
+        return (float) ((length - dashCount * dashLength) / (dashCount - 1));
     }
 }
