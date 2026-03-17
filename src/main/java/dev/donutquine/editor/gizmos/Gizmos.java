@@ -2,6 +2,7 @@ package dev.donutquine.editor.gizmos;
 
 import dev.donutquine.editor.commands.CommandManager;
 import dev.donutquine.editor.commands.UndoRedoManager;
+import dev.donutquine.editor.displayObjects.SpriteSheet;
 import dev.donutquine.editor.gizmos.commands.MoveDrawCommandPointCommand;
 import dev.donutquine.editor.gizmos.commands.SetDisplayObjectMatrixCommand;
 import dev.donutquine.editor.layout.cursor.CursorStateListener;
@@ -22,6 +23,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.BiFunction;
 
 public class Gizmos implements UndoRedoManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(Gizmos.class);
@@ -251,10 +255,62 @@ public class Gizmos implements UndoRedoManager {
                         // this.touchedObjectBounds.movePosition(x, y);
                     }
                 }
+
+                float pixelSize = 1 / stage.getPixelSize();
+                float thickness = 4 * pixelSize;
+                for (int i = 0; i < this.stageSprite.getChildrenCount(); i++) {
+                    DisplayObject child = this.stageSprite.getChild(i);
+                    if (child instanceof SpriteSheet spriteSheet) {
+                        ShapeDrawBitmapCommand hoveroverCommand = getHoveroverCommand(spriteSheet);
+                        if (hoveroverCommand != null) {
+                            Iterable<Point> points = getIterableCommandPoints(spriteSheet, hoveroverCommand);
+
+                            this.drawApi.drawDashedPath(points, thickness, 20, Color.WHITE);
+                            break;
+                        }
+                    }
+                }
             }
         }
 
         this.renderer.endRendering();
+    }
+
+    private Iterable<Point> getIterableCommandPoints(SpriteSheet spriteSheet, ShapeDrawBitmapCommand command) {
+        // TODO: strip points order
+        // boolean isStrip = (spriteSheet.getRenderConfigBits() & 0x8000) != 0;
+        return new Iterable<Point>() {
+            @Override
+            public Iterator<Point> iterator() {
+                return new Iterator<Point>() {
+                    int index = 0;
+                    int count = command.getVertexCount();
+
+                    @Override
+                    public boolean hasNext() {
+                        return index <= count;
+                    }
+
+                    @Override
+                    public Point next() {
+                        return new Point((command.getU(index % count) - 0.5f) * spriteSheet.getWidth(), (command.getV((index++) % count) - 0.5f) * spriteSheet.getHeight());
+                    }
+                };
+            }
+        };
+    }
+
+    private ShapeDrawBitmapCommand getHoveroverCommand(SpriteSheet spriteSheet) {
+        float mouseX = this.mouseX / spriteSheet.getWidth() + 0.5f;
+        float mouseY = this.mouseY / spriteSheet.getHeight() + 0.5f;
+        List<ShapeDrawBitmapCommand> commands = spriteSheet.getDrawBitmapCommands();
+        for (ShapeDrawBitmapCommand command : commands) {
+            if (isInside(command, mouseX, mouseY, ShapeDrawBitmapCommand::getU, ShapeDrawBitmapCommand::getV)) {
+                return command;
+            }
+        }
+
+        return null;
     }
 
     public static void drawCommandWireframe(DrawApi drawApi, ShapeDrawBitmapCommand command, Matrix2x3 matrix, Color wireframeColor, float thickness, boolean useStrip) {
@@ -378,5 +434,27 @@ public class Gizmos implements UndoRedoManager {
         }
 
         return matrix;
+    }
+
+    private static boolean isInside(
+        ShapeDrawBitmapCommand command, float x, float y,
+        BiFunction<ShapeDrawBitmapCommand, Integer, Float> getX,
+        BiFunction<ShapeDrawBitmapCommand, Integer, Float> getY
+    ) {
+        int n = command.getVertexCount();
+        boolean inside = false;
+
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            float xi = getX.apply(command, i), yi = getY.apply(command, i);
+            float xj = getX.apply(command, j), yj = getY.apply(command, j);
+
+            boolean intersect = ((yi > y) != (yj > y)) && 
+                                (x < (xj - xi) * (y - yi) / (double) (yj - yi) + xi);
+            if (intersect) {
+                inside = !inside;
+            }
+        }
+
+        return inside;
     }
 }
