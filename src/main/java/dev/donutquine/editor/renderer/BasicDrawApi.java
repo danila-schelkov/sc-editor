@@ -11,6 +11,7 @@ import dev.donutquine.resources.AssetManager;
 
 import java.awt.*;
 import java.nio.FloatBuffer;
+import java.util.Iterator;
 
 public class BasicDrawApi implements DrawApi {
     private static final int[] RECT_INDICES = {0, 1, 2, 1, 2, 3};  // FAN order
@@ -162,6 +163,37 @@ public class BasicDrawApi implements DrawApi {
             float ey = (float) (y1 + dirY * end);
 
             this.drawLine(sx, sy, ex, ey, thickness, color);
+        }
+    }
+
+    @Override
+    public void drawPath(Iterable<Point> points, float thickness, Color color) {
+        Iterator<Point> iterator = points.iterator();
+        assert iterator.hasNext();
+
+        Point lastPoint = null;
+        Point point = iterator.next();
+
+        while (iterator.hasNext()) {
+            lastPoint = point;
+            point = iterator.next();
+            this.drawLine(lastPoint, point, thickness, color);
+        }
+    }
+    
+    @Override
+    public void drawDashedPath(Iterable<Point> points, float thickness, float step, Color color) {
+        Iterator<Point> iterator = points.iterator();
+        assert iterator.hasNext();
+
+        Point lastPoint = null;
+        Point point = iterator.next();
+
+        while (iterator.hasNext()) {
+            lastPoint = point;
+            point = iterator.next();
+            // TODO: save path returned from function call and start next dashed line from the same segment type (and length)
+            this.drawDashedLine(lastPoint, point, thickness, step, color);
         }
     }
 

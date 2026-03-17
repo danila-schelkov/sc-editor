@@ -23,4 +23,8 @@ public interface DrawApi {
     void drawDashedLine(Point p1, Point p2, float thickness, float step, Color color);
 
     void drawDashedLine(float x1, float y1, float x2, float y2, float thickness, float step, Color color);
+
+    void drawPath(Iterable<Point> points, float thickness, Color color);
+
+    void drawDashedPath(Iterable<Point> points, float thickness, float step, Color color);
 }
