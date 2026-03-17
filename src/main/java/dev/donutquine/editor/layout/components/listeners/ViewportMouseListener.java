@@ -65,8 +65,7 @@ public class ViewportMouseListener extends MouseAdapter {
         //             if (command.getTextureIndex() != sheet.getId())
         //                 continue;
         //
-        //             if (isClickInside(command, point.getX(), point.getY(), ShapeDrawBitmapCommand::getU,
-        //                     ShapeDrawBitmapCommand::getV)) {
+        //             if (isClickInside(command, point.getX(), point.getY(), ShapeDrawBitmapCommand::getU, ShapeDrawBitmapCommand::getV)) {
         //                 intersectedShapes.add(shape.getId());
         //             }
         //         }
@@ -110,26 +109,4 @@ public class ViewportMouseListener extends MouseAdapter {
         float worldY = camera.getWorldY(y);
         return new Point(worldX, worldY);
     }
-
-    public boolean isClickInside(
-            ShapeDrawBitmapCommand command, float clickX, float clickY,
-            BiFunction<ShapeDrawBitmapCommand, Integer, Float> getX,
-            BiFunction<ShapeDrawBitmapCommand, Integer, Float> getY) {
-        int n = command.getVertexCount();
-        boolean inside = false;
-
-        for (int i = 0, j = n - 1; i < n; j = i++) {
-            float xi = getX.apply(command, i), yi = getY.apply(command, i);
-            float xj = getX.apply(command, j), yj = getY.apply(command, j);
-
-            boolean intersect = ((yi > clickY) != (yj > clickY)) &&
-                    (clickX < (xj - xi) * (clickY - yi) / (double) (yj - yi) + xi);
-            if (intersect) {
-                inside = !inside;
-            }
-        }
-
-        return inside;
-    }
-
 }
