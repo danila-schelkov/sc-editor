@@ -18,6 +18,7 @@ import dev.donutquine.renderer.impl.swf.objects.Sprite;
 import dev.donutquine.renderer.impl.swf.objects.StageSprite;
 import dev.donutquine.swf.Matrix2x3;
 import dev.donutquine.swf.shapes.ShapeDrawBitmapCommand;
+import dev.donutquine.utilities.PolygonUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,6 +27,7 @@ import java.awt.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class Gizmos implements UndoRedoManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(Gizmos.class);
@@ -293,7 +295,7 @@ public class Gizmos implements UndoRedoManager {
 
                         @Override
                         public Point next() {
-                            int index = getStripPointIndex((this.index++) % count, count);
+                            int index = PolygonUtils.getStripPointIndex((this.index++) % count, count);
                             return new Point((command.getU(index) - 0.5f) * spriteSheet.getWidth(), (command.getV(index) - 0.5f) * spriteSheet.getHeight());
                         }
                     };
@@ -323,19 +325,22 @@ public class Gizmos implements UndoRedoManager {
     }
 
     private ShapeDrawBitmapCommand getHoveroverCommand(SpriteSheet spriteSheet) {
-        BiFunction<ShapeDrawBitmapCommand, Integer, Float> getX = ShapeDrawBitmapCommand::getU;
-        BiFunction<ShapeDrawBitmapCommand, Integer, Float> getY = ShapeDrawBitmapCommand::getV;
-
-        if ((spriteSheet.getRenderConfigBits() & 0x8000) != 0) {
-            getX = (command, i) -> command.getU(getStripPointIndex(i, command.getVertexCount()));
-            getY = (command, i) -> command.getV(getStripPointIndex(i, command.getVertexCount()));
-        }
+        boolean isStrip = (spriteSheet.getRenderConfigBits() & 0x8000) != 0;
         
         float mouseX = this.mouseX / spriteSheet.getWidth() + 0.5f;
         float mouseY = this.mouseY / spriteSheet.getHeight() + 0.5f;
+
         List<ShapeDrawBitmapCommand> commands = spriteSheet.getDrawBitmapCommands();
         for (ShapeDrawBitmapCommand command : commands) {
-            if (isInside(command, mouseX, mouseY, getX, getY)) {
+            Function<Integer, Float> getX = command::getU;
+            Function<Integer, Float> getY = command::getV;
+
+            if (isStrip) {
+                getX = (i) -> command.getU(PolygonUtils.getStripPointIndex(i, command.getVertexCount()));
+                getY = (i) -> command.getV(PolygonUtils.getStripPointIndex(i, command.getVertexCount()));
+            }
+
+            if (PolygonUtils.isInside(mouseX, mouseY, command.getVertexCount(), getX, getY)) {
                 return command;
             }
         }
@@ -464,36 +469,5 @@ public class Gizmos implements UndoRedoManager {
         }
 
         return matrix;
-    }
-
-    private static boolean isInside(
-        ShapeDrawBitmapCommand command, float x, float y,
-        BiFunction<ShapeDrawBitmapCommand, Integer, Float> getX,
-        BiFunction<ShapeDrawBitmapCommand, Integer, Float> getY
-    ) {
-        int n = command.getVertexCount();
-        boolean inside = false;
-
-        for (int i = 0, j = n - 1; i < n; j = i++) {
-            float xi = getX.apply(command, i), yi = getY.apply(command, i);
-            float xj = getX.apply(command, j), yj = getY.apply(command, j);
-
-            boolean intersect = ((yi > y) != (yj > y)) && 
-                                (x < (xj - xi) * (y - yi) / (double) (yj - yi) + xi);
-            if (intersect) {
-                inside = !inside;
-            }
-        }
-
-        return inside;
-    }
-
-    private static int getStripPointIndex(int index, int count) {
-        if (2 * index < count) {
-            return 2 * index;
-        } else {
-            int i = index - count / 2;
-            return count - 1 - 2 * i;
-        }
     }
 }
