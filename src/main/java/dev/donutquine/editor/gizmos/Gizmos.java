@@ -265,7 +265,7 @@ public class Gizmos implements UndoRedoManager {
                         if (hoveroverCommand != null) {
                             Iterable<Point> points = getIterableCommandPoints(spriteSheet, hoveroverCommand);
 
-                            this.drawApi.drawDashedPath(points, thickness, 20, Color.WHITE);
+                            this.drawApi.drawDashedPath(points, thickness, 20 * pixelSize, Color.WHITE);
                             break;
                         }
                     }
