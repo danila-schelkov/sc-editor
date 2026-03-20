@@ -1,5 +1,6 @@
 package dev.donutquine.utilities;
 
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class PolygonUtils {
@@ -8,13 +9,16 @@ public class PolygonUtils {
     public static boolean isInside(
         float x, float y, int n,
         Function<Integer, Float> getX,
-        Function<Integer, Float> getY
+        Function<Integer, Float> getY,
+        BiFunction<Integer, Integer, Integer> indexTransformer
     ) {
         boolean inside = false;
 
         for (int i = 0, j = n - 1; i < n; j = i++) {
-            float xi = getX.apply(i), yi = getY.apply(i);
-            float xj = getX.apply(j), yj = getY.apply(j);
+            int iT = indexTransformer.apply(i, n);
+            int jT = indexTransformer.apply(j, n);
+            float xi = getX.apply(iT), yi = getY.apply(iT);
+            float xj = getX.apply(jT), yj = getY.apply(jT);
 
             boolean intersect = ((yi > y) != (yj > y)) && 
                                 (x < (xj - xi) * (y - yi) / (double) (yj - yi) + xi);

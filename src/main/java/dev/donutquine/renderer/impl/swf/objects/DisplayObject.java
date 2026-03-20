@@ -60,6 +60,10 @@ public abstract class DisplayObject {
         else this.renderConfigBits &= 0xffff7fff;
     }
 
+    public boolean isStrip() {
+        return (this.renderConfigBits & 0x8000) != 0;
+    }
+
     // TODO: maybe remember the stage of the object?
     public Stage getStage() {
         if (this.parent != null) {

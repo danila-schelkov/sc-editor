@@ -70,7 +70,7 @@ public class EditorWindow extends Window {
         this.tabbedPane = new JTabbedPane(JTabbedPane.BOTTOM);
         this.tabbedPane.setVisible(false);
 
-        this.canvas = new EditorCanvas(capabilities, editor);
+        this.canvas = new EditorCanvas(capabilities, this);
 
         // Note: Apple's GestureUtilities works only with JComponent because of
         // component client properties.
