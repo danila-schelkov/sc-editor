@@ -367,8 +367,7 @@ public class EditorStage implements Stage {
 
     @Override
     public Rect getDisplayObjectBounds(DisplayObject displayObject) {
-        Rect bounds = new Rect(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
-                Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
+        Rect bounds = new Rect(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY);
 
         this.isCalculatingBounds = true;
         this.bounds = bounds;

@@ -44,8 +44,8 @@ public class Gizmos implements UndoRedoManager {
 
     private Renderer renderer;
     private DrawApi drawApi;
+    // Mouse position in a world (on stage)
     private float mouseX, mouseY;
-    private boolean mousePressed;
     private GizmoHandle hoveredHandle;
 
     private boolean dragging;
@@ -77,7 +77,6 @@ public class Gizmos implements UndoRedoManager {
     }
 
     public void setMousePressed(boolean mousePressed) {
-        this.mousePressed = mousePressed;
         CursorType cursor = CursorType.DEFAULT_CURSOR;
         if (this.touchedObject != null) {
             if (mousePressed && this.hoveredHandle != null && !this.dragging) {
@@ -104,9 +103,46 @@ public class Gizmos implements UndoRedoManager {
 
     public void mouseClicked(float worldX, float worldY, int clickCount) {
         DisplayObject rootObject = this.stageSprite;
-        // TODO: improve it, so I could go to any depth like in Figma
-        if (this.touchedObject != null && clickCount >= 2) {
-            if (this.touchedObject.isShape()) {
+        // Note: it seems Figma actually not only allows to select between current object and its siblings, but rather all elements above it (with lesser depth). 
+        //  So should I also track depth?
+
+        DisplayObject touchedObject = null;
+        Rect bounds = null;
+
+        // FIXME: There is a bug in animations, caused by non-static Stage instance.
+        //  When you spam-click on animated object, which may be removed next frame from
+        //  its parent, NPE will be thrown since its parent set to null.
+        //  As a potential fix just stop all animations if an object selected.
+        if (this.touchedObject != null && this.touchedObject.getStage() != null && this.touchedObjectBounds.containsPoint(worldX, worldY)) {
+            rootObject = this.touchedObject;
+            touchedObject = rootObject;
+
+            if (!rootObject.isSprite() && !rootObject.isShape()) {
+                return;
+            }
+        }
+
+        if (clickCount >= 2) {
+            if (rootObject.isSprite()) {
+                Sprite sprite = (Sprite) rootObject;
+
+                int childrenCount = sprite.getChildrenCount();
+                for (int i = childrenCount - 1; i >= 0; i--) {
+                    DisplayObject child = sprite.getChild(i);
+
+                    LOGGER.debug("{}", child);
+                    // FIXME: Shape9Slice gives wrong bounds because parent's matrix is not included in calculation
+                    bounds = this.stage.getDisplayObjectBounds(child);
+
+                    LOGGER.debug("{} {} at {}, {}", child, bounds, worldX, worldY);
+                    if (bounds.containsPoint(worldX, worldY)) {
+                        System.out.println("checked!" + child);
+                        touchedObject = child;
+                        break;
+                    }
+                }
+            // FIXME: Doesn't work properly for Shape9Slice because parent's matrix is not included in calculation
+            } else if (this.touchedObject.isShape()) {
                 this.drawables.clear();
                 this.handles.clear();
                 Shape shape = (Shape) this.touchedObject;
@@ -134,51 +170,24 @@ public class Gizmos implements UndoRedoManager {
                     this.drawables.add(new WireframeGizmo(points, useStrip));
                 }
                 return;
-            // FIXME: There is a bug in animations, caused by non-static Stage instance.
-            //  When you spam-click on animated object, which may be removed next frame from
-            //  its parent, NPE will be thrown since its parent set to null.
-            //  As a potential fix just stop all animations if an object selected.
-            } else if (this.touchedObject.isSprite() && this.touchedObject.getStage() != null) {
-                rootObject = this.touchedObject;
-            } else if (this.touchedObjectBounds.containsPoint(worldX, worldY)) {
-                return;
+            // TODO: make it to edit TextField content when font renderer will be introduced
+            } else {
+                assert false : "Not implemented yet";
             }
-        }
-
-        DisplayObject touchedObject = null;
-        Rect bounds = null;
-
-        if (rootObject.isSprite()) {
-            Sprite sprite = (Sprite) rootObject;
-
-            int childrenCount = sprite.getChildrenCount();
-            for (int i = childrenCount - 1; i >= 0; i--) {
-                DisplayObject child = sprite.getChild(i);
-                bounds = this.stage.getDisplayObjectBounds(child);
-
-                if (bounds.containsPoint(worldX, worldY)) {
-                    touchedObject = child;
-                    break;
-                }
-            }
-        // TODO: make it to edit TextField content when font renderer will be introduced
-        } else {
-            assert false : "Not implemented yet";
         }
 
         boolean targetChanged = this.touchedObject != touchedObject;
 
         this.touchedObject = touchedObject;
-        this.touchedObjectBounds = bounds;
 
         if (targetChanged) {
+            this.touchedObjectBounds = bounds;
+
             this.drawables.clear();
             this.handles.clear();
         }
 
-        if (touchedObject != null) {
-            LOGGER.info("{} at {}, {}", touchedObject, worldX, worldY);
-        }
+        LOGGER.debug("{} at {}, {}", touchedObject, worldX, worldY);
     }
 
     public void reset() {
@@ -218,6 +227,25 @@ public class Gizmos implements UndoRedoManager {
 
         if (cursorStateListener != null) {
             cursorStateListener.setCursor(cursor);
+        }
+
+        DisplayObject rootObject = this.touchedObject == null ? this.stageSprite : this.touchedObject;
+        if (rootObject.isSprite()) {
+            Sprite sprite = (Sprite) rootObject;
+
+            int childrenCount = sprite.getChildrenCount();
+            for (int i = childrenCount - 1; i >= 0; i--) {
+                DisplayObject child = sprite.getChild(i);
+                if (child.getStage() == null) continue;
+
+                // FIXME: Shape9Slice gives wrong bounds because parent's matrix is not included in calculation
+                Rect bounds = this.stage.getDisplayObjectBounds(child);
+
+                if (bounds.containsPoint(this.mouseX, this.mouseY)) {
+                    this.drawApi.drawRectangleLines(bounds, Color.WHITE, 1);
+                    break;
+                }
+            }
         }
 
         // TODO: move somewhere else
@@ -301,9 +329,9 @@ public class Gizmos implements UndoRedoManager {
     }
 
     /// Returns a new matrix, composed of {@link DisplayObject} matrices.
-    private static Matrix2x3 getObjectFinalMatrix(DisplayObject shape) {
-        Matrix2x3 matrix = new Matrix2x3(shape.getMatrix());
-        DisplayObject parent = shape.getParent();
+    private static Matrix2x3 getObjectFinalMatrix(DisplayObject displayObject) {
+        Matrix2x3 matrix = new Matrix2x3(displayObject.getMatrix());
+        DisplayObject parent = displayObject.getParent();
         while (parent != null) {
             // Oh, so it's commutative?
             matrix.multiply(parent.getMatrix());
