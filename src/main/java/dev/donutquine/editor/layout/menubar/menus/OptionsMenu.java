@@ -13,6 +13,7 @@ import dev.donutquine.editor.settings.EditorSettings;
 public class OptionsMenu extends JMenu {
 	private final EditorSettings editorSettings;
 
+    // Note: opens on macos using Control+Option+O for some reason
     private final JSlider pixelSizeSlider;
     private final JCheckBoxMenuItem wireframeModeCheckBox;
 

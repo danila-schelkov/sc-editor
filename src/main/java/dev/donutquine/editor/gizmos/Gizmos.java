@@ -1,5 +1,10 @@
 package dev.donutquine.editor.gizmos;
 
+import java.awt.Color;
+import java.util.List;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import dev.donutquine.editor.commands.CommandManager;
 import dev.donutquine.editor.commands.UndoRedoManager;
 import dev.donutquine.editor.displayObjects.SpriteSheet;
@@ -18,14 +23,7 @@ import dev.donutquine.renderer.impl.swf.objects.Sprite;
 import dev.donutquine.renderer.impl.swf.objects.StageSprite;
 import dev.donutquine.swf.Matrix2x3;
 import dev.donutquine.swf.shapes.ShapeDrawBitmapCommand;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.awt.*;
-import java.util.Iterator;
-import java.util.List;
-import java.util.function.BiFunction;
+import dev.donutquine.utilities.SpriteSheetHelper;
 
 public class Gizmos implements UndoRedoManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(Gizmos.class);
@@ -261,11 +259,17 @@ public class Gizmos implements UndoRedoManager {
                 for (int i = 0; i < this.stageSprite.getChildrenCount(); i++) {
                     DisplayObject child = this.stageSprite.getChild(i);
                     if (child instanceof SpriteSheet spriteSheet) {
-                        ShapeDrawBitmapCommand hoveroverCommand = getHoveroverCommand(spriteSheet);
-                        if (hoveroverCommand != null) {
-                            Iterable<Point> points = getIterableCommandPoints(spriteSheet, hoveroverCommand);
+                        List<ShapeDrawBitmapCommand> hoveroverCommands = SpriteSheetHelper.getHoveroverCommands(spriteSheet, this.mouseX, this.mouseY);
+                        if (hoveroverCommands.size() > 0) {
+                            assert hoveroverCommands.size() == 1 : "Oh no...";
 
-                            this.drawApi.drawDashedPath(points, thickness, 20, Color.WHITE);
+                            ShapeDrawBitmapCommand hoveroverCommand = hoveroverCommands.get(0);
+                            // for (ShapeDrawBitmapCommand hoveroverCommand : hoveroverCommands) {
+                            Iterable<Point> points = SpriteSheetHelper.getIterableCommandPoints(spriteSheet, hoveroverCommand);
+
+                            this.drawApi.drawDashedPath(points, thickness, 20 * pixelSize, Color.WHITE);
+                            // }
+
                             break;
                         }
                     }
@@ -274,73 +278,6 @@ public class Gizmos implements UndoRedoManager {
         }
 
         this.renderer.endRendering();
-    }
-
-    private Iterable<Point> getIterableCommandPoints(SpriteSheet spriteSheet, ShapeDrawBitmapCommand command) {
-        boolean isStrip = (spriteSheet.getRenderConfigBits() & 0x8000) != 0;
-        if (isStrip) {
-            return new Iterable<Point>() {
-                @Override
-                public Iterator<Point> iterator() {
-                    return new Iterator<Point>() {
-                        int index = 0;
-                        int count = command.getVertexCount();
-
-                        @Override
-                        public boolean hasNext() {
-                            return index <= count;
-                        }
-
-                        @Override
-                        public Point next() {
-                            int index = getStripPointIndex((this.index++) % count, count);
-                            return new Point((command.getU(index) - 0.5f) * spriteSheet.getWidth(), (command.getV(index) - 0.5f) * spriteSheet.getHeight());
-                        }
-                    };
-                }
-            };
-        }
-
-        return new Iterable<Point>() {
-            @Override
-            public Iterator<Point> iterator() {
-                return new Iterator<Point>() {
-                    int index = 0;
-                    int count = command.getVertexCount();
-
-                    @Override
-                    public boolean hasNext() {
-                        return index <= count;
-                    }
-
-                    @Override
-                    public Point next() {
-                        return new Point((command.getU(index % count) - 0.5f) * spriteSheet.getWidth(), (command.getV((index++) % count) - 0.5f) * spriteSheet.getHeight());
-                    }
-                };
-            }
-        };
-    }
-
-    private ShapeDrawBitmapCommand getHoveroverCommand(SpriteSheet spriteSheet) {
-        BiFunction<ShapeDrawBitmapCommand, Integer, Float> getX = ShapeDrawBitmapCommand::getU;
-        BiFunction<ShapeDrawBitmapCommand, Integer, Float> getY = ShapeDrawBitmapCommand::getV;
-
-        if ((spriteSheet.getRenderConfigBits() & 0x8000) != 0) {
-            getX = (command, i) -> command.getU(getStripPointIndex(i, command.getVertexCount()));
-            getY = (command, i) -> command.getV(getStripPointIndex(i, command.getVertexCount()));
-        }
-        
-        float mouseX = this.mouseX / spriteSheet.getWidth() + 0.5f;
-        float mouseY = this.mouseY / spriteSheet.getHeight() + 0.5f;
-        List<ShapeDrawBitmapCommand> commands = spriteSheet.getDrawBitmapCommands();
-        for (ShapeDrawBitmapCommand command : commands) {
-            if (isInside(command, mouseX, mouseY, getX, getY)) {
-                return command;
-            }
-        }
-
-        return null;
     }
 
     public static void drawCommandWireframe(DrawApi drawApi, ShapeDrawBitmapCommand command, Matrix2x3 matrix, Color wireframeColor, float thickness, boolean useStrip) {
@@ -372,7 +309,7 @@ public class Gizmos implements UndoRedoManager {
         // edit points in MovieClips (?)
         Matrix2x3 matrix = getObjectFinalMatrix(shape);
 
-        boolean useStrip = (shape.getRenderConfigBits() & 0x8000) != 0;
+        boolean useStrip = shape.isStrip();
 
         for (int i = 0; i < shape.getCommandCount(); i++) {
             drawCommandWireframe(drawApi, shape.getCommand(i), matrix, wireframeColor, thickness, useStrip);
@@ -464,36 +401,5 @@ public class Gizmos implements UndoRedoManager {
         }
 
         return matrix;
-    }
-
-    private static boolean isInside(
-        ShapeDrawBitmapCommand command, float x, float y,
-        BiFunction<ShapeDrawBitmapCommand, Integer, Float> getX,
-        BiFunction<ShapeDrawBitmapCommand, Integer, Float> getY
-    ) {
-        int n = command.getVertexCount();
-        boolean inside = false;
-
-        for (int i = 0, j = n - 1; i < n; j = i++) {
-            float xi = getX.apply(command, i), yi = getY.apply(command, i);
-            float xj = getX.apply(command, j), yj = getY.apply(command, j);
-
-            boolean intersect = ((yi > y) != (yj > y)) && 
-                                (x < (xj - xi) * (y - yi) / (double) (yj - yi) + xi);
-            if (intersect) {
-                inside = !inside;
-            }
-        }
-
-        return inside;
-    }
-
-    private static int getStripPointIndex(int index, int count) {
-        if (2 * index < count) {
-            return 2 * index;
-        } else {
-            int i = index - count / 2;
-            return count - 1 - 2 * i;
-        }
     }
 }

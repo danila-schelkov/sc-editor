@@ -1,32 +1,40 @@
 package dev.donutquine.editor.layout.components.listeners;
 
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.function.BiFunction;
-
+import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-
 import org.jetbrains.annotations.Nullable;
-
-import dev.donutquine.editor.Editor;
+import dev.donutquine.editor.assets.SupercellSWFAssetFile;
 import dev.donutquine.editor.displayObjects.SpriteSheet;
 import dev.donutquine.editor.gizmos.Gizmos;
+import dev.donutquine.editor.layout.LayoutController;
 import dev.donutquine.editor.layout.ScalingUtils;
+import dev.donutquine.editor.layout.SupercellSWFLayoutController;
+import dev.donutquine.editor.layout.windows.EditorWindow;
+import dev.donutquine.editor.layout.windows.UsagesWindow;
 import dev.donutquine.editor.renderer.Camera;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.math.Point;
-import dev.donutquine.swf.SupercellSWF;
+import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
+import dev.donutquine.renderer.impl.swf.objects.StageSprite;
+import dev.donutquine.swf.exceptions.UnableToFindObjectException;
 import dev.donutquine.swf.shapes.ShapeDrawBitmapCommand;
 import dev.donutquine.swf.shapes.ShapeOriginal;
+import dev.donutquine.utilities.SpriteSheetHelper;
 
 public class ViewportMouseListener extends MouseAdapter {
-    private final Editor editor;
+    private final EditorWindow window;
 
-    public ViewportMouseListener(Editor editor) {
-        this.editor = editor;
+    public ViewportMouseListener(EditorWindow window) {
+        this.window = window;
     }
 
     @Override
@@ -43,6 +51,82 @@ public class ViewportMouseListener extends MouseAdapter {
     public void mousePressed(MouseEvent e) {
         Gizmos gizmos = EditorStage.getInstance().getGizmos();
         gizmos.setMousePressed(true);
+
+        Point point = getWorldMousePosition(e);
+        assert point != null : "Stage is not in a valid state";
+        
+        if (e.isPopupTrigger()) {
+            // TODO: refactor completely
+            List<ShapeDrawBitmapCommand> hoveroverCommands = Collections.emptyList();
+
+            EditorStage stage = EditorStage.getInstance();
+            StageSprite stageSprite = stage.getStageSprite();
+            for (int i = 0; i < stageSprite.getChildrenCount(); i++) {
+                DisplayObject child = stageSprite.getChild(i);
+                if (child instanceof SpriteSheet spriteSheet) {
+					hoveroverCommands = SpriteSheetHelper.getHoveroverCommands(spriteSheet, point.getX(), point.getY());
+                    break;
+                }
+            }
+
+            final List<ShapeDrawBitmapCommand> finalHoveroverCommands = hoveroverCommands;
+
+            if (hoveroverCommands.size() > 0) {
+                JPopupMenu popupMenu = new JPopupMenu();
+
+                LayoutController<?> layoutController = window.getLayoutController();
+                assert layoutController instanceof SupercellSWFLayoutController;
+
+                SupercellSWFLayoutController swfLayoutController = (SupercellSWFLayoutController) layoutController;
+                SupercellSWFAssetFile assetFile = swfLayoutController.getAssetFile();
+
+                List<Integer> shapesUsedIn = new ArrayList<>();
+
+                int[] shapeIds = assetFile.asset.getShapeIds();
+                for (int shapeId : shapeIds) {
+                    try {
+                        ShapeOriginal shape = (ShapeOriginal) assetFile.asset.getOriginalDisplayObject(shapeId & 0xFFFF, null);
+                        if (shape.getCommands().stream().anyMatch(command -> finalHoveroverCommands.stream().anyMatch(hc -> hc.equals(command)))) {
+                            shapesUsedIn.add(shapeId);
+                        }
+                    } catch (UnableToFindObjectException ex) {
+                        continue;  // this is a very illegal state actually
+                    }
+                }
+
+                if (shapesUsedIn.size() == 1) {
+                    JMenuItem goToUsage = new JMenuItem();
+                    goToUsage.setAction(new AbstractAction() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            swfLayoutController.selectObject(shapesUsedIn.get(0), null);
+                        }
+                    });
+                    goToUsage.setText("Go to Usage");
+                    popupMenu.add(goToUsage);
+                } else if (shapesUsedIn.size() > 1) {
+                    JMenuItem showUsages = new JMenuItem();
+                    showUsages.setAction(new AbstractAction() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            List<Object[]> usagesRows = new ArrayList<>(shapesUsedIn.size());
+
+                            for (int shapeId : shapesUsedIn) {
+                                usagesRows.add(new Object[] {shapeId, null, "Shape"});
+                            }
+
+                            UsagesWindow usagesWindow = new UsagesWindow("Usages", usagesRows, swfLayoutController);
+                            usagesWindow.show();
+                        }
+                    });
+                    showUsages.setText("Show Usages");
+                    popupMenu.add(showUsages);
+                }
+
+                popupMenu.show(e.getComponent(), e.getX(), e.getY());
+                return;
+            }
+        }
     }
 
     @Override
@@ -55,29 +139,6 @@ public class ViewportMouseListener extends MouseAdapter {
     public void mouseClicked(MouseEvent e) {
         Point point = getWorldMousePosition(e);
         assert point != null : "Stage is not in a valid state";
-
-        // if (editor.getSelectedObject() instanceof SpriteSheet sheet) {
-        //     Set<Integer> intersectedShapes = new HashSet<>();
-        //
-        //     SupercellSWF swf = editor.getSwf();
-        //     for (ShapeOriginal shape : swf.getShapes()) {
-        //         for (ShapeDrawBitmapCommand command : shape.getCommands()) {
-        //             if (command.getTextureIndex() != sheet.getId())
-        //                 continue;
-        //
-        //             if (isClickInside(command, point.getX(), point.getY(), ShapeDrawBitmapCommand::getU, ShapeDrawBitmapCommand::getV)) {
-        //                 intersectedShapes.add(shape.getId());
-        //             }
-        //         }
-        //     }
-        //
-        //     if (e.isPopupTrigger()) {
-        //         JPopupMenu popupMenu = new JPopupMenu();
-        //         popupMenu.add(new JMenuItem("Show usages"));
-        //         popupMenu.show(e.getComponent(), e.getX(), e.getY());
-        //         return;
-        //     }
-        // }
 
         Gizmos gizmos = EditorStage.getInstance().getGizmos();
         if (e.getButton() == MouseEvent.BUTTON1) {
