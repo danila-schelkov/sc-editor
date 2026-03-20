@@ -1,7 +1,7 @@
 DISABLE_AUTOPROFILE = -Dskip.auto.profiles=true
 
 JAVA_EXECUTABLE = java
-JVM_FLAGS=--add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.java2d=ALL-UNNAMED
+JVM_FLAGS=--add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.java2d=ALL-UNNAMED -ea -Dorg.slf4j.simpleLogger.defaultLogLevel=DEBUG
 
 ifeq ($(OS),Windows_NT)
 	MAVEN_EXECUTABLE = mvnw.cmd
