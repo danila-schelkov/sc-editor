@@ -72,10 +72,12 @@ public class EditorDropTarget implements DropTargetListener {
         try {
             List<File> transferData = getFiles(e.getTransferable());
             assert !transferData.isEmpty() : "Empty file list transferred wtf";
-            assert transferData.size() == 1 : "Only one file can be transferred now";
-
+            // assert transferData.size() == 1 : "Only one file can be transferred now";
+            
             // TODO: allow merging several files via DnD as an option
-            this.editorWindow.openFile(transferData.get(0).toPath());
+            for (File file : transferData) {
+                this.editorWindow.openFile(file.toPath());
+            }
         } catch (UnsupportedFlavorException | IOException ex) {
             throw new RuntimeException(ex);
         }
