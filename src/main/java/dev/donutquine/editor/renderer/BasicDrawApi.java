@@ -79,7 +79,7 @@ public class BasicDrawApi implements DrawApi {
     }
 
     @Override
-    public void drawRectangleLines(ReadonlyRect rect, Color color, int thickness) {
+    public void drawRectangleLines(ReadonlyRect rect, Color color, float thickness) {
         this.drawLine(rect.getLeft(), rect.getTop(), rect.getRight(), rect.getTop(), thickness, color);
         this.drawLine(rect.getLeft(), rect.getBottom(), rect.getLeft(), rect.getTop(), thickness, color);
         this.drawLine(rect.getLeft(), rect.getBottom(), rect.getRight(), rect.getBottom(), thickness, color);

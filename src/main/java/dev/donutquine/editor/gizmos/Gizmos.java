@@ -1,6 +1,7 @@
 package dev.donutquine.editor.gizmos;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -8,8 +9,7 @@ import org.slf4j.LoggerFactory;
 import dev.donutquine.editor.commands.CommandManager;
 import dev.donutquine.editor.commands.UndoRedoManager;
 import dev.donutquine.editor.displayObjects.SpriteSheet;
-import dev.donutquine.editor.gizmos.commands.MoveDrawCommandPointCommand;
-import dev.donutquine.editor.gizmos.commands.SetDisplayObjectMatrixCommand;
+import dev.donutquine.editor.gizmos.drawables.WireframeGizmo;
 import dev.donutquine.editor.layout.cursor.CursorStateListener;
 import dev.donutquine.editor.layout.cursor.CursorType;
 import dev.donutquine.editor.renderer.DrawApi;
@@ -28,34 +28,30 @@ import dev.donutquine.utilities.SpriteSheetHelper;
 public class Gizmos implements UndoRedoManager {
     private static final Logger LOGGER = LoggerFactory.getLogger(Gizmos.class);
 
+    private static final int HANDLE_SIZE = 10;
+
     private final Stage stage;
     private final StageSprite stageSprite;
 
     // TODO: pass command manager from within the editor,
-    // so all commands (action) history is shared between everything in the app
+    //  so all commands (action) history is shared between everything in the app
     private final CommandManager commandManager;
+
+    private final List<GizmoDrawable> drawables = new ArrayList<>();
+    private final List<GizmoHandle> handles = new ArrayList<>();
 
     private @Nullable CursorStateListener cursorStateListener;
 
     private Renderer renderer;
     private DrawApi drawApi;
+    // Mouse position in a world (on stage)
     private float mouseX, mouseY;
-    private boolean mousePressed;
-    private ShapeDrawBitmapCommand targetShapeDrawCommand;
-    private int pointIndex;
+    private GizmoHandle hoveredHandle;
 
-    // Note: cannot use mouse dx, dy due to inaccuracy
-    private float startX, startY;
     private boolean dragging;
-    private Rect initialBounds;
-    private Matrix2x3 initialMatrix;
-
-    // TODO: add a keyboard shortcut to switch between allowed modes
-    private Mode mode;
 
     private @Nullable DisplayObject touchedObject;
-    // TODO: may be moving, it would be better to stop animation since EDIT_POINTS
-    // turned on ig
+    // TODO: may be moving, it would be better to stop animation or not allow editing until stopped by user
     private Rect touchedObjectBounds;
 
     public Gizmos(Stage stage) {
@@ -68,7 +64,7 @@ public class Gizmos implements UndoRedoManager {
 
     public void setRenderer(Renderer renderer, DrawApi drawApi) {
         this.renderer = renderer;
-        this.drawApi = drawApi;
+        this.drawApi = new GizmoDrawApi(drawApi, stage);
     }
 
     public void setCursorListener(CursorStateListener listener) {
@@ -81,56 +77,21 @@ public class Gizmos implements UndoRedoManager {
     }
 
     public void setMousePressed(boolean mousePressed) {
-        this.mousePressed = mousePressed;
         CursorType cursor = CursorType.DEFAULT_CURSOR;
         if (this.touchedObject != null) {
-            if (mousePressed && this.targetShapeDrawCommand != null && !this.dragging) {
-                this.startX = this.targetShapeDrawCommand.getX(this.pointIndex);
-                this.startY = this.targetShapeDrawCommand.getY(this.pointIndex);
+            if (mousePressed && this.hoveredHandle != null && !this.dragging) {
                 this.dragging = true;
 
-                cursor = CursorType.MOVE_CURSOR;
-            } else if (mousePressed && this.touchedObjectBounds.containsPoint(this.mouseX, this.mouseY)
-                    && !this.dragging) {
-                this.initialMatrix = this.touchedObject.getMatrix();
-                this.initialBounds = new Rect(this.touchedObjectBounds);
-
-                this.startX = this.mouseX;
-                this.startY = this.mouseY;
-                this.dragging = true;
+                this.hoveredHandle.action().begin(this.mouseX, this.mouseY);
 
                 cursor = CursorType.MOVE_CURSOR;
             } else if (!mousePressed) {
                 if (this.dragging) {
-                    // Note: It is forbidden to move object while you're editing points.
-                    if (this.touchedObject.isShape() && this.mode == Mode.EDIT_POINTS) {
-                        if (this.targetShapeDrawCommand != null) {
-                            Matrix2x3 inverseMatrix = getObjectFinalMatrix(this.touchedObject);
-                            inverseMatrix.inverse();
-                            float x = mouseX;
-                            float y = mouseY;
-                            this.commandManager.execute(new MoveDrawCommandPointCommand(targetShapeDrawCommand,
-                                    pointIndex,
-                                    this.startX,
-                                    this.startY,
-                                    inverseMatrix.applyX(x, y),
-                                    inverseMatrix.applyY(x, y)));
-                        }
-                    } else {
-                        float dx = mouseX - startX;
-                        float dy = mouseY - startY;
-                        Matrix2x3 newMatrix = new Matrix2x3(this.initialMatrix);
-                        newMatrix.move(dx, dy);
-
-                        // TODO: somehow undo touchedObject preview movement
-                        // so I could pass it without resetting the matrix to initial
-                        this.touchedObject.setMatrix(this.initialMatrix);
-                        this.commandManager.execute(new SetDisplayObjectMatrixCommand(touchedObject, newMatrix));
-                    }
+                    assert this.hoveredHandle != null; 
+                    this.hoveredHandle.action().end();
+                    this.hoveredHandle = null;
                 }
 
-                this.initialMatrix = null;
-                this.initialBounds = null;
                 this.dragging = false;
             }
         }
@@ -142,70 +103,102 @@ public class Gizmos implements UndoRedoManager {
 
     public void mouseClicked(float worldX, float worldY, int clickCount) {
         DisplayObject rootObject = this.stageSprite;
-        // TODO: improve it, so I could go to any depth like in Figma
-        if (this.touchedObject != null && clickCount >= 2) {
-            if (this.touchedObject.isShape()) {
-                this.mode = Mode.EDIT_POINTS;
-                return;
-                // FIXME: There is a bug in animations, caused by non-static Stage instance.
-                // When you spam-click on animated object, which may be removed next frame from
-                // its parent,
-                // NPE will be thrown since its parent set to null.
-                // As a potential fix just stop all animations if an object selected.
-            } else if (this.touchedObject.isSprite() && this.touchedObject.getStage() != null) {
-                rootObject = this.touchedObject;
-            } else if (this.touchedObjectBounds.containsPoint(worldX, worldY)) {
-                return;
-            }
-        }
+        // Note: it seems Figma actually not only allows to select between current object and its siblings, but rather all elements above it (with lesser depth). 
+        //  So should I also track depth?
 
         DisplayObject touchedObject = null;
         Rect bounds = null;
 
-        if (rootObject.isSprite()) {
-            Sprite sprite = (Sprite) rootObject;
+        // FIXME: There is a bug in animations, caused by non-static Stage instance.
+        //  When you spam-click on animated object, which may be removed next frame from
+        //  its parent, NPE will be thrown since its parent set to null.
+        //  As a potential fix just stop all animations if an object selected.
+        if (this.touchedObject != null && this.touchedObject.getStage() != null && this.touchedObjectBounds.containsPoint(worldX, worldY)) {
+            rootObject = this.touchedObject;
+            touchedObject = rootObject;
 
-            int childrenCount = sprite.getChildrenCount();
-            for (int i = childrenCount - 1; i >= 0; i--) {
-                DisplayObject child = sprite.getChild(i);
-                bounds = this.stage.getDisplayObjectBounds(child);
-
-                if (bounds.containsPoint(worldX, worldY)) {
-                    touchedObject = child;
-                    break;
-                }
+            if (!rootObject.isSprite() && !rootObject.isShape()) {
+                return;
             }
+        }
+
+        if (clickCount >= 2) {
+            if (rootObject.isSprite()) {
+                Sprite sprite = (Sprite) rootObject;
+
+                int childrenCount = sprite.getChildrenCount();
+                for (int i = childrenCount - 1; i >= 0; i--) {
+                    DisplayObject child = sprite.getChild(i);
+
+                    LOGGER.debug("{}", child);
+                    // FIXME: Shape9Slice gives wrong bounds because parent's matrix is not included in calculation
+                    bounds = this.stage.getDisplayObjectBounds(child);
+
+                    LOGGER.debug("{} {} at {}, {}", child, bounds, worldX, worldY);
+                    if (bounds.containsPoint(worldX, worldY)) {
+                        System.out.println("checked!" + child);
+                        touchedObject = child;
+                        break;
+                    }
+                }
+            // FIXME: Doesn't work properly for Shape9Slice because parent's matrix is not included in calculation
+            } else if (this.touchedObject.isShape()) {
+                this.drawables.clear();
+                this.handles.clear();
+                Shape shape = (Shape) this.touchedObject;
+
+                // Note: Identity matrix for standalone Shape object, maybe shouldn't allow to edit points in MovieClips (?)
+                Matrix2x3 matrix = getObjectFinalMatrix(shape);
+                Matrix2x3 inverseMatrix = new Matrix2x3(matrix);
+                inverseMatrix.inverse();
+
+                boolean useStrip = shape.isStrip();
+
+                for (int i = 0; i < shape.getCommandCount(); i++) {
+                    ShapeDrawBitmapCommand command = shape.getCommand(i);
+                    assert command.getVertexCount() >= 3 : "Obviously, incorrect draw command with less than 3 points (not even a triangle)";
+
+                    List<Point> points = new ArrayList<>(command.getVertexCount());
+                    for (int j = 0; j < command.getVertexCount(); j++) {
+                        float x = command.getX(j);
+                        float y = command.getY(j);
+                        Point point = new Point(matrix.applyX(x, y), matrix.applyY(x, y));
+                        points.add(point);
+                        this.handles.add(new GizmoHandle(point, new EditDrawCommandPointGizmoAction(this.commandManager, command, j, inverseMatrix, point)));
+                    }
+
+                    this.drawables.add(new WireframeGizmo(points, useStrip));
+                }
+                return;
             // TODO: make it to edit TextField content when font renderer will be introduced
-        } else {
-            assert false : "Not implemented yet";
+            } else {
+                assert false : "Not implemented yet";
+            }
         }
 
         boolean targetChanged = this.touchedObject != touchedObject;
 
         this.touchedObject = touchedObject;
-        this.touchedObjectBounds = bounds;
 
         if (targetChanged) {
-            this.mode = Mode.DEFAULT;
-            this.targetShapeDrawCommand = null;
-            this.pointIndex = -1;
+            this.touchedObjectBounds = bounds;
+
+            this.drawables.clear();
+            this.handles.clear();
         }
 
-        if (touchedObject != null) {
-            LOGGER.info("{} at {}, {}", touchedObject, worldX, worldY);
-        }
+        LOGGER.debug("{} at {}, {}", touchedObject, worldX, worldY);
     }
 
     public void reset() {
         this.touchedObject = null;
         this.touchedObjectBounds = null;
 
-        this.targetShapeDrawCommand = null;
-        this.pointIndex = -1;
+        this.hoveredHandle = null;
 
+        this.drawables.clear();
+        this.handles.clear();
         this.commandManager.reset();
-
-        this.mode = Mode.DEFAULT;
 
         if (this.cursorStateListener != null) {
             this.cursorStateListener.setCursor(CursorType.DEFAULT_CURSOR);
@@ -215,64 +208,69 @@ public class Gizmos implements UndoRedoManager {
     public void render() {
         this.renderer.beginRendering();
 
-        switch (this.mode) {
-            case EDIT_POINTS -> {
-                if (touchedObject != null && touchedObject.isShape()) {
-                    this.drawShapeWireframe((Shape) touchedObject);
+        for (GizmoDrawable drawable : this.drawables) {
+            drawable.draw(this.drawApi);
+        }
+
+        this.renderHandles();
+
+        CursorType cursor = CursorType.DEFAULT_CURSOR;
+        if (this.hoveredHandle != null) {
+            cursor = CursorType.HAND_CURSOR;
+
+            if (dragging) {
+                cursor = CursorType.MOVE_CURSOR;
+
+                this.hoveredHandle.action().update(this.mouseX, this.mouseY);
+            }
+        }
+
+        if (cursorStateListener != null) {
+            cursorStateListener.setCursor(cursor);
+        }
+
+        DisplayObject rootObject = this.touchedObject == null ? this.stageSprite : this.touchedObject;
+        if (rootObject.isSprite()) {
+            Sprite sprite = (Sprite) rootObject;
+
+            int childrenCount = sprite.getChildrenCount();
+            for (int i = childrenCount - 1; i >= 0; i--) {
+                DisplayObject child = sprite.getChild(i);
+                if (child.getStage() == null) continue;
+
+                // FIXME: Shape9Slice gives wrong bounds because parent's matrix is not included in calculation
+                Rect bounds = this.stage.getDisplayObjectBounds(child);
+
+                if (bounds.containsPoint(this.mouseX, this.mouseY)) {
+                    this.drawApi.drawRectangleLines(bounds, Color.WHITE, 1);
+                    break;
                 }
             }
-            default -> {
-                if (touchedObject != null) {
-                    this.drawApi.drawRectangleLines(touchedObjectBounds, Color.WHITE, 1);
+        }
 
-                    if (this.dragging) {
-                        // TODO: make it persistent — save it to the original object.
-                        float x = mouseX - startX;
-                        float y = mouseY - startY;
-                        // TODO: Maybe form command here already and then just push it on dragging end?
-                        // I could create a Matrix2x3 and store it, so I will be able to modify it and
-                        // it will be immediately updated in the Command instance
+        // TODO: move somewhere else
+        if (this.touchedObject != null) {
+            this.drawApi.drawRectangleLines(touchedObjectBounds, Color.WHITE, 1);
+        }
 
-                        // TODO: maybe display only bounds movement and leave an object as is.
-                        // You could also duplicate an object and render it separately
-                        // Perhaps should apply same optimization as below
-                        this.touchedObject.setMatrix(new Matrix2x3(this.initialMatrix));
-                        this.touchedObject.getMatrix().move(x, y);
+        // TODO: move somewhere else
+        float thickness = 4;
+        for (int i = 0; i < this.stageSprite.getChildrenCount(); i++) {
+            DisplayObject child = this.stageSprite.getChild(i);
+            if (child instanceof SpriteSheet spriteSheet) {
+                List<ShapeDrawBitmapCommand> hoveroverCommands = SpriteSheetHelper.getHoveroverCommands(spriteSheet, this.mouseX, this.mouseY);
+                if (hoveroverCommands.size() > 0) {
+                    // Note: these commands are exact same, but used in a different Shapes, so should be deduplicated.
+                    // assert hoveroverCommands.size() == 1 : "Oh no...";
 
-                        // TODO: benchmark this piece of code
-                        float lastDx = this.touchedObjectBounds.getLeft() - this.initialBounds.getLeft();
-                        float lastDy = this.touchedObjectBounds.getTop() - this.initialBounds.getTop();
-                        this.touchedObjectBounds.movePosition(x - lastDx, y - lastDy);
+                    ShapeDrawBitmapCommand hoveroverCommand = hoveroverCommands.get(0);
+                    // for (ShapeDrawBitmapCommand hoveroverCommand : hoveroverCommands) {
+                    Iterable<Point> points = SpriteSheetHelper.getIterableCommandPoints(spriteSheet, hoveroverCommand);
 
-                        // Copying 4 floats instead of math
-                        // this.touchedObjectBounds.copyFrom(this.initialBounds);
-                        // this.touchedObjectBounds.movePosition(x, y);
+                    this.drawApi.drawDashedPath(points, thickness, 20, Color.WHITE);
+                    // }
 
-                        // Or even copying Rect class (initial idea)
-                        // this.touchedObjectBounds = new Rect(initialBounds)
-                        // this.touchedObjectBounds.movePosition(x, y);
-                    }
-                }
-
-                float pixelSize = 1 / stage.getPixelSize();
-                float thickness = 4 * pixelSize;
-                for (int i = 0; i < this.stageSprite.getChildrenCount(); i++) {
-                    DisplayObject child = this.stageSprite.getChild(i);
-                    if (child instanceof SpriteSheet spriteSheet) {
-                        List<ShapeDrawBitmapCommand> hoveroverCommands = SpriteSheetHelper.getHoveroverCommands(spriteSheet, this.mouseX, this.mouseY);
-                        if (hoveroverCommands.size() > 0) {
-                            assert hoveroverCommands.size() == 1 : "Oh no...";
-
-                            ShapeDrawBitmapCommand hoveroverCommand = hoveroverCommands.get(0);
-                            // for (ShapeDrawBitmapCommand hoveroverCommand : hoveroverCommands) {
-                            Iterable<Point> points = SpriteSheetHelper.getIterableCommandPoints(spriteSheet, hoveroverCommand);
-
-                            this.drawApi.drawDashedPath(points, thickness, 20 * pixelSize, Color.WHITE);
-                            // }
-
-                            break;
-                        }
-                    }
+                    break;
                 }
             }
         }
@@ -280,90 +278,35 @@ public class Gizmos implements UndoRedoManager {
         this.renderer.endRendering();
     }
 
-    public static void drawCommandWireframe(DrawApi drawApi, ShapeDrawBitmapCommand command, Matrix2x3 matrix, Color wireframeColor, float thickness, boolean useStrip) {
-        if (command.getVertexCount() < 3)
-            return;
+    private void renderHandles() {
+        float size = HANDLE_SIZE / stage.getPixelSize();
 
-        Point p1 = new Point(command.getX(0), command.getY(0));
-        Point p2 = new Point(command.getX(1), command.getY(1));
-
-        drawApi.drawLine(matrix.apply(p1), matrix.apply(p2), thickness, wireframeColor);
-
-        for (int j = 2; j < command.getVertexCount(); j++) {
-            p1 = new Point(command.getX(j), command.getY(j));
-            p2 = new Point(command.getX(useStrip ? j - 2 : 0), command.getY(useStrip ? j - 2 : 0));
-
-            drawApi.drawLine(matrix.apply(p1), matrix.apply(p2), thickness, wireframeColor);
-            p2 = new Point(command.getX(j - 1), command.getY(j - 1));
-            drawApi.drawLine(matrix.apply(p1), matrix.apply(p2), thickness, wireframeColor);
-        }
-    }
-
-    private void drawShapeWireframe(Shape shape) {
-        Color wireframeColor = Color.RED;
-
-        float pixelSize = 1 / stage.getPixelSize();
-        float thickness = 4 * pixelSize;
-
-        // Note: Identity matrix for standalone Shape object, maybe shouldn't allow to
-        // edit points in MovieClips (?)
-        Matrix2x3 matrix = getObjectFinalMatrix(shape);
-
-        boolean useStrip = shape.isStrip();
-
-        for (int i = 0; i < shape.getCommandCount(); i++) {
-            drawCommandWireframe(drawApi, shape.getCommand(i), matrix, wireframeColor, thickness, useStrip);
+        GizmoHandle hoveredHandle = null;
+        if (this.dragging) {
+            hoveredHandle = this.hoveredHandle;
         }
 
-        if (!dragging) {
-            targetShapeDrawCommand = null;
-            pointIndex = -1;
-        }
+        for (GizmoHandle handle : this.handles) {
+            float left = handle.position().getX() - size / 2;
+            float top = handle.position().getY() - size / 2;
+            Rect bounds = new Rect(left - size * 0.2f, top - size * 0.2f, left + size * 1.2f, top + size * 1.2f);
+            Rect innerRect = new Rect(left, top, left + size, top + size);
 
-        float size = 10 * pixelSize;
-        for (int i = 0; i < shape.getCommandCount(); i++) {
-            ShapeDrawBitmapCommand command = shape.getCommand(i);
-            if (command.getVertexCount() < 3)
-                continue;
-            for (int j = 0; j < command.getVertexCount(); j++) {
-                float x = matrix.applyX(command.getX(j), command.getY(j));
-                float y = matrix.applyY(command.getX(j), command.getY(j));
-                float left = x - size / 2;
-                float top = y - size / 2;
-                Rect bounds = new Rect(left - size * 0.2f, top - size * 0.2f, left + size * 1.2f, top + size * 1.2f);
-                Rect innerRect = new Rect(left, top, left + size, top + size);
-
-                Color color = Color.WHITE;
-                if (bounds.containsPoint(mouseX, mouseY) && targetShapeDrawCommand == null && !dragging) {
-                    color = Color.RED;
-                    targetShapeDrawCommand = command;
-                    pointIndex = j;
-                }
-
-                this.drawApi.drawRectangle(bounds, Color.BLACK);
-                this.drawApi.drawRectangle(innerRect, color);
+            // Note: hit-test
+            if (bounds.containsPoint(mouseX, mouseY) && hoveredHandle == null && !dragging) {
+                hoveredHandle = handle;
             }
-        }
 
-        CursorType cursor = CursorType.DEFAULT_CURSOR;
-        if (pointIndex != -1) {
-            cursor = CursorType.HAND_CURSOR;
-
-            if (dragging) {
-                cursor = CursorType.MOVE_CURSOR;
-
-                // Not used after so no need to copy it
-                // noinspection UnnecessaryLocalVariable
-                Matrix2x3 inverseMatrix = matrix;
-                inverseMatrix.inverse();
-                this.targetShapeDrawCommand.setXY(pointIndex, inverseMatrix.applyX(mouseX, mouseY),
-                        inverseMatrix.applyY(mouseX, mouseY));
+            Color color = Color.WHITE;
+            if (hoveredHandle == handle) {
+                color = Color.RED;
             }
+
+            this.drawApi.drawRectangle(bounds, Color.BLACK);
+            this.drawApi.drawRectangle(innerRect, color);
         }
 
-        if (cursorStateListener != null) {
-            cursorStateListener.setCursor(cursor);
-        }
+        this.hoveredHandle = hoveredHandle;
     }
 
     // TODO: invalidate and recalculate bounds
@@ -386,14 +329,10 @@ public class Gizmos implements UndoRedoManager {
         this.commandManager.addRedoableListener(listener);
     }
 
-    public enum Mode {
-        DEFAULT, EDIT_POINTS,
-    }
-
     /// Returns a new matrix, composed of {@link DisplayObject} matrices.
-    private static Matrix2x3 getObjectFinalMatrix(DisplayObject shape) {
-        Matrix2x3 matrix = new Matrix2x3(shape.getMatrix());
-        DisplayObject parent = shape.getParent();
+    private static Matrix2x3 getObjectFinalMatrix(DisplayObject displayObject) {
+        Matrix2x3 matrix = new Matrix2x3(displayObject.getMatrix());
+        DisplayObject parent = displayObject.getParent();
         while (parent != null) {
             // Oh, so it's commutative?
             matrix.multiply(parent.getMatrix());

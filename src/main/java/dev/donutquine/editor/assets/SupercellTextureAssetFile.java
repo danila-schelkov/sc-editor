@@ -1,6 +1,7 @@
 package dev.donutquine.editor.assets;
 
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.List;
 import dev.donutquine.editor.displayObjects.SpriteSheet;
 import dev.donutquine.editor.renderer.gl.texture.GLTexture;
@@ -26,7 +27,7 @@ public class SupercellTextureAssetFile extends AssetFile<SctxTexture> implements
             SctxPixelType.getPixelType(this.asset.getPixelType()), 
             null, this.asset, null
         );
-        this.spriteSheet = new SpriteSheet(0, glTexture, null);
+        this.spriteSheet = new SpriteSheet(0, glTexture, Collections.emptyList());
     }
 
     @Override

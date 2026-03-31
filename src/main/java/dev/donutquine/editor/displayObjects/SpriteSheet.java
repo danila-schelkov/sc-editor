@@ -1,6 +1,7 @@
 package dev.donutquine.editor.displayObjects;
 
 import java.util.List;
+import org.jetbrains.annotations.NotNull;
 import dev.donutquine.editor.renderer.DrawApi;
 import dev.donutquine.editor.renderer.Stage;
 import dev.donutquine.editor.renderer.texture.RenderableTexture;
@@ -16,9 +17,9 @@ public class SpriteSheet extends DisplayObject {
     private final int index;
     private final RenderableTexture texture;
     private final Rect bounds;
-    private final List<ShapeDrawBitmapCommand> drawBitmapCommands;
+    private final @NotNull List<ShapeDrawBitmapCommand> drawBitmapCommands;
 
-    public SpriteSheet(int index, RenderableTexture texture, List<ShapeDrawBitmapCommand> drawBitmapCommands) {
+    public SpriteSheet(int index, RenderableTexture texture, @NotNull List<ShapeDrawBitmapCommand> drawBitmapCommands) {
         this.index = index;
         this.texture = texture;
         this.drawBitmapCommands = drawBitmapCommands;

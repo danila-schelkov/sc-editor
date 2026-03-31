@@ -1,6 +1,6 @@
 package dev.donutquine.math;
 
-public class Point {
+public class Point implements ImmutablePoint {
     private float x;
     private float y;
 
@@ -32,6 +32,11 @@ public class Point {
     }
 
     public void setY(float y) {
+        this.y = y;
+    }
+
+    public void set(float x, float y) {
+        this.x = x;
         this.y = y;
     }
 
