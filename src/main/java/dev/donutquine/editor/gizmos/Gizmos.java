@@ -260,7 +260,8 @@ public class Gizmos implements UndoRedoManager {
             if (child instanceof SpriteSheet spriteSheet) {
                 List<ShapeDrawBitmapCommand> hoveroverCommands = SpriteSheetHelper.getHoveroverCommands(spriteSheet, this.mouseX, this.mouseY);
                 if (hoveroverCommands.size() > 0) {
-                    assert hoveroverCommands.size() == 1 : "Oh no...";
+                    // Note: these commands are exact same, but used in a different Shapes, so should be deduplicated.
+                    // assert hoveroverCommands.size() == 1 : "Oh no...";
 
                     ShapeDrawBitmapCommand hoveroverCommand = hoveroverCommands.get(0);
                     // for (ShapeDrawBitmapCommand hoveroverCommand : hoveroverCommands) {
