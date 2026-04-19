@@ -6,13 +6,15 @@ import java.io.IOException;
 import java.nio.file.Path;
 import dev.donutquine.editor.assets.exceptions.AssetLoadingException;
 import dev.donutquine.swf.exceptions.TextureFileNotFound;
-import dev.donutquine.swf.file.compression.Zstandard;
+import dev.donutquine.utilities.BufferUtils;
 import team.nulls.ntengine.assets.KhronosTexture;
+import team.nulls.ntengine.assets.KhronosTextureDataLoader;
+import team.nulls.ntengine.assets.KhronosTextureLoadingException;
 
-public class CompressedKhronosTextureAssetFileLoader implements AssetFileLoader<KhronosTexture> {
+public class KhronosTextureAssetFileLoader implements AssetFileLoader<KhronosTexture> {
     private final Path path;
 
-    public CompressedKhronosTextureAssetFileLoader(Path path) {
+    public KhronosTextureAssetFileLoader(Path path) {
         this.path = path;
     }
 
@@ -22,16 +24,23 @@ public class CompressedKhronosTextureAssetFileLoader implements AssetFileLoader<
     }
 
     public static KhronosTexture loadInternal(Path path) throws AssetLoadingException {
-        byte[] compressedData;
+        byte[] ktxData;
         try (FileInputStream fis = new FileInputStream(path.toFile())) {
-            compressedData = fis.readAllBytes();
+            ktxData = fis.readAllBytes();
         } catch (FileNotFoundException e) {
             throw new AssetLoadingException(new TextureFileNotFound(path.toString()));
         } catch (IOException e) {
             throw new AssetLoadingException(e);
         }
 
-        byte[] decompressed = Zstandard.decompress(compressedData, 0);
-        return KhronosTextureAssetFileLoader.loadInternal(decompressed);
+        return loadInternal(ktxData);
+    }
+
+    public static KhronosTexture loadInternal(byte[] ktxData) throws AssetLoadingException {
+        try {
+            return KhronosTextureDataLoader.decodeKtx(BufferUtils.wrapDirect(ktxData));
+        } catch (KhronosTextureLoadingException e) {
+            throw new AssetLoadingException(e);
+        }
     }
 }

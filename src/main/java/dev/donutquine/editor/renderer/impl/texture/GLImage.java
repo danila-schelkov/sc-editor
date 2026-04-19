@@ -1,22 +1,19 @@
 package dev.donutquine.editor.renderer.impl.texture;
 
-import dev.donutquine.sctx.MipMapData;
-import dev.donutquine.sctx.PixelType;
-import dev.donutquine.sctx.SctxTexture;
+import java.nio.Buffer;
+import java.nio.IntBuffer;
+import java.util.List;
 import dev.donutquine.editor.layout.dialogs.ExceptionDialog;
 import dev.donutquine.editor.renderer.gl.GLConstants;
 import dev.donutquine.editor.renderer.gl.texture.GLTexture;
 import dev.donutquine.editor.renderer.impl.EditorStage;
-import dev.donutquine.editor.renderer.impl.texture.khronos.KhronosTextureDataSaver;
 import dev.donutquine.editor.renderer.impl.texture.khronos.KhronosTextureLoader;
 import dev.donutquine.editor.renderer.impl.texture.sctx.SctxPixelType;
+import dev.donutquine.sctx.MipMapData;
+import dev.donutquine.sctx.PixelType;
+import dev.donutquine.sctx.SctxTexture;
 import dev.donutquine.utilities.BufferUtils;
 import team.nulls.ntengine.assets.KhronosTexture;
-
-import java.nio.Buffer;
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.util.List;
 
 public final class GLImage {
     public static KhronosTextureLoader khronosTextureLoader;
@@ -51,7 +48,7 @@ public final class GLImage {
         }
     }
 
-    public static GLTexture createWithFormat(int width, int height, boolean clampToEdge, ImageFilter filter, int pixelFormat, int pixelType, Buffer pixels, SctxTexture sctxTexture, byte[] khronosTextureFileData) {
+    public static GLTexture createWithFormat(int width, int height, boolean clampToEdge, ImageFilter filter, int pixelFormat, int pixelType, Buffer pixels, SctxTexture sctxTexture, KhronosTexture ktx) {
         EditorStage stage = EditorStage.getInstance();
 
         GLTexture texture = new GLTexture(stage.getGlContext(), width, height);
@@ -64,13 +61,13 @@ public final class GLImage {
             texture.setWrap(clampToEdge ? GLConstants.GL_CLAMP_TO_EDGE : GLConstants.GL_REPEAT);
             texture.setFilters(filter.getMinFilter(), filter.getMagFilter());
 
-            stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
-
-            if (khronosTextureFileData != null) {
-                loadKhronosTexture(texture, BufferUtils.wrapDirect(khronosTextureFileData));
+            if (ktx != null) {
+                loadKhronosTexture(texture, ktx);
             } else if (sctxTexture != null) {
+                stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
                 loadTexture(texture, sctxTexture);
             } else {
+                stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
                 loadImage(texture, pixels, pixelFormat, pixelType);
                 texture.generateMipMap();
             }
@@ -99,10 +96,10 @@ public final class GLImage {
         return texture;
     }
 
-    private static void loadKhronosTexture(GLTexture texture, ByteBuffer khronosTextureFileData) {
+    private static void loadKhronosTexture(GLTexture texture, KhronosTexture ktx) {
         if (khronosTextureLoader != null) {
             try {
-                khronosTextureLoader.load(texture, khronosTextureFileData);
+                khronosTextureLoader.load(texture, ktx);
             } catch (Throwable e) {
                 ExceptionDialog.showExceptionDialog(Thread.currentThread(), e);
                 throw new RuntimeException(e);
@@ -144,8 +141,6 @@ public final class GLImage {
             levels
         );
 
-        ByteBuffer khronosTextureFileData = KhronosTextureDataSaver.encodeKtx(ktx);
-
-        loadKhronosTexture(texture, khronosTextureFileData);
+        loadKhronosTexture(texture, ktx);
     }
 }
