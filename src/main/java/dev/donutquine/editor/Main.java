@@ -29,7 +29,6 @@ public class Main {
     private static final Set<String> jvmRequiredArgs = new HashSet<>(List.of("--add-exports=java.base/java.lang=ALL-UNNAMED", "--add-exports=java.desktop/sun.awt=ALL-UNNAMED", "--add-exports=java.desktop/sun.java2d=ALL-UNNAMED"));
 
     public static void main(String[] args) {
-        System.out.println(ProcessHandle.current().info().commandLine());
         try {
             Set<String> jvmArgs = new HashSet<>(ManagementFactory.getRuntimeMXBean().getInputArguments());
             if (!jvmArgs.containsAll(jvmRequiredArgs)) {
