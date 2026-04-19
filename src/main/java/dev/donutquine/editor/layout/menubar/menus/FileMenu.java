@@ -114,8 +114,10 @@ public class FileMenu extends JMenu {
         fileChooser.setStateStoreID("open");
         fileChooser.setFileSelectionMode(SystemFileChooser.FILES_ONLY);
         fileChooser.setMultiSelectionEnabled(false);
+        // TODO: generate from extension asset file loader metadata
         fileChooser.addChoosableFileFilter(new SystemFileChooser.FileNameExtensionFilter("Supercell SWF (*.sc, *.sc2)", "sc", "sc2"));
         fileChooser.addChoosableFileFilter(new SystemFileChooser.FileNameExtensionFilter("Supercell Texture (*.sctx)", "sctx"));
+        fileChooser.addChoosableFileFilter(new SystemFileChooser.FileNameExtensionFilter("Khronos Texture (*.ktx, *.ktx1)", "ktx", "ktx1"));
 
         int result = fileChooser.showOpenDialog(this.window.getFrame());
         if (result != SystemFileChooser.APPROVE_OPTION) return;
