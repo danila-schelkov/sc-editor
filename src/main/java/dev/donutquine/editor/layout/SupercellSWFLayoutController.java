@@ -1,6 +1,5 @@
 package dev.donutquine.editor.layout;
 
-import java.awt.Container;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
