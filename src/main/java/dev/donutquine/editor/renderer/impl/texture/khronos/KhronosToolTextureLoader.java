@@ -7,6 +7,7 @@ import dev.donutquine.utilities.ImageUtils;
 import dev.donutquine.utilities.PathUtils;
 import dev.donutquine.utilities.SystemUtils;
 import dev.donutquine.utilities.process.ChainedExecutor;
+import team.nulls.ntengine.assets.KhronosTexture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +89,9 @@ public class KhronosToolTextureLoader implements KhronosTextureLoader {
     }
 
     @Override
-    public void load(GLTexture texture, ByteBuffer khronosTextureFileData) throws Exception {
+    public void load(GLTexture texture, KhronosTexture ktx) throws Exception {
+        ByteBuffer khronosTextureFileData = KhronosTextureDataSaver.encodeKtx(ktx);
+
         File ktx1File = File.createTempFile("texture", ".ktx1");
         try (FileOutputStream fileOutputStream = new FileOutputStream(ktx1File)) {
             int written = fileOutputStream.getChannel().write(khronosTextureFileData);
@@ -112,7 +115,11 @@ public class KhronosToolTextureLoader implements KhronosTextureLoader {
             (process) -> {
                 logProcessDone(KTX, process);
                 ktx2Path.toFile().delete();
-                loadPngToGl(texture, pngPath);
+
+                // TODO: interrupt if exit code is not equal to 0, and throw an exception
+                if (process.exitValue() == 0) {
+                    loadPngToGl(texture, pngPath);
+                }
             }
         );
 

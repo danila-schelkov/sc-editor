@@ -22,7 +22,7 @@ public class KhronosTextureDataLoader {
     private static final byte[] HEADER = new byte[]{(byte) 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, (byte) 0xBB, 0x0D, 0x0A, 0x1A, 0x0A};
     private static final Logger LOGGER = Logger.getLogger(KhronosTextureDataLoader.class.getName());
 
-    public static KhronosTexture decodeStream(InputStream is) throws IOException {
+    public static KhronosTexture decodeStream(InputStream is) throws IOException, KhronosTextureLoadingException {
         ByteArrayOutputStream outputBuffer = new ByteArrayOutputStream();
         byte[] tmp = new byte[1024];
         int count;
@@ -32,11 +32,11 @@ public class KhronosTextureDataLoader {
         return decodeKtx(BufferUtils.wrapDirect(outputBuffer.toByteArray()));
     }
 
-    public static KhronosTexture decodeKtx(ByteBuffer buffer) {
+    public static KhronosTexture decodeKtx(ByteBuffer buffer) throws KhronosTextureLoadingException {
         byte[] header = new byte[12];
         buffer.get(header);
         if (!Arrays.equals(header, HEADER)) {
-            throw new RuntimeException("invalid KTX header");
+            throw new KhronosTextureLoadingException("invalid KTX header");
         }
         if (buffer.getInt() == 0x01020304) {
             buffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -50,13 +50,13 @@ public class KhronosTextureDataLoader {
         int width = buffer.getInt();
         int height = buffer.getInt();
         if (buffer.getInt() != 0) {
-            throw new RuntimeException("pixelDepth != 0");
+            throw new KhronosTextureLoadingException("pixelDepth != 0");
         }
         if (buffer.getInt() != 0) {
-            throw new RuntimeException("numberOfArrayElements != 0");
+            throw new KhronosTextureLoadingException("numberOfArrayElements != 0");
         }
         if (buffer.getInt() != 1) {
-            throw new RuntimeException("numberOfFaces != 1");
+            throw new KhronosTextureLoadingException("numberOfFaces != 1");
         }
         int mipmapLevels = buffer.getInt();
         int dictSize = buffer.getInt();

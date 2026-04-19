@@ -1,12 +1,10 @@
 package dev.donutquine.editor.renderer.impl.texture.khronos;
 
+import java.nio.ByteBuffer;
 import dev.donutquine.editor.renderer.gl.GLContext;
 import dev.donutquine.editor.renderer.gl.texture.GLTexture;
 import dev.donutquine.utilities.BufferUtils;
 import team.nulls.ntengine.assets.KhronosTexture;
-import team.nulls.ntengine.assets.KhronosTextureDataLoader;
-
-import java.nio.ByteBuffer;
 
 public class ExtensionKhronosTextureLoader implements KhronosTextureLoader {
     private final GLContext gl;
@@ -21,9 +19,7 @@ public class ExtensionKhronosTextureLoader implements KhronosTextureLoader {
     }
 
     @Override
-    public void load(GLTexture texture, ByteBuffer khronosTextureFileData) {
-        KhronosTexture ktx = KhronosTextureDataLoader.decodeKtx(khronosTextureFileData);
-
+    public void load(GLTexture texture, KhronosTexture ktx) {
         for (int level = 0; level < ktx.levels().length; level++) {
             byte[] data = ktx.levels()[level];
 

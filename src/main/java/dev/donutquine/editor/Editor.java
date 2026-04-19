@@ -3,6 +3,7 @@ package dev.donutquine.editor;
 import dev.donutquine.editor.assets.AssetFileManager;
 import dev.donutquine.editor.assets.CompressedKhronosTextureAssetFileLoader;
 import dev.donutquine.editor.assets.ExtensionBasedAssetFileLoaderFactory;
+import dev.donutquine.editor.assets.KhronosTextureAssetFileLoader;
 import dev.donutquine.editor.assets.SupercellSWFAssetFileLoader;
 import dev.donutquine.editor.assets.SupercellTextureAssetFileLoader;
 import dev.donutquine.editor.settings.EditorSettings;
@@ -13,10 +14,9 @@ public class Editor {
     private static final ExtensionBasedAssetFileLoaderFactory assetFileLoaderFactory = new ExtensionBasedAssetFileLoaderFactory();
 
     static {
-        assetFileLoaderFactory.register("sc", SupercellSWFAssetFileLoader::new);
-        assetFileLoaderFactory.register("sc1", SupercellSWFAssetFileLoader::new);
-        assetFileLoaderFactory.register("sc2", SupercellSWFAssetFileLoader::new);
+        assetFileLoaderFactory.register(SupercellSWFAssetFileLoader::new, "sc", "sc1", "sc2");
         assetFileLoaderFactory.register("sctx", SupercellTextureAssetFileLoader::new);
+        assetFileLoaderFactory.register(KhronosTextureAssetFileLoader::new, "ktx", "ktx1");
         assetFileLoaderFactory.register("zktx", CompressedKhronosTextureAssetFileLoader::new);
     }
 

@@ -23,6 +23,12 @@ public class ExtensionBasedAssetFileLoaderFactory implements AssetFileLoaderFact
         return function.apply(path);
     }
 
+    public void register(Function<Path, AssetFileLoader<?>> loaderResolver, String... extensions) {
+        for (String extension : extensions) {
+            register(extension, loaderResolver);
+        }
+    }
+
     public void register(String extension, Function<Path, AssetFileLoader<?>> loaderResolver) {
         if (this.loaderResolvers.containsKey(extension)) {
             throw new AssetFileLoaderAlreadyRegisteredException(

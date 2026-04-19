@@ -2,20 +2,20 @@ package dev.donutquine.editor.layout;
 
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import dev.donutquine.editor.assets.SupercellTextureAssetFile;
+import dev.donutquine.editor.assets.TextureAssetFile;
 import dev.donutquine.editor.layout.panels.TexturesPanel;
 import dev.donutquine.editor.layout.windows.EditorWindow;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 
-public class SupercellTextureLayoutController implements TextureLayoutController<SupercellTextureAssetFile> {
+public class TextureAssetLayoutController implements TextureLayoutController<TextureAssetFile<?>> {
     public final EditorWindow window;
-    public final SupercellTextureAssetFile assetFile;
+    public final TextureAssetFile<?> assetFile;
 
     // TODO: maybe get rid of this textures panel, but somehow leave export texture functionality and width and height info.
     //  I think it is a cool idea to display info in status bar line neovim does for line and column for buffers
     private final TexturesPanel texturesPanel;
 
-    public SupercellTextureLayoutController(EditorWindow window, SupercellTextureAssetFile assetFile) {
+    public TextureAssetLayoutController(EditorWindow window, TextureAssetFile<?> assetFile) {
         this.window = window;
         this.assetFile = assetFile;
 
@@ -61,7 +61,7 @@ public class SupercellTextureLayoutController implements TextureLayoutController
 	}
 
 	@Override
-	public SupercellTextureAssetFile getAssetFile() {
+	public TextureAssetFile<?> getAssetFile() {
         return this.assetFile;
 	}
 }

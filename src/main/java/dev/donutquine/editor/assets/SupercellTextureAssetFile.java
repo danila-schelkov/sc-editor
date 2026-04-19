@@ -11,7 +11,7 @@ import dev.donutquine.editor.renderer.impl.texture.ImageFilter;
 import dev.donutquine.editor.renderer.impl.texture.sctx.SctxPixelType;
 import dev.donutquine.sctx.SctxTexture;
 
-public class SupercellTextureAssetFile extends AssetFile<SctxTexture> implements TextureAsset {
+public class SupercellTextureAssetFile extends TextureAssetFile<SctxTexture> {
     private final Path path;
 
     private final SpriteSheet spriteSheet;
@@ -51,7 +51,7 @@ public class SupercellTextureAssetFile extends AssetFile<SctxTexture> implements
     
     @Override
     public SpriteSheet getSpriteSheet(int index) {
-        assert index == 0 : "SCTX assert cannot contain more than one texture per file";
+        assert index == 0 : "SCTX asset cannot contain more than one texture per file";
         return this.spriteSheet;
     }
 }
