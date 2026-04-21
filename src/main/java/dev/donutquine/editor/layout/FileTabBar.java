@@ -43,8 +43,6 @@ public final class FileTabBar extends FlatTabbedPane {
     }
 
     private void closeFile(int fileIndex) {
-        this.removeTabAt(fileIndex);
-
         manager.closeFile(manager.getFiles().get(fileIndex));
     }
 }
