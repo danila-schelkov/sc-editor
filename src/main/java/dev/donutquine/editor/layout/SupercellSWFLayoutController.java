@@ -89,7 +89,9 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
         if (navigationHistory.hasPrevious() && navigationHistory.getCurrent() == id) return;
 
         try {
-            assetFile.getOrCreate(id, name);
+            // MovieClip modifiers cannot be displayed yet
+            if (assetFile.getOrCreate(id, name).isMovieClipModifier())
+                return;
         } catch (UnableToFindObjectException exception) {
             LOGGER.error(exception.getMessage(), exception);
             return;
