@@ -6,7 +6,14 @@ import javax.swing.table.DefaultTableModel;
 
 public class Table extends JTable {
     public Table(Object[][] data, Object[] columnNames) {
-        this.setModel(new DefaultTableModel(data, columnNames));
+        this.setModel(new DefaultTableModel(data, columnNames) {
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 0)
+                    return Integer.class;
+                return super.getColumnClass(columnIndex);
+            }
+        });
         this.tableHeader.setReorderingAllowed(false);
 
         this.selectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
