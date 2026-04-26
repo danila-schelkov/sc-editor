@@ -1,5 +1,6 @@
 package dev.donutquine.editor.renderer.impl;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.nio.FloatBuffer;
 import java.util.Iterator;
@@ -283,6 +284,15 @@ public class EditorStage implements Stage {
         }
 
         renderer.setStencilRenderingState(shader, state);
+
+        // The drawApi only allows drawing amid rendering display objects,
+        // so screen quad have to be pushed beforehand
+        // The color doesnt matter since the DISABLED state already did
+        // this.gl.glColorMask(false, false, false, false) .
+        if (state == RenderStencilState.DISABLED) {
+            drawApi.drawRectangle(camera.getClipArea(), Color.WHITE);
+            renderer.setStencilRenderingState(shader, RenderStencilState.RENDERING_MASKED);
+        }
     }
 
     @Override

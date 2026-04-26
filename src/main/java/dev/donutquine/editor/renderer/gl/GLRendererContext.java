@@ -17,6 +17,8 @@ public class GLRendererContext implements RendererContext {
     private BlendMode blendMode;
     private boolean blendingEnabled;
 
+    private int stencilRenderingDepth;
+
     public GLRendererContext(GLContext context) {
         this.gl = context;
     }
@@ -45,30 +47,36 @@ public class GLRendererContext implements RendererContext {
     @Override
     public void setRenderStencilState(RenderStencilState state) {
         switch (state) {
-            case NONE -> {}
-            case SCISSORS -> {
-                // TODO:
-            }
             case ENABLED -> {
+                stencilRenderingDepth++;
                 this.gl.glEnable(GLConstants.GL_STENCIL_TEST);
-                this.gl.glStencilFunc(GLConstants.GL_ALWAYS, 1, 0xFF); // каждый фрагмент обновит трафаретный буфер
-                this.gl.glStencilOp(GLConstants.GL_KEEP, GLConstants.GL_KEEP, GLConstants.GL_REPLACE);
-                this.gl.glStencilMask(0xFF); // включить запись в трафаретный буфер
+                this.gl.glStencilFunc(stencilRenderingDepth > 1 ? GLConstants.GL_EQUAL : GLConstants.GL_ALWAYS,
+                        stencilRenderingDepth - 1, 0xFF);
+                this.gl.glStencilOp(GLConstants.GL_KEEP, GLConstants.GL_KEEP, GLConstants.GL_INCR);
+                this.gl.glStencilMask(0xFF);
                 this.gl.glColorMask(false, false, false, false);
-
                 this.gl.glDepthMask(false);
-                this.gl.glClear(GLConstants.GL_STENCIL_BUFFER_BIT); // Clear stencil buffer (0 by default)
             }
             case RENDERING_MASKED -> {
-                this.gl.glStencilFunc(GLConstants.GL_EQUAL, 1, 0xFF);
-                this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
                 this.gl.glColorMask(true, true, true, true);
+                if (stencilRenderingDepth != 0) {
+                    this.gl.glStencilFunc(GLConstants.GL_EQUAL, stencilRenderingDepth, 0xFF);
+                    this.gl.glStencilMask(0x00);
+                }
             }
-            case DISABLED -> this.gl.glDisable(GLConstants.GL_STENCIL_TEST);
-            case RENDERING_UNMASKED -> {
-                this.gl.glStencilFunc(GLConstants.GL_NOTEQUAL, 1, 0xFF);
-                this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
-                this.gl.glColorMask(true, true, true, true);
+            case DISABLED -> {
+                stencilRenderingDepth--;
+                this.gl.glColorMask(false, false, false, false);
+                if (stencilRenderingDepth != 0) {
+                    this.gl.glStencilFunc(GLConstants.GL_EQUAL, stencilRenderingDepth + 1, 0xFF);
+                    this.gl.glStencilOp(GLConstants.GL_KEEP, GLConstants.GL_KEEP, GLConstants.GL_DECR);
+                    this.gl.glStencilMask(0xFF);
+                } else {
+                    this.gl.glStencilMask(0xFF);
+                    this.gl.glClear(GLConstants.GL_STENCIL_BUFFER_BIT);
+                    this.gl.glStencilMask(0);
+                    this.gl.glDisable(GLConstants.GL_STENCIL_TEST);
+                }
             }
         }
     }
@@ -138,6 +146,8 @@ public class GLRendererContext implements RendererContext {
     public void clearStencil() {
         this.gl.glStencilMask(0xFF);
         this.gl.glClearStencil(0);
+        this.gl.glClear(GLConstants.GL_STENCIL_BUFFER_BIT);
         this.gl.glStencilMask(0);
+        stencilRenderingDepth = 0;
     }
 }
