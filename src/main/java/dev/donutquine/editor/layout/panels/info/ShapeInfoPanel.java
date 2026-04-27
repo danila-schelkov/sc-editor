@@ -12,14 +12,20 @@ import dev.donutquine.editor.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.layout.components.Table;
 import dev.donutquine.editor.layout.contextmenus.DrawCommandContextMenu;
 import dev.donutquine.renderer.impl.swf.objects.Shape;
+import dev.donutquine.swf.Tag;
+import dev.donutquine.swf.shapes.ShapeDrawBitmapCommand;
 
 public class ShapeInfoPanel extends JPanel {
+    private static final Object[] COLUMN_NAMES = {"#", "Texture Id", "Tag", "Visible"};
+    private static final Class<?>[] COLUMN_CLASSES = {Integer.class, Integer.class, Tag.class, Boolean.class};
+
     private final Table drawCommandsTable;
 
     public ShapeInfoPanel(SupercellSWFLayoutController layoutController, Shape shape) {
         this.setLayout(new GridLayout(0, 1));
 
-        this.drawCommandsTable = new Table("#", "Texture Id", "Tag", "Visible");
+        this.drawCommandsTable = createTable(shape);
+
         DrawCommandContextMenu drawCommandContextMenu = new DrawCommandContextMenu(this.drawCommandsTable, layoutController, shape);
 
         this.add(new JScrollPane(this.drawCommandsTable), "Commands");
@@ -39,12 +45,18 @@ public class ShapeInfoPanel extends JPanel {
         });
     }
 
-    public void addCommandInfo(Object... rowData) {
-        this.drawCommandsTable.addRow(rowData);
-    }
-
     public Component add(JComponent comp, String title) {
         comp.setBorder(BorderFactory.createTitledBorder(title));
         return super.add(comp);
+    }
+
+    private static Table createTable(Shape shape) {
+        Object[][] data = new Object[shape.getCommandCount()][];
+        for (int i = 0; i < data.length; i++) {
+            ShapeDrawBitmapCommand command = shape.getCommand(i);
+            data[i] = new Object[] {i, command.getTextureIndex(), command.getTag(), true};
+        }
+
+        return new Table(data, COLUMN_NAMES, COLUMN_CLASSES);
     }
 }

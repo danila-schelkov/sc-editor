@@ -5,8 +5,15 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 public class Table extends JTable {
-    public Table(Object[][] data, Object[] columnNames) {
-        this.setModel(new DefaultTableModel(data, columnNames));
+    public Table(Object[][] data, Object[] columnNames, Class<?>[] columnClasses) {
+        assert columnClasses.length == columnNames.length;
+
+        this.setModel(new DefaultTableModel(data, columnNames) {
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                return columnClasses[columnIndex];
+            }
+        });
         this.tableHeader.setReorderingAllowed(false);
 
         this.selectionModel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
