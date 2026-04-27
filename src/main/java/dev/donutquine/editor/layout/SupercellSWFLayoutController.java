@@ -203,45 +203,9 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
 
     private JPanel createInfoPanel(DisplayObject displayObject) {
         if (displayObject.isMovieClip()) {
-            MovieClip movieClip = (MovieClip) displayObject;
-
-            MovieClipInfoPanel movieClipInfoPanel = new MovieClipInfoPanel(this, movieClip);
-
-            DisplayObject[] timelineChildren = movieClip.getTimelineChildren();
-            String[] timelineChildrenNames = movieClip.getTimelineChildrenNames();
-            for (int i = 0; i < timelineChildren.length; i++) {
-                Object childName = timelineChildrenNames != null && timelineChildrenNames.length > 0
-                        ? timelineChildrenNames[i]
-                        : null;
-                movieClipInfoPanel.addTimelineChild(i, timelineChildren[i].getId(),
-                        timelineChildren[i].getClass().getSimpleName(), childName, true);
-            }
-
-            List<MovieClipFrame> frames = movieClip.getFrames();
-            for (int i = 0; i < frames.size(); i++) {
-                movieClipInfoPanel.addFrame(i, movieClip.getFrameLabel(i));
-            }
-
-            movieClipInfoPanel.selectFrame(movieClip.getCurrentFrame());
-
-            movieClipInfoPanel.setTextInfo(
-                "Export name: " + movieClip.getExportName(),
-                "FPS: " + movieClip.getFps(),
-                String.format("Duration: %.2fs", movieClip.getDuration())
-            );
-
-            return movieClipInfoPanel;
+            return new MovieClipInfoPanel(this, (MovieClip) displayObject);
         } else if (displayObject.isShape()) {
-            Shape shape = (Shape) displayObject;
-
-            ShapeInfoPanel shapeInfoPanel = new ShapeInfoPanel(this, shape);
-
-            for (int i = 0; i < shape.getCommandCount(); i++) {
-                ShapeDrawBitmapCommand command = shape.getCommand(i);
-                shapeInfoPanel.addCommandInfo(i, command.getTextureIndex(), command.getTag(), true);
-            }
-
-            return shapeInfoPanel;
+            return new ShapeInfoPanel(this, (Shape) displayObject);
         }
 
         return null;

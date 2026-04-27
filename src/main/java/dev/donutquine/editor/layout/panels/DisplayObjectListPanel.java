@@ -23,6 +23,7 @@ import dev.donutquine.editor.layout.contextmenus.DisplayObjectContextMenu;
 
 public class DisplayObjectListPanel extends JPanel {
     private static final Object[] COLUMN_NAMES = {"Id", "Name", "Type"};
+    private static final Class<?>[] COLUMN_CLASSES = {Integer.class, String.class, String.class};
 
     private final TableRowSorter<TableModel> sorter;
     private final Table table;
@@ -30,7 +31,7 @@ public class DisplayObjectListPanel extends JPanel {
     private final JTextField textField;
 
     public DisplayObjectListPanel(SupercellSWFLayoutController controller, Object[][] data) {
-        this.table = new Table(data, COLUMN_NAMES);
+        this.table = new Table(data, COLUMN_NAMES, COLUMN_CLASSES);
         this.table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         this.sorter = new TableRowSorter<>(this.table.getModel());

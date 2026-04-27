@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JComponent;
@@ -17,6 +18,7 @@ import dev.donutquine.editor.layout.components.listeners.ChildrenListMouseListen
 import dev.donutquine.editor.layout.components.listeners.FrameSelectionListener;
 import dev.donutquine.editor.layout.contextmenus.ChildrenTableContextMenu;
 import dev.donutquine.editor.layout.contextmenus.FrameTableContextMenu;
+import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 
 public class MovieClipInfoPanel extends JPanel {
@@ -28,17 +30,26 @@ public class MovieClipInfoPanel extends JPanel {
     public MovieClipInfoPanel(SupercellSWFLayoutController swfLayoutController, MovieClip movieClip) {
         this.setLayout(new GridLayout(0, 1));
 
-        this.timelineChildrenTable = new Table("#", "Id", "Type", "Name", "Visible");
+        this.timelineChildrenTable = createTimelineChildrenTable(movieClip);
+
         this.timelineChildrenTable.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         this.timelineChildrenTable.addMouseListener(new ChildrenListMouseListener(this.timelineChildrenTable, swfLayoutController));
         ChildrenTableContextMenu childrenTableContextMenu = new ChildrenTableContextMenu(this.timelineChildrenTable, swfLayoutController);
 
-        this.framesTable = new Table("#", "Name");
+        this.framesTable = createFramesTable(movieClip);
         this.framesTable.addSelectionListener(new FrameSelectionListener(this.framesTable, this, movieClip));
         new FrameTableContextMenu(this.framesTable, swfLayoutController);
+        this.frameElementsTable = new Table(new Object[0][], new Object[] {"#", "Child #", "Matrix", "Color Transform"}, new Class<?>[] {Integer.class, Integer.class, Integer.class, Integer.class});
 
-        this.frameElementsTable = new Table("#", "Child #", "Matrix", "Color Transform");
+        this.selectFrame(movieClip.getCurrentFrame());
+
         this.textInfoPanel = new JPanel();
+
+        this.setTextInfo(
+            "Export name: " + movieClip.getExportName(),
+            "FPS: " + movieClip.getFps(),
+            String.format("Duration: %.2fs", movieClip.getDuration())
+        );
 
         this.textInfoPanel.setLayout(new BoxLayout(this.textInfoPanel, BoxLayout.Y_AXIS));
 
@@ -62,18 +73,43 @@ public class MovieClipInfoPanel extends JPanel {
         });
     }
 
-    public void addTimelineChild(Object... rowData) {
-        this.timelineChildrenTable.addRow(rowData);
+    private static Table createFramesTable(MovieClip movieClip) {
+        Object[][] data = new Object[movieClip.getFrameCount()][];
+        for (int i = 0; i < data.length; i++) {
+            data[i] = new Object[] {i, movieClip.getFrameLabel(i)};
+        }
+
+        return new Table(
+            data, 
+            new Object[] {"#", "Name"}, 
+            new Class<?>[] {Integer.class, String.class}
+        );
     }
 
-    public void addFrame(Object... rowData) {
-        this.framesTable.addRow(rowData);
+    private static Table createTimelineChildrenTable(MovieClip movieClip) {
+        DisplayObject[] timelineChildren = movieClip.getTimelineChildren();
+        String[] timelineChildrenNames = movieClip.getTimelineChildrenNames();
+        assert timelineChildrenNames == null || timelineChildrenNames.length == 0 || timelineChildren.length == timelineChildrenNames.length;
+
+        Object[][] timelineChildrenData = new Object[timelineChildren.length][];
+        for (int i = 0; i < timelineChildrenData.length; i++) {
+            Object childName = timelineChildrenNames != null && timelineChildrenNames.length > 0 ? timelineChildrenNames[i] : null;
+
+            timelineChildrenData[i] = new Object[] {i, timelineChildren[i].getId(), timelineChildren[i].getClass().getSimpleName(), childName, true};
+        }
+
+        return new Table(
+            timelineChildrenData, 
+            new Object[] {"#", "Id", "Type", "Name", "Visible"}, 
+            new Class<?>[] {Integer.class, Integer.class, String.class, String.class, Boolean.class}
+        );
     }
 
     public void selectFrame(int frameIndex) {
         this.framesTable.select(frameIndex);
     }
 
+    // TODO: rewrite with setDataVector
     public void addFrameElement(Object... rowData) {
         this.frameElementsTable.addRow(rowData);
     }
