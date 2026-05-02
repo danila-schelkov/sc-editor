@@ -45,7 +45,7 @@ public interface GLContext {
 
     void glGenerateMipmap(int textureType);
 
-    void glGetTexImage(int textureType, int level, int internalFormat, int pixelType, IntBuffer pixels);
+    void glGetTexImage(int textureType, int level, int internalFormat, int pixelType, Buffer pixels);
 
     void glGetTexLevelParameteriv(int textureType, int level, int type, IntBuffer result);
 

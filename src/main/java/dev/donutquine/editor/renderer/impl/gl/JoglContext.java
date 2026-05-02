@@ -112,7 +112,7 @@ public class JoglContext implements GLContext {
     }
 
     @Override
-    public void glGetTexImage(int textureType, int level, int internalFormat, int pixelType, IntBuffer pixels) {
+    public void glGetTexImage(int textureType, int level, int internalFormat, int pixelType, Buffer pixels) {
         gl.glGetTexImage(textureType, level, internalFormat, pixelType, pixels);
     }
 

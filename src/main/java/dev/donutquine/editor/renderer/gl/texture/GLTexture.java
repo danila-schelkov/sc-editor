@@ -188,8 +188,8 @@ public class GLTexture implements RenderableTexture {
 
     /// Ensure using in the render thread
     public IntBuffer getPixels(int level) {
-        IntBuffer pixels = BufferUtils.allocateDirectInt(width * height * getChannelCount());
-        gl.glGetTexImage(GLConstants.GL_TEXTURE_2D, level, this.internalFormat, this.pixelType, pixels);
+        IntBuffer pixels = BufferUtils.allocateDirect((width >> level) * (height >> level) * getChannelCount()).asIntBuffer();
+        gl.glGetTexImage(GLConstants.GL_TEXTURE_2D, level, this.format, GLConstants.GL_UNSIGNED_BYTE, pixels);
         return pixels;
     }
 
