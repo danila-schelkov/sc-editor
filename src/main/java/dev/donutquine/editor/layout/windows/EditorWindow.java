@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DropTarget;
 import java.nio.file.Path;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
@@ -22,6 +24,7 @@ import dev.donutquine.editor.layout.EditorDropTarget;
 import dev.donutquine.editor.layout.FileTabBar;
 import dev.donutquine.editor.layout.GestureUtilities;
 import dev.donutquine.editor.layout.LayoutController;
+import dev.donutquine.editor.layout.SwingThreadUtils;
 import dev.donutquine.editor.layout.components.EditorCanvas;
 import dev.donutquine.editor.layout.cursor.Cursors;
 import dev.donutquine.editor.layout.dialogs.ExceptionDialog;
@@ -52,6 +55,11 @@ public class EditorWindow extends Window {
     private int targetFps;
 
     private FileTabBar tabBar;
+    private final ExecutorService backgroundExecutor = Executors.newSingleThreadExecutor((runnable) -> {
+        Thread thread = new Thread(runnable, "asset-loader");
+        thread.setDaemon(true);
+        return thread;
+    });
 
     private LayoutController<?> layoutController;
 
@@ -131,40 +139,66 @@ public class EditorWindow extends Window {
         this.frame.pack();
 
         this.editor.getAssetFileManager().registerOpenedEventListener((e) -> {
-            if (e.file() instanceof NavigableAsset navigableAsset) {
-                NavigationHistory<?> navigationHistory = navigableAsset.getNavigationHistory();
-                navigationHistory.registerNavigationListener((navigationEvent) -> {
-                    this.menubar.getEditMenu().updateNavigationButtons(navigationHistory);
-                });
-            }
+            SwingThreadUtils.runOnUiThread(() -> {
+                if (e.file() instanceof NavigableAsset navigableAsset) {
+                    NavigationHistory<?> navigationHistory = navigableAsset.getNavigationHistory();
+                    navigationHistory.registerNavigationListener((navigationEvent) -> {
+                        SwingThreadUtils.runOnUiThread(() -> this.menubar.getEditMenu().updateNavigationButtons(navigationHistory));
+                    });
+                }
+            });
         });
 
         this.editor.getAssetFileManager().registerSelectedEventListener((e) -> {
-            String title = EditorWindow.TITLE;
-            if (e.file() != null) {
-                title += " - " + e.file().getName();
-            }
-            this.setTitle(title);
+            SwingThreadUtils.runOnUiThread(() -> {
+                String title = EditorWindow.TITLE;
+                if (e.file() != null) {
+                    title += " - " + e.file().getName();
+                }
+                this.setTitle(title);
 
-            this.menubar.getFileMenu().checkCanSave();
+                this.menubar.getFileMenu().checkCanSave();
 
-            NavigationHistory<?> navigationHistory = null;
-            if (e.file() instanceof NavigableAsset navigableAsset) {
-                navigationHistory = navigableAsset.getNavigationHistory();
-            }
+                NavigationHistory<?> navigationHistory = null;
+                if (e.file() instanceof NavigableAsset navigableAsset) {
+                    navigationHistory = navigableAsset.getNavigationHistory();
+                }
 
-            this.menubar.getEditMenu().updateNavigationButtons(navigationHistory);
+                this.menubar.getEditMenu().updateNavigationButtons(navigationHistory);
 
-            LayoutController<?> layoutController = LayoutControllerFactory.createLayoutForFile(this, e.file());
-            if (this.layoutController != null) {
-                this.layoutController.finish();
-            }
+                LayoutController<?> layoutController = LayoutControllerFactory.createLayoutForFile(this, e.file());
+                if (this.layoutController != null) {
+                    this.layoutController.finish();
+                }
 
-            this.layoutController = layoutController;
-            if (this.layoutController != null) {
-                this.layoutController.start();
+                this.layoutController = layoutController;
+                if (this.layoutController != null) {
+                    this.layoutController.start();
+                }
+            });
+        });
+    }
+
+    public void openFileInBackground(Path path) {
+        this.backgroundExecutor.submit(() -> {
+            try {
+                this.editor.getAssetFileManager().openFile(path);
+            } catch (AssetLoadingException e) {
+                LOGGER.error("An error occurred while loading the file: {}", path, e);
+                SwingThreadUtils.runOnUiThread(() -> this.showErrorDialog(e.getMessage()));
+            } catch (Throwable e) {
+                SwingThreadUtils.runOnUiThread(() -> ExceptionDialog.showExceptionDialog(Thread.currentThread(), e));
             }
         });
+    }
+
+    public void openFile(Path path) {
+        if (!SwingThreadUtils.isUiThread()) {
+            SwingThreadUtils.runOnUiThread(() -> this.openFile(path));
+            return;
+        }
+
+        this.openFileInBackground(path);
     }
 
     public void show() {
@@ -173,17 +207,10 @@ public class EditorWindow extends Window {
         this.canvas.getAnimator().start();
     }
 
-    public void openFile(Path path) {
-        try {
-            this.editor.getAssetFileManager().openFile(path);
-        } catch (AssetLoadingException e) {
-            LOGGER.error("An error occurred while loading the file: {}", path, e);
-            this.showErrorDialog(e.getMessage());
-            return;
-        } catch (Throwable e) {
-            ExceptionDialog.showExceptionDialog(Thread.currentThread(), e);
-            return;
-        }
+    @Override
+    public void close() {
+        this.backgroundExecutor.shutdownNow();
+        super.close();
     }
 
     public EditorMenuBar getMenubar() {

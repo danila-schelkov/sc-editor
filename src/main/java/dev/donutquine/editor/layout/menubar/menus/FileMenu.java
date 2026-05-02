@@ -12,7 +12,6 @@ import java.util.List;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
-import javax.swing.SwingWorker;
 import com.formdev.flatlaf.util.SystemFileChooser;
 import com.formdev.flatlaf.util.SystemFileChooser.FileNameExtensionFilter;
 import dev.donutquine.editor.assets.AssetFile;
@@ -128,20 +127,7 @@ public class FileMenu extends JMenu {
             return;
         }
 
-        SwingWorker<Integer, Integer> worker = new SwingWorker<>() {
-            @Override
-            protected Integer doInBackground() {
-                window.openFile(path);
-                return 0;
-            }
-
-            @Override
-            protected void done() {
-                super.done();
-            }
-        };
-
-        worker.execute();
+        this.window.openFile(path);
     }
 
     private void save(ActionEvent actionEvent) {
