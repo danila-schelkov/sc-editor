@@ -61,13 +61,16 @@ public final class GLImage {
             texture.setWrap(clampToEdge ? GLConstants.GL_CLAMP_TO_EDGE : GLConstants.GL_REPEAT);
             texture.setFilters(filter.getMinFilter(), filter.getMagFilter());
 
+            // There is no alignment information if ktx holds compressed textures 
+            if (ktx == null || ktx.glFormat() != 0) {
+                stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
+            }
+
             if (ktx != null) {
                 loadKhronosTexture(texture, ktx);
             } else if (sctxTexture != null) {
-                stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
                 loadTexture(texture, sctxTexture);
             } else {
-                stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
                 loadImage(texture, pixels, pixelFormat, pixelType);
                 texture.generateMipMap();
             }
