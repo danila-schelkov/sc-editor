@@ -102,16 +102,22 @@ public class GLRendererContext implements RendererContext {
         this.blendMode = blendMode;
 
         int sFactor = switch (blendMode) {
-            case ADDITIVE, MULTIPLY, PREMULTIPLIED_ALPHA -> GLConstants.GL_ONE;
-            case ALPHA_DARKEN -> GLConstants.GL_ONE_MINUS_SRC_ALPHA;
+            case NORMAL -> GLConstants.GL_ONE;
+            case ADDITIVE -> GLConstants.GL_ONE;
+            case MULTIPLY -> GLConstants.GL_DST_COLOR;
+            case SCREEN -> GLConstants.GL_ONE;
+            case PREMULTIPLIED_ALPHA -> GLConstants.GL_ONE;
             case ALPHA -> GLConstants.GL_SRC_ALPHA;
             case DISABLED -> throw new IllegalStateException("Unexpected value: " + blendMode);
         };
 
         int dFactor = switch (blendMode) {
+            case NORMAL -> GLConstants.GL_ONE_MINUS_SRC_ALPHA;
             case ADDITIVE -> GLConstants.GL_ONE;
-            case ALPHA_DARKEN, PREMULTIPLIED_ALPHA, ALPHA -> GLConstants.GL_ONE_MINUS_SRC_ALPHA;
-            case MULTIPLY -> GLConstants.GL_ONE_MINUS_SRC_COLOR;
+            case MULTIPLY -> GLConstants.GL_ONE_MINUS_SRC_ALPHA;
+            case SCREEN -> GLConstants.GL_ONE_MINUS_SRC_COLOR;
+            case PREMULTIPLIED_ALPHA -> GLConstants.GL_ONE_MINUS_SRC_ALPHA;
+            case ALPHA -> GLConstants.GL_ONE_MINUS_SRC_ALPHA;
             case DISABLED -> throw new IllegalStateException("Unexpected value: " + blendMode);
         };
 

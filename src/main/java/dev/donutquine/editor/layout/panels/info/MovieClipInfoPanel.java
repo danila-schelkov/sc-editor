@@ -18,6 +18,7 @@ import dev.donutquine.editor.layout.components.listeners.ChildrenListMouseListen
 import dev.donutquine.editor.layout.components.listeners.FrameSelectionListener;
 import dev.donutquine.editor.layout.contextmenus.ChildrenTableContextMenu;
 import dev.donutquine.editor.layout.contextmenus.FrameTableContextMenu;
+import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 
@@ -34,7 +35,7 @@ public class MovieClipInfoPanel extends JPanel {
 
         this.timelineChildrenTable.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         this.timelineChildrenTable.addMouseListener(new ChildrenListMouseListener(this.timelineChildrenTable, swfLayoutController));
-        ChildrenTableContextMenu childrenTableContextMenu = new ChildrenTableContextMenu(this.timelineChildrenTable, swfLayoutController);
+        new ChildrenTableContextMenu(this.timelineChildrenTable, swfLayoutController);
 
         this.framesTable = createFramesTable(movieClip);
         this.framesTable.addSelectionListener(new FrameSelectionListener(this.framesTable, this, movieClip));
@@ -57,20 +58,6 @@ public class MovieClipInfoPanel extends JPanel {
         this.add(new JScrollPane(this.framesTable), "Frames");
         this.add(new JScrollPane(this.frameElementsTable), "Frame elements");
         this.add(this.textInfoPanel, "Info");
-
-        this.timelineChildrenTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() < 2) {
-                    return;
-                }
-
-                int column = timelineChildrenTable.columnAtPoint(e.getPoint());
-                if (column == 4) {
-                    childrenTableContextMenu.changeVisibility(child -> !child.isVisible());
-                }
-            }
-        });
     }
 
     private static Table createFramesTable(MovieClip movieClip) {
@@ -95,13 +82,13 @@ public class MovieClipInfoPanel extends JPanel {
         for (int i = 0; i < timelineChildrenData.length; i++) {
             Object childName = timelineChildrenNames != null && timelineChildrenNames.length > 0 ? timelineChildrenNames[i] : null;
 
-            timelineChildrenData[i] = new Object[] {i, timelineChildren[i].getId(), timelineChildren[i].getClass().getSimpleName(), childName, true};
+            timelineChildrenData[i] = new Object[] {i, timelineChildren[i].getId(), timelineChildren[i].getClass().getSimpleName(), childName, timelineChildren[i].getBlendMode(), true};
         }
 
         return new Table(
             timelineChildrenData, 
-            new Object[] {"#", "Id", "Type", "Name", "Visible"}, 
-            new Class<?>[] {Integer.class, Integer.class, String.class, String.class, Boolean.class}
+            new Object[] {"#", "Id", "Type", "Name", "Blend Mode", "Visible"}, 
+            new Class<?>[] {Integer.class, Integer.class, String.class, String.class, BlendMode.class, Boolean.class}
         );
     }
 

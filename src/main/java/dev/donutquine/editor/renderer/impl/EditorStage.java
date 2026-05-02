@@ -432,10 +432,9 @@ public class EditorStage implements Stage {
         this.renderer.endRendering();
     }
 
-    private Batch constructBatch(Shader shader, RenderableTexture texture,
-            RenderStencilState stencilRenderingState) {
-        return new Batch(shader, texture, stencilRenderingState, this::createDynamicVertexBuffer,
-                rendererContext::setRenderStencilState);
+    private Batch constructBatch(Shader shader, RenderableTexture texture, int renderConfigBits, RenderStencilState stencilRenderingState) {
+        return new Batch(shader, texture, renderConfigBits, stencilRenderingState, this::createDynamicVertexBuffer,
+            rendererContext::setRenderStencilState, rendererContext::bindBlendMode);
     }
 
     private VertexBuffer createDynamicVertexBuffer(Attribute... attributes) {

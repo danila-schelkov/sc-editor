@@ -1,5 +1,6 @@
 package dev.donutquine.renderer.impl.swf.objects;
 
+import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.editor.renderer.Stage;
 import dev.donutquine.swf.ColorTransform;
 import dev.donutquine.swf.Matrix2x3;
@@ -47,6 +48,16 @@ public abstract class DisplayObject {
 
     public void setBlendMode(int blendMode) {
         this.renderConfigBits = this.renderConfigBits & 0xFFFFFC7F | (((blendMode >> 7) & 7) << 7);
+    }
+
+    public void setBlendMode(BlendMode blendMode) {
+        assert BlendMode.values().length < 0b1000;
+        this.setBlendMode(blendMode.ordinal() << 7);
+    }
+
+    public BlendMode getBlendMode() {
+        assert BlendMode.values().length < 0b1000;
+        return BlendMode.values()[(this.renderConfigBits & 0x380) >> 7];
     }
 
     public void setGrayOut(boolean grayOut) {

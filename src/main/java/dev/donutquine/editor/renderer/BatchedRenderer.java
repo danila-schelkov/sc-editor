@@ -47,17 +47,17 @@ public class BatchedRenderer implements Renderer {
 
         if (!this.batches.isEmpty()) {
             Batch lastBatch = this.batches.get(this.batches.size() - 1);
-            if (lastBatch.hasSame(shader, texture)) {
+            if (lastBatch.hasSame(shader, texture, renderConfigBits)) {
                 this.currentBatch = lastBatch;
             }
         }
 
         if (this.currentBatch == null) {
-            this.currentBatch = this.batchPool.createOrPopBatch(shader, texture, RenderStencilState.NONE);
+            this.currentBatch = this.batchPool.createOrPopBatch(shader, texture, renderConfigBits, RenderStencilState.NONE);
             this.batches.add(this.currentBatch);
         }
 
-        return this.currentBatch.startShape(renderConfigBits);
+        return this.currentBatch.startShape();
     }
 
     @Override
@@ -76,7 +76,7 @@ public class BatchedRenderer implements Renderer {
 
     @Override
     public void setStencilRenderingState(Shader shader, RenderStencilState state) {
-        this.batches.add(this.batchPool.createOrPopBatch(shader, null, state));
+        this.batches.add(this.batchPool.createOrPopBatch(shader, null, 0, state));
     }
 
     @Override

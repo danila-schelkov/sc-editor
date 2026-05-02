@@ -61,10 +61,8 @@ public final class GLImage {
             texture.setWrap(clampToEdge ? GLConstants.GL_CLAMP_TO_EDGE : GLConstants.GL_REPEAT);
             texture.setFilters(filter.getMinFilter(), filter.getMagFilter());
 
-            // There is no alignment information if ktx holds compressed textures 
-            if (ktx == null || ktx.glFormat() != 0) {
-                stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
-            }
+            // FIXME: There are some texture types without alignment information
+            stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
 
             if (ktx != null) {
                 loadKhronosTexture(texture, ktx);
