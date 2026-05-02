@@ -30,7 +30,7 @@ public class AssetFileManager {
         AssetFile<?> file = loader.load();
 
         files.add(file);
-        fileOpenedEventBus.fire(new AssetFileOpenedEvent(file));
+        fileOpenedEventBus.fire(new AssetFileOpenedEvent(file, files.size() - 1));
         setActiveFile(file);
     }
 

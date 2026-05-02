@@ -14,19 +14,28 @@ public final class FileTabBar extends FlatTabbedPane {
         this.manager = manager;
 
         manager.registerOpenedEventListener((openedEvent) -> {
-            addTab(openedEvent.file().getName(), null);
-            setSelectedIndex(manager.getFiles().size() - 1);
+            SwingThreadUtils.runOnUiThread(() -> {
+                addTab(openedEvent.file().getName(), null);
+                setSelectedIndex(openedEvent.fileIndex());
+            });
         });
 
         manager.registerClosedEventListener((closedEvent) -> {
-            this.removeTabAt(closedEvent.fileIndex());
+            SwingThreadUtils.runOnUiThread(() -> {
+                int index = closedEvent.fileIndex();
+                if (index >= 0 && index < this.getTabCount()) {
+                    this.removeTabAt(index);
+                }
+            });
         });
 
         addChangeListener((_changeEvent) -> {
-            int selectedIndex = this.getSelectedIndex();
-            if (selectedIndex == -1) return;
+            SwingThreadUtils.runOnUiThread(() -> {
+                int selectedIndex = this.getSelectedIndex();
+                if (selectedIndex == -1) return;
 
-            selectFile(manager.getFiles().get(selectedIndex));
+                selectFile(manager.getFiles().get(selectedIndex));
+            });
         });
 
         this.setTabsClosable(true);
