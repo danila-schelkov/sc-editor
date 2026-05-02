@@ -1,11 +1,13 @@
 package dev.donutquine.renderer.impl.swf.objects;
 
 import dev.donutquine.editor.assets.TextureAsset;
+import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.swf.*;
 import dev.donutquine.swf.exceptions.UnableToFindObjectException;
 import dev.donutquine.swf.movieclips.*;
 
 import java.util.List;
+import java.util.Map;
 
 public class MovieClip extends Sprite {
     private String exportName;
@@ -24,6 +26,26 @@ public class MovieClip extends Sprite {
         this.loopFrame = -1;
     }
 
+    // TODO: verify
+    private static final Map<Integer, BlendMode> BLEND_MODE_MAP = Map.ofEntries(
+        Map.entry(0, BlendMode.NORMAL), 
+        Map.entry(1, BlendMode.NORMAL),
+        Map.entry(2, BlendMode.NORMAL),
+        Map.entry(3, BlendMode.MULTIPLY),
+        Map.entry(4, BlendMode.SCREEN),
+        Map.entry(5, BlendMode.NORMAL),
+        Map.entry(6, BlendMode.NORMAL),
+        Map.entry(7, BlendMode.NORMAL),
+        Map.entry(8, BlendMode.ADDITIVE),
+        Map.entry(9, BlendMode.NORMAL),
+        Map.entry(10, BlendMode.NORMAL),
+        Map.entry(11, BlendMode.NORMAL),
+        Map.entry(12, BlendMode.PREMULTIPLIED_ALPHA),
+        Map.entry(13, BlendMode.NORMAL),
+        Map.entry(14, BlendMode.NORMAL),
+        Map.entry(15, BlendMode.PREMULTIPLIED_ALPHA)
+    );
+
     public static MovieClip createMovieClip(MovieClipOriginal original, SupercellSWF swf, TextureAsset textureAsset) throws UnableToFindObjectException {
         original.createTimelineChildren(swf);
 
@@ -37,7 +59,9 @@ public class MovieClip extends Sprite {
         for (int i = 0; i < timelineChildren.length; i++) {
             DisplayObjectOriginal child = timelineChildrenOriginal[i];
             DisplayObject displayObject = DisplayObjectFactory.createFromOriginal(child, swf, original.getScalingGrid(), textureAsset);
-            displayObject.setVisibleRecursive((clipChildren.get(i).blend() & 64) == 0);
+            int blend = clipChildren.get(i).blend();
+            displayObject.setVisibleRecursive((blend & 64) == 0);
+            displayObject.setBlendMode(BLEND_MODE_MAP.get(blend & 63));
             displayObject.setInteractiveRecursive(true);
 
             timelineChildren[i] = displayObject;

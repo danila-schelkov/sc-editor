@@ -4,6 +4,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JTable;
 import dev.donutquine.editor.layout.SupercellSWFLayoutController;
+import dev.donutquine.editor.renderer.BlendMode;
 
 public class ChildrenListMouseListener extends MouseAdapter {
     private final JTable table;
@@ -20,16 +21,23 @@ public class ChildrenListMouseListener extends MouseAdapter {
         if (selectedRow == -1)
             return;
 
-        int selectedColumn = this.table.getSelectedColumn();
-        if (selectedColumn != 1)
-            return;
-
         int clickCount = e.getClickCount();
         if (clickCount < 2)
             return;
 
-        int id = (int) this.table.getValueAt(selectedRow, selectedColumn);
+        int column = this.table.columnAtPoint(e.getPoint());
+        if (column == 1) {
+            int id = (int) this.table.getValueAt(selectedRow, column);
 
-        this.controller.selectObject(id, null);
+            this.controller.selectObject(id, null);
+        } else if (column == 4) {
+            boolean isShiftDown = (e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0;
+            BlendMode newBlendMode = BlendMode.values()[(this.controller.getBlendMode(selectedRow).ordinal() + (isShiftDown ? BlendMode.values().length - 1 : 1)) % BlendMode.values().length];
+            this.controller.setBlendMode(selectedRow, newBlendMode);
+            this.table.setValueAt(newBlendMode, selectedRow, column);
+        } else if (column == 5) {
+            boolean[] results = this.controller.changeVisibility(new int[] {selectedRow}, child -> !child.isVisible());
+            this.table.setValueAt(results[0], selectedRow, column);
+        }
     }
 }

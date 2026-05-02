@@ -13,11 +13,14 @@ public class Batch {
     protected static final int SIZE = 512;
 
     private final Consumer<RenderStencilState> renderStencilStateConsumer;
+	private final Consumer<BlendMode> blendModeConsumer;
     private final VertexBufferProducer vertexBufferProducer;
     private final Attribute[] attributes;
     private final RenderableTexture texture;
+    private final int renderConfigBits;
     private final Shader shader;
     private final RenderStencilState stencilRenderingState;
+    private final BlendMode blendMode;
     private final int vertexSize;
 
     private VertexBuffer vertexBuffer;
@@ -29,19 +32,22 @@ public class Batch {
      */
     private int capacity;
 
-    private int renderConfigBits;
     private int triangleCount;
     private int vertexIndex;
     private int pointCount;
 
     private boolean isDirty;
 
-    public Batch(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState, VertexBufferProducer vertexBufferProducer, Consumer<RenderStencilState> renderStencilStateConsumer) {
+    public Batch(Shader shader, RenderableTexture texture, int renderConfigBits, RenderStencilState stencilRenderingState, VertexBufferProducer vertexBufferProducer, Consumer<RenderStencilState> renderStencilStateConsumer, Consumer<BlendMode> blendModeConsumer) {
         this.shader = shader;
         this.texture = texture;
+        this.renderConfigBits = renderConfigBits;
         this.stencilRenderingState = stencilRenderingState;
         this.vertexBufferProducer = vertexBufferProducer;
         this.renderStencilStateConsumer = renderStencilStateConsumer;
+        this.blendModeConsumer = blendModeConsumer;
+
+        this.blendMode = BlendMode.values()[(this.renderConfigBits >> 7) & 7];
 
         this.capacity = SIZE;
         this.attributes = shader.getAttributes();
@@ -85,6 +91,7 @@ public class Batch {
 
         this.shader.bind();
         this.renderStencilStateConsumer.accept(this.stencilRenderingState);
+        this.blendModeConsumer.accept(this.blendMode);
         this.vertexBuffer.render(0, this.triangleCount * 3);
 //        this.shader.unbind();  // FIXME: too many unbinds
     }
@@ -98,9 +105,7 @@ public class Batch {
         this.vertexIndex = 0;
     }
 
-    public boolean startShape(int renderConfigBits) {
-        this.renderConfigBits = renderConfigBits;
-
+    public boolean startShape() {
         return true;
     }
 
@@ -158,12 +163,12 @@ public class Batch {
         return this.triangleCount + triangleCount <= this.capacity;
     }
 
-    public boolean hasSame(Shader shader, RenderableTexture texture) {
-        return this.shader == shader && this.texture == texture;
+    public boolean hasSame(Shader shader, RenderableTexture texture, int renderConfigBits) {
+        return this.shader == shader && this.texture == texture && this.renderConfigBits == renderConfigBits;
     }
 
-    public boolean hasSame(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState) {
-        return this.shader == shader && this.texture == texture && this.stencilRenderingState == stencilRenderingState;
+    public boolean hasSame(Shader shader, RenderableTexture texture, int renderConfigBits, RenderStencilState stencilRenderingState) {
+        return this.shader == shader && this.texture == texture && this.renderConfigBits == renderConfigBits && this.stencilRenderingState == stencilRenderingState;
     }
 
     @Override

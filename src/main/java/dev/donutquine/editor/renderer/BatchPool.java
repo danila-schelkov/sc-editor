@@ -19,11 +19,11 @@ public class BatchPool {
         this.batches.addAll(batches);
     }
 
-    public Batch createOrPopBatch(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState) {
+    public Batch createOrPopBatch(Shader shader, RenderableTexture texture, int renderConfigBits, RenderStencilState stencilRenderingState) {
         Batch targetBatch = null;
 
         for (Batch batch : this.batches) {
-            if (batch.hasSame(shader, texture, stencilRenderingState)) {
+            if (batch.hasSame(shader, texture, renderConfigBits, stencilRenderingState)) {
                 targetBatch = batch;
                 break;
             }
@@ -32,7 +32,7 @@ public class BatchPool {
         this.batches.remove(targetBatch);
 
         if (targetBatch == null) {
-            targetBatch = batchConstructor.construct(shader, texture, stencilRenderingState);
+            targetBatch = batchConstructor.construct(shader, texture, renderConfigBits, stencilRenderingState);
             targetBatch.init();
         }
 
@@ -41,6 +41,6 @@ public class BatchPool {
 
     @FunctionalInterface
     public interface BatchConstructor {
-        Batch construct(Shader shader, RenderableTexture texture, RenderStencilState stencilRenderingState);
+        Batch construct(Shader shader, RenderableTexture texture, int renderConfigBits, RenderStencilState stencilRenderingState);
     }
 }

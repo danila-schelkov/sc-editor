@@ -4,8 +4,8 @@ import java.util.function.Function;
 import dev.donutquine.editor.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.layout.components.Table;
 import dev.donutquine.editor.layout.components.TablePopupMenuListener;
+import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
-import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 
 public class ChildrenTableContextMenu extends ContextMenu {
     private final Table table;
@@ -17,6 +17,12 @@ public class ChildrenTableContextMenu extends ContextMenu {
         this.table = table;
         this.swfLayoutController = swfLayoutController;
 
+        for (BlendMode blendMode : BlendMode.values()) {
+            this.add("Set " + blendMode.toString() + " blend mode", event -> this.setBlendMode(blendMode));
+        }
+
+        this.addSeparator();
+
         this.add("Toggle visibility", event -> this.changeVisibility(child -> !child.isVisible()));
         this.add("Enable", event -> this.changeVisibility(child -> true));
         this.add("Disable", event -> this.changeVisibility(child -> false));
@@ -25,23 +31,20 @@ public class ChildrenTableContextMenu extends ContextMenu {
     }
 
     public void changeVisibility(Function<DisplayObject, Boolean> visibilityFunction) {
-        MovieClip movieClip = this.getMovieClip();
-        if (movieClip == null) return;
-
         int[] selectedRows = this.table.getSelectedRows();
-        for (int childIndex : selectedRows) {
-            DisplayObject child = movieClip.getTimelineChildren()[childIndex];
+        boolean[] results = this.swfLayoutController.changeVisibility(selectedRows, visibilityFunction);
 
-            child.setVisibleRecursive(visibilityFunction.apply(child));
-
-            this.table.setValueAt(child.isVisible(), childIndex, 4);
+        for (int i = 0; i < results.length; i++) {
+            int childIndex = selectedRows[i];
+            this.table.setValueAt(results[i], childIndex, 5);
         }
     }
 
-    private MovieClip getMovieClip() {
-        DisplayObject selectedObject = this.swfLayoutController.getSelectedObject();
-        assert selectedObject.isMovieClip();
-
-        return (MovieClip) selectedObject;
+    public void setBlendMode(BlendMode blendMode) {
+        int[] selectedRows = this.table.getSelectedRows();
+        for (int childIndex : selectedRows) {
+            this.swfLayoutController.setBlendMode(childIndex, blendMode);
+            this.table.setValueAt(blendMode, childIndex, 4);
+        }
     }
 }

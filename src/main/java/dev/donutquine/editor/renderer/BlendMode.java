@@ -1,43 +1,23 @@
 package dev.donutquine.editor.renderer;
 
 public enum BlendMode {
-    /**
-     * Adds source and destination colors together.
-     * Commonly used for glowing effects. <br>
-     * OpenGL: glBlendFunc(GL_ONE, GL_ONE)<br>
-     * Also known as Linear Dodge or Glow
-     */
+    // GL_ONE, GL_ONE_MINUS_SRC_ALPHA
+    NORMAL,
+    // GL_ONE, GL_ONE
     ADDITIVE,
-    /**
-     * Darkening alpha blending: Both source and destination colors are multiplied by (1 - srcAlpha),
-     * which can result in a darker output. <br>
-     * OpenGL: <code>glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)</code>
-     */
-    ALPHA_DARKEN,
-    /**
-     * Multiplicative blending: The source color is multiplied by the inverse of the destination color,
-     * creating a darkening effect. <br>
-     * OpenGL: <code>glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR)</code>
-     */
+    // GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA
     MULTIPLY,
-    /**
-     * Assumes the source color is already multiplied by its alpha,
-     * leading to better edge blending. <br>
-     * This avoids some artifacts on the borders of transparent objects and improves blending quality. <br>
-     * OpenGL: <code>glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA)</code>
-     */
+    // GL_ONE, GL_ONE_MINUS_SRC_COLOR
+    SCREEN,
+    // GL_ONE, GL_ONE_MINUS_SRC_ALPHA
     PREMULTIPLIED_ALPHA,
-    /**
-     * The source color is blended based on its alpha value, producing smooth transparency. <br>
-     * This allows you to correctly combine translucent and opaque objects,
-     * providing a realistic representation of transparency. <br>
-     * OpenGL: <code>glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)</code> <br>
-     * Also known as Interpolated Blending or Normal
-     */
+    // GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
     ALPHA,
     /**
      * The blending is disabled in the graphics library at all.
      */
     DISABLED
+    // TODO: I dont know how to map old types to new ones
+    // 1, 300h, 301h, 302h, 303h, 306h, 307h, 304h, 305h, 308h, 8001h, 8002h, 8003h, 8004h
 }
 

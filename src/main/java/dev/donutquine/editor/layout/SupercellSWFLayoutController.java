@@ -2,6 +2,7 @@ package dev.donutquine.editor.layout;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -18,15 +19,14 @@ import dev.donutquine.editor.layout.windows.EditorWindow;
 import dev.donutquine.editor.layout.windows.UsagesWindow;
 import dev.donutquine.editor.navigation.NavigationEvent;
 import dev.donutquine.editor.navigation.NavigationHistory;
+import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 import dev.donutquine.renderer.impl.swf.objects.Shape;
 import dev.donutquine.swf.SupercellSWF;
 import dev.donutquine.swf.exceptions.UnableToFindObjectException;
-import dev.donutquine.swf.movieclips.MovieClipFrame;
 import dev.donutquine.swf.movieclips.MovieClipOriginal;
-import dev.donutquine.swf.shapes.ShapeDrawBitmapCommand;
 
 public class SupercellSWFLayoutController implements TextureLayoutController<SupercellSWFAssetFile>, SearchableLayoutController {
     private static final Logger LOGGER = LoggerFactory.getLogger(SupercellSWFLayoutController.class);
@@ -233,5 +233,39 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
         }
 
         return rowDataList;
+    }
+
+    public BlendMode getBlendMode(int childIndex) {
+        MovieClip movieClip = getMovieClip();
+        DisplayObject child = movieClip.getTimelineChildren()[childIndex];
+        return child.getBlendMode();
+    }
+
+    public void setBlendMode(int childIndex, BlendMode blendMode) {
+        MovieClip movieClip = getMovieClip();
+        DisplayObject child = movieClip.getTimelineChildren()[childIndex];
+        child.setBlendMode(blendMode);
+    }
+
+    public boolean[] changeVisibility(int[] childIndices, Function<DisplayObject, Boolean> visibilityFunction) {
+        boolean[] results = new boolean[childIndices.length];
+
+        MovieClip movieClip = getMovieClip();
+        for (int i = 0; i < results.length; i++) {
+            int childIndex = childIndices[i];
+            DisplayObject child = movieClip.getTimelineChildren()[childIndex];
+            child.setVisibleRecursive(visibilityFunction.apply(child));
+
+            results[i] = child.isVisible();
+        }
+
+        return results;
+    }
+
+    private MovieClip getMovieClip() {
+        DisplayObject selectedObject = this.getSelectedObject();
+        assert selectedObject.isMovieClip();
+
+        return (MovieClip) selectedObject;
     }
 }
