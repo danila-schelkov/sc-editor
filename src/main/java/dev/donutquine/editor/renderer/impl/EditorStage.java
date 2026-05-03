@@ -2,6 +2,8 @@ package dev.donutquine.editor.renderer.impl;
 
 import java.awt.image.BufferedImage;
 import java.nio.FloatBuffer;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
@@ -79,6 +81,13 @@ public class EditorStage implements Stage {
     private boolean isWireframeEnabled;
     private Consumer<FloatBuffer> extraPMVMatrixConsumer;
 
+	private int stencilIdRangeStart = 0, stencilIdRangeEnd = 0xFF;
+	private Deque<RenderStencilState> renderStencilStateStack = new ArrayDeque<>();
+	private int renderStencilStateStackMaxDepth;
+	private int stencilId;
+
+	private int backgroundColor = 0xFF7F7F7F; // in ARGB format
+
     private EditorStage() {}
 
     public static EditorStage getInstance() {
@@ -113,6 +122,12 @@ public class EditorStage implements Stage {
         this.updatePMVMatrix();
 
         this.rendererContext.bindBlendMode(BlendMode.PREMULTIPLIED_ALPHA);
+        this.rendererContext.clearColor(0xFF7F7F7F);
+        this.rendererContext.clearStencil();
+
+        this.stencilId = this.stencilIdRangeStart;
+        this.renderStencilStateStackMaxDepth = 0;
+        this.renderStencilStateStack.clear();
 
         this.initialized = true;
     }
@@ -155,15 +170,15 @@ public class EditorStage implements Stage {
 
     public void renderToFramebuffer(Framebuffer framebuffer) {
         framebuffer.bind();
+        if (isWireframeEnabled) {
+            gl.glPolygonMode(GLConstants.GL_FRONT_AND_BACK, GLConstants.GL_LINE);
+        }
         this.renderer.beginRendering();
         renderDisplayObject();
+        this.renderer.endRendering(); // flushes renderer image to screen
         if (isWireframeEnabled) {
-            // TODO: redo with lines
-            gl.glPolygonMode(GLConstants.GL_FRONT_AND_BACK, GLConstants.GL_LINE);
-            renderDisplayObject();
             gl.glPolygonMode(GLConstants.GL_FRONT_AND_BACK, GLConstants.GL_FILL);
         }
-        this.renderer.endRendering(); // flushes renderer image to screen
         framebuffer.unbind();
     }
 
@@ -283,6 +298,18 @@ public class EditorStage implements Stage {
         }
 
         renderer.setStencilRenderingState(shader, state);
+    }
+
+    @Override
+    public void setStencilIdRange(int start, int end) {
+        this.stencilIdRangeStart = start;
+        this.stencilIdRangeEnd = end;
+    }
+
+    @Override
+    public void setBackgroundColor(int argb) {
+        this.backgroundColor = argb;
+        this.rendererContext.clearColor(argb);
     }
 
     @Override
@@ -414,30 +441,114 @@ public class EditorStage implements Stage {
 
     private void renderDisplayObject() {
         this.rendererContext.clearColor(0, 0, 0, 0);
-        this.rendererContext.clear(GLConstants.GL_COLOR_BUFFER_BIT | GLConstants.GL_DEPTH_BUFFER_BIT
-                | GLConstants.GL_STENCIL_BUFFER_BIT);
+
+        // if a3 which is always true
+        // this.gl.glDepthMask(true);
+        this.gl.glStencilMask(0xFF);
+        this.rendererContext.clear(true, true, true);
+        this.gl.glStencilMask(0);
+        // this.gl.glDepthMask(false);
+
+        this.stencilId = this.stencilIdRangeStart;
 
         this.rendererContext.clearStencil();
     }
 
     private void renderScreen() {
-        this.rendererContext.clearColor(.5f, .5f, .5f, 1);
-        this.rendererContext.clear(GLConstants.GL_COLOR_BUFFER_BIT | GLConstants.GL_DEPTH_BUFFER_BIT
-                | GLConstants.GL_STENCIL_BUFFER_BIT);
+        this.rendererContext.clearColor(this.backgroundColor);
+        this.rendererContext.clear(true, true, true);
 
         this.renderer.beginRendering();
-        // Note: OpenGL textures are flipped, so drawing with flipped V coordinates of
-        // UV
+        // Note: OpenGL textures are flipped, so drawing with flipped V coordinates of UV
         this.drawApi.drawTextureFlipped(framebuffer.getTexture(), camera.getClipArea());
         this.renderer.endRendering();
     }
 
     private Batch constructBatch(Shader shader, RenderableTexture texture, int renderConfigBits, RenderStencilState stencilRenderingState) {
-        return new Batch(shader, texture, renderConfigBits, stencilRenderingState, this::createDynamicVertexBuffer,
-            rendererContext::setRenderStencilState, rendererContext::bindBlendMode);
+        return new Batch(
+            shader, texture, renderConfigBits, stencilRenderingState, 
+            this::createDynamicVertexBuffer,
+            state -> {
+                switch (stencilRenderingState) {
+                    case NONE, SCISSORS -> {}
+                    case ENABLED -> {
+                        this.pushRenderStencilState(stencilRenderingState);
+                    }
+					case DISABLED -> this.popRenderStencilState(stencilRenderingState);
+					case RENDERING_MASKED, RENDERING_UNMASKED -> this.setRenderStencilState(stencilRenderingState);
+                }
+            }, 
+            rendererContext::bindBlendMode);
     }
 
-    private VertexBuffer createDynamicVertexBuffer(Attribute... attributes) {
+    private void pushRenderStencilState(RenderStencilState state) {
+        if (this.renderStencilStateStack.isEmpty()) {
+            this.stencilId = Math.min(this.stencilId + 1, this.stencilIdRangeEnd);
+        }
+
+        this.renderStencilStateStack.push(state);
+        this.renderStencilStateStackMaxDepth = Math.max(this.renderStencilStateStackMaxDepth, this.renderStencilStateStack.size());
+
+        this.setRenderStencilState(state);
+	}
+
+	private void popRenderStencilState(RenderStencilState state) {
+        this.renderStencilStateStack.pop();
+
+        if (this.renderStencilStateStack.isEmpty()) {
+            assert state == RenderStencilState.DISABLED;
+            this.setRenderStencilState(state);
+            this.renderStencilStateStackMaxDepth = 0;
+        } else {
+            this.setRenderStencilState(this.renderStencilStateStack.peekLast());
+        }
+	}
+
+    private void setRenderStencilState(RenderStencilState state) {
+        if (!this.renderStencilStateStack.isEmpty()) {
+            // Note: Replacing last stack value
+            this.renderStencilStateStack.pop();
+            this.renderStencilStateStack.push(state);
+        }
+
+        int layers = 8;
+        int stencilRangeMask = stencilIdRangeEnd;
+
+        for (int layer = 7; layer >= 0; layer++) {
+            int stencilIdRangeBit = stencilIdRangeEnd & (1 << layer);
+
+            if (stencilIdRangeBit != 0) {
+                // Note: Filling (layer + 1) bits with 0b1
+                stencilRangeMask = stencilIdRangeEnd | ((1 << layer) - 1);
+                layers = layer + 1;
+                break;
+            }
+        }
+
+        int currentNestedStencilRefMask = 0;
+        for (int index = 1; index < renderStencilStateStack.size(); index++) {
+            currentNestedStencilRefMask |= 1 << (layers - index);
+        }
+
+        int previousOrRenderDepthStencilMask = 0;
+        for (int index = 1; index < renderStencilStateStackMaxDepth; index++) {
+            previousOrRenderDepthStencilMask |= 1 << (layers - index);
+        }
+
+        if ((stencilId | currentNestedStencilRefMask) > stencilIdRangeEnd || 
+            (currentNestedStencilRefMask != 0 && (
+                stencilId >= currentNestedStencilRefMask || 
+                (stencilId & currentNestedStencilRefMask) != 0))) {
+            currentNestedStencilRefMask = 0;
+            previousOrRenderDepthStencilMask = 0;
+        }
+
+        int ref = currentNestedStencilRefMask | stencilId;
+
+        this.rendererContext.setRenderStencilState(state, ref, stencilRangeMask, previousOrRenderDepthStencilMask, currentNestedStencilRefMask);
+    }
+
+	private VertexBuffer createDynamicVertexBuffer(Attribute... attributes) {
         return new GLVertexBuffer(this.gl, GLConstants.GL_DYNAMIC_DRAW, attributes);
     }
 }
