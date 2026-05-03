@@ -82,7 +82,9 @@ public class MovieClipInfoPanel extends JPanel {
         for (int i = 0; i < timelineChildrenData.length; i++) {
             Object childName = timelineChildrenNames != null && timelineChildrenNames.length > 0 ? timelineChildrenNames[i] : null;
 
-            timelineChildrenData[i] = new Object[] {i, timelineChildren[i].getId(), timelineChildren[i].getClass().getSimpleName(), childName, timelineChildren[i].getBlendMode(), true};
+            DisplayObject timelineChild = timelineChildren[i];
+
+            timelineChildrenData[i] = new Object[] {i, timelineChild.getId(), timelineChild.getClass().getSimpleName(), childName, timelineChild.getBlendMode(), timelineChild.isVisible()};
         }
 
         return new Table(
