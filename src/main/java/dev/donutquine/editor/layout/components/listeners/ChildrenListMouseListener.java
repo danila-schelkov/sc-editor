@@ -1,5 +1,6 @@
 package dev.donutquine.editor.layout.components.listeners;
 
+import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JTable;
@@ -20,6 +21,10 @@ public class ChildrenListMouseListener extends MouseAdapter {
         int selectedRow = this.table.getSelectedRow();
         if (selectedRow == -1)
             return;
+
+        if ((e.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) == 0) {
+            return;
+        }
 
         int clickCount = e.getClickCount();
         if (clickCount < 2)
