@@ -43,31 +43,25 @@ public class GLRendererContext implements RendererContext {
     }
 
     @Override
-    public void setRenderStencilState(RenderStencilState state) {
+    public void setRenderStencilState(RenderStencilState state, int ref, int mask, int previousOrRenderDepthStencilMask, int currentNestedStencilRefMask) {
         switch (state) {
-            case NONE -> {}
-            case SCISSORS -> {
-                // TODO:
-            }
+            case NONE, SCISSORS -> {}
             case ENABLED -> {
                 this.gl.glEnable(GLConstants.GL_STENCIL_TEST);
-                this.gl.glStencilFunc(GLConstants.GL_ALWAYS, 1, 0xFF); // каждый фрагмент обновит трафаретный буфер
-                this.gl.glStencilOp(GLConstants.GL_KEEP, GLConstants.GL_KEEP, GLConstants.GL_REPLACE);
-                this.gl.glStencilMask(0xFF); // включить запись в трафаретный буфер
+                this.gl.glStencilFunc(currentNestedStencilRefMask == 0 ? GLConstants.GL_ALWAYS : GLConstants.GL_EQUAL, ref, mask & ~currentNestedStencilRefMask);
+                this.gl.glStencilOp(GLConstants.GL_KEEP, GLConstants.GL_KEEP, GLConstants.GL_REPLACE); // FIXME: must be INCR
+                this.gl.glStencilMask(0xFF);
                 this.gl.glColorMask(false, false, false, false);
-
-                this.gl.glDepthMask(false);
-                this.gl.glClear(GLConstants.GL_STENCIL_BUFFER_BIT); // Clear stencil buffer (0 by default)
             }
             case RENDERING_MASKED -> {
-                this.gl.glStencilFunc(GLConstants.GL_EQUAL, 1, 0xFF);
-                this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
+                this.gl.glStencilFunc(GLConstants.GL_EQUAL, ref, mask & ~previousOrRenderDepthStencilMask | currentNestedStencilRefMask);
+                this.gl.glStencilMask(0x00);
                 this.gl.glColorMask(true, true, true, true);
             }
             case DISABLED -> this.gl.glDisable(GLConstants.GL_STENCIL_TEST);
             case RENDERING_UNMASKED -> {
-                this.gl.glStencilFunc(GLConstants.GL_NOTEQUAL, 1, 0xFF);
-                this.gl.glStencilMask(0x00); // отключить запись в трафаретный буфер
+                this.gl.glStencilFunc(GLConstants.GL_NOTEQUAL, ref, mask & ~previousOrRenderDepthStencilMask | currentNestedStencilRefMask);
+                this.gl.glStencilMask(0x00);
                 this.gl.glColorMask(true, true, true, true);
             }
         }
@@ -127,8 +121,17 @@ public class GLRendererContext implements RendererContext {
     }
 
     @Override
-    public void clear(int flags) {
-        this.gl.glClear(flags);
+    public void clear(boolean color, boolean depth, boolean stencil) {
+        int mask = 0;
+        if (color) mask |= GLConstants.GL_COLOR_BUFFER_BIT;
+        if (depth) mask |= GLConstants.GL_DEPTH_BUFFER_BIT;
+        if (stencil) mask |= GLConstants.GL_STENCIL_BUFFER_BIT;
+        this.gl.glClear(mask);
+    }
+
+    @Override
+    public void clearColor(int argb) {
+        this.clearColor(((argb >> 16) & 0xFF) / 255f, ((argb >> 8) & 0xFF) / 255f, ((argb >> 0) & 0xFF) / 255f, ((argb >> 24) & 0xFF) / 255f);
     }
 
     @Override

@@ -9,11 +9,13 @@ public interface RendererContext {
 
     ReadonlyRect getViewport();
 
-    void setRenderStencilState(RenderStencilState state);
+    void setRenderStencilState(RenderStencilState state, int ref, int mask, int previousOrRenderDepthStencilMask, int currentNestedStencilRefMask);
 
     boolean bindBlendMode(BlendMode blendMode);
 
-    void clear(int flags);
+    void clear(boolean color, boolean depth, boolean stencil);
+    
+    void clearColor(int argb);
 
     void clearColor(float r, float g, float b, float a);
 

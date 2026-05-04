@@ -19,6 +19,10 @@ public interface Stage {
 
     void setStencilRenderingState(RenderStencilState state);
 
+    void setStencilIdRange(int start, int end);
+
+    void setBackgroundColor(int argb);
+
     DrawApi getDrawApi();
 
     StageSprite getStageSprite();
