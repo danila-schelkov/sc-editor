@@ -158,7 +158,8 @@ public class MovieClip extends Sprite {
             if (child == null) continue;
 
             int matrixIndex = element.matrixIndex();
-            if (matrixIndex != 0xFFFF) {
+            // FIXME: will be a pitfall as soon as they will start use 0xFFFFth index in a new frame element format (-1 branch)
+            if (matrixIndex != -1 && matrixIndex != 0xFFFF) {
                 Matrix2x3 matrix = this.matrixBank.getMatrix(matrixIndex);
                 child.setMatrix(new Matrix2x3(matrix));
             } else {
@@ -166,7 +167,8 @@ public class MovieClip extends Sprite {
             }
 
             int colorTransformIndex = element.colorTransformIndex();
-            if (colorTransformIndex != 0xFFFF) {
+            // FIXME: will be a pitfall as soon as they will start use 0xFFFFth index in a new frame element format (-1 branch)
+            if (colorTransformIndex != -1 && colorTransformIndex != 0xFFFF) {
                 ColorTransform colorTransform = this.matrixBank.getColorTransform(colorTransformIndex);
                 child.setColorTransform(new ColorTransform(colorTransform));
             } else {
