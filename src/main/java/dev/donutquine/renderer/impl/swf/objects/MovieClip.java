@@ -26,7 +26,6 @@ public class MovieClip extends Sprite {
         this.loopFrame = -1;
     }
 
-    // TODO: verify
     private static final Map<Integer, BlendMode> BLEND_MODE_MAP = Map.ofEntries(
         Map.entry(0, BlendMode.NORMAL), 
         Map.entry(1, BlendMode.NORMAL),

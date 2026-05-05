@@ -49,7 +49,7 @@ public class GLRendererContext implements RendererContext {
             case ENABLED -> {
                 this.gl.glEnable(GLConstants.GL_STENCIL_TEST);
                 this.gl.glStencilFunc(currentNestedStencilRefMask == 0 ? GLConstants.GL_ALWAYS : GLConstants.GL_EQUAL, ref, mask & ~currentNestedStencilRefMask);
-                this.gl.glStencilOp(GLConstants.GL_KEEP, GLConstants.GL_KEEP, GLConstants.GL_REPLACE); // FIXME: must be INCR
+                this.gl.glStencilOp(GLConstants.GL_KEEP, GLConstants.GL_KEEP, GLConstants.GL_REPLACE);
                 this.gl.glStencilMask(0xFF);
                 this.gl.glColorMask(false, false, false, false);
             }

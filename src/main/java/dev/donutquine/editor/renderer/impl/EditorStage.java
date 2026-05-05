@@ -514,7 +514,7 @@ public class EditorStage implements Stage {
         int layers = 8;
         int stencilRangeMask = stencilIdRangeEnd;
 
-        for (int layer = 7; layer >= 0; layer++) {
+        for (int layer = 7; layer >= 0; layer--) {
             int stencilIdRangeBit = stencilIdRangeEnd & (1 << layer);
 
             if (stencilIdRangeBit != 0) {
@@ -535,10 +535,9 @@ public class EditorStage implements Stage {
             previousOrRenderDepthStencilMask |= 1 << (layers - index);
         }
 
-        if ((stencilId | currentNestedStencilRefMask) > stencilIdRangeEnd || 
-            (currentNestedStencilRefMask != 0 && (
-                stencilId >= currentNestedStencilRefMask || 
-                (stencilId & currentNestedStencilRefMask) != 0))) {
+        if ((stencilId | currentNestedStencilRefMask) > this.stencilIdRangeEnd || 
+            currentNestedStencilRefMask != 0 && stencilId >= currentNestedStencilRefMask || 
+            (stencilId & currentNestedStencilRefMask) != 0) {
             currentNestedStencilRefMask = 0;
             previousOrRenderDepthStencilMask = 0;
         }
