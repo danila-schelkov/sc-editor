@@ -33,7 +33,7 @@ public class ShapeInfoPanel extends JPanel {
         this.drawCommandsTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() < 2) {
+                if (e.getButton() != MouseEvent.BUTTON1) {
                     return;
                 }
 
