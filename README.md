@@ -61,12 +61,3 @@ To build for all Operating Systems:
 make release
 ```
 
-### Troubleshooting
-
-If you have issues with running an application try few next steps.
-
-According to [the question](https://stackoverflow.com/questions/66722833/executable-jar-with-dependencies-and-dll-dependency-using-maven), adding `--illegal-access=permit` to the VM-Options solves run issues with Java 16:
-
-```shell
-java --illegal-access=permit -jar sc-editor.jar
-```
