@@ -6,7 +6,7 @@ import dev.donutquine.editor.assets.ExtensionBasedAssetFileLoaderFactory;
 import dev.donutquine.editor.assets.KhronosTextureAssetFileLoader;
 import dev.donutquine.editor.assets.SupercellSWFAssetFileLoader;
 import dev.donutquine.editor.assets.SupercellTextureAssetFileLoader;
-import dev.donutquine.editor.settings.EditorSettings;
+import dev.donutquine.editor.settings.EditorPreferences;
 
 public class Editor {
     public static final String REPO_URL = "https://github.com/danila-schelkov/sc-editor";
@@ -22,17 +22,17 @@ public class Editor {
 
     private final AssetFileManager assetFileManager = new AssetFileManager(assetFileLoaderFactory);
 
-    private final EditorSettings settings;
+    private final EditorPreferences preferences;
 
-    public Editor(EditorSettings settings) {
-        this.settings = settings;
+    public Editor(EditorPreferences preferences) {
+        this.preferences = preferences;
     }
 
     public AssetFileManager getAssetFileManager() {
         return this.assetFileManager;
     }
 
-    public EditorSettings getSettings() {
-        return settings;
+    public EditorPreferences getPreferences() {
+        return preferences;
     }
 }
