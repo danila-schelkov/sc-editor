@@ -101,7 +101,12 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
     }
 
     public DisplayObject getSelectedObject() {
-        return this.assetFile.getById(this.assetFile.getNavigationHistory().getCurrent());
+        NavigationHistory<Integer> navigationHistory = this.assetFile.getNavigationHistory();
+        if (navigationHistory.hasCurrent()) {
+            return this.assetFile.getById(navigationHistory.getCurrent());
+        }
+
+        return null;
     }
 
 	@Override
