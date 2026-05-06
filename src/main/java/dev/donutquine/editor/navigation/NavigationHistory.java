@@ -12,6 +12,10 @@ public class NavigationHistory<T> {
 
     private int historyPosition = -1;
 
+    public boolean hasCurrent() {
+        return this.historyPosition != -1; // or >= 0 && < selectedIds.size()
+    }
+
     public T getCurrent() {
         return this.selectedIds.get(this.historyPosition);
     }
