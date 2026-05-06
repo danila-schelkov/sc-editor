@@ -22,11 +22,11 @@ import com.formdev.flatlaf.util.SystemFileChooser;
 import dev.donutquine.editor.layout.dialogs.AboutDialog;
 import dev.donutquine.editor.layout.dialogs.ExceptionDialog;
 import dev.donutquine.editor.layout.windows.EditorWindow;
-import dev.donutquine.editor.settings.EditorSettings;
+import dev.donutquine.editor.settings.EditorPreferences;
 
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
-    private static final Set<String> jvmRequiredArgs = new HashSet<>(List.of("--add-exports=java.base/java.lang=ALL-UNNAMED", "--add-exports=java.desktop/sun.awt=ALL-UNNAMED", "--add-exports=java.desktop/sun.java2d=ALL-UNNAMED"));
+    private static final Set<String> jvmRequiredArgs = Set.of("--add-exports=java.base/java.lang=ALL-UNNAMED", "--add-exports=java.desktop/sun.awt=ALL-UNNAMED", "--add-exports=java.desktop/sun.java2d=ALL-UNNAMED");
 
     public static void main(String[] args) {
         try {
@@ -70,9 +70,9 @@ public class Main {
     }
 
     private static void initializeEditor(String[] args) {
-        EditorSettings settings;
+        EditorPreferences settings;
         try {
-            settings = EditorSettings.load(Path.of(".", "settings.properties"));
+            settings = EditorPreferences.load(Path.of(".", "editor.properties"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

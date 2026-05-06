@@ -8,20 +8,21 @@ import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import dev.donutquine.editor.layout.windows.EditorWindow;
 import dev.donutquine.editor.renderer.impl.EditorStage;
-import dev.donutquine.editor.settings.EditorSettings;
+import dev.donutquine.editor.settings.EditorPreferences;
 
 public class OptionsMenu extends JMenu {
-	private final EditorSettings editorSettings;
+	private final EditorPreferences editorPreferences;
 
-    // Note: opens on macos using Control+Option+O for some reason
     private final JSlider pixelSizeSlider;
     private final JCheckBoxMenuItem wireframeModeCheckBox;
+	private final JCheckBoxMenuItem exportPreserveCenterCheckBox;
 
     public OptionsMenu(EditorWindow window) {
         super("Options");
 
-        this.editorSettings = window.getEditor().getSettings();
+        this.editorPreferences = window.getEditor().getPreferences();
 
+        // Note: opens on macos using Control+Option+O because of set mnemonic
         setMnemonic(KeyEvent.VK_O);
 
         JSlider pixelSizeSlider = new JSlider(0, 1000, 100);
@@ -42,10 +43,22 @@ public class OptionsMenu extends JMenu {
         this.add(wireframeModeCheckBox);
 
         this.wireframeModeCheckBox = wireframeModeCheckBox;
+
+        JCheckBoxMenuItem exportPreserveCenterCheckBox = new JCheckBoxMenuItem("Preverse stage center when export");
+        exportPreserveCenterCheckBox.setState(this.editorPreferences.shouldPreserveStageCenter());
+        exportPreserveCenterCheckBox.setMnemonic(KeyEvent.VK_P);
+        exportPreserveCenterCheckBox.addActionListener(this::togglePreserveStageCenter);
+        this.add(exportPreserveCenterCheckBox);
+
+        this.exportPreserveCenterCheckBox = exportPreserveCenterCheckBox;
     }
 
     private void toggleWireframeMode(ActionEvent event) {
         EditorStage.getInstance().setWireframeEnabled(this.wireframeModeCheckBox.getState());
+    }
+
+    private void togglePreserveStageCenter(ActionEvent event) {
+        editorPreferences.setShouldPreserveStageCenter(this.exportPreserveCenterCheckBox.getState());
     }
 
     private void pixelSizeChanged(ChangeEvent changeEvent) {
@@ -53,7 +66,7 @@ public class OptionsMenu extends JMenu {
             return;
         }
 
-        this.editorSettings.setPixelSize(getPixelSizeFactor());
+        this.editorPreferences.setPixelSize(getPixelSizeFactor());
     }
 
     /// Converts pixel size slider value from percentage to a factor

@@ -21,6 +21,7 @@ import dev.donutquine.editor.layout.components.TablePopupMenuListener;
 import dev.donutquine.editor.renderer.Framebuffer;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.editor.renderer.impl.RendererHelper;
+import dev.donutquine.editor.settings.EditorPreferences;
 import dev.donutquine.exporter.FfmpegVideoExporter;
 import dev.donutquine.exporter.VideoExporter;
 import dev.donutquine.exporter.VideoFormat;
@@ -56,11 +57,14 @@ public class DisplayObjectContextMenu extends ContextMenu {
     private final JMenuItem exportAsVideoButton;
     private final JMenu exportAsMenu;
 
+	private EditorPreferences preferences;
+
     public DisplayObjectContextMenu(Table table, SupercellSWFLayoutController swfLayoutController) {
         super(table, null);
 
         this.table = table;
         this.swfLayoutController = swfLayoutController;
+        this.preferences = swfLayoutController.window.getEditor().getPreferences();
 
         JMenuItem copyExportNameButton = this.add("Copy Export Name", KeyEvent.VK_E);
         copyExportNameButton.addActionListener(this::copyExportName);
@@ -175,7 +179,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
         EditorStage stage = EditorStage.getInstance();
         ReadonlyRect viewport = stage.getCamera().getViewport();
 
-        float pixelSize = swfLayoutController.window.getEditor().getSettings().getPixelSize();
+        float pixelSize = this.preferences.getPixelSize();
 
         for (int row : this.table.getSelectedRows()) {
             int displayObjectId = getDisplayObjectId(row);
@@ -265,9 +269,9 @@ public class DisplayObjectContextMenu extends ContextMenu {
     private void exportAsImage(DisplayObject displayObject) {
         EditorStage stage = EditorStage.getInstance();
 
-        Rect bounds = stage.calculateBoundsForAllFrames(displayObject);
+        Rect bounds = getRenderBounds(stage.calculateBoundsForAllFrames(displayObject));
 
-        float pixelSize = swfLayoutController.window.getEditor().getSettings().getPixelSize();
+        float pixelSize = this.preferences.getPixelSize();
         bounds.scale(pixelSize);
 
         Matrix2x3 matrix = new Matrix2x3();
@@ -298,18 +302,36 @@ public class DisplayObjectContextMenu extends ContextMenu {
         });
     }
 
+    private Rect getRenderBounds(Rect objectBounds) {
+        if (preferences.shouldPreserveStageCenter()) {
+            float maxHorizontal = Math.max(Math.abs(objectBounds.getLeft()), Math.abs(objectBounds.getRight()));
+            float maxVertical = Math.max(Math.abs(objectBounds.getTop()), Math.abs(objectBounds.getBottom()));
+
+            return new Rect(
+                -maxHorizontal,
+                -maxVertical,
+                maxHorizontal,
+                maxVertical
+            );
+        }
+
+        return objectBounds;
+    }
+
     private void exportAsVideo(Path path, MovieClip movieClip, VideoFormat format) {
         EditorStage stage = EditorStage.getInstance();
 
-        Rect bounds = stage.calculateBoundsForAllFrames(movieClip);
+        Rect bounds = getRenderBounds(stage.calculateBoundsForAllFrames(movieClip));
 
-        float pixelSize = swfLayoutController.window.getEditor().getSettings().getPixelSize();
+        float pixelSize = this.preferences.getPixelSize();
         bounds.scale(pixelSize);
 
         ReadonlyRect ceilBounds = roundBounds(bounds, format.requiresSizeDividableByTwo());
 
         Matrix2x3 matrix = new Matrix2x3();
         matrix.scaleMultiply(pixelSize, pixelSize);
+
+        ColorTransform colorTransform = new ColorTransform();
 
         MovieClipState state = movieClip.getState();
         int loopFrame = movieClip.getLoopFrame();
@@ -337,7 +359,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
                         movieClip.setFrame(startFrame);
                     }
 
-                    movieClip.render(matrix, new ColorTransform(), 0, 0);
+                    movieClip.render(matrix, colorTransform, 0, 0);
                     stage.renderToFramebuffer(framebuffer);
 
                     BufferedImage image = ImageUtils.createBufferedImageFromPixels(framebuffer.getWidth(), framebuffer.getHeight(), framebuffer.getPixelArray(true), false);
@@ -354,17 +376,17 @@ public class DisplayObjectContextMenu extends ContextMenu {
     }
 
     private static @NotNull ReadonlyRect roundBounds(@NotNull ReadonlyRect bounds, boolean requiresSizeDividableByTwo) {
-        float left = (int) Math.floor(bounds.getLeft());
-        float right = (int) Math.ceil(bounds.getRight());
-        float top = (int) Math.floor(bounds.getTop());
-        float bottom = (int) Math.ceil(bounds.getBottom());
+        int left = (int) Math.floor(bounds.getLeft());
+        int right = (int) Math.ceil(bounds.getRight());
+        int top = (int) Math.floor(bounds.getTop());
+        int bottom = (int) Math.ceil(bounds.getBottom());
 
-        float width = right - left;
+        int width = right - left;
         if (requiresSizeDividableByTwo && width % 2 != 0) {
             right++;
         }
 
-        float height = bottom - top;
+        int height = bottom - top;
         if (requiresSizeDividableByTwo && height % 2 != 0) {
             bottom++;
         }
