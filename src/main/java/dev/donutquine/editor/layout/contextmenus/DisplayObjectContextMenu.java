@@ -49,7 +49,6 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
     // TODO: load from settings
     private static final Path DEFAULT_SCREENSHOT_FOLDER = Path.of("screenshots").toAbsolutePath();
-    private static final String SCREENSHOT_DIRECTORY_KEY = "screenshotsDirectory";
 
     private final Table table;
     private final SupercellSWFLayoutController swfLayoutController;
@@ -57,7 +56,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
     private final JMenuItem exportAsVideoButton;
     private final JMenu exportAsMenu;
 
-	private EditorPreferences preferences;
+    private EditorPreferences preferences;
 
     public DisplayObjectContextMenu(Table table, SupercellSWFLayoutController swfLayoutController) {
         super(table, null);
