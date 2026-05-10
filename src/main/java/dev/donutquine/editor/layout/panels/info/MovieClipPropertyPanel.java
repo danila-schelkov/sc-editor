@@ -19,6 +19,7 @@ import dev.donutquine.editor.layout.components.tables.RowReorderTransferHandler;
 import dev.donutquine.editor.layout.components.listeners.ChildrenListMouseListener;
 import dev.donutquine.editor.layout.components.listeners.FrameSelectionListener;
 import dev.donutquine.editor.layout.contextmenus.ChildrenTableContextMenu;
+import dev.donutquine.editor.layout.contextmenus.FrameElementTableContextMenu;
 import dev.donutquine.editor.layout.contextmenus.FrameTableContextMenu;
 import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
@@ -45,6 +46,7 @@ public class MovieClipPropertyPanel extends JPanel {
         MovieClipFrameElementsTableModel tableModel = new MovieClipFrameElementsTableModel(movieClip.getFrames().get(0));
 
         this.frameElementsTable = createFrameElementsTable(tableModel);
+        new FrameElementTableContextMenu(this.frameElementsTable, tableModel);
 
         Table framesTable = createFramesTable(movieClip);
         framesTable.addSelectionListener(new FrameSelectionListener(framesTable, tableModel, movieClip.getFrames()::get));

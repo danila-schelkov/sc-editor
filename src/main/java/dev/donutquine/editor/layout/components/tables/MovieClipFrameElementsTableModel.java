@@ -79,8 +79,21 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
             targetRow -= rowCount;
         }
 
+        // TODO: make a command and add it to global UndoRedoManager
         this.frameElements.addAll(targetRow, movedElements);
 
+        this.updateFrameElements();
+    }
+
+    public void delete(int firstRow, int rowCount) {
+        // TODO: make a command and add it to global UndoRedoManager
+        this.frameElements.subList(firstRow, firstRow + rowCount).clear();
+        this.fireTableRowsDeleted(firstRow, firstRow + rowCount);
+
+        this.updateFrameElements();
+    }
+
+    private void updateFrameElements() {
         // Note: there is no need in notifying renderable MovieClip object as it always tries to get current frame elements from frame
         this.frame.setElements(this.frameElements);
     }
