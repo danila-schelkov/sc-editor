@@ -5,7 +5,6 @@ import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 import dev.donutquine.editor.layout.SupercellSWFLayoutController;
-import dev.donutquine.editor.layout.components.tables.Table;
 import dev.donutquine.editor.layout.panels.DisplayObjectListPanel;
 
 public class UsagesWindow extends Window {
@@ -22,9 +21,5 @@ public class UsagesWindow extends Window {
         this.frame.getContentPane().add(this.displayObjectPanel);
         this.frame.setMinimumSize(MINIMUM_SIZE);
         this.frame.setSize(this.frame.getContentPane().getPreferredSize());
-    }
-
-    public Table getObjectsTable() {
-        return this.displayObjectPanel.getTable();
     }
 }

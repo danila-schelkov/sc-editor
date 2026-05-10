@@ -6,9 +6,9 @@ import java.awt.image.BufferedImage;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import javax.swing.JMenuItem;
+import javax.swing.JTable;
 import dev.donutquine.editor.layout.TextureLayoutController;
-import dev.donutquine.editor.layout.components.tables.Table;
-import dev.donutquine.editor.layout.components.tables.TablePopupMenuListener;
+import dev.donutquine.editor.layout.components.tables.JTablePopupMenuListener;
 import dev.donutquine.editor.renderer.gl.GLConstants;
 import dev.donutquine.editor.renderer.gl.texture.GLTexture;
 import dev.donutquine.editor.renderer.impl.EditorStage;
@@ -17,10 +17,10 @@ import dev.donutquine.utilities.BufferUtils;
 import dev.donutquine.utilities.ImageUtils;
 
 public class TextureTableContextMenu extends ContextMenu {
-    private final Table table;
+    private final JTable table;
     private final TextureLayoutController<?> swfLayoutController;
 
-    public TextureTableContextMenu(Table table, TextureLayoutController<?> layoutController) {
+    public TextureTableContextMenu(JTable table, TextureLayoutController<?> layoutController) {
         super(table, null);
 
         this.table = table;
@@ -29,7 +29,7 @@ public class TextureTableContextMenu extends ContextMenu {
         JMenuItem exportButton = this.add("Export", KeyEvent.VK_E);
         exportButton.addActionListener(this::export);
 
-        this.popupMenu.addPopupMenuListener(new TablePopupMenuListener(this.popupMenu, table, this::onRowSelected));
+        this.popupMenu.addPopupMenuListener(new JTablePopupMenuListener(this.popupMenu, table, this::onRowSelected));
     }
 
     private void export(ActionEvent actionEvent) {

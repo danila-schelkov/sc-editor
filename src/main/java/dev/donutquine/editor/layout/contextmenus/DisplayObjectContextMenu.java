@@ -11,13 +11,13 @@ import java.text.DecimalFormat;
 import java.util.Objects;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JTable;
 import org.jetbrains.annotations.NotNull;
 import com.formdev.flatlaf.util.SystemFileChooser;
 import com.formdev.flatlaf.util.SystemFileChooser.FileNameExtensionFilter;
 import dev.donutquine.editor.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.layout.SystemFileChooserUtil;
-import dev.donutquine.editor.layout.components.tables.Table;
-import dev.donutquine.editor.layout.components.tables.TablePopupMenuListener;
+import dev.donutquine.editor.layout.components.tables.JTablePopupMenuListener;
 import dev.donutquine.editor.renderer.Framebuffer;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.editor.renderer.impl.RendererHelper;
@@ -50,7 +50,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
     // TODO: load from settings
     private static final Path DEFAULT_SCREENSHOT_FOLDER = Path.of("screenshots").toAbsolutePath();
 
-    private final Table table;
+    private final JTable table;
     private final SupercellSWFLayoutController swfLayoutController;
 
     private final JMenuItem exportAsVideoButton;
@@ -58,7 +58,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
     private EditorPreferences preferences;
 
-    public DisplayObjectContextMenu(Table table, SupercellSWFLayoutController swfLayoutController) {
+    public DisplayObjectContextMenu(JTable table, SupercellSWFLayoutController swfLayoutController) {
         super(table, null);
 
         this.table = table;
@@ -94,7 +94,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         this.add("Properties");
 
-        this.popupMenu.addPopupMenuListener(new TablePopupMenuListener(this.popupMenu, table, this::onRowSelected));
+        this.popupMenu.addPopupMenuListener(new JTablePopupMenuListener(this.popupMenu, table, this::onRowSelected));
     }
 
     private void onRowSelected(int rowIndex) {

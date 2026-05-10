@@ -6,10 +6,10 @@ import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.util.function.Function;
 import javax.swing.JMenuItem;
+import javax.swing.JTable;
 import dev.donutquine.editor.displayObjects.SpriteSheet;
 import dev.donutquine.editor.layout.SupercellSWFLayoutController;
-import dev.donutquine.editor.layout.components.tables.Table;
-import dev.donutquine.editor.layout.components.tables.TablePopupMenuListener;
+import dev.donutquine.editor.layout.components.tables.JTablePopupMenuListener;
 import dev.donutquine.editor.renderer.Framebuffer;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.editor.renderer.impl.RendererHelper;
@@ -26,11 +26,11 @@ public class DrawCommandContextMenu extends ContextMenu {
     private static final ColorTransform EMPTY_COLOR_TRANSFORM = new ColorTransform();
     private static final Path SCREENSHOT_FOLDER = Path.of("screenshots").toAbsolutePath();
 
-    private final Table table;
+    private final JTable table;
     private final SupercellSWFLayoutController swfLayoutController;
     private final Shape shape;
 
-    public DrawCommandContextMenu(Table table, SupercellSWFLayoutController swfLayoutController, Shape shape) {
+    public DrawCommandContextMenu(JTable table, SupercellSWFLayoutController swfLayoutController, Shape shape) {
         super(table, null);
 
         this.table = table;
@@ -52,7 +52,7 @@ public class DrawCommandContextMenu extends ContextMenu {
         this.add("Enable", event -> this.changeVisibility(visible -> true));
         this.add("Disable", event -> this.changeVisibility(visible -> false));
 
-        this.popupMenu.addPopupMenuListener(new TablePopupMenuListener(this.popupMenu, table, this::onRowSelected));
+        this.popupMenu.addPopupMenuListener(new JTablePopupMenuListener(this.popupMenu, table, this::onRowSelected));
     }
 
     public void changeVisibility(Function<Boolean, Boolean> visibilityFunction) {

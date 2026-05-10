@@ -7,12 +7,12 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import java.awt.*;
 
-public class TablePopupMenuListener implements PopupMenuListener {
+public class JTablePopupMenuListener implements PopupMenuListener {
     private final JPopupMenu popupMenu;
-    private final Table table;
+    private final JTable table;
     private final RowSelectionAction rowSelectionAction;
 
-    public TablePopupMenuListener(JPopupMenu popupMenu, Table table, RowSelectionAction rowSelectionAction) {
+    public JTablePopupMenuListener(JPopupMenu popupMenu, JTable table, RowSelectionAction rowSelectionAction) {
         this.popupMenu = popupMenu;
         this.table = table;
         this.rowSelectionAction = rowSelectionAction;
