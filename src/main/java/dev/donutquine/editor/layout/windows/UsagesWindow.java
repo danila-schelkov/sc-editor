@@ -5,7 +5,7 @@ import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 import dev.donutquine.editor.layout.SupercellSWFLayoutController;
-import dev.donutquine.editor.layout.components.Table;
+import dev.donutquine.editor.layout.components.tables.Table;
 import dev.donutquine.editor.layout.panels.DisplayObjectListPanel;
 
 public class UsagesWindow extends Window {

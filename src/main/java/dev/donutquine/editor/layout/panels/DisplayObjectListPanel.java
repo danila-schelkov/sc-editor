@@ -22,7 +22,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import dev.donutquine.editor.layout.SupercellSWFLayoutController;
-import dev.donutquine.editor.layout.components.Table;
+import dev.donutquine.editor.layout.components.tables.Table;
 import dev.donutquine.editor.layout.components.listeners.DisplayObjectListMouseListener;
 import dev.donutquine.editor.layout.contextmenus.DisplayObjectContextMenu;
 

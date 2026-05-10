@@ -13,7 +13,7 @@ import dev.donutquine.editor.layout.panels.DisplayObjectListPanel;
 import dev.donutquine.editor.layout.panels.TexturesPanel;
 import dev.donutquine.editor.layout.panels.TimelinePanel;
 import dev.donutquine.editor.layout.panels.info.DisplayObjectInfoPanel;
-import dev.donutquine.editor.layout.panels.info.MovieClipInfoPanel;
+import dev.donutquine.editor.layout.panels.info.MovieClipPropertyPanel;
 import dev.donutquine.editor.layout.panels.info.ShapeInfoPanel;
 import dev.donutquine.editor.layout.windows.EditorWindow;
 import dev.donutquine.editor.layout.windows.UsagesWindow;
@@ -199,16 +199,16 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
             this.timelinePanel.setVisible(false);
         }
 
-        this.currentObjectInfoPanel.setPanel(createInfoPanel(displayObject));
+        this.currentObjectInfoPanel.setPanel(createPropertiesPanel(displayObject));
 
         EditorStage stage = EditorStage.getInstance();
         stage.reset();
         stage.addChild(displayObject);
     }
 
-    private JPanel createInfoPanel(DisplayObject displayObject) {
+    private JPanel createPropertiesPanel(DisplayObject displayObject) {
         if (displayObject.isMovieClip()) {
-            return new MovieClipInfoPanel(this, (MovieClip) displayObject);
+            return new MovieClipPropertyPanel(this, (MovieClip) displayObject);
         } else if (displayObject.isShape()) {
             return new ShapeInfoPanel(this, (Shape) displayObject);
         }

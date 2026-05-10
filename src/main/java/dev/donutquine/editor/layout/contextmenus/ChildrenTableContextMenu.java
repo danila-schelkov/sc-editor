@@ -2,8 +2,8 @@ package dev.donutquine.editor.layout.contextmenus;
 
 import java.util.function.Function;
 import dev.donutquine.editor.layout.SupercellSWFLayoutController;
-import dev.donutquine.editor.layout.components.Table;
-import dev.donutquine.editor.layout.components.TablePopupMenuListener;
+import dev.donutquine.editor.layout.components.tables.Table;
+import dev.donutquine.editor.layout.components.tables.TablePopupMenuListener;
 import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 

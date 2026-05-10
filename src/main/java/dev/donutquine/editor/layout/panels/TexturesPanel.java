@@ -7,7 +7,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import dev.donutquine.editor.displayObjects.SpriteSheet;
 import dev.donutquine.editor.layout.TextureLayoutController;
-import dev.donutquine.editor.layout.components.Table;
+import dev.donutquine.editor.layout.components.tables.Table;
 import dev.donutquine.editor.layout.components.listeners.TextureListMouseListener;
 import dev.donutquine.editor.layout.contextmenus.TextureTableContextMenu;
 import dev.donutquine.editor.renderer.gl.texture.GLTexture;
