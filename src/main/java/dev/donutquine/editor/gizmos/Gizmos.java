@@ -136,7 +136,6 @@ public class Gizmos implements UndoRedoManager {
 
                     LOGGER.debug("{} {} at {}, {}", child, bounds, worldX, worldY);
                     if (bounds.containsPoint(worldX, worldY)) {
-                        System.out.println("checked!" + child);
                         touchedObject = child;
                         break;
                     }

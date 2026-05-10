@@ -14,6 +14,7 @@ public class EditDrawCommandPointGizmoAction extends AbstractGizmoAction {
     private final @NotNull Matrix2x3 inverseMatrix;
     private final @NotNull Point controlPoint;
 
+	private float cpStartX, cpStartY;
 	private float startX, startY;
     private float newX, newY;
 
@@ -28,6 +29,9 @@ public class EditDrawCommandPointGizmoAction extends AbstractGizmoAction {
 	@Override
 	public void begin(float mouseX, float mouseY) {
         super.begin(mouseX, mouseY);
+
+        this.cpStartX = this.controlPoint.getX();
+        this.cpStartY = this.controlPoint.getY();
 
         float x = this.drawCommand.getX(this.pointIndex);
         float y = this.drawCommand.getY(this.pointIndex);
@@ -53,7 +57,7 @@ public class EditDrawCommandPointGizmoAction extends AbstractGizmoAction {
             this.startX, this.startY, newX, newY, 
             // Note: I don't like that I put controlPoint in that command. It will become redundant since object selection will be changed
             controlPoint, 
-            this.mouseStartX, this.mouseStartY, this.mouseX, this.mouseY
+            this.cpStartX, this.cpStartY, this.mouseX, this.mouseY
         ));
 	}
 }
