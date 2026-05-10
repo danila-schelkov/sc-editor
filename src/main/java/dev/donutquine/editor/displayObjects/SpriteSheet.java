@@ -60,11 +60,11 @@ public class SpriteSheet extends DisplayObject {
         return texture.getHeight();
     }
 
-	public RenderableTexture getTexture() {
-		return texture;
-	}
+    public RenderableTexture getTexture() {
+        return texture;
+    }
 
-	public List<ShapeDrawBitmapCommand> getDrawBitmapCommands() {
+    public List<ShapeDrawBitmapCommand> getDrawBitmapCommands() {
         return drawBitmapCommands;
     }
 }

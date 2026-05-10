@@ -12,8 +12,8 @@ public class EditClipChildPositionGizmoAction implements GizmoAction {
     private final @NotNull Matrix2x3 initialMatrix;
     // private final @NotNull Rect initialBounds;
 
-	private float startX, startY;
-	private Matrix2x3 newMatrix;
+    private float startX, startY;
+    private Matrix2x3 newMatrix;
 
     public EditClipChildPositionGizmoAction(@NotNull CommandManager commandManager, @NotNull DisplayObject displayObject) {
         this.commandManager = commandManager;
@@ -22,13 +22,13 @@ public class EditClipChildPositionGizmoAction implements GizmoAction {
         // this.initialBounds = new Rect(touchedObjectBounds);
     }
 
-	@Override
-	public void begin(float mouseX, float mouseY) {
+    @Override
+    public void begin(float mouseX, float mouseY) {
         this.startX = mouseX;
         this.startY = mouseY;
-	}
+    }
 
-	@Override
+    @Override
     public void update(float mouseX, float mouseY) {
         // TODO: make it persistent — save it to the original object.
         float x = mouseX - startX;
@@ -59,7 +59,7 @@ public class EditClipChildPositionGizmoAction implements GizmoAction {
         // // this.touchedObjectBounds.movePosition(x, y);
     }
 
-	@Override
+    @Override
     public void end() {
         if (this.newMatrix == null) return;  // maybe assert instead?
         
@@ -69,4 +69,3 @@ public class EditClipChildPositionGizmoAction implements GizmoAction {
         this.commandManager.execute(new SetDisplayObjectMatrixCommand(this.displayObject, newMatrix));
     }
 }
-

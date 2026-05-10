@@ -15,11 +15,11 @@ public abstract class Framebuffer {
     }
 
     /**
-     * Returns pixel array of the framebuffer from the graphics memory.
-     *
-     * @param flipY whether to flip pixels along the Y axis or not
-     * @return integer array of pixels
-     */
+    * Returns pixel array of the framebuffer from the graphics memory.
+    *
+    * @param flipY whether to flip pixels along the Y axis or not
+    * @return integer array of pixels
+    */
     public int[] getPixelArray(boolean flipY) {
         RenderableTexture texture = getTexture();
 
