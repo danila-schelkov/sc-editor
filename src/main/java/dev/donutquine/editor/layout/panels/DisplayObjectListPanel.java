@@ -96,10 +96,6 @@ public class DisplayObjectListPanel extends JPanel {
         this.searchField.setText(null);
     }
 
-    public Table getTable() {
-        return table;
-    }
-
     public void selectObjectById(int id) {
         int row = this.table.indexOf(id, 0);
         if (row == -1) {

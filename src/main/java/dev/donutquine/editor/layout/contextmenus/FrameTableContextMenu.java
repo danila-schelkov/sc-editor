@@ -1,17 +1,17 @@
 package dev.donutquine.editor.layout.contextmenus;
 
 import java.awt.event.ActionEvent;
+import javax.swing.JTable;
 import dev.donutquine.editor.layout.SupercellSWFLayoutController;
-import dev.donutquine.editor.layout.components.tables.Table;
-import dev.donutquine.editor.layout.components.tables.TablePopupMenuListener;
+import dev.donutquine.editor.layout.components.tables.JTablePopupMenuListener;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 
 public class FrameTableContextMenu extends ContextMenu {
-    private final Table table;
+    private final JTable table;
     private final SupercellSWFLayoutController swfLayoutController;
 
-    public FrameTableContextMenu(Table table, SupercellSWFLayoutController swfLayoutController) {
+    public FrameTableContextMenu(JTable table, SupercellSWFLayoutController swfLayoutController) {
         super(table, null);
 
         this.table = table;
@@ -20,7 +20,7 @@ public class FrameTableContextMenu extends ContextMenu {
         this.add("Goto and play", this::gotoAndPlay);
         this.add("Goto and stop", this::gotoAndStop);
 
-        this.popupMenu.addPopupMenuListener(new TablePopupMenuListener(this.popupMenu, table, rowIndex -> setMainComponentsEnabled(rowIndex != -1)));
+        this.popupMenu.addPopupMenuListener(new JTablePopupMenuListener(this.popupMenu, table, rowIndex -> setMainComponentsEnabled(rowIndex != -1)));
     }
 
     private void gotoAndPlay(ActionEvent event) {

@@ -8,6 +8,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import dev.donutquine.editor.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.layout.components.tables.Table;
 import dev.donutquine.editor.layout.contextmenus.DrawCommandContextMenu;
@@ -19,7 +20,7 @@ public class ShapeInfoPanel extends JPanel {
     private static final Object[] COLUMN_NAMES = {"#", "Texture Id", "Tag", "Visible"};
     private static final Class<?>[] COLUMN_CLASSES = {Integer.class, Integer.class, Tag.class, Boolean.class};
 
-    private final Table drawCommandsTable;
+    private final JTable drawCommandsTable;
 
     public ShapeInfoPanel(SupercellSWFLayoutController layoutController, Shape shape) {
         this.setLayout(new GridLayout(0, 1));

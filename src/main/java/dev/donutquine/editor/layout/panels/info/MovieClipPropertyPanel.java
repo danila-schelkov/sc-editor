@@ -10,6 +10,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import dev.donutquine.editor.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.layout.components.tables.Table;
@@ -18,6 +19,7 @@ import dev.donutquine.editor.layout.components.tables.RowReorderTransferHandler;
 import dev.donutquine.editor.layout.components.listeners.ChildrenListMouseListener;
 import dev.donutquine.editor.layout.components.listeners.FrameSelectionListener;
 import dev.donutquine.editor.layout.contextmenus.ChildrenTableContextMenu;
+import dev.donutquine.editor.layout.contextmenus.FrameElementTableContextMenu;
 import dev.donutquine.editor.layout.contextmenus.FrameTableContextMenu;
 import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
@@ -25,9 +27,9 @@ import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 import dev.donutquine.swf.movieclips.MovieClipFrame;
 
 public class MovieClipPropertyPanel extends JPanel {
-    private final Table timelineChildrenTable;
-    private final Table framesTable;
-    private final Table frameElementsTable;
+    private final JTable timelineChildrenTable;
+    private final JTable framesTable;
+    private final JTable frameElementsTable;
     private final JPanel textInfoPanel;
 
     public MovieClipPropertyPanel(SupercellSWFLayoutController swfLayoutController, MovieClip movieClip) {
@@ -44,10 +46,12 @@ public class MovieClipPropertyPanel extends JPanel {
         MovieClipFrameElementsTableModel tableModel = new MovieClipFrameElementsTableModel(movieClip.getFrames().get(0));
 
         this.frameElementsTable = createFrameElementsTable(tableModel);
+        new FrameElementTableContextMenu(this.frameElementsTable, tableModel);
 
-        this.framesTable = createFramesTable(movieClip);
-        this.framesTable.addSelectionListener(new FrameSelectionListener(this.framesTable, tableModel, movieClip.getFrames()::get));
-        new FrameTableContextMenu(this.framesTable, swfLayoutController);
+        Table framesTable = createFramesTable(movieClip);
+        framesTable.addSelectionListener(new FrameSelectionListener(framesTable, tableModel, movieClip.getFrames()::get));
+        new FrameTableContextMenu(framesTable, swfLayoutController);
+        this.framesTable = framesTable;
 
         this.textInfoPanel = new JPanel();
 
