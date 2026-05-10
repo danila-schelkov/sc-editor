@@ -23,9 +23,10 @@ import java.util.HashMap;
  * This will also compile and run on platforms other than osx as it uses reflection to reach the
  * osx specific classes.
  */
-
 public class GestureUtilities {
     private static final Logger LOGGER = LoggerFactory.getLogger(GestureUtilities.class);
+
+    public static final String REQUIRED_JVM_OPT = "--add-opens=java.desktop/com.apple.eawt.event=ALL-UNNAMED";
 
     // Mimics com.apple.eawt.event.MagnificationListener
     @FunctionalInterface
@@ -167,9 +168,13 @@ public class GestureUtilities {
         }
     }
 
+    public static boolean isDarwin() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        return osName.startsWith("mac") || osName.startsWith("darwin");
+    }
+
     private static void initialize() throws Exception {
-        String osname = System.getProperty("os.name").toLowerCase();
-        if (!osname.startsWith("mac") && !osname.startsWith("darwin")) return;
+        if (!isDarwin()) return;
 
         javax_swing_JComponent = Class.forName("javax.swing.JComponent");
         com_apple_eawt_event_GestureUtilities = Class.forName("com.apple.eawt.event.GestureUtilities");
@@ -194,10 +199,9 @@ public class GestureUtilities {
 
             appleGestureSupported = false;
             if (t instanceof IllegalAccessException) {
-                String opt = "--add-opens=java.desktop/com.apple.eawt.event=ALL-UNNAMED";
                 String jvmCmd = ProcessHandle.current().info().commandLine().orElse("error");
-                if (!Arrays.asList(jvmCmd.split(" ")).contains(opt)) { // not perfect, but good enough
-                    LOGGER.info("Note: To enable Apple gesture support, use JVM option '{}'.\n", opt);
+                if (!Arrays.asList(jvmCmd.split(" ")).contains(REQUIRED_JVM_OPT)) { // not perfect, but good enough
+                    LOGGER.info("Note: To enable Apple gesture support, use JVM option '{}'.\n", REQUIRED_JVM_OPT);
                     return;
                 }
             }

@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
 import com.formdev.flatlaf.util.SystemFileChooser;
+import dev.donutquine.editor.layout.GestureUtilities;
 import dev.donutquine.editor.layout.dialogs.AboutDialog;
 import dev.donutquine.editor.layout.dialogs.ExceptionDialog;
 import dev.donutquine.editor.layout.windows.EditorWindow;
@@ -143,6 +144,9 @@ public class Main {
             );
 
             command.addAll(jvmRequiredArgs);
+            if (GestureUtilities.isDarwin()) {
+                command.add(GestureUtilities.REQUIRED_JVM_OPT);
+            }
 
             String classpath = System.getProperty("java.class.path");
 
