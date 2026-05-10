@@ -9,8 +9,8 @@ import dev.donutquine.swf.movieclips.MovieClipFrame;
 
 public class FrameSelectionListener implements ListSelectionListener {
     private final JTable table;
-	private final MovieClipFrameElementsTableModel frameElementsTableModel;
-	private final IntFunction<MovieClipFrame> frameGetter;
+    private final MovieClipFrameElementsTableModel frameElementsTableModel;
+    private final IntFunction<MovieClipFrame> frameGetter;
 
     public FrameSelectionListener(JTable table, MovieClipFrameElementsTableModel frameElementsTable, IntFunction<MovieClipFrame> frameGetter) {
         this.table = table;

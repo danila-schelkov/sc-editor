@@ -16,10 +16,10 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
     private static final int COLUMN_COLOR_TRANSFORM_INDEX = 3;
 
     // Note: was final before, but I prefer modifying existing object rather than allocating a new one every sneeze
-	private MovieClipFrame frame;
-	private List<MovieClipFrameElement> frameElements;
+    private MovieClipFrame frame;
+    private List<MovieClipFrameElement> frameElements;
 
-	public MovieClipFrameElementsTableModel(MovieClipFrame frame) {
+    public MovieClipFrameElementsTableModel(MovieClipFrame frame) {
         super();
 
         this.setFrame(frame);
@@ -30,18 +30,18 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
         // Note: Copying as returned value is unmodifiable
         this.frameElements = new ArrayList<>(frame.getElements());
         this.fireTableDataChanged();
-	}
+    }
 
-	@Override
-	public int getRowCount() {
+    @Override
+    public int getRowCount() {
         return this.frameElements.size();
-	}
+    }
 
-	@Override
-	public int getColumnCount() {
+    @Override
+    public int getColumnCount() {
         assert COLUMN_NAMES.length == COLUMN_CLASSES.length;
         return COLUMN_NAMES.length;
-	}
+    }
 
     @Override
     public String getColumnName(int column) {
@@ -55,8 +55,8 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
         return COLUMN_CLASSES[column];
     }
 
-	@Override
-	public Object getValueAt(int row, int column) {
+    @Override
+    public Object getValueAt(int row, int column) {
         MovieClipFrameElement frameElement = this.frameElements.get(row);
 
         return switch (column) {
@@ -66,7 +66,7 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
             case COLUMN_COLOR_TRANSFORM_INDEX -> frameElement.colorTransformIndex();
             default -> throw new IllegalArgumentException("Unknown column: " + column);
         };
-	}
+    }
 
     @Override
     public void reorderRows(int firstRow, int rowCount, int targetRow) {
@@ -85,4 +85,3 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
         this.frame.setElements(this.frameElements);
     }
 }
-

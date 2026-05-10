@@ -12,7 +12,7 @@ import team.nulls.ntengine.assets.KhronosTexture;
 public class KhronosTextureAssetFile extends TextureAssetFile<KhronosTexture> {
     private final Path path;
 
-	private final SpriteSheet spriteSheet;
+    private final SpriteSheet spriteSheet;
 
     KhronosTextureAssetFile(KhronosTexture asset, Path path) {
         super(asset);

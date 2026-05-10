@@ -13,7 +13,7 @@ public class Batch {
     protected static final int SIZE = 512;
 
     private final Consumer<RenderStencilState> renderStencilStateConsumer;
-	private final Consumer<BlendMode> blendModeConsumer;
+    private final Consumer<BlendMode> blendModeConsumer;
     private final VertexBufferProducer vertexBufferProducer;
     private final Attribute[] attributes;
     private final RenderableTexture texture;
@@ -28,8 +28,8 @@ public class Batch {
     private IntBuffer indices;
 
     /**
-     * Represents max triangle count.
-     */
+    * Represents max triangle count.
+    */
     private int capacity;
 
     private int triangleCount;

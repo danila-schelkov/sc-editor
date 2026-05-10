@@ -81,12 +81,12 @@ public class EditorStage implements Stage {
     private boolean isWireframeEnabled;
     private Consumer<FloatBuffer> extraPMVMatrixConsumer;
 
-	private int stencilIdRangeStart = 0, stencilIdRangeEnd = 0xFF;
-	private Deque<RenderStencilState> renderStencilStateStack = new ArrayDeque<>();
-	private int renderStencilStateStackMaxDepth;
-	private int stencilId;
+    private int stencilIdRangeStart = 0, stencilIdRangeEnd = 0xFF;
+    private Deque<RenderStencilState> renderStencilStateStack = new ArrayDeque<>();
+    private int renderStencilStateStackMaxDepth;
+    private int stencilId;
 
-	private int backgroundColor = 0xFF7F7F7F; // in ARGB format
+    private int backgroundColor = 0xFF7F7F7F; // in ARGB format
 
     private EditorStage() {}
 
@@ -474,8 +474,8 @@ public class EditorStage implements Stage {
                     case ENABLED -> {
                         this.pushRenderStencilState(stencilRenderingState);
                     }
-					case DISABLED -> this.popRenderStencilState(stencilRenderingState);
-					case RENDERING_MASKED, RENDERING_UNMASKED -> this.setRenderStencilState(stencilRenderingState);
+                    case DISABLED -> this.popRenderStencilState(stencilRenderingState);
+                    case RENDERING_MASKED, RENDERING_UNMASKED -> this.setRenderStencilState(stencilRenderingState);
                 }
             }, 
             rendererContext::bindBlendMode);
@@ -490,9 +490,9 @@ public class EditorStage implements Stage {
         this.renderStencilStateStackMaxDepth = Math.max(this.renderStencilStateStackMaxDepth, this.renderStencilStateStack.size());
 
         this.setRenderStencilState(state);
-	}
+    }
 
-	private void popRenderStencilState(RenderStencilState state) {
+    private void popRenderStencilState(RenderStencilState state) {
         this.renderStencilStateStack.pop();
 
         if (this.renderStencilStateStack.isEmpty()) {
@@ -502,7 +502,7 @@ public class EditorStage implements Stage {
         } else {
             this.setRenderStencilState(this.renderStencilStateStack.peekLast());
         }
-	}
+    }
 
     private void setRenderStencilState(RenderStencilState state) {
         if (!this.renderStencilStateStack.isEmpty()) {
@@ -547,7 +547,7 @@ public class EditorStage implements Stage {
         this.rendererContext.setRenderStencilState(state, ref, stencilRangeMask, previousOrRenderDepthStencilMask, currentNestedStencilRefMask);
     }
 
-	private VertexBuffer createDynamicVertexBuffer(Attribute... attributes) {
+    private VertexBuffer createDynamicVertexBuffer(Attribute... attributes) {
         return new GLVertexBuffer(this.gl, GLConstants.GL_DYNAMIC_DRAW, attributes);
     }
 }

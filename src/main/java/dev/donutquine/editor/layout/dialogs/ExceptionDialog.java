@@ -164,4 +164,3 @@ public class ExceptionDialog extends JDialog {
         showTestExceptionDialog();
     }
 }
-

@@ -8,4 +8,3 @@ public interface TextureAsset {
 
     SpriteSheet getSpriteSheet(int index);
 }
-

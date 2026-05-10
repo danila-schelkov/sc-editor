@@ -225,11 +225,11 @@ public class EditorWindow extends Window {
         return tabbedPane;
     }
 
-	public JSplitPane getCanvasSplitPane() {
-		return canvasSplitPane;
-	}
+    public JSplitPane getCanvasSplitPane() {
+        return canvasSplitPane;
+    }
 
-	public int getTargetFps() {
+    public int getTargetFps() {
         return targetFps;
     }
 

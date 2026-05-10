@@ -143,8 +143,8 @@ public class SupercellSWFAssetFile extends TextureAssetFile<SupercellSWF> implem
         );
     }
 
-	@Override
-	public void save(Path path) {
+    @Override
+    public void save(Path path) {
         this.asset.save(path.toString(), null);
-	}
+    }
 }

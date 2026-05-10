@@ -20,4 +20,3 @@ public class LayoutControllerFactory {
         throw new IllegalStateException("Unknown file type: " + file);
     }
 }
-
