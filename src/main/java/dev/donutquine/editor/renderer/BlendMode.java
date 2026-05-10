@@ -14,8 +14,7 @@ public enum BlendMode {
     // GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
     ALPHA,
     /**
-     * The blending is disabled in the graphics library at all.
-     */
+    * The blending is disabled in the graphics library at all.
+    */
     DISABLED
 }
-

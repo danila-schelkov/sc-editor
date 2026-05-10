@@ -28,7 +28,7 @@ public class DrawCommandContextMenu extends ContextMenu {
 
     private final Table table;
     private final SupercellSWFLayoutController swfLayoutController;
-	private final Shape shape;
+    private final Shape shape;
 
     public DrawCommandContextMenu(Table table, SupercellSWFLayoutController swfLayoutController, Shape shape) {
         super(table, null);

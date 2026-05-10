@@ -14,8 +14,8 @@ public class EditDrawCommandPointGizmoAction extends AbstractGizmoAction {
     private final @NotNull Matrix2x3 inverseMatrix;
     private final @NotNull Point controlPoint;
 
-	private float cpStartX, cpStartY;
-	private float startX, startY;
+    private float cpStartX, cpStartY;
+    private float startX, startY;
     private float newX, newY;
 
     public EditDrawCommandPointGizmoAction(@NotNull CommandManager commandManager, @NotNull ShapeDrawBitmapCommand drawCommand, int pointIndex, @NotNull Matrix2x3 inverseMatrix, @NotNull Point controlPoint) {
@@ -26,8 +26,8 @@ public class EditDrawCommandPointGizmoAction extends AbstractGizmoAction {
         this.controlPoint = controlPoint;
     }
 
-	@Override
-	public void begin(float mouseX, float mouseY) {
+    @Override
+    public void begin(float mouseX, float mouseY) {
         super.begin(mouseX, mouseY);
 
         this.cpStartX = this.controlPoint.getX();
@@ -39,8 +39,8 @@ public class EditDrawCommandPointGizmoAction extends AbstractGizmoAction {
         this.startY = y;
     }
 
-	@Override
-	public void update(float mouseX, float mouseY) {
+    @Override
+    public void update(float mouseX, float mouseY) {
         super.update(mouseX, mouseY);
 
         this.controlPoint.set(mouseX, mouseY);
@@ -48,10 +48,10 @@ public class EditDrawCommandPointGizmoAction extends AbstractGizmoAction {
         newX = this.inverseMatrix.applyX(mouseX, mouseY);
         newY = this.inverseMatrix.applyY(mouseX, mouseY);
         this.drawCommand.setXY(this.pointIndex, newX, newY);
-	}
+    }
 
-	@Override
-	public void end() {
+    @Override
+    public void end() {
         this.commandManager.execute(new MoveDrawCommandPointCommand(
             drawCommand, pointIndex, 
             this.startX, this.startY, newX, newY, 
@@ -59,6 +59,5 @@ public class EditDrawCommandPointGizmoAction extends AbstractGizmoAction {
             controlPoint, 
             this.cpStartX, this.cpStartY, this.mouseX, this.mouseY
         ));
-	}
+    }
 }
-

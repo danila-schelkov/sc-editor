@@ -11,11 +11,11 @@ import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.editor.settings.EditorPreferences;
 
 public class OptionsMenu extends JMenu {
-	private final EditorPreferences editorPreferences;
+    private final EditorPreferences editorPreferences;
 
     private final JSlider pixelSizeSlider;
     private final JCheckBoxMenuItem wireframeModeCheckBox;
-	private final JCheckBoxMenuItem exportPreserveCenterCheckBox;
+    private final JCheckBoxMenuItem exportPreserveCenterCheckBox;
 
     public OptionsMenu(EditorWindow window) {
         super("Options");

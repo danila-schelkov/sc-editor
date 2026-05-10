@@ -37,9 +37,9 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
     private final DisplayObjectListPanel objectListPanel;
     private final DisplayObjectInfoPanel currentObjectInfoPanel;
     private final TexturesPanel texturesPanel;
-	private final TimelinePanel timelinePanel;
+    private final TimelinePanel timelinePanel;
 
-	private boolean timelineShouldBeVisible;
+    private boolean timelineShouldBeVisible;
 
     public SupercellSWFLayoutController(EditorWindow window, SupercellSWFAssetFile assetFile) {
         this.window = window;
@@ -76,11 +76,11 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
     }
 
     /**
-     * Adds a display object to the Stage and to the object history and updates the info panel.
-     *
-     * @param id display object id to be selected
-     * @param name display object name
-     */
+    * Adds a display object to the Stage and to the object history and updates the info panel.
+    *
+    * @param id display object id to be selected
+    * @param name display object name
+    */
     public void selectObject(int id, String name) {
         NavigationHistory<Integer> navigationHistory = this.assetFile.getNavigationHistory();
 
@@ -109,8 +109,8 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
         return null;
     }
 
-	@Override
-	public void start() {
+    @Override
+    public void start() {
         JTabbedPane tabbedPane = this.window.getTabbedPane();
         tabbedPane.setVisible(true);
         tabbedPane.add("Objects", this.objectListPanel);
@@ -133,10 +133,10 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
 
         NavigationHistory<?> navigationHistory = this.assetFile.getNavigationHistory();
         navigationHistory.registerNavigationListener(this::onNavigationEvent);
-	}
+    }
 
-	@Override
-	public void finish() {
+    @Override
+    public void finish() {
         JTabbedPane tabbedPane = this.window.getTabbedPane();
         tabbedPane.setVisible(false);
         tabbedPane.remove(this.objectListPanel);
@@ -147,27 +147,27 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
 
         NavigationHistory<?> navigationHistory = this.assetFile.getNavigationHistory();
         navigationHistory.unregisterNavigationListener(this::onNavigationEvent);
-	}
+    }
 
-	@Override
-	public SupercellSWFAssetFile getAssetFile() {
+    @Override
+    public SupercellSWFAssetFile getAssetFile() {
         return this.assetFile;
-	}
+    }
 
-	@Override
-	public void openSpriteSheet(int textureIndex) {
+    @Override
+    public void openSpriteSheet(int textureIndex) {
         EditorStage stage = EditorStage.getInstance();
         stage.reset();
         stage.addChild(this.assetFile.getSpriteSheet(textureIndex));
 
         this.timelinePanel.setVisible(false);
-	}
+    }
 
-	@Override
-	public void focusOnSearchField() {
+    @Override
+    public void focusOnSearchField() {
         this.window.getTabbedPane().setSelectedComponent(this.objectListPanel);
         this.objectListPanel.setFocusOnTextField();
-	}
+    }
 
     public void setTimelineVisible(boolean visible) {
         this.timelineShouldBeVisible = visible;
@@ -182,10 +182,10 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
     }
 
     /**
-     * Adds a display object to the Stage and to the object history and updates the info panel.
-     *
-     * @param displayObject display object to be selected
-     */
+    * Adds a display object to the Stage and to the object history and updates the info panel.
+    *
+    * @param displayObject display object to be selected
+    */
     private void selectObject(DisplayObject displayObject) {
         this.objectListPanel.selectObjectById(displayObject.getId());
 

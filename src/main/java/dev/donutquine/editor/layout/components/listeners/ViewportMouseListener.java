@@ -62,7 +62,7 @@ public class ViewportMouseListener extends MouseAdapter {
             for (int i = 0; i < stageSprite.getChildrenCount(); i++) {
                 DisplayObject child = stageSprite.getChild(i);
                 if (child instanceof SpriteSheet spriteSheet) {
-					hoveroverCommands = SpriteSheetHelper.getHoveroverCommands(spriteSheet, point.getX(), point.getY());
+                    hoveroverCommands = SpriteSheetHelper.getHoveroverCommands(spriteSheet, point.getX(), point.getY());
                     break;
                 }
             }

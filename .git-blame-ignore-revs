@@ -1,0 +1,2 @@
+# Applied .editorconfig settings to all project files using `bunx eclint fix 'src/**/*'`
+# TBD: add commit hash

@@ -22,8 +22,8 @@ public class TextureAssetLayoutController implements TextureLayoutController<Tex
         this.texturesPanel = new TexturesPanel(this);
     }
 
-	@Override
-	public void start() {
+    @Override
+    public void start() {
         JTabbedPane tabbedPane = this.window.getTabbedPane();
         tabbedPane.setVisible(true);
         tabbedPane.add("Textures", this.texturesPanel);
@@ -43,25 +43,25 @@ public class TextureAssetLayoutController implements TextureLayoutController<Tex
         EditorStage stage = EditorStage.getInstance();
         stage.reset();
         stage.addChild(this.assetFile.getSpriteSheet(0));
-	}
+    }
 
-	@Override
-	public void finish() {
+    @Override
+    public void finish() {
         JTabbedPane tabbedPane = this.window.getTabbedPane();
         tabbedPane.setVisible(false);
         tabbedPane.remove(this.texturesPanel);
 
         EditorStage stage = EditorStage.getInstance();
         stage.reset();
-	}
+    }
 
-	@Override
-	public void openSpriteSheet(int textureIndex) {
+    @Override
+    public void openSpriteSheet(int textureIndex) {
         // Do nothing as we already added spritesheet to the stage
-	}
+    }
 
-	@Override
-	public TextureAssetFile<?> getAssetFile() {
+    @Override
+    public TextureAssetFile<?> getAssetFile() {
         return this.assetFile;
-	}
+    }
 }
