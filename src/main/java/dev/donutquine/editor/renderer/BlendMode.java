@@ -17,7 +17,5 @@ public enum BlendMode {
      * The blending is disabled in the graphics library at all.
      */
     DISABLED
-    // TODO: I dont know how to map old types to new ones
-    // 1, 300h, 301h, 302h, 303h, 306h, 307h, 304h, 305h, 308h, 8001h, 8002h, 8003h, 8004h
 }
 

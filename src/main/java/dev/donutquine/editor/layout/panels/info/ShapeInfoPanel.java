@@ -9,7 +9,7 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import dev.donutquine.editor.layout.SupercellSWFLayoutController;
-import dev.donutquine.editor.layout.components.Table;
+import dev.donutquine.editor.layout.components.tables.Table;
 import dev.donutquine.editor.layout.contextmenus.DrawCommandContextMenu;
 import dev.donutquine.renderer.impl.swf.objects.Shape;
 import dev.donutquine.swf.Tag;
