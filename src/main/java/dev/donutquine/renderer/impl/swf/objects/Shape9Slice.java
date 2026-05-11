@@ -29,15 +29,10 @@ public class Shape9Slice extends Shape {
 
     @Override
     public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
-        Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
-        matrixApplied.multiply(matrix);
+        Matrix2x3 frameMatrix = calculateFrameMatrix(matrix);
+        ColorTransform frameColorTransform = calculateFrameColorTransform(colorTransform);
 
-        ColorTransform colorTransformApplied = new ColorTransform(this.getColorTransform());
-        colorTransformApplied.multiply(colorTransform);
-
-        int v35 = RenderConfig.getUnknownRenderModification(colorTransformApplied) | a4;
-
-        int renderConfigBits = this.getRenderConfigBits() | v35;
+        int renderConfigBits = this.getRenderConfigBits() | RenderConfig.getShader(frameColorTransform) | a4;
 
         // Calculating bounds
         Rect bounds = new Rect(100000, 100000, -100000, -100000);
@@ -51,12 +46,12 @@ public class Shape9Slice extends Shape {
         // Why not matrix applied? Maybe here is a bug?
         movedGrid.movePosition(-this.getMatrix().getX(), -this.getMatrix().getY());
 
-        float widthSheared = this.scalingGrid.getWidth() * matrixApplied.getB();
-        float widthScaled = this.scalingGrid.getWidth() * matrixApplied.getA();
+        float widthSheared = this.scalingGrid.getWidth() * frameMatrix.getB();
+        float widthScaled = this.scalingGrid.getWidth() * frameMatrix.getA();
         float widthDistance = widthSheared * widthSheared + widthScaled * widthScaled;
 
-        float heightSheared = this.scalingGrid.getHeight() * matrixApplied.getC();
-        float heightScaled = this.scalingGrid.getHeight() * matrixApplied.getD();
+        float heightSheared = this.scalingGrid.getHeight() * frameMatrix.getC();
+        float heightScaled = this.scalingGrid.getHeight() * frameMatrix.getD();
         float heightDistance = heightSheared * heightSheared + heightScaled * heightScaled;
 
         float scaledWidth = 1.0f;
@@ -73,7 +68,7 @@ public class Shape9Slice extends Shape {
 
         Stage stage = this.getStage();
         for (ShapeDrawBitmapCommand command : this.commands) {
-            result |= ShapeDrawBitmapCommandRenderer.render9Slice(command, this.textureAsset, stage, matrixApplied, colorTransformApplied, renderConfigBits, movedGrid, bounds, scaledWidth, scaledHeight);
+            result |= ShapeDrawBitmapCommandRenderer.render9Slice(command, this.textureAsset, stage, frameMatrix, frameColorTransform, renderConfigBits, movedGrid, bounds, scaledWidth, scaledHeight);
         }
 
         return result;

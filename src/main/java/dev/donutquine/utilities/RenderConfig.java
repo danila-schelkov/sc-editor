@@ -3,7 +3,7 @@ package dev.donutquine.utilities;
 import dev.donutquine.swf.ColorTransform;
 
 public final class RenderConfig {
-    public static int getUnknownRenderModification(ColorTransform colorTransform) {
+    public static int getShader(ColorTransform colorTransform) {
         int redAddition = colorTransform.getRedAddition() & 0xFF;
         int greenAddition = colorTransform.getGreenAddition() & 0xFF;
         int blueAddition = colorTransform.getBlueAddition() & 0xFF;

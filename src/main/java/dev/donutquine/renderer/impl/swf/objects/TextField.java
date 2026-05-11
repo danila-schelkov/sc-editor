@@ -24,26 +24,22 @@ public class TextField extends DisplayObject {
 
     @Override
     public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, float deltaTime) {
-        Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
-        matrixApplied.multiply(matrix);
+        Matrix2x3 frameMatrix = calculateFrameMatrix(matrix);
+        ColorTransform frameColorTransform = calculateFrameColorTransform(colorTransform);
 
-        ColorTransform colorTransformApplied = new ColorTransform(this.getColorTransform());
-        colorTransformApplied.multiply(colorTransform);
-
-        int v45 = RenderConfig.getUnknownRenderModification(colorTransformApplied) | renderConfigBits;
+        int v45 = RenderConfig.getShader(frameColorTransform) | renderConfigBits;
 
         this.cursorBlinkTime = (this.cursorBlinkTime + deltaTime) % 1.0f;
-        return this.shapeRender(this.getStage(), matrixApplied, colorTransformApplied, this.getRenderConfigBits() | v45, this.bounds == null);
+        return this.shapeRender(this.getStage(), frameMatrix, frameColorTransform, this.getRenderConfigBits() | v45, this.bounds == null);
     }
 
     @Override
     public boolean collisionRender(Matrix2x3 matrix) {
         if (!this.isInteractive) return false;
 
-        Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
-        matrixApplied.multiply(matrix);
+        Matrix2x3 frameMatrix = calculateFrameMatrix(matrix);
 
-        return this.shapeRender(this.getStage(), matrixApplied, this.getColorTransform(), 0, false);
+        return this.shapeRender(this.getStage(), frameMatrix, this.getColorTransform(), 0, false);
     }
 
     @Override
@@ -62,7 +58,7 @@ public class TextField extends DisplayObject {
         if (stage.startShape(transformedBounds, null, renderConfigBits)) {
             DrawApi drawApi = stage.getDrawApi();
             Color color = new Color(colorTransform.getRedMultiplier(), colorTransform.getGreenMultiplier(), colorTransform.getBlueMultiplier(), colorTransform.getAlpha() / 2);
-            drawApi.drawRectangleLines(transformedBounds, color, 1);
+            // drawApi.drawRectangleLines(transformedBounds, color, 1);
             return true;
         }
 

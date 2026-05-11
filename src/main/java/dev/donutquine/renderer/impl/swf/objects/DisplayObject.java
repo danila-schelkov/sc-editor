@@ -15,6 +15,9 @@ public abstract class DisplayObject {
     private Sprite parent;
     private int indexInParent;
 
+    private final Matrix2x3 frameMatrix = new Matrix2x3();
+    private final ColorTransform frameColorTransform = new ColorTransform();
+
     public DisplayObject() {
         this.id = -1;
 
@@ -162,5 +165,17 @@ public abstract class DisplayObject {
 
     public boolean isTextField() {
         return false;
+    }
+
+    protected Matrix2x3 calculateFrameMatrix(Matrix2x3 parentMatrix) {
+        frameMatrix.set(this.getMatrix());
+        frameMatrix.multiply(parentMatrix);
+        return frameMatrix;
+    }
+
+    protected ColorTransform calculateFrameColorTransform(ColorTransform parentColorTransform) {
+        frameColorTransform.set(this.getColorTransform());
+        frameColorTransform.multiply(parentColorTransform);
+        return frameColorTransform;
     }
 }

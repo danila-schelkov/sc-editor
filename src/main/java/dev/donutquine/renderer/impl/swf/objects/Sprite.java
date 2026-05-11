@@ -5,7 +5,6 @@ import dev.donutquine.swf.ColorTransform;
 import dev.donutquine.swf.Matrix2x3;
 import dev.donutquine.swf.movieclips.MovieClipState;
 import dev.donutquine.utilities.RenderConfig;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,19 +23,15 @@ public abstract class Sprite extends DisplayObject {
 
     @Override
     public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, float deltaTime) {
-        Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
-        matrixApplied.multiply(matrix);
+        Matrix2x3 frameMatrix = calculateFrameMatrix(matrix);
+        ColorTransform frameColorTransform = calculateFrameColorTransform(colorTransform);
 
-        ColorTransform colorTransformApplied = new ColorTransform(this.getColorTransform());
-        colorTransformApplied.multiply(colorTransform);
-
-        int v45 = RenderConfig.getUnknownRenderModification(colorTransformApplied) | renderConfigBits;
+        int spriteRenderConfigBits = (this.getRenderConfigBits() & 0x3FF) | RenderConfig.getShader(frameColorTransform) | renderConfigBits;
 
         boolean result = false;
-        int spriteRenderConfigBits = (this.getRenderConfigBits() & 0x3FF) | v45;
         for (DisplayObject displayObject : this.children) {
             if (displayObject.isVisible()) {
-                result |= displayObject.render(matrixApplied, colorTransformApplied, spriteRenderConfigBits, deltaTime);
+                result |= displayObject.render(frameMatrix, frameColorTransform, spriteRenderConfigBits, deltaTime);
             }
         }
 
@@ -49,8 +44,7 @@ public abstract class Sprite extends DisplayObject {
 
         // TODO: some kind of interaction with stage from lib
 
-        Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
-        matrixApplied.multiply(matrix);
+        Matrix2x3 frameMatrix = calculateFrameMatrix(matrix);
 
         if (this.hitArea != null) {
             // TODO: hitAreaTest
@@ -59,7 +53,7 @@ public abstract class Sprite extends DisplayObject {
         boolean result = false;
         for (DisplayObject child : this.children) {
             if (child.isVisible()) {
-                result |= child.collisionRender(matrixApplied);
+                result |= child.collisionRender(frameMatrix);
             }
         }
 

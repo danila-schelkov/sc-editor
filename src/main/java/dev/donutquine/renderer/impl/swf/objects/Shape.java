@@ -16,6 +16,8 @@ public class Shape extends DisplayObject {
     protected List<ShapeDrawBitmapCommand> commands;
     protected TextureAsset textureAsset;
 
+    // TODO: remove please
+    // may be changed to BitSet
     private final Set<Integer> disabledCommands = new HashSet<>();
 
     public static Shape createShape(ShapeOriginal original, TextureAsset textureAsset) {
@@ -29,16 +31,11 @@ public class Shape extends DisplayObject {
     }
 
     @Override
-    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int a4, float deltaTime) {
-        Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
-        matrixApplied.multiply(matrix);
+    public boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, float deltaTime) {
+        Matrix2x3 frameMatrix = calculateFrameMatrix(matrix);
+        ColorTransform frameColorTransform = calculateFrameColorTransform(colorTransform);
 
-        ColorTransform colorTransformApplied = new ColorTransform(this.getColorTransform());
-        colorTransformApplied.multiply(colorTransform);
-
-        int v35 = RenderConfig.getUnknownRenderModification(colorTransformApplied) | a4;
-
-        int renderConfigBits = this.getRenderConfigBits() | v35;
+        int renderConfigBits1 = this.getRenderConfigBits() | RenderConfig.getShader(frameColorTransform) | renderConfigBits;
 
         Stage stage = this.getStage();
 
@@ -51,7 +48,7 @@ public class Shape extends DisplayObject {
                 continue;
             }
 
-            result |= ShapeDrawBitmapCommandRenderer.render(command, this.textureAsset, stage, matrixApplied, colorTransformApplied, renderConfigBits);
+            result |= ShapeDrawBitmapCommandRenderer.render(command, this.textureAsset, stage, frameMatrix, frameColorTransform, renderConfigBits1);
         }
 
         return result;
@@ -59,8 +56,7 @@ public class Shape extends DisplayObject {
 
     @Override
     public boolean collisionRender(Matrix2x3 matrix) {
-        Matrix2x3 matrixApplied = new Matrix2x3(this.getMatrix());
-        matrixApplied.multiply(matrix);
+        Matrix2x3 frameMatrix = calculateFrameMatrix(matrix);
 
         // TODO: accurateCollisionRender
 
@@ -68,15 +64,14 @@ public class Shape extends DisplayObject {
 
         boolean result = false;
 
-        List<ShapeDrawBitmapCommand> shapeDrawBitmapCommands = this.commands;
-        for (int i = 0; i < shapeDrawBitmapCommands.size(); i++) {
-            ShapeDrawBitmapCommand command = shapeDrawBitmapCommands.get(i);
+        for (int i = 0; i < this.commands.size(); i++) {
+            ShapeDrawBitmapCommand command = this.commands.get(i);
 
             if (disabledCommands.contains(i)) {
                 continue;
             }
 
-            result |= ShapeDrawBitmapCommandRenderer.collisionRender(command, this.textureAsset, stage, matrixApplied, this.getColorTransform());
+            result |= ShapeDrawBitmapCommandRenderer.collisionRender(command, this.textureAsset, stage, frameMatrix, this.getColorTransform());
         }
 
         return result;
