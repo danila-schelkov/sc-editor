@@ -56,6 +56,17 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
     }
 
     @Override
+    public boolean isCellEditable(int row, int column) {
+        return switch (column) {
+            case COLUMN_INDEX -> false;
+            case COLUMN_CHILD_INDEX -> true;
+            case COLUMN_MATRIX_INDEX -> true;
+            case COLUMN_COLOR_TRANSFORM_INDEX -> true;
+            default -> throw new IllegalArgumentException("Unknown column: " + column);
+        };
+    }
+
+    @Override
     public Object getValueAt(int row, int column) {
         MovieClipFrameElement frameElement = this.frameElements.get(row);
 
@@ -66,6 +77,58 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
             case COLUMN_COLOR_TRANSFORM_INDEX -> frameElement.colorTransformIndex();
             default -> throw new IllegalArgumentException("Unknown column: " + column);
         };
+    }
+
+    // FIXME: all changes are visible only after frame changing back and forth
+    //  and that leads to a problem: you can't see any changes if movie clip has only 1 frame
+    @Override
+    public void setValueAt(Object value, int row, int column) {
+        MovieClipFrameElement frameElement = this.frameElements.get(row);
+
+        int childIndex = frameElement.childIndex();
+        int matrixIndex = frameElement.matrixIndex();
+        int colorTransformIndex = frameElement.colorTransformIndex();
+
+        switch (column) {
+            case COLUMN_CHILD_INDEX -> {
+                // TODO: validate child is in timeline children index bounds
+                int newChildIndex = value == null ? 0xFFFF : (int) value;
+                if (newChildIndex == childIndex) return;
+                if (newChildIndex < 0 || newChildIndex > 0xFFFF) {
+                    throw new IndexOutOfBoundsException();
+                }
+
+                childIndex = newChildIndex;
+            }
+            case COLUMN_MATRIX_INDEX -> {
+                // TODO: validate matrix exists in matrix bank
+                int newMatrixIndex = value == null ? 0xFFFF : (int) value;
+                if (newMatrixIndex == matrixIndex) return;
+                if (newMatrixIndex < 0 || newMatrixIndex > 0xFFFF) {
+                    throw new IndexOutOfBoundsException();
+                }
+
+                matrixIndex = newMatrixIndex;
+            }
+            case COLUMN_COLOR_TRANSFORM_INDEX -> {
+                // TODO: validate color transform exists in matrix bank
+                int newColorTransformIndex = value == null ? 0xFFFF : (int) value;
+                if (newColorTransformIndex == colorTransformIndex) return;
+                if (newColorTransformIndex < 0 || newColorTransformIndex > 0xFFFF) {
+                    throw new IndexOutOfBoundsException();
+                }
+
+                colorTransformIndex = newColorTransformIndex;
+            }
+            default -> throw new IllegalArgumentException("Unknown column: " + column);
+        }
+
+        // TODO: make a command and add it to global UndoRedoManager
+        this.frameElements.set(row, new MovieClipFrameElement(childIndex, matrixIndex, colorTransformIndex));
+
+        this.updateFrameElements();
+
+        fireTableCellUpdated(row, column);
     }
 
     @Override

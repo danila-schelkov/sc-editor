@@ -14,6 +14,11 @@ public class Table extends JTable {
             public Class<?> getColumnClass(int columnIndex) {
                 return columnClasses[columnIndex];
             }
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         });
     }
 
@@ -42,10 +47,5 @@ public class Table extends JTable {
 
     public void addSelectionListener(ListSelectionListener listener) {
         this.selectionModel.addListSelectionListener(listener);
-    }
-
-    @Override
-    public boolean isCellEditable(int row, int column) {
-        return false;
     }
 }
