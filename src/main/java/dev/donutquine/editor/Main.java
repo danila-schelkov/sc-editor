@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
 import com.formdev.flatlaf.util.SystemFileChooser;
+import dev.donutquine.editor.cli.CliExporter;
 import dev.donutquine.editor.layout.GestureUtilities;
 import dev.donutquine.editor.layout.dialogs.AboutDialog;
 import dev.donutquine.editor.layout.dialogs.ExceptionDialog;
@@ -27,11 +28,41 @@ import dev.donutquine.editor.settings.EditorPreferences;
 
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
-    private static final Set<String> jvmRequiredArgs = Set.of("--add-exports=java.base/java.lang=ALL-UNNAMED", "--add-exports=java.desktop/sun.awt=ALL-UNNAMED", "--add-exports=java.desktop/sun.java2d=ALL-UNNAMED");
+    private static final Set<String> jvmRequiredArgs = Set.of(
+            "--add-exports=java.base/java.lang=ALL-UNNAMED",
+            "--add-exports=java.desktop/sun.awt=ALL-UNNAMED",
+            "--add-exports=java.desktop/sun.java2d=ALL-UNNAMED");
 
     public static void main(String[] args) {
+        // ── CLI / headless mode ────────────────────────────────────────────
+        //
+        // Detect --export before touching any AWT / Swing / OpenGL class so
+        // that the headless mode truly has no dependency on a display server.
+        //
+        // java.awt.headless must be set as a system property *before* the AWT
+        // toolkit is first initialised (which happens lazily on the first AWT
+        // call).  Setting it here – before any Swing import is exercised –
+        // is the correct and sufficient approach.
+        if (CliExporter.isCliMode(args)) {
+            // Prevent AWT from trying to connect to a display.
+            System.setProperty("java.awt.headless", "true");
+
+            // The JVM restart logic below adds --add-exports flags that the
+            // GUI also needs, but the CLI path doesn't require them.  Skip
+            // the restart to avoid an infinite loop when the required args
+            // are intentionally absent in a thin CLI invocation.
+            CliExporter.run(args);
+
+            // CliExporter.run() calls System.exit() on error; a normal return
+            // means success.
+            System.exit(0);
+            return;
+        }
+
+        // ── GUI mode (original logic, unchanged) ───────────────────────────
         try {
-            Set<String> jvmArgs = new HashSet<>(ManagementFactory.getRuntimeMXBean().getInputArguments());
+            Set<String> jvmArgs = new HashSet<>(
+                    ManagementFactory.getRuntimeMXBean().getInputArguments());
             if (!jvmArgs.containsAll(jvmRequiredArgs)) {
                 restartWithRequiredJvmArgs(args);
                 return;
@@ -43,23 +74,24 @@ public class Main {
         System.setProperty("apple.laf.useScreenMenuBar", "true");
 
         FlatLightLaf.setup();
-        
-        UIManager.put( "TabbedPane.closeArc", 999 );
-        UIManager.put( "TabbedPane.closeCrossFilledSize", 5.5f );
-        UIManager.put( "TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon() );
+
+        UIManager.put("TabbedPane.closeArc", 999);
+        UIManager.put("TabbedPane.closeCrossFilledSize", 5.5f);
+        UIManager.put("TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon());
 
         SystemFileChooser.setStateStore(new SystemFileChooser.StateStore() {
             private static final String KEY_PREFIX = "fileChooser.";
 
-            private final static Preferences state = Preferences.userRoot().node("sc-editor");
+            private final static Preferences state =
+                    Preferences.userRoot().node("sc-editor");
 
             @Override
-            public String get( String key, String def ) {
+            public String get(String key, String def) {
                 return state.get(KEY_PREFIX + key, def);
             }
 
             @Override
-            public void put( String key, String value ) {
+            public void put(String key, String value) {
                 if (value != null) state.put(KEY_PREFIX + key, value);
                 else state.remove(KEY_PREFIX + key);
             }
@@ -69,6 +101,8 @@ public class Main {
 
         SwingUtilities.invokeLater(() -> initializeEditor(args));
     }
+
+    // ── GUI initialisation (unchanged from original) ─────────────────────────
 
     private static void initializeEditor(String[] args) {
         EditorPreferences settings;
@@ -100,11 +134,11 @@ public class Main {
                 Desktop desktop = Desktop.getDesktop();
                 if (desktop.isSupported(Desktop.Action.APP_OPEN_FILE)) {
                     desktop.setOpenFileHandler(e -> {
-                        List<Path> paths = e.getFiles().stream().map(File::toPath).toList();
+                        List<Path> paths = e.getFiles().stream()
+                                .map(File::toPath).toList();
                         if (paths.size() > 1) {
                             LOGGER.warn("Loading multiple files is not supported!");
                         }
-
                         window.openFile(paths.get(0));
                     });
                 }
@@ -119,15 +153,16 @@ public class Main {
             if (Desktop.isDesktopSupported()) {
                 Desktop desktop = Desktop.getDesktop();
                 if (desktop.isSupported(Desktop.Action.APP_ABOUT)) {
-                    desktop.setAboutHandler(e -> {
-                        AboutDialog.showAboutDialog(window.getFrame());
-                    });
+                    desktop.setAboutHandler(e ->
+                            AboutDialog.showAboutDialog(window.getFrame()));
                 }
             }
         } catch (Throwable e) {
             LOGGER.error("Failed to register about handler", e);
         }
     }
+
+    // ── JVM restart logic (unchanged from original) ───────────────────────────
 
     private static void restartWithRequiredJvmArgs(String[] args) {
         try {
@@ -140,8 +175,7 @@ public class Main {
             command.add(javaBin);
 
             command.addAll(
-                ManagementFactory.getRuntimeMXBean().getInputArguments()
-            );
+                    ManagementFactory.getRuntimeMXBean().getInputArguments());
 
             command.addAll(jvmRequiredArgs);
             if (GestureUtilities.isDarwin()) {
@@ -155,7 +189,6 @@ public class Main {
             if (commandProperty.endsWith(".jar")) {
                 command.add("-jar");
                 command.add(commandProperty.split(" ")[0]);
-
             } else {
                 command.add("-cp");
                 command.add(classpath);
@@ -167,7 +200,6 @@ public class Main {
             command.addAll(Arrays.asList(args));
 
             ProcessBuilder builder = new ProcessBuilder(command);
-
             builder.inheritIO();
             builder.start();
 
@@ -177,3 +209,4 @@ public class Main {
         }
     }
 }
+
