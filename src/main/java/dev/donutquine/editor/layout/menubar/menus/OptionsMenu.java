@@ -44,7 +44,7 @@ public class OptionsMenu extends JMenu {
 
         this.wireframeModeCheckBox = wireframeModeCheckBox;
 
-        JCheckBoxMenuItem exportPreserveCenterCheckBox = new JCheckBoxMenuItem("Preverse stage center when export");
+        JCheckBoxMenuItem exportPreserveCenterCheckBox = new JCheckBoxMenuItem("Preserve stage center when export");
         exportPreserveCenterCheckBox.setState(this.editorPreferences.shouldPreserveStageCenter());
         exportPreserveCenterCheckBox.setMnemonic(KeyEvent.VK_P);
         exportPreserveCenterCheckBox.addActionListener(this::togglePreserveStageCenter);
