@@ -92,7 +92,7 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
         switch (column) {
             case COLUMN_CHILD_INDEX -> {
                 // TODO: validate child is in timeline children index bounds
-                int newChildIndex = value == null ? 0xFFFF : (int) value;
+                int newChildIndex = value == null || (int) value == -1 ? 0xFFFF : (int) value;
                 if (newChildIndex == childIndex) return;
                 if (newChildIndex < 0 || newChildIndex > 0xFFFF) {
                     throw new IndexOutOfBoundsException();
@@ -102,7 +102,7 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
             }
             case COLUMN_MATRIX_INDEX -> {
                 // TODO: validate matrix exists in matrix bank
-                int newMatrixIndex = value == null ? 0xFFFF : (int) value;
+                int newMatrixIndex = value == null || (int) value == -1 ? 0xFFFF : (int) value;
                 if (newMatrixIndex == matrixIndex) return;
                 if (newMatrixIndex < 0 || newMatrixIndex > 0xFFFF) {
                     throw new IndexOutOfBoundsException();
@@ -112,7 +112,7 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
             }
             case COLUMN_COLOR_TRANSFORM_INDEX -> {
                 // TODO: validate color transform exists in matrix bank
-                int newColorTransformIndex = value == null ? 0xFFFF : (int) value;
+                int newColorTransformIndex = value == null || (int) value == -1 ? 0xFFFF : (int) value;
                 if (newColorTransformIndex == colorTransformIndex) return;
                 if (newColorTransformIndex < 0 || newColorTransformIndex > 0xFFFF) {
                     throw new IndexOutOfBoundsException();
