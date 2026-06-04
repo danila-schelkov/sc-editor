@@ -1,9 +1,12 @@
 package dev.donutquine.editor.layout.components.tables;
 
+import java.awt.Component;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
+import javax.swing.text.JTextComponent;
 
 public class Table extends JTable {
     public Table(Object[][] data, Object[] columnNames, Class<?>[] columnClasses) {
@@ -47,5 +50,16 @@ public class Table extends JTable {
 
     public void addSelectionListener(ListSelectionListener listener) {
         this.selectionModel.addListSelectionListener(listener);
+    }
+
+    @Override
+    public Component prepareEditor(TableCellEditor editor, int row, int column) {
+        Component c = super.prepareEditor(editor, row, column);
+
+        if (c instanceof JTextComponent textComponent) {
+            SwingUtilities.invokeLater(textComponent::selectAll);
+        }
+
+        return c;
     }
 }
