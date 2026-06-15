@@ -27,7 +27,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <joglVersion>2.6.0</joglVersion>
-        <zstdJniVersion>1.5.7-8</zstdJniVersion>
+        <zstdJniVersion>1.5.7-11</zstdJniVersion>
         <flatlafVersion>3.7.1</flatlafVersion>
         <main.class>dev.donutquine.editor.Main</main.class>
         <finalName>${project.artifactId}-${project.version}</finalName>
