@@ -1,6 +1,7 @@
 package dev.donutquine.editor.layout.contextmenus;
 
 import java.awt.event.ActionEvent;
+import javax.swing.Action;
 import javax.swing.JTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,7 @@ public class FrameTableContextMenu extends ContextMenu {
 	private final MovieClipFramesTableModel tableModel;
     private final SupercellSWFLayoutController swfLayoutController;
 
-    public FrameTableContextMenu(JTable table, MovieClipFramesTableModel tableModel, SupercellSWFLayoutController swfLayoutController) {
+    public FrameTableContextMenu(JTable table, MovieClipFramesTableModel tableModel, SupercellSWFLayoutController swfLayoutController, Action duplicateAction) {
         super(table, null);
 
         this.table = table;
@@ -27,7 +28,7 @@ public class FrameTableContextMenu extends ContextMenu {
         this.add("Goto and play", this::gotoAndPlay);
         this.add("Goto and stop", this::gotoAndStop);
         this.addSeparator();
-        this.add("Duplicate", this::duplicate);
+        this.add(duplicateAction);
         this.addSeparator();
         this.add("Delete", this::delete);
 
@@ -66,17 +67,6 @@ public class FrameTableContextMenu extends ContextMenu {
 
         try {
             this.tableModel.delete(firstIndex, elementCount);
-        } catch (IllegalArgumentException e) {
-            LOGGER.warn(e.getLocalizedMessage());
-        }
-    }
-
-    private void duplicate(ActionEvent event) {
-        int firstIndex = this.table.getSelectedRow();
-        int elementCount = this.table.getSelectedRowCount();
-
-        try {
-            this.tableModel.duplicate(firstIndex, elementCount);
         } catch (IllegalArgumentException e) {
             LOGGER.warn(e.getLocalizedMessage());
         }

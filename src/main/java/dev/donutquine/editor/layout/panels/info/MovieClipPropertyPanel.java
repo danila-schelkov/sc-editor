@@ -2,8 +2,12 @@ package dev.donutquine.editor.layout.panels.info;
 
 import java.awt.Component;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.function.IntConsumer;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DropMode;
@@ -12,7 +16,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import dev.donutquine.editor.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.layout.components.listeners.ChildrenListMouseListener;
 import dev.donutquine.editor.layout.components.listeners.FrameSelectionListener;
@@ -23,6 +30,7 @@ import dev.donutquine.editor.layout.components.tables.Table;
 import dev.donutquine.editor.layout.contextmenus.ChildrenTableContextMenu;
 import dev.donutquine.editor.layout.contextmenus.FrameElementTableContextMenu;
 import dev.donutquine.editor.layout.contextmenus.FrameTableContextMenu;
+import dev.donutquine.editor.layout.shortcut.KeyboardUtils;
 import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
@@ -30,6 +38,9 @@ import dev.donutquine.swf.ScMatrixBank;
 import dev.donutquine.swf.movieclips.MovieClipFrame;
 
 public class MovieClipPropertyPanel extends JPanel {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MovieClipPropertyPanel.class);
+    private static final String DUPLICATE_FRAMES = "duplicateFrames";
+
     private final JTable timelineChildrenTable;
     private final JTable framesTable;
     private final JTable frameElementsTable;
@@ -62,11 +73,7 @@ public class MovieClipPropertyPanel extends JPanel {
             movieClip.forceSetFrame(index);
         });
 
-        Table framesTable = createFramesTable(framesTableModel);
-        framesTable.addSelectionListener(new FrameSelectionListener(framesTable, elementsCurrentFrameSetter));
-
-        new FrameTableContextMenu(framesTable, framesTableModel, swfLayoutController);
-        this.framesTable = framesTable;
+        this.framesTable = createFramesTable(framesTableModel, swfLayoutController, elementsCurrentFrameSetter);
 
         this.textInfoPanel = new JPanel();
 
@@ -94,9 +101,37 @@ public class MovieClipPropertyPanel extends JPanel {
         return table;
     }
 
-    private static Table createFramesTable(MovieClipFramesTableModel tableModel) {
+    private static Table createFramesTable(MovieClipFramesTableModel tableModel, SupercellSWFLayoutController swfLayoutController, IntConsumer elementsCurrentFrameSetter) {
         Table table = new Table(tableModel);
+
         table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+
+        AbstractAction duplicateAction = new AbstractAction("Duplicate") {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int firstIndex = table.getSelectedRow();
+                int elementCount = table.getSelectedRowCount();
+
+                try {
+                    tableModel.duplicate(firstIndex, elementCount);
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn(e.getLocalizedMessage());
+                }
+
+                // NOTE: Should we actually reset selection?
+                table.resetKeyboardActions();
+            }
+        };
+
+        table.getActionMap().put(DUPLICATE_FRAMES, duplicateAction);
+        KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyboardUtils.ctrlButton());
+        duplicateAction.putValue(Action.ACCELERATOR_KEY, keyStroke);
+
+        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(keyStroke, DUPLICATE_FRAMES);
+
+        table.addSelectionListener(new FrameSelectionListener(table, elementsCurrentFrameSetter));
+
+        new FrameTableContextMenu(table, tableModel, swfLayoutController, duplicateAction);
 
         return table;
     }

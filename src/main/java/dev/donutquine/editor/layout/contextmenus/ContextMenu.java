@@ -35,6 +35,13 @@ public abstract class ContextMenu {
         return menu;
     }
 
+    public JMenuItem add(Action action) {
+        JMenuItem item = new JMenuItem(action);
+        mainComponents.add(item);
+        popupMenu.add(item);
+        return item;
+    }
+
     public JMenuItem add(String label) {
         JMenuItem item = new JMenuItem(label);
         mainComponents.add(item);
