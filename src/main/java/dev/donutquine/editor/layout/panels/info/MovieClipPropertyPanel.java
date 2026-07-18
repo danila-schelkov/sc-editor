@@ -43,7 +43,7 @@ public class MovieClipPropertyPanel extends JPanel {
     private static final Logger LOGGER = LoggerFactory.getLogger(MovieClipPropertyPanel.class);
 
     private static final String DUPLICATE_FRAMES = "duplicateFrames";
-    private static final String DELETE_FRAMES = "deleteFrames";
+    private static final String DELETE_ACTION_KEY = "delete";
 
     private final JTable timelineChildrenTable;
     private final JTable framesTable;
@@ -67,7 +67,6 @@ public class MovieClipPropertyPanel extends JPanel {
         MovieClipFrameElementsTableModel frameElementsTableModel = new MovieClipFrameElementsTableModel(frames.get(0), movieClip::getTimelineChildCount, matrixBank::getMatrixCount, matrixBank::getColorTransformCount);
 
         this.frameElementsTable = createFrameElementsTable(frameElementsTableModel);
-        new FrameElementTableContextMenu(this.frameElementsTable, frameElementsTableModel);
 
         IntConsumer elementsCurrentFrameSetter = (index) -> {
             frameElementsTableModel.setFrame(frames.get(index));
@@ -101,6 +100,35 @@ public class MovieClipPropertyPanel extends JPanel {
         table.setDropMode(DropMode.INSERT_ROWS);
         table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         table.setTransferHandler(new RowReorderTransferHandler(table, tableModel));
+
+        AbstractAction deleteAction = new AbstractAction("Delete") {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int firstIndex = table.getSelectedRow();
+                int elementCount = table.getSelectedRowCount();
+                if (elementCount < 1) return;
+
+                try {
+                    tableModel.delete(firstIndex, elementCount);
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn(e.getLocalizedMessage());
+                }
+
+                // NOTE: Should we actually reset selection?
+                table.clearSelection();
+            }
+        };
+
+        InputMap inputMap = table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        ActionMap actionMap = table.getActionMap();
+
+        // NOTE: is it okay to use different keystrokes on different systems? I guess so.
+        KeyStroke keyStroke = KeyboardUtils.delete();
+        deleteAction.putValue(Action.ACCELERATOR_KEY, keyStroke);
+        actionMap.put(DELETE_ACTION_KEY, deleteAction);
+        inputMap.put(keyStroke, DELETE_ACTION_KEY);
+
+        new FrameElementTableContextMenu(table, deleteAction);
 
         return table;
     }
@@ -157,8 +185,8 @@ public class MovieClipPropertyPanel extends JPanel {
         // NOTE: is it okay to use different keystrokes on different systems? I guess so.
         keyStroke = KeyboardUtils.delete();
         deleteAction.putValue(Action.ACCELERATOR_KEY, keyStroke);
-        actionMap.put(DELETE_FRAMES, deleteAction);
-        inputMap.put(keyStroke, DELETE_FRAMES);
+        actionMap.put(DELETE_ACTION_KEY, deleteAction);
+        inputMap.put(keyStroke, DELETE_ACTION_KEY);
 
         table.addSelectionListener(new FrameSelectionListener(table, elementsCurrentFrameSetter));
 
