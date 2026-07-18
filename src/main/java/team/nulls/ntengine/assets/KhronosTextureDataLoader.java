@@ -11,7 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Loads <a href="https://www.khronos.org/ktx/">ktx</a> file from buffer to {@link KhronosTexture} object.
@@ -20,7 +21,7 @@ import java.util.logging.Logger;
  */
 public class KhronosTextureDataLoader {
     private static final byte[] HEADER = new byte[]{(byte) 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, (byte) 0xBB, 0x0D, 0x0A, 0x1A, 0x0A};
-    private static final Logger LOGGER = Logger.getLogger(KhronosTextureDataLoader.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(KhronosTextureDataLoader.class);
 
     public static KhronosTexture decodeStream(InputStream is) throws IOException, KhronosTextureLoadingException {
         ByteArrayOutputStream outputBuffer = new ByteArrayOutputStream();
@@ -60,7 +61,8 @@ public class KhronosTextureDataLoader {
         }
         int mipmapLevels = buffer.getInt();
         int dictSize = buffer.getInt();
-        LOGGER.info("Dict: " + decodeDict(buffer, dictSize));
+        Map<String, String> dictionary = decodeDict(buffer, dictSize);
+        LOGGER.debug("Dict: " + dictionary);
         byte[][] levels = new byte[mipmapLevels][];
         for (int i = 0; i < mipmapLevels; i++) {
             int dataChunkSize = addPadding4(buffer.getInt());
