@@ -1,6 +1,7 @@
 package dev.donutquine.editor.layout.components.tables;
 
 import java.util.List;
+import java.util.function.IntConsumer;
 import javax.swing.table.AbstractTableModel;
 import dev.donutquine.swf.movieclips.MovieClipFrame;
 
@@ -14,11 +15,13 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
     private static final int COLUMN_NAME_INDEX = 1;
 
     private final List<MovieClipFrame> frames;
+    private final IntConsumer currentFrameSetter;
 
-    public MovieClipFramesTableModel(List<MovieClipFrame> frames) {
+    public MovieClipFramesTableModel(List<MovieClipFrame> frames, IntConsumer currentFrameSetter) {
         super();
 
         this.frames = frames;
+        this.currentFrameSetter = currentFrameSetter;
 	}
 
     @Override
@@ -62,5 +65,22 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
             case COLUMN_NAME_INDEX -> frame.getLabel();
             default -> throw new IllegalArgumentException("Unknown column: " + column);
         };
+    }
+
+    public void delete(int firstRow, int rowCount) {
+        if (rowCount == this.frames.size()) {
+            throw new IllegalArgumentException("At least one frame must remain");
+        }
+
+        // TODO: make a command and add it to global UndoRedoManager
+        this.frames.subList(firstRow, firstRow + rowCount).clear();
+        this.fireTableRowsDeleted(firstRow, firstRow + rowCount);
+
+        this.updateFrames();
+    }
+
+    private void updateFrames() {
+        // TODO: decide what frame should become next after changing frame count. Before the selection of after?
+        this.currentFrameSetter.accept(0);
     }
 }

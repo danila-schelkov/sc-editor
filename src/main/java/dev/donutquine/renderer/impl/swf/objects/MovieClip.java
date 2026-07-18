@@ -142,11 +142,19 @@ public class MovieClip extends Sprite {
     }
 
     public void setFrame(int index) {
+        setFrame(index, false);
+    }
+
+    public void forceSetFrame(int index) {
+        setFrame(index, true);
+    }
+
+    protected void setFrame(int index, boolean forceChange) {
         if (this.loopFrame == index) {
             this.setState(MovieClipState.STOPPED);
         }
 
-        if (this.currentFrame == index) return;
+        if (this.currentFrame == index && !forceChange) return;
         this.currentFrame = index;
 
         MovieClipFrame frame = this.frames.get(index);

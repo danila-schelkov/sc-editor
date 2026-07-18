@@ -2,6 +2,8 @@ package dev.donutquine.editor.layout.panels.info;
 
 import java.awt.Component;
 import java.awt.GridLayout;
+import java.util.List;
+import java.util.function.IntConsumer;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DropMode;
@@ -25,6 +27,7 @@ import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 import dev.donutquine.swf.ScMatrixBank;
+import dev.donutquine.swf.movieclips.MovieClipFrame;
 
 public class MovieClipPropertyPanel extends JPanel {
     private final JTable timelineChildrenTable;
@@ -41,18 +44,28 @@ public class MovieClipPropertyPanel extends JPanel {
         this.timelineChildrenTable.addMouseListener(new ChildrenListMouseListener(this.timelineChildrenTable, swfLayoutController));
         new ChildrenTableContextMenu(this.timelineChildrenTable, swfLayoutController);
 
+        List<MovieClipFrame> frames = movieClip.getFrames();
         // TODO: handle empty movie clips properly (is it even a valid state?)
-        assert !movieClip.getFrames().isEmpty();
+        assert !frames.isEmpty();
+
         ScMatrixBank matrixBank = movieClip.getMatrixBank();
-        MovieClipFrameElementsTableModel frameElementsTableModel = new MovieClipFrameElementsTableModel(movieClip.getFrames().get(0), movieClip::getTimelineChildCount, matrixBank::getMatrixCount, matrixBank::getColorTransformCount);
+        MovieClipFrameElementsTableModel frameElementsTableModel = new MovieClipFrameElementsTableModel(frames.get(0), movieClip::getTimelineChildCount, matrixBank::getMatrixCount, matrixBank::getColorTransformCount);
 
         this.frameElementsTable = createFrameElementsTable(frameElementsTableModel);
         new FrameElementTableContextMenu(this.frameElementsTable, frameElementsTableModel);
 
-        MovieClipFramesTableModel framesTableModel = new MovieClipFramesTableModel(movieClip.getFrames());
+        IntConsumer elementsCurrentFrameSetter = (index) -> {
+            frameElementsTableModel.setFrame(frames.get(index));
+        };
+        MovieClipFramesTableModel framesTableModel = new MovieClipFramesTableModel(frames, (index) -> {
+            elementsCurrentFrameSetter.accept(index);
+            movieClip.forceSetFrame(index);
+        });
+
         Table framesTable = createFramesTable(framesTableModel);
-        framesTable.addSelectionListener(new FrameSelectionListener(framesTable, frameElementsTableModel, movieClip.getFrames()::get));
-        new FrameTableContextMenu(framesTable, swfLayoutController);
+        framesTable.addSelectionListener(new FrameSelectionListener(framesTable, elementsCurrentFrameSetter));
+
+        new FrameTableContextMenu(framesTable, framesTableModel, swfLayoutController);
         this.framesTable = framesTable;
 
         this.textInfoPanel = new JPanel();
