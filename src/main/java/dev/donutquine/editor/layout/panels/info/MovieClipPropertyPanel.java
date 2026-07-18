@@ -64,7 +64,15 @@ public class MovieClipPropertyPanel extends JPanel {
         assert !frames.isEmpty();
 
         ScMatrixBank matrixBank = movieClip.getMatrixBank();
-        MovieClipFrameElementsTableModel frameElementsTableModel = new MovieClipFrameElementsTableModel(frames.get(0), movieClip::getTimelineChildCount, matrixBank::getMatrixCount, matrixBank::getColorTransformCount);
+        MovieClipFrameElementsTableModel frameElementsTableModel = new MovieClipFrameElementsTableModel(
+            frames.get(0), 
+            () -> {
+                movieClip.forceSetFrame(movieClip.getCurrentFrame());
+            }, 
+            movieClip::getTimelineChildCount, 
+            matrixBank::getMatrixCount, 
+            matrixBank::getColorTransformCount
+        );
 
         this.frameElementsTable = createFrameElementsTable(frameElementsTableModel);
 
