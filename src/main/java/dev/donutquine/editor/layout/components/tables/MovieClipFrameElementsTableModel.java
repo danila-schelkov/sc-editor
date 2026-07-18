@@ -19,6 +19,7 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
     private static final int COLUMN_MATRIX_INDEX = 2;
     private static final int COLUMN_COLOR_TRANSFORM_INDEX = 3;
 
+    private final Runnable forceFrameUpdate;
     private final ChildCountGetter childCountGetter;
     private final MatrixCountGetter matrixCountGetter;
     private final ColorTransformCountGetter colorTransformCountGetter;
@@ -38,10 +39,11 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
         int get();
     }
 
-    public MovieClipFrameElementsTableModel(MovieClipFrame frame, ChildCountGetter childCountGetter, MatrixCountGetter matrixCountGetter, ColorTransformCountGetter colorTransformCountGetter) {
+    public MovieClipFrameElementsTableModel(MovieClipFrame frame, Runnable forceFrameUpdate, ChildCountGetter childCountGetter, MatrixCountGetter matrixCountGetter, ColorTransformCountGetter colorTransformCountGetter) {
         super();
 
         this.setFrame(frame);
+        this.forceFrameUpdate = forceFrameUpdate;
 		this.childCountGetter = childCountGetter;
 		this.matrixCountGetter = matrixCountGetter;
 		this.colorTransformCountGetter = colorTransformCountGetter;
@@ -101,8 +103,6 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
         };
     }
 
-    // FIXME: all changes are visible only after frame changing back and forth
-    //  and that leads to a problem: you can't see any changes if movie clip has only 1 frame
     @Override
     public void setValueAt(Object value, int row, int column) {
         MovieClipFrameElement frameElement = this.frameElements.get(row);
@@ -185,7 +185,10 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
     }
 
     private void updateFrameElements() {
-        // Note: there is no need in notifying renderable MovieClip object as it always tries to get current frame elements from frame
+        // Note: there is no need in notifying renderable MovieClip object as it always tries to get current frame elements from next frame.
+        //  Actually, it is needed to update it if it is movie clip with single frame.
         this.frame.setElements(this.frameElements);
+
+        this.forceFrameUpdate.run();
     }
 }
