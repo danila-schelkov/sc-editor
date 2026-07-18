@@ -2,7 +2,6 @@ package dev.donutquine.editor.layout.panels.info;
 
 import java.awt.Component;
 import java.awt.GridLayout;
-import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DropMode;
@@ -13,11 +12,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import dev.donutquine.editor.layout.SupercellSWFLayoutController;
-import dev.donutquine.editor.layout.components.tables.Table;
-import dev.donutquine.editor.layout.components.tables.MovieClipFrameElementsTableModel;
-import dev.donutquine.editor.layout.components.tables.RowReorderTransferHandler;
 import dev.donutquine.editor.layout.components.listeners.ChildrenListMouseListener;
 import dev.donutquine.editor.layout.components.listeners.FrameSelectionListener;
+import dev.donutquine.editor.layout.components.tables.MovieClipFrameElementsTableModel;
+import dev.donutquine.editor.layout.components.tables.MovieClipFramesTableModel;
+import dev.donutquine.editor.layout.components.tables.RowReorderTransferHandler;
+import dev.donutquine.editor.layout.components.tables.Table;
 import dev.donutquine.editor.layout.contextmenus.ChildrenTableContextMenu;
 import dev.donutquine.editor.layout.contextmenus.FrameElementTableContextMenu;
 import dev.donutquine.editor.layout.contextmenus.FrameTableContextMenu;
@@ -25,7 +25,6 @@ import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 import dev.donutquine.swf.ScMatrixBank;
-import dev.donutquine.swf.movieclips.MovieClipFrame;
 
 public class MovieClipPropertyPanel extends JPanel {
     private final JTable timelineChildrenTable;
@@ -45,13 +44,14 @@ public class MovieClipPropertyPanel extends JPanel {
         // TODO: handle empty movie clips properly (is it even a valid state?)
         assert !movieClip.getFrames().isEmpty();
         ScMatrixBank matrixBank = movieClip.getMatrixBank();
-        MovieClipFrameElementsTableModel tableModel = new MovieClipFrameElementsTableModel(movieClip.getFrames().get(0), movieClip::getTimelineChildCount, matrixBank::getMatrixCount, matrixBank::getColorTransformCount);
+        MovieClipFrameElementsTableModel frameElementsTableModel = new MovieClipFrameElementsTableModel(movieClip.getFrames().get(0), movieClip::getTimelineChildCount, matrixBank::getMatrixCount, matrixBank::getColorTransformCount);
 
-        this.frameElementsTable = createFrameElementsTable(tableModel);
-        new FrameElementTableContextMenu(this.frameElementsTable, tableModel);
+        this.frameElementsTable = createFrameElementsTable(frameElementsTableModel);
+        new FrameElementTableContextMenu(this.frameElementsTable, frameElementsTableModel);
 
-        Table framesTable = createFramesTable(movieClip);
-        framesTable.addSelectionListener(new FrameSelectionListener(framesTable, tableModel, movieClip.getFrames()::get));
+        MovieClipFramesTableModel framesTableModel = new MovieClipFramesTableModel(movieClip.getFrames());
+        Table framesTable = createFramesTable(framesTableModel);
+        framesTable.addSelectionListener(new FrameSelectionListener(framesTable, frameElementsTableModel, movieClip.getFrames()::get));
         new FrameTableContextMenu(framesTable, swfLayoutController);
         this.framesTable = framesTable;
 
@@ -81,20 +81,11 @@ public class MovieClipPropertyPanel extends JPanel {
         return table;
     }
 
-    private static Table createFramesTable(MovieClip movieClip) {
-        List<MovieClipFrame> frames = movieClip.getFrames();
-        Object[][] data = new Object[frames.size()][];
-        for (int i = 0; i < data.length; i++) {
-            MovieClipFrame frame = frames.get(i);
+    private static Table createFramesTable(MovieClipFramesTableModel tableModel) {
+        Table table = new Table(tableModel);
+        table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
-            data[i] = new Object[] {i, frame.getLabel()};
-        }
-
-        return new Table(
-            data, 
-            new Object[] {"#", "Name"}, 
-            new Class<?>[] {Integer.class, String.class}
-        );
+        return table;
     }
 
     private static Table createTimelineChildrenTable(MovieClip movieClip) {
