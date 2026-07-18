@@ -42,6 +42,8 @@ public class Table extends JTable {
         getActionMap().put(EDIT_SELECTED_CELL, new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent event) {
+                if (Table.this.getSelectedRowCount() > 1 || Table.this.getSelectedColumnCount() > 1) return;
+
                 int row = Table.this.getSelectedRow();
                 int column = Table.this.getSelectedColumn();
 
