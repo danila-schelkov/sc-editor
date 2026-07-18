@@ -1,6 +1,7 @@
 package dev.donutquine.editor.layout.contextmenus;
 
 import java.awt.event.ActionEvent;
+import javax.swing.Action;
 import javax.swing.JTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,7 @@ public class FrameTableContextMenu extends ContextMenu {
 	private final MovieClipFramesTableModel tableModel;
     private final SupercellSWFLayoutController swfLayoutController;
 
-    public FrameTableContextMenu(JTable table, MovieClipFramesTableModel tableModel, SupercellSWFLayoutController swfLayoutController) {
+    public FrameTableContextMenu(JTable table, MovieClipFramesTableModel tableModel, SupercellSWFLayoutController swfLayoutController, Action duplicateAction) {
         super(table, null);
 
         this.table = table;
@@ -26,6 +27,8 @@ public class FrameTableContextMenu extends ContextMenu {
 
         this.add("Goto and play", this::gotoAndPlay);
         this.add("Goto and stop", this::gotoAndStop);
+        this.addSeparator();
+        this.add(duplicateAction);
         this.addSeparator();
         this.add("Delete", this::delete);
 
