@@ -41,8 +41,9 @@ public class MovieClipPropertyPanel extends JPanel {
         this.timelineChildrenTable.addMouseListener(new ChildrenListMouseListener(this.timelineChildrenTable, swfLayoutController));
         new ChildrenTableContextMenu(this.timelineChildrenTable, swfLayoutController);
 
-        // TODO: handle empty movie clips properly
+        // TODO: handle empty movie clips properly (is it even a valid state?)
         assert !movieClip.getFrames().isEmpty();
+        // swfLayoutController.assetFile.asset.getMatrixBank(movieClip.getMatrix());
         MovieClipFrameElementsTableModel tableModel = new MovieClipFrameElementsTableModel(movieClip.getFrames().get(0));
 
         this.frameElementsTable = createFrameElementsTable(tableModel);
