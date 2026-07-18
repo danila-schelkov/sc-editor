@@ -285,6 +285,18 @@ public class MovieClip extends Sprite {
         return exportName;
     }
 
+    public DisplayObject[] getTimelineChildren() {
+        return timelineChildren;
+    }
+
+    public String[] getTimelineChildrenNames() {
+        return timelineChildrenNames;
+    }
+
+    public int getTimelineChildCount() {
+        return timelineChildren.length;
+    }
+
     public int getFps() {
         return fps;
     }
@@ -302,12 +314,8 @@ public class MovieClip extends Sprite {
         return this.msPerFrame * this.frames.size();
     }
 
-    public DisplayObject[] getTimelineChildren() {
-        return timelineChildren;
-    }
-
-    public String[] getTimelineChildrenNames() {
-        return timelineChildrenNames;
+    public int getFrameCount() {
+        return this.frames.size();
     }
 
     public List<MovieClipFrame> getFrames() {
@@ -350,7 +358,7 @@ public class MovieClip extends Sprite {
         return frameCount;
     }
 
-    public int getFrameCount() {
-        return this.frames.size();
+    public ScMatrixBank getMatrixBank() {
+        return this.matrixBank;
     }
 }
