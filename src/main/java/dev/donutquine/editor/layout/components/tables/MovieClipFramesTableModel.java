@@ -4,13 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntConsumer;
 import javax.swing.table.AbstractTableModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import dev.donutquine.swf.Tag;
 import dev.donutquine.swf.movieclips.MovieClipFrame;
 import dev.donutquine.swf.movieclips.MovieClipFrameElement;
 import dev.donutquine.swf.movieclips.MovieClipFrame.Builder;
 
 public class MovieClipFramesTableModel extends AbstractTableModel {
-    // private static final Logger LOGGER = LoggerFactory.getLogger(MovieClipFramesTableModel.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MovieClipFramesTableModel.class);
 
     private static final String[] COLUMN_NAMES = {"#", "Name"};
     private static final Class<?>[] COLUMN_CLASSES = {Integer.class, String.class};
@@ -55,7 +57,7 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
     public boolean isCellEditable(int row, int column) {
         return switch (column) {
             case COLUMN_INDEX -> false;
-            case COLUMN_NAME_INDEX -> false;
+            case COLUMN_NAME_INDEX -> true;
             default -> throw new IllegalArgumentException("Unknown column: " + column);
         };
     }
@@ -69,6 +71,42 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
             case COLUMN_NAME_INDEX -> frame.getLabel();
             default -> throw new IllegalArgumentException("Unknown column: " + column);
         };
+    }
+
+    @Override
+    public void setValueAt(Object value, int row, int column) {
+        MovieClipFrame frame = this.frames.get(row);
+
+        try {
+            switch (column) {
+                case COLUMN_NAME_INDEX -> {
+                    String newLabel = (String) value;
+
+                    // TODO: make a command and add it to global UndoRedoManager
+                    Builder builder = MovieClipFrame.builder();
+                    // TODO: optmize by adding MovieClipFrame.setLabel
+                    builder.withLabel(newLabel);
+                    builder.setIncludeElements(frame.getTag() == Tag.MOVIE_CLIP_FRAME);
+
+                    // TODO: optimize by adding setElements or/and addAllElements methods to builder. 
+                    //  Frame elements are immutable so may be copied as references.
+                    for (MovieClipFrameElement frameElement : frame.getElements()) {
+                        builder.addElement(frameElement);
+                    }
+
+                    this.frames.set(row, builder.build());
+                }
+                default -> throw new IllegalArgumentException("Unknown column: " + column);
+            }
+
+
+            this.updateFrames();
+
+            fireTableCellUpdated(row, column);
+        } catch (Exception e) {
+            // TODO: highlight cell with red border
+            LOGGER.warn("New value rejected: {}", e.getLocalizedMessage());
+        }
     }
 
     public void delete(int firstRow, int rowCount) {
