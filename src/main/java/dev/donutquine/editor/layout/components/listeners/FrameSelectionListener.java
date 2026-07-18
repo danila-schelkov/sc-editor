@@ -1,21 +1,17 @@
 package dev.donutquine.editor.layout.components.listeners;
 
-import java.util.function.IntFunction;
+import java.util.function.IntConsumer;
 import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import dev.donutquine.editor.layout.components.tables.MovieClipFrameElementsTableModel;
-import dev.donutquine.swf.movieclips.MovieClipFrame;
 
 public class FrameSelectionListener implements ListSelectionListener {
     private final JTable table;
-    private final MovieClipFrameElementsTableModel frameElementsTableModel;
-    private final IntFunction<MovieClipFrame> frameGetter;
+	private final IntConsumer currentFrameSetter;
 
-    public FrameSelectionListener(JTable table, MovieClipFrameElementsTableModel frameElementsTable, IntFunction<MovieClipFrame> frameGetter) {
+    public FrameSelectionListener(JTable table, IntConsumer currentFrameSetter) {
         this.table = table;
-        this.frameElementsTableModel = frameElementsTable;
-        this.frameGetter = frameGetter;
+        this.currentFrameSetter = currentFrameSetter;
     }
 
     @Override
@@ -26,8 +22,6 @@ public class FrameSelectionListener implements ListSelectionListener {
         if (selectedRow == -1) return;
 
         int index = (int) this.table.getValueAt(selectedRow, 0);
-
-        MovieClipFrame movieClipFrame = this.frameGetter.apply(index);
-        this.frameElementsTableModel.setFrame(movieClipFrame);
+        this.currentFrameSetter.accept(index);
     }
 }
