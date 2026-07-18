@@ -8,9 +8,11 @@ import java.util.List;
 import java.util.function.IntConsumer;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DropMode;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -39,7 +41,9 @@ import dev.donutquine.swf.movieclips.MovieClipFrame;
 
 public class MovieClipPropertyPanel extends JPanel {
     private static final Logger LOGGER = LoggerFactory.getLogger(MovieClipPropertyPanel.class);
+
     private static final String DUPLICATE_FRAMES = "duplicateFrames";
+    private static final String DELETE_FRAMES = "deleteFrames";
 
     private final JTable timelineChildrenTable;
     private final JTable framesTable;
@@ -124,15 +128,41 @@ public class MovieClipPropertyPanel extends JPanel {
             }
         };
 
-        table.getActionMap().put(DUPLICATE_FRAMES, duplicateAction);
+        AbstractAction deleteAction = new AbstractAction("Delete") {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int firstIndex = table.getSelectedRow();
+                int elementCount = table.getSelectedRowCount();
+                if (elementCount < 1) return;
+
+                try {
+                    tableModel.delete(firstIndex, elementCount);
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn(e.getLocalizedMessage());
+                }
+
+                // NOTE: Should we actually reset selection?
+                // table.clearSelection();
+            }
+        };
+
+        InputMap inputMap = table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        ActionMap actionMap = table.getActionMap();
+
         KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyboardUtils.ctrlButton());
         duplicateAction.putValue(Action.ACCELERATOR_KEY, keyStroke);
+        actionMap.put(DUPLICATE_FRAMES, duplicateAction);
+        inputMap.put(keyStroke, DUPLICATE_FRAMES);
 
-        table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(keyStroke, DUPLICATE_FRAMES);
+        // NOTE: is it okay to use different keystrokes on different systems? I guess so.
+        keyStroke = KeyboardUtils.delete();
+        deleteAction.putValue(Action.ACCELERATOR_KEY, keyStroke);
+        actionMap.put(DELETE_FRAMES, deleteAction);
+        inputMap.put(keyStroke, DELETE_FRAMES);
 
         table.addSelectionListener(new FrameSelectionListener(table, elementsCurrentFrameSetter));
 
-        new FrameTableContextMenu(table, tableModel, swfLayoutController, duplicateAction);
+        new FrameTableContextMenu(table, swfLayoutController, duplicateAction, deleteAction);
 
         return table;
     }
