@@ -27,6 +27,8 @@ public class FrameTableContextMenu extends ContextMenu {
         this.add("Goto and play", this::gotoAndPlay);
         this.add("Goto and stop", this::gotoAndStop);
         this.addSeparator();
+        this.add("Duplicate", this::duplicate);
+        this.addSeparator();
         this.add("Delete", this::delete);
 
         this.popupMenu.addPopupMenuListener(new JTablePopupMenuListener(this.popupMenu, table, rowIndex -> setMainComponentsEnabled(rowIndex != -1)));
@@ -64,6 +66,17 @@ public class FrameTableContextMenu extends ContextMenu {
 
         try {
             this.tableModel.delete(firstIndex, elementCount);
+        } catch (IllegalArgumentException e) {
+            LOGGER.warn(e.getLocalizedMessage());
+        }
+    }
+
+    private void duplicate(ActionEvent event) {
+        int firstIndex = this.table.getSelectedRow();
+        int elementCount = this.table.getSelectedRowCount();
+
+        try {
+            this.tableModel.duplicate(firstIndex, elementCount);
         } catch (IllegalArgumentException e) {
             LOGGER.warn(e.getLocalizedMessage());
         }

@@ -1,9 +1,13 @@
 package dev.donutquine.editor.layout.components.tables;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntConsumer;
 import javax.swing.table.AbstractTableModel;
+import dev.donutquine.swf.Tag;
 import dev.donutquine.swf.movieclips.MovieClipFrame;
+import dev.donutquine.swf.movieclips.MovieClipFrameElement;
+import dev.donutquine.swf.movieclips.MovieClipFrame.Builder;
 
 public class MovieClipFramesTableModel extends AbstractTableModel {
     // private static final Logger LOGGER = LoggerFactory.getLogger(MovieClipFramesTableModel.class);
@@ -72,9 +76,46 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
             throw new IllegalArgumentException("At least one frame must remain");
         }
 
+        int lastIndex = firstRow + rowCount;
         // TODO: make a command and add it to global UndoRedoManager
-        this.frames.subList(firstRow, firstRow + rowCount).clear();
-        this.fireTableRowsDeleted(firstRow, firstRow + rowCount);
+        this.frames.subList(firstRow, lastIndex).clear();
+        this.fireTableRowsDeleted(firstRow, lastIndex);
+
+        this.updateFrames();
+    }
+
+    public void duplicate(int firstRow, int rowCount) {
+        // TODO: make a command and add it to global UndoRedoManager
+        int lastIndex = firstRow + rowCount;
+
+        // NOTE: current strategy is to put all duplicated frames after selection (e.g. `|1 2 3| 4` -> `1 2 3 (1 2 3) 4`), 
+        //  but there is also an idea of putting duplicate frame after original frame (e.g. `|1 2 3| 4` -> `1 (1) 2 (2) 3 (3) 4`).
+        //
+        //  Also, we may allow multiple selections, then we can put all duplicates
+        //  - at the end                    (e.g. `|1 2 3| 4 5 |6 7| 8` -> `1 2 3 4 5 6 7 8 (1 2 3 6 7)`)
+        //  - after last selection          (e.g. `|1 2 3| 4 5 |6 7| 8` -> `1 2 3 4 5 6 7 (1 2 3 6 7) 8`) (bad),
+        //  - after theirs selection range  (e.g. `|1 2 3| 4 5 |6 7| 8` -> `1 2 3 (1 2 3) 4 5 6 7 (6 7) 8`),
+        //  - after their original frames   (e.g. `|1 2 3| 4 5 |6 7| 8` -> `1 (1) 2 (2) 3 (3) 4 5 6 (6) 7 (7) 8`)
+        List<MovieClipFrame> rangeToDuplicate = this.frames.subList(firstRow, lastIndex);
+
+        List<MovieClipFrame> duplicates = new ArrayList<>(rowCount);
+        for (MovieClipFrame frameToDuplicate : rangeToDuplicate) {
+            Builder builder = MovieClipFrame.builder();
+            builder.withLabel(frameToDuplicate.getLabel());
+            builder.setIncludeElements(frameToDuplicate.getTag() == Tag.MOVIE_CLIP_FRAME);
+
+            // TODO: optimize by adding setElements or/and addAllElements methods to builder. 
+            //  Frame elements are immutable so may be copied as references.
+            for (MovieClipFrameElement frameElement : frameToDuplicate.getElements()) {
+                builder.addElement(frameElement);
+            }
+
+            duplicates.add(builder.build());
+        }
+
+        this.frames.addAll(lastIndex, duplicates);
+
+        this.fireTableRowsInserted(lastIndex, lastIndex + rowCount);
 
         this.updateFrames();
     }
