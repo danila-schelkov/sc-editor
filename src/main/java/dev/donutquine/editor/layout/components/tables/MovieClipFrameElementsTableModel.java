@@ -92,7 +92,11 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
         switch (column) {
             case COLUMN_CHILD_INDEX -> {
                 // TODO: validate child is in timeline children index bounds
-                int newChildIndex = value == null || (int) value == -1 ? 0xFFFF : (int) value;
+                if (value == null) {
+                    throw new IllegalArgumentException("Child index cannot be null");
+                }
+
+                int newChildIndex = (int) value;
                 if (newChildIndex == childIndex) return;
                 if (newChildIndex < 0 || newChildIndex > 0xFFFF) {
                     throw new IndexOutOfBoundsException();
