@@ -111,6 +111,7 @@ public class MovieClipPropertyPanel extends JPanel {
             public void actionPerformed(ActionEvent event) {
                 int firstIndex = table.getSelectedRow();
                 int elementCount = table.getSelectedRowCount();
+                if (elementCount < 1) return;
 
                 try {
                     tableModel.duplicate(firstIndex, elementCount);
@@ -119,7 +120,7 @@ public class MovieClipPropertyPanel extends JPanel {
                 }
 
                 // NOTE: Should we actually reset selection?
-                table.resetKeyboardActions();
+                table.clearSelection();
             }
         };
 
