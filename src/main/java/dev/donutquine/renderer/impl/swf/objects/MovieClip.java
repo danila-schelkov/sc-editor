@@ -293,6 +293,10 @@ public class MovieClip extends Sprite {
         return timelineChildrenNames;
     }
 
+    public int getTimelineChildCount() {
+        return timelineChildren.length;
+    }
+
     public int getFps() {
         return fps;
     }
@@ -352,5 +356,9 @@ public class MovieClip extends Sprite {
         }
 
         return frameCount;
+    }
+
+    public ScMatrixBank getMatrixBank() {
+        return this.matrixBank;
     }
 }

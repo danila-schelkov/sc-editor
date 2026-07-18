@@ -24,6 +24,7 @@ import dev.donutquine.editor.layout.contextmenus.FrameTableContextMenu;
 import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
+import dev.donutquine.swf.ScMatrixBank;
 import dev.donutquine.swf.movieclips.MovieClipFrame;
 
 public class MovieClipPropertyPanel extends JPanel {
@@ -43,8 +44,8 @@ public class MovieClipPropertyPanel extends JPanel {
 
         // TODO: handle empty movie clips properly (is it even a valid state?)
         assert !movieClip.getFrames().isEmpty();
-        // swfLayoutController.assetFile.asset.getMatrixBank(movieClip.getMatrix());
-        MovieClipFrameElementsTableModel tableModel = new MovieClipFrameElementsTableModel(movieClip.getFrames().get(0));
+        ScMatrixBank matrixBank = movieClip.getMatrixBank();
+        MovieClipFrameElementsTableModel tableModel = new MovieClipFrameElementsTableModel(movieClip.getFrames().get(0), movieClip::getTimelineChildCount, matrixBank::getMatrixCount, matrixBank::getColorTransformCount);
 
         this.frameElementsTable = createFrameElementsTable(tableModel);
         new FrameElementTableContextMenu(this.frameElementsTable, tableModel);

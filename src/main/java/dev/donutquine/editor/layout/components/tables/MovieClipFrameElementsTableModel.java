@@ -3,10 +3,14 @@ package dev.donutquine.editor.layout.components.tables;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.table.AbstractTableModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import dev.donutquine.swf.movieclips.MovieClipFrame;
 import dev.donutquine.swf.movieclips.MovieClipFrameElement;
 
 public class MovieClipFrameElementsTableModel extends AbstractTableModel implements RowReorderableTableModel {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MovieClipFrameElementsTableModel.class);
+
     private static final String[] COLUMN_NAMES = {"#", "Child #", "Matrix", "Color Transform"};
     private static final Class<?>[] COLUMN_CLASSES = {Integer.class, Integer.class, Integer.class, Integer.class};
 
@@ -15,17 +19,35 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
     private static final int COLUMN_MATRIX_INDEX = 2;
     private static final int COLUMN_COLOR_TRANSFORM_INDEX = 3;
 
+    private final ChildCountGetter childCountGetter;
+    private final MatrixCountGetter matrixCountGetter;
+    private final ColorTransformCountGetter colorTransformCountGetter;
     // Note: was final before, but I prefer modifying existing object rather than allocating a new one every sneeze
     private MovieClipFrame frame;
     private List<MovieClipFrameElement> frameElements;
 
-    public MovieClipFrameElementsTableModel(MovieClipFrame frame) {
+    public interface ChildCountGetter {
+        int get();
+    }
+
+    public interface MatrixCountGetter {
+        int get();
+    }
+
+    public interface ColorTransformCountGetter {
+        int get();
+    }
+
+    public MovieClipFrameElementsTableModel(MovieClipFrame frame, ChildCountGetter childCountGetter, MatrixCountGetter matrixCountGetter, ColorTransformCountGetter colorTransformCountGetter) {
         super();
 
         this.setFrame(frame);
-    }
+		this.childCountGetter = childCountGetter;
+		this.matrixCountGetter = matrixCountGetter;
+		this.colorTransformCountGetter = colorTransformCountGetter;
+	}
 
-    public void setFrame(MovieClipFrame frame) {
+	public void setFrame(MovieClipFrame frame) {
         this.frame = frame;
         // Note: Copying as returned value is unmodifiable
         this.frameElements = new ArrayList<>(frame.getElements());
@@ -89,50 +111,52 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
         int matrixIndex = frameElement.matrixIndex();
         int colorTransformIndex = frameElement.colorTransformIndex();
 
-        switch (column) {
-            case COLUMN_CHILD_INDEX -> {
-                // TODO: validate child is in timeline children index bounds
-                if (value == null) {
-                    throw new IllegalArgumentException("Child index cannot be null");
-                }
+        try {
+            switch (column) {
+                case COLUMN_CHILD_INDEX -> {
+                    if (value == null) {
+                        throw new IllegalArgumentException("Child index cannot be null");
+                    }
 
-                int newChildIndex = (int) value;
-                if (newChildIndex == childIndex) return;
-                if (newChildIndex < 0 || newChildIndex > 0xFFFF) {
-                    throw new IndexOutOfBoundsException();
-                }
+                    int newChildIndex = (int) value;
+                    if (newChildIndex == childIndex) return;
+                    if (newChildIndex < 0 || newChildIndex >= childCountGetter.get()) {
+                        throw new IndexOutOfBoundsException("Child index is out of bounds");
+                    }
 
-                childIndex = newChildIndex;
+                    childIndex = newChildIndex;
+                }
+                case COLUMN_MATRIX_INDEX -> {
+                    int newMatrixIndex = value == null || (int) value == -1 ? 0xFFFF : (int) value;
+                    if (newMatrixIndex == matrixIndex) return;
+                    if (newMatrixIndex != 0xFFFF && (newMatrixIndex < 0 || newMatrixIndex >= matrixCountGetter.get())) {
+                        throw new IndexOutOfBoundsException("Matrix index is out of bounds");
+                    }
+
+                    matrixIndex = newMatrixIndex;
+                }
+                case COLUMN_COLOR_TRANSFORM_INDEX -> {
+                    int newColorTransformIndex = value == null || (int) value == -1 ? 0xFFFF : (int) value;
+                    if (newColorTransformIndex == colorTransformIndex) return;
+                    if (newColorTransformIndex != 0xFFFF && (newColorTransformIndex < 0 || newColorTransformIndex >= colorTransformCountGetter.get())) {
+                        throw new IndexOutOfBoundsException("Color transform index is out of bounds");
+                    }
+
+                    colorTransformIndex = newColorTransformIndex;
+                }
+                default -> throw new IllegalArgumentException("Unknown column: " + column);
             }
-            case COLUMN_MATRIX_INDEX -> {
-                // TODO: validate matrix exists in matrix bank
-                int newMatrixIndex = value == null || (int) value == -1 ? 0xFFFF : (int) value;
-                if (newMatrixIndex == matrixIndex) return;
-                if (newMatrixIndex < 0 || newMatrixIndex > 0xFFFF) {
-                    throw new IndexOutOfBoundsException();
-                }
 
-                matrixIndex = newMatrixIndex;
-            }
-            case COLUMN_COLOR_TRANSFORM_INDEX -> {
-                // TODO: validate color transform exists in matrix bank
-                int newColorTransformIndex = value == null || (int) value == -1 ? 0xFFFF : (int) value;
-                if (newColorTransformIndex == colorTransformIndex) return;
-                if (newColorTransformIndex < 0 || newColorTransformIndex > 0xFFFF) {
-                    throw new IndexOutOfBoundsException();
-                }
+            // TODO: make a command and add it to global UndoRedoManager
+            this.frameElements.set(row, new MovieClipFrameElement(childIndex, matrixIndex, colorTransformIndex));
 
-                colorTransformIndex = newColorTransformIndex;
-            }
-            default -> throw new IllegalArgumentException("Unknown column: " + column);
+            this.updateFrameElements();
+
+            fireTableCellUpdated(row, column);
+        } catch (Exception e) {
+            // TODO: highlight cell with red border
+            LOGGER.warn("New value rejected: {}", e.getLocalizedMessage());
         }
-
-        // TODO: make a command and add it to global UndoRedoManager
-        this.frameElements.set(row, new MovieClipFrameElement(childIndex, matrixIndex, colorTransformIndex));
-
-        this.updateFrameElements();
-
-        fireTableCellUpdated(row, column);
     }
 
     @Override
