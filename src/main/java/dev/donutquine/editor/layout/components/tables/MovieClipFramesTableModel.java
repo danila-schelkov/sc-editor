@@ -123,5 +123,6 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
     private void updateFrames() {
         // TODO: decide what frame should become next after changing frame count. Before the selection of after?
         this.currentFrameSetter.accept(0);
+        // TODO: sync modification with MovieClip original
     }
 }
