@@ -6,8 +6,12 @@ import dev.donutquine.swf.movieclips.MovieClipState;
 public final class MovieClipHelper {
     public static void doForAllFrames(MovieClip movieClip, MovieClipFrameIndexConsumer consumer) {
         // TODO: add an ability to choose it by yourself
-//        int maxFrames = movieClip.getFrames().size();
-        int maxFrames = movieClip.getFrameCountRecursive();
+        int maxFrames;
+        if (movieClip.getFrameCount() > 1) {
+            maxFrames = movieClip.getFrameCount();
+        } else {
+            maxFrames = movieClip.getFrameCountRecursive();
+        }
 
         int currentFrame = movieClip.getCurrentFrame();
         int loopFrame = movieClip.getLoopFrame();

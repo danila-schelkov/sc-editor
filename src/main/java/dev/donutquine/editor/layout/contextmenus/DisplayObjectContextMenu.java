@@ -23,6 +23,7 @@ import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.editor.renderer.impl.RendererHelper;
 import dev.donutquine.editor.settings.EditorPreferences;
 import dev.donutquine.exporter.FfmpegVideoExporter;
+import dev.donutquine.exporter.GifExporter;
 import dev.donutquine.exporter.VideoExporter;
 import dev.donutquine.exporter.VideoFormat;
 import dev.donutquine.exporter.VideoFormats;
@@ -54,6 +55,7 @@ public class DisplayObjectContextMenu extends ContextMenu {
     private final SupercellSWFLayoutController swfLayoutController;
 
     private final JMenuItem exportAsVideoButton;
+    private final JMenuItem exportAsGifButton;
     private final JMenu exportAsMenu;
 
     private EditorPreferences preferences;
@@ -84,6 +86,9 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         exportAsVideoButton = this.add(exportAsMenu, "Export as video", KeyEvent.VK_V);
         exportAsVideoButton.addActionListener(this::exportAsVideoCallback);
+
+        exportAsGifButton = this.add(exportAsMenu, "Export as GIF", KeyEvent.VK_G);
+        exportAsGifButton.addActionListener(this::exportAsGifCallback);
 
         this.addSeparator();
 
@@ -117,14 +122,17 @@ public class DisplayObjectContextMenu extends ContextMenu {
                 if (displayObject instanceof MovieClipOriginal movieClipOriginal) {
                     boolean hasMoreThanOneFrame = movieClipOriginal.getFrames().size() > 1;
                     exportAsVideoButton.setEnabled(hasMoreThanOneFrame);
+                    exportAsGifButton.setEnabled(hasMoreThanOneFrame);
                 } else {
                     exportAsVideoButton.setEnabled(false);
+                    exportAsGifButton.setEnabled(false);
                 }
             } catch (UnableToFindObjectException e) {
                 throw new RuntimeException(e);
             }
         } else {
             exportAsMenu.setEnabled(false);
+            exportAsGifButton.setEnabled(false);
         }
     }
 
@@ -234,6 +242,13 @@ public class DisplayObjectContextMenu extends ContextMenu {
         fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("AV1 video", "avi"));
         fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("MP4 video (no transparency)", "mp4"));
 
+        MovieClip movieClip = (MovieClip) getRenderableObject(displayObjectId);
+        String exportName = movieClip.getExportName();
+        if (exportName != null) {
+            java.io.File currentDir = fileChooser.getCurrentDirectory();
+            fileChooser.setSelectedFile(new java.io.File(currentDir, exportName));
+        }
+
         int result = fileChooser.showSaveDialog(swfLayoutController.window.getFrame());
         if (result != SystemFileChooser.APPROVE_OPTION) return;
 
@@ -250,6 +265,129 @@ public class DisplayObjectContextMenu extends ContextMenu {
         exportAsVideo(path, (MovieClip) getRenderableObject(displayObjectId), format);
 
         RendererHelper.rollbackRenderer(stage, viewport);
+    }
+
+    private void exportAsGifCallback(ActionEvent actionEvent) {
+        if (this.table.getSelectedRowCount() == 0) return;
+
+        int displayObjectId = getDisplayObjectId(this.table.getSelectedRow());
+
+        EditorStage stage = EditorStage.getInstance();
+        ReadonlyRect viewport = stage.getCamera().getViewport();
+
+        SystemFileChooser fileChooser = new SystemFileChooser();
+        fileChooser.setStateStoreID("exportGif");
+        fileChooser.setFileSelectionMode(SystemFileChooser.FILES_ONLY);
+        fileChooser.setMultiSelectionEnabled(false);
+        fileChooser.addChoosableFileFilter(new FileNameExtensionFilter("GIF animation (transparent)", "gif"));
+
+        MovieClip movieClip = (MovieClip) getRenderableObject(displayObjectId);
+        String exportName = movieClip.getExportName();
+        if (exportName != null) {
+            java.io.File currentDir = fileChooser.getCurrentDirectory();
+            fileChooser.setSelectedFile(new java.io.File(currentDir, exportName));
+        }
+
+        int result = fileChooser.showSaveDialog(swfLayoutController.window.getFrame());
+        if (result != SystemFileChooser.APPROVE_OPTION) return;
+
+        Path path = SystemFileChooserUtil.getPathWithExtension(fileChooser, "gif");
+        if (path == null) return;
+
+        // GIF frame delays are stored in centiseconds (1/100s).
+        // To avoid rounding errors, pick the highest fps that evenly divides 100
+        // and does not exceed the source fps.  e.g. 60fps src -> 50fps GIF (exact 2cs/frame).
+        int srcFps = movieClip.getFps();
+        int defaultFps = 1;
+        for (int candidate : new int[]{100, 50, 25, 20, 10, 5, 4, 2, 1}) {
+            if (candidate <= srcFps) {
+                defaultFps = candidate;
+                break;
+            }
+        }
+        String input = javax.swing.JOptionPane.showInputDialog(
+            swfLayoutController.window.getFrame(),
+            "GIF frame rate (fps):\n"
+                + "Original: " + srcFps + " fps\n"
+                + "Recommended: " + defaultFps + " fps  (largest value that divides 100 evenly → no timing error)\n"
+                + "Note: GIF delays are in 1/100s; non-divisors cause speed drift.",
+            String.valueOf(defaultFps)
+        );
+        // Pre-fill by replacing the empty dialog return with defaultFps
+        if (input == null) {
+            RendererHelper.rollbackRenderer(stage, viewport);
+            return; // cancelled
+        }
+        input = input.trim();
+        int gifFps;
+        try {
+            gifFps = Integer.parseInt(input.isEmpty() ? String.valueOf(defaultFps) : input);
+            if (gifFps <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException e) {
+            swfLayoutController.window.showErrorDialog("Invalid frame rate: \"" + input + "\"");
+            RendererHelper.rollbackRenderer(stage, viewport);
+            return;
+        }
+
+        exportAsGif(path, movieClip, gifFps);
+
+        RendererHelper.rollbackRenderer(stage, viewport);
+    }
+
+
+    private void exportAsGif(Path path, MovieClip movieClip, int gifFps) {
+        EditorStage stage = EditorStage.getInstance();
+
+        Rect bounds = getRenderBounds(stage.calculateBoundsForAllFrames(movieClip));
+
+        float pixelSize = this.preferences.getPixelSize();
+        bounds.scale(pixelSize);
+
+        ReadonlyRect ceilBounds = roundBounds(bounds, false);
+
+        Matrix2x3 matrix = new Matrix2x3();
+        matrix.scaleMultiply(pixelSize, pixelSize);
+
+        ColorTransform colorTransform = new ColorTransform();
+
+        MovieClipState state = movieClip.getState();
+        int loopFrame = movieClip.getLoopFrame();
+        int startFrame = movieClip.getCurrentFrame();
+
+        stage.doInRenderThread(() -> {
+            Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, ceilBounds);
+
+            boolean parentSet = false;
+            if (movieClip.getParent() == null) {
+                movieClip.setParent(stage.getStageSprite());
+                parentSet = true;
+            }
+
+            try (GifExporter gifExporter = new GifExporter(path, gifFps, gifFps)) {
+                MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> {
+                    movieClip.gotoAbsoluteTimeRecursive(frameIndex * movieClip.getMsPerFrame());
+                    if (loopFrame != -1) {
+                        movieClip.setFrame(loopFrame);
+                    } else if (state == MovieClipState.STOPPED) {
+                        movieClip.setFrame(startFrame);
+                    }
+
+                    movieClip.render(matrix, colorTransform, 0, 0);
+                    stage.renderToFramebuffer(framebuffer);
+
+                    BufferedImage image = ImageUtils.createBufferedImageFromPixels(
+                        framebuffer.getWidth(), framebuffer.getHeight(),
+                        framebuffer.getPixelArray(true), false);
+                    gifExporter.encodeFrame(image, frameIndex);
+                });
+            }
+
+            if (parentSet) {
+                movieClip.setParent(null);
+            }
+
+            framebuffer.delete();
+        });
     }
 
     private DisplayObject getRenderableObject(int displayObjectId) {
@@ -429,7 +567,9 @@ public class DisplayObjectContextMenu extends ContextMenu {
                     frameName = String.join("-", frameName, frameLabel);
                 }
 
-                return Path.of(addPixelSizeToFilename(String.valueOf(displayObject.getId()), pixelSize), frameName + ".png");
+                String exportName = movieClip.getExportName();
+                String folderName = exportName != null ? exportName : String.valueOf(displayObject.getId());
+                return Path.of(addPixelSizeToFilename(folderName, pixelSize), frameName + ".png");
             }
 
             String exportName = movieClip.getExportName();
