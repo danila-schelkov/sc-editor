@@ -24,6 +24,7 @@ import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 import dev.donutquine.renderer.impl.swf.objects.Shape;
+import dev.donutquine.renderer.impl.swf.objects.TextField;
 import dev.donutquine.swf.SupercellSWF;
 import dev.donutquine.swf.exceptions.UnableToFindObjectException;
 import dev.donutquine.swf.movieclips.MovieClipOriginal;
@@ -198,6 +199,9 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
         } else {
             this.timelinePanel.setVisible(false);
         }
+
+        // Reset TextField placeholder visibility when switching objects
+        TextField.showPlaceholders = false;
 
         this.currentObjectInfoPanel.setPanel(createPropertiesPanel(displayObject));
 
