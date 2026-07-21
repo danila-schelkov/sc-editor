@@ -19,7 +19,7 @@ public class MouseWheelListener implements java.awt.event.MouseWheelListener {
 
         int modifiersEx = e.getModifiersEx();
         int wheelRotation = e.getWheelRotation();
-        if ((modifiersEx & InputEvent.ALT_DOWN_MASK) != 0) {
+        if ((modifiersEx & InputEvent.CTRL_DOWN_MASK) != 0 || (modifiersEx & InputEvent.ALT_DOWN_MASK) != 0) {
             int deltaStep = wheelRotation * SENSITIVE;
             int step = zoom.getScaleStep() - deltaStep;
             if (step < 0) return;
