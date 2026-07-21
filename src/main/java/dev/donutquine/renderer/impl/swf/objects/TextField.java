@@ -13,6 +13,7 @@ import java.awt.*;
 public class TextField extends DisplayObject {
     /** Whether to render TextField placeholder rectangles. Defaults to false since there is no font renderer. */
     public static boolean showPlaceholders = false;
+    
     private boolean isInteractive;
     private float cursorBlinkTime;
     private Rect bounds;
