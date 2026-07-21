@@ -1,6 +1,11 @@
 package dev.donutquine.utilities;
 
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
+import dev.donutquine.swf.DisplayObjectOriginal;
+import dev.donutquine.swf.SupercellSWF;
+import dev.donutquine.swf.exceptions.UnableToFindObjectException;
+import dev.donutquine.swf.movieclips.MovieClipChild;
+import dev.donutquine.swf.movieclips.MovieClipOriginal;
 import dev.donutquine.swf.movieclips.MovieClipState;
 
 public final class MovieClipHelper {
@@ -30,6 +35,22 @@ public final class MovieClipHelper {
 
         movieClip.resetTimelinePositionRecursive();
         movieClip.gotoAndPlayFrameIndex(currentFrame, loopFrame, state);
+    }
+
+    public static int getFrameCountRecursive(SupercellSWF swf, MovieClipOriginal movieClip) throws UnableToFindObjectException {
+        int frameCount = movieClip.getFrames().size();
+
+        for (MovieClipChild timelineChild : movieClip.getChildren()) {
+            DisplayObjectOriginal displayObject = swf.getOriginalDisplayObject(timelineChild.id(), movieClip.getExportName());
+            if (displayObject instanceof MovieClipOriginal childMovieClip) {
+                int childFrameCount = MovieClipHelper.getFrameCountRecursive(swf, childMovieClip);
+                if (childFrameCount > frameCount) {
+                    frameCount = childFrameCount;
+                }
+            }
+        }
+
+        return frameCount;
     }
 
     @FunctionalInterface
