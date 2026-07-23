@@ -44,9 +44,9 @@ public class Main {
 
         FlatLightLaf.setup();
         
-        UIManager.put( "TabbedPane.closeArc", 999 );
-        UIManager.put( "TabbedPane.closeCrossFilledSize", 5.5f );
-        UIManager.put( "TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon() );
+        UIManager.put("TabbedPane.closeArc", 999);
+        UIManager.put("TabbedPane.closeCrossFilledSize", 5.5f);
+        UIManager.put("TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon());
 
         SystemFileChooser.setStateStore(new SystemFileChooser.StateStore() {
             private static final String KEY_PREFIX = "fileChooser.";
@@ -54,12 +54,12 @@ public class Main {
             private final static Preferences state = Preferences.userRoot().node("sc-editor");
 
             @Override
-            public String get( String key, String def ) {
+            public String get(String key, String def) {
                 return state.get(KEY_PREFIX + key, def);
             }
 
             @Override
-            public void put( String key, String value ) {
+            public void put(String key, String value) {
                 if (value != null) state.put(KEY_PREFIX + key, value);
                 else state.remove(KEY_PREFIX + key);
             }
