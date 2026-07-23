@@ -112,6 +112,11 @@ public class RenderCommand extends SwfCliCommand {
                 } else {
                     Path outputPath = outputDirectory.resolve(exportName + ".png");
 
+                    if (displayObject instanceof MovieClip movieClip && this.startFrame != -1) {
+                        movieClip.gotoAbsoluteTimeRecursive(this.startFrame * movieClip.getMsPerFrame());
+                        movieClip.setFrame(this.startFrame);
+                    }
+
                     stage.doInRenderThread(() -> {
                         Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, finalFramebufferWidth, finalFramebufferHeight, translateX != 0 || translateY != 0 ? null : bounds, translateX, translateY);
                         RendererHelper.exportAsImage(displayObject, matrix, new ColorTransform(), outputPath, framebuffer);
@@ -153,15 +158,4 @@ public class RenderCommand extends SwfCliCommand {
         }
         return frameCount;
     }
-
-
-    // private static void setTargetFrame(DisplayObject displayObject, String targetFrame) {
-    //     if (targetFrame == null || !displayObject.isMovieClip()) {
-    //         return;
-    //     }
-    //     MovieClip movieClip = (MovieClip) displayObject;
-    //     int maxFrames = movieClip.getFrameCount() > 1 ? movieClip.getFrameCount() : movieClip.getFrameCountRecursive();
-    //     int targetIndex = CliOptions.FRAME_LAST.equalsIgnoreCase(targetFrame) ? Math.max(0, maxFrames - 1) : 0;
-    //     movieClip.gotoAbsoluteTimeRecursive(targetIndex * movieClip.getMsPerFrame());
-    // }
 }
