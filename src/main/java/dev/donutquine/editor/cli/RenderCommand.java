@@ -9,7 +9,7 @@ import com.jogamp.opengl.GLOffscreenAutoDrawable;
 import dev.donutquine.editor.renderer.Framebuffer;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.editor.renderer.impl.RendererHelper;
-import dev.donutquine.exporter.FfmpegVideoExporter;
+import dev.donutquine.exporter.SynchronousFfmpegVideoExporter;
 import dev.donutquine.exporter.VideoFormat;
 import dev.donutquine.exporter.VideoFormats;
 import dev.donutquine.math.ReadonlyRect;
@@ -106,7 +106,7 @@ public class RenderCommand extends SwfCliCommand {
 
                     stage.doInRenderThread(() -> {
                         Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, finalFramebufferWidth, finalFramebufferHeight, translateX != 0 || translateY != 0 ? null : bounds, translateX, translateY);
-                        RendererHelper.exportAsVideo(movieClip, matrix, new ColorTransform(), framebuffer, new FfmpegVideoExporter(videoFormat, outputPath, movieClip.getFps()));
+                        RendererHelper.exportAsVideo(movieClip, matrix, new ColorTransform(), framebuffer, new SynchronousFfmpegVideoExporter(videoFormat, outputPath, movieClip.getFps()));
                         LOGGER.info("Saved video to {}", outputPath);
                     });
                 } else {
