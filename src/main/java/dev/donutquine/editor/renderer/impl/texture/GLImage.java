@@ -3,7 +3,7 @@ package dev.donutquine.editor.renderer.impl.texture;
 import java.nio.Buffer;
 import java.nio.IntBuffer;
 import java.util.List;
-import dev.donutquine.editor.layout.dialogs.ExceptionDialog;
+import dev.donutquine.editor.gui.layout.dialogs.ExceptionDialog;
 import dev.donutquine.editor.renderer.gl.GLConstants;
 import dev.donutquine.editor.renderer.gl.texture.GLTexture;
 import dev.donutquine.editor.renderer.impl.EditorStage;
