@@ -1,17 +1,12 @@
 package dev.donutquine.exporter;
 
-import dev.donutquine.utilities.ImageUtils;
+import dev.donutquine.utilities.PathUtils;
 import dev.donutquine.utilities.SystemUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.stream.Stream;
 
 /**
  * Exports animation frames as a transparent-background GIF using ffmpeg's palette-based approach.
@@ -20,38 +15,19 @@ import java.util.stream.Stream;
  * @param sourceFps  frame rate at which frames are fed in (original animation fps)
  * @param outputFps  desired GIF playback frame rate; ffmpeg will resample if different from sourceFps
  */
-public class GifExporter implements VideoExporter {
+public class GifExporter extends FrameVideoExporter {
     private static final Logger LOGGER = LoggerFactory.getLogger(GifExporter.class);
 
-    private final Path filepath;
     private final int sourceFps;
     private final int outputFps;
-    private final Path framesDirectory;
 
     private boolean isClosed;
 
     public GifExporter(Path path, int sourceFps, int outputFps) {
+        super(path);
+
         this.sourceFps = sourceFps;
         this.outputFps = outputFps;
-        this.filepath = path;
-        this.framesDirectory = path.getParent().resolve(path.getFileName().toString() + "_frames");
-        if (this.framesDirectory.toFile().exists()) {
-            try (Stream<Path> files = Files.walk(this.framesDirectory)) {
-                files.sorted(Comparator.reverseOrder())
-                     .filter(p -> !p.equals(this.framesDirectory))
-                     .map(Path::toFile)
-                     .forEach(File::delete);
-            } catch (IOException e) {
-                LOGGER.error("Failed to clean frames directory", e);
-            }
-        }
-        this.framesDirectory.toFile().mkdirs();
-    }
-
-    @Override
-    public void encodeFrame(BufferedImage image, int frameIndex) {
-        Path framePath = this.framesDirectory.resolve(frameIndex + ".png");
-        ImageUtils.saveImage(framePath, image);
     }
 
     @Override
@@ -100,11 +76,7 @@ public class GifExporter implements VideoExporter {
                     return;
                 }
 
-                try (Stream<Path> files = Files.walk(framesDirectory)) {
-                    files.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                PathUtils.deleteDirectory(this.framesDirectory);
             }
         );
 

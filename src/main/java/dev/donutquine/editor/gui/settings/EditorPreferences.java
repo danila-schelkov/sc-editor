@@ -7,6 +7,9 @@ import java.util.Properties;
 import java.util.prefs.Preferences;
 
 public class EditorPreferences {
+    // TODO: load from settings
+    public static final Path DEFAULT_SCREENSHOT_FOLDER = Path.of("screenshots").toAbsolutePath();
+
     private static final Preferences PREFERENCES = Preferences.userRoot().node("sc-editor");
     private static final String SHOULD_DISPLAY_POLYGONS = "shouldDisplayPolygons";
     private static final String PIXEL_SIZE = "pixelSize";
