@@ -1,2 +1,5 @@
 # Applied .editorconfig settings to all project files using `bunx eclint fix 'src/**/*'`
 b7f6c49fd778a26f8b1bb73fa2fd24507170ae1e
+
+# Moved layout and GUI classes under gui package
+988add0713f224df8510a03028d6244289d4ab6d
