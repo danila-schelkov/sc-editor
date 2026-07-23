@@ -25,6 +25,9 @@ public class InspectCommand extends SwfCliCommand {
     @Option(name = "--id", depends = {"--input"})
     private List<Integer> ids = new ArrayList<>();
 
+    @Option(name = "--json", forbids = {"--print-exports"})
+    private boolean useJson;
+
     @Override
     public int execute() {
         int exitCode = super.execute();
@@ -33,6 +36,98 @@ public class InspectCommand extends SwfCliCommand {
         }
 
         SupercellSWF swf = assetFile.asset;
+
+        if (useJson) {
+            // Used for building arrays and dictionaries
+            boolean first;
+
+            StringBuilder jsonBuilder = new StringBuilder();
+            jsonBuilder.append('{');
+            // jsonBuilder.append("\"exports\":{"); 
+            // first = true;
+            // for (Export export : swf.getExports()) {
+            //     if (!first) jsonBuilder.append(',');
+            //     jsonBuilder.append('"').append(export.name()).append('"').append(':').append(export.id());
+            //     first = false;
+            // }
+            // jsonBuilder.append('}');
+
+            jsonBuilder/* .append(',') */.append("\"clips\":["); 
+            first = true;
+            for (MovieClipOriginal movieClip : swf.getMovieClips()) {
+                if (!first) jsonBuilder.append(',');
+                jsonBuilder.append('{');
+                jsonBuilder.append('"').append("id").append('"').append(':').append(movieClip.getId()).append(',');
+                // jsonBuilder.append('"').append("fps").append('"').append(':').append(movieClip.getFps()).append(',');
+
+                List<MovieClipChild> children = movieClip.getChildren();
+                jsonBuilder.append('"').append("childCount").append('"').append(':').append(children.size());
+
+                int namedChildCount = 0;
+                for (MovieClipChild child : children) {
+                    if (child.name() != null) {
+                        namedChildCount++;
+                    }
+                }
+                if (namedChildCount > 0) {
+                    jsonBuilder.append(',').append('"').append("namedChildren").append('"').append(':').append('{');
+                    first = true;
+                    for (int i = 0; i < children.size(); i++) {
+                        MovieClipChild child = children.get(i);
+                        if (child.name() == null) continue;
+                        if (!first) jsonBuilder.append(',');
+                        jsonBuilder.append('"').append(child.name()).append('"').append(':').append(child.id());
+                        first = false;
+                    }
+                    jsonBuilder.append('}');
+                }
+                // jsonBuilder.append('"').append("children").append('"').append(':').append('[');
+                // first = true;
+                // for (MovieClipChild child : movieClip.getChildren()) {
+                //     if (!first) jsonBuilder.append(',');
+                //     jsonBuilder.append('{');
+                //     jsonBuilder.append('"').append("id").append('"').append(':').append(child.id());
+                //     if (child.name() != null) {
+                //         jsonBuilder.append(',').append('"').append("name").append('"').append(':').append('"').append(child.name()).append('"');
+                //     }
+                //     jsonBuilder.append('}');
+                //     first = false;
+                // }
+                // jsonBuilder.append(']');
+
+                List<MovieClipFrame> frames = movieClip.getFrames();
+
+                jsonBuilder.append(',').append('"').append("frameCount").append('"').append(':').append(frames.size());
+
+                int labeledFrameCount = 0;
+                for (MovieClipFrame frame : frames) {
+                    if (frame.getLabel() != null) {
+                        labeledFrameCount++;
+                    }
+                }
+
+                if (labeledFrameCount > 0) {
+                    jsonBuilder.append(',').append('"').append("labeledFrames").append('"').append(':').append('{');
+                    first = true;
+                    for (int i = 0; i < frames.size(); i++) {
+                        MovieClipFrame frame = frames.get(i);
+                        if (frame.getLabel() == null) continue;
+                        if (!first) jsonBuilder.append(',');
+                        jsonBuilder.append('"').append(frame.getLabel()).append('"').append(':').append(i);
+                        first = false;
+                    }
+                    jsonBuilder.append('}');
+                }
+                jsonBuilder.append('}');
+                first = false;
+            }
+            jsonBuilder.append(']');
+            jsonBuilder.append('}');
+
+            System.out.println(jsonBuilder);
+            return 0;
+        }
+
         if (shouldPrintExports) {
             for (Export export : swf.getExports()) {
                 System.out.printf("%s - %d\n", export.name(), export.id());
@@ -80,18 +175,18 @@ public class InspectCommand extends SwfCliCommand {
                         System.out.printf("Frame count: %d\n", frames.size());
                         System.out.println();
 
-                        int namedFrameCount = 0;
+                        int labeledFrameCount = 0;
                         for (int i = 0; i < frames.size(); i++) {
                             MovieClipFrame frame = frames.get(i);
                             if (frame.getLabel() != null) {
-                                namedFrameCount++;
+                                labeledFrameCount++;
                             }
                         }
 
-                        if (namedFrameCount == 0) {
-                            System.out.println("No named frames");
+                        if (labeledFrameCount == 0) {
+                            System.out.println("No labeled frames");
                         } else {
-                            System.out.printf("Named frames (%d):\n", namedFrameCount);
+                            System.out.printf("Labeled frames (%d):\n", labeledFrameCount);
                             for (int i = 0; i < frames.size(); i++) {
                                 MovieClipFrame frame = frames.get(i);
                                 if (frame.getLabel() != null) {
