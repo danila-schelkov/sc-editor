@@ -5,51 +5,40 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.Objects;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JTable;
-import org.jetbrains.annotations.NotNull;
 import com.formdev.flatlaf.util.SystemFileChooser;
 import com.formdev.flatlaf.util.SystemFileChooser.FileNameExtensionFilter;
 import dev.donutquine.editor.gui.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.gui.layout.SystemFileChooserUtil;
 import dev.donutquine.editor.gui.layout.components.tables.JTablePopupMenuListener;
-import dev.donutquine.editor.renderer.Framebuffer;
+import dev.donutquine.editor.gui.settings.EditorPreferences;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.editor.renderer.impl.RendererHelper;
-import dev.donutquine.editor.gui.settings.EditorPreferences;
 import dev.donutquine.exporter.FfmpegVideoExporter;
 import dev.donutquine.exporter.GifExporter;
-import dev.donutquine.exporter.VideoExporter;
 import dev.donutquine.exporter.VideoFormat;
 import dev.donutquine.exporter.VideoFormats;
 import dev.donutquine.math.ReadonlyRect;
-import dev.donutquine.math.Rect;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 import dev.donutquine.streams.ByteStream;
-import dev.donutquine.swf.ColorTransform;
 import dev.donutquine.swf.DisplayObjectOriginal;
-import dev.donutquine.swf.Matrix2x3;
 import dev.donutquine.swf.SupercellSWF;
 import dev.donutquine.swf.exceptions.UnableToFindObjectException;
 import dev.donutquine.swf.movieclips.MovieClipOriginal;
 import dev.donutquine.swf.movieclips.MovieClipState;
 import dev.donutquine.swf.textfields.TextFieldOriginal;
 import dev.donutquine.utilities.ByteArrayFlavor;
-import dev.donutquine.utilities.ImageUtils;
 import dev.donutquine.utilities.MovieClipHelper;
 import dev.donutquine.utilities.PathUtils;
 
 public class DisplayObjectContextMenu extends ContextMenu {
     private static final Clipboard SYSTEM_CLIPBOARD = Toolkit.getDefaultToolkit().getSystemClipboard();
-
-    // TODO: load from settings
-    private static final Path DEFAULT_SCREENSHOT_FOLDER = Path.of("screenshots").toAbsolutePath();
 
     private final JTable table;
     private final SupercellSWFLayoutController swfLayoutController;
@@ -188,6 +177,8 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         float pixelSize = this.preferences.getPixelSize();
 
+        Path outputDirectory = EditorPreferences.DEFAULT_SCREENSHOT_FOLDER;
+
         for (int row : this.table.getSelectedRows()) {
             int displayObjectId = getDisplayObjectId(row);
 
@@ -202,14 +193,21 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
                 String filename = getClipFilename(movieClip, movieClip.getState(), movieClip.getCurrentFrame(), movieClip.getLoopFrame(), pixelSize);
 
-                Path path = DEFAULT_SCREENSHOT_FOLDER.resolve(String.join(".", filename, format.name()));
-                exportAsVideo(path, movieClip, format);
+                Path filepath = outputDirectory.resolve(String.join(".", filename, format.name()));
+                stage.doInRenderThread(() -> {
+                    RendererHelper.exportAsVideo(movieClip, new FfmpegVideoExporter(format, filepath, movieClip.getFps()), format, this.preferences.getPixelSize(), this.preferences.shouldPreserveStageCenter());
+                });
             } else {
-                exportAsImage(renderableObject);
+                Path filepath = outputDirectory.resolve(getDisplayObjectFilename(renderableObject, pixelSize));
+                stage.doInRenderThread(() -> {
+                    RendererHelper.exportAsImage(renderableObject, filepath, this.preferences.getPixelSize(), this.preferences.shouldPreserveStageCenter());
+                });
             }
         }
 
-        RendererHelper.rollbackRenderer(stage, viewport);
+        stage.doInRenderThread(() -> {
+            RendererHelper.rollbackRenderer(stage, viewport);
+        });
     }
 
     private void exportAsImageCallback(ActionEvent actionEvent) {
@@ -220,18 +218,19 @@ public class DisplayObjectContextMenu extends ContextMenu {
         EditorStage stage = EditorStage.getInstance();
         ReadonlyRect viewport = stage.getCamera().getViewport();
 
-        exportAsImage(getRenderableObject(displayObjectId));
+        DisplayObject renderableObject = getRenderableObject(displayObjectId);
 
-        RendererHelper.rollbackRenderer(stage, viewport);
+        Path filepath = EditorPreferences.DEFAULT_SCREENSHOT_FOLDER.resolve(getDisplayObjectFilename(renderableObject, this.preferences.getPixelSize()));
+        stage.doInRenderThread(() -> {
+            RendererHelper.exportAsImage(renderableObject, filepath, this.preferences.getPixelSize(), this.preferences.shouldPreserveStageCenter());
+            RendererHelper.rollbackRenderer(stage, viewport);
+        });
     }
 
     private void exportAsVideoCallback(ActionEvent actionEvent) {
         if (this.table.getSelectedRowCount() == 0) return;
 
         int displayObjectId = getDisplayObjectId(this.table.getSelectedRow());
-
-        EditorStage stage = EditorStage.getInstance();
-        ReadonlyRect viewport = stage.getCamera().getViewport();
 
         SystemFileChooser fileChooser = new SystemFileChooser();
         fileChooser.setStateStoreID("exportVideo");
@@ -258,13 +257,17 @@ public class DisplayObjectContextMenu extends ContextMenu {
         String formatExtension = PathUtils.getFileExtension(path.getFileName().toString());
         VideoFormat format = VideoFormats.getVideoFormatByName(formatExtension);
         if (format == null) {
-            swfLayoutController.window.showErrorDialog("Unknown format " + formatExtension);
+            this.swfLayoutController.window.showErrorDialog("Unknown format " + formatExtension);
             return;
         }
 
-        exportAsVideo(path, (MovieClip) getRenderableObject(displayObjectId), format);
+        EditorStage stage = EditorStage.getInstance();
+        ReadonlyRect viewport = stage.getCamera().getViewport();
 
-        RendererHelper.rollbackRenderer(stage, viewport);
+        stage.doInRenderThread(() -> {
+            RendererHelper.exportAsVideo(movieClip, new FfmpegVideoExporter(format, path, movieClip.getFps()), format, this.preferences.getPixelSize(), this.preferences.shouldPreserveStageCenter());
+            RendererHelper.rollbackRenderer(stage, viewport);
+        });
     }
 
     private void exportAsGifCallback(ActionEvent actionEvent) {
@@ -329,64 +332,9 @@ public class DisplayObjectContextMenu extends ContextMenu {
             return;
         }
 
-        exportAsGif(path, movieClip, gifFps);
-
-        RendererHelper.rollbackRenderer(stage, viewport);
-    }
-
-
-    private void exportAsGif(Path path, MovieClip movieClip, int gifFps) {
-        EditorStage stage = EditorStage.getInstance();
-
-        Rect bounds = getRenderBounds(stage.calculateBoundsForAllFrames(movieClip));
-
-        float pixelSize = this.preferences.getPixelSize();
-        bounds.scale(pixelSize);
-
-        ReadonlyRect ceilBounds = roundBounds(bounds, false);
-
-        Matrix2x3 matrix = new Matrix2x3();
-        matrix.scaleMultiply(pixelSize, pixelSize);
-
-        ColorTransform colorTransform = new ColorTransform();
-
-        MovieClipState state = movieClip.getState();
-        int loopFrame = movieClip.getLoopFrame();
-        int startFrame = movieClip.getCurrentFrame();
-
         stage.doInRenderThread(() -> {
-            Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, ceilBounds);
-
-            boolean parentSet = false;
-            if (movieClip.getParent() == null) {
-                movieClip.setParent(stage.getStageSprite());
-                parentSet = true;
-            }
-
-            try (GifExporter gifExporter = new GifExporter(path, gifFps, gifFps)) {
-                MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> {
-                    movieClip.gotoAbsoluteTimeRecursive(frameIndex * movieClip.getMsPerFrame());
-                    if (loopFrame != -1) {
-                        movieClip.setFrame(loopFrame);
-                    } else if (state == MovieClipState.STOPPED) {
-                        movieClip.setFrame(startFrame);
-                    }
-
-                    movieClip.render(matrix, colorTransform, 0, 0);
-                    stage.renderToFramebuffer(framebuffer);
-
-                    BufferedImage image = ImageUtils.createBufferedImageFromPixels(
-                        framebuffer.getWidth(), framebuffer.getHeight(),
-                        framebuffer.getPixelArray(true), false);
-                    gifExporter.encodeFrame(image, frameIndex);
-                });
-            }
-
-            if (parentSet) {
-                movieClip.setParent(null);
-            }
-
-            framebuffer.delete();
+            RendererHelper.exportAsVideo(movieClip, new GifExporter(path, movieClip.getFps(), gifFps), VideoFormats.WEBM, preferences.getPixelSize(), preferences.shouldPreserveStageCenter());
+            RendererHelper.rollbackRenderer(stage, viewport);
         });
     }
 
@@ -401,138 +349,6 @@ public class DisplayObjectContextMenu extends ContextMenu {
         } catch (UnableToFindObjectException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private void exportAsImage(DisplayObject displayObject) {
-        EditorStage stage = EditorStage.getInstance();
-
-        Rect bounds = getRenderBounds(stage.calculateBoundsForAllFrames(displayObject));
-
-        float pixelSize = this.preferences.getPixelSize();
-        bounds.scale(pixelSize);
-
-        Matrix2x3 matrix = new Matrix2x3();
-        matrix.scaleMultiply(pixelSize, pixelSize);
-
-        stage.doInRenderThread(() -> {
-            Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, bounds);
-
-            // Note: Passing own sprite as parent to provide Stage reference
-            boolean parentSet = false;
-            if (displayObject.getParent() == null) {
-                displayObject.setParent(stage.getStageSprite());
-                parentSet = true;
-            }
-
-            displayObject.render(matrix, new ColorTransform(), 0, 0);
-
-            if (parentSet) {
-                displayObject.setParent(null);
-            }
-
-            stage.renderToFramebuffer(framebuffer);
-
-            BufferedImage screenshot = ImageUtils.createBufferedImageFromPixels(framebuffer.getWidth(), framebuffer.getHeight(), framebuffer.getPixelArray(true), false);
-            ImageUtils.saveImage(DEFAULT_SCREENSHOT_FOLDER.resolve(getDisplayObjectFilename(displayObject, pixelSize)), screenshot);
-
-            framebuffer.delete();
-        });
-    }
-
-    private Rect getRenderBounds(Rect objectBounds) {
-        if (preferences.shouldPreserveStageCenter()) {
-            float maxHorizontal = Math.max(Math.abs(objectBounds.getLeft()), Math.abs(objectBounds.getRight()));
-            float maxVertical = Math.max(Math.abs(objectBounds.getTop()), Math.abs(objectBounds.getBottom()));
-
-            return new Rect(
-                -maxHorizontal,
-                -maxVertical,
-                maxHorizontal,
-                maxVertical
-            );
-        }
-
-        return objectBounds;
-    }
-
-    private void exportAsVideo(Path path, MovieClip movieClip, VideoFormat format) {
-        EditorStage stage = EditorStage.getInstance();
-
-        Rect bounds = getRenderBounds(stage.calculateBoundsForAllFrames(movieClip));
-
-        float pixelSize = this.preferences.getPixelSize();
-        bounds.scale(pixelSize);
-
-        ReadonlyRect ceilBounds = roundBounds(bounds, format.requiresSizeDividableByTwo());
-
-        Matrix2x3 matrix = new Matrix2x3();
-        matrix.scaleMultiply(pixelSize, pixelSize);
-
-        ColorTransform colorTransform = new ColorTransform();
-
-        MovieClipState state = movieClip.getState();
-        int loopFrame = movieClip.getLoopFrame();
-        int startFrame = movieClip.getCurrentFrame();
-
-        stage.doInRenderThread(() -> {
-            Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, ceilBounds);
-
-            // Note: Passing own sprite as parent to provide Stage reference
-            boolean parentSet = false;
-            if (movieClip.getParent() == null) {
-                movieClip.setParent(stage.getStageSprite());
-                parentSet = true;
-            }
-
-            // TODO: ask where to save the video file
-            try (VideoExporter videoExporter = new FfmpegVideoExporter(format, path, movieClip.getFps())) {
-                MovieClipHelper.doForAllFrames(movieClip, (frameIndex) -> {
-                    // Note: it's necessary to set frame index using this method,
-                    // because absolute time frame setting may skip frames.
-                    movieClip.gotoAbsoluteTimeRecursive(frameIndex * movieClip.getMsPerFrame());
-                    if (loopFrame != -1) {
-                        movieClip.setFrame(loopFrame);
-                    } else if (state == MovieClipState.STOPPED) {
-                        movieClip.setFrame(startFrame);
-                    }
-
-                    movieClip.render(matrix, colorTransform, 0, 0);
-                    stage.renderToFramebuffer(framebuffer);
-
-                    BufferedImage image = ImageUtils.createBufferedImageFromPixels(framebuffer.getWidth(), framebuffer.getHeight(), framebuffer.getPixelArray(true), false);
-                    videoExporter.encodeFrame(image, frameIndex);
-                });
-            }
-
-            if (parentSet) {
-                movieClip.setParent(null);
-            }
-
-            framebuffer.delete();
-        });
-    }
-
-    private static @NotNull ReadonlyRect roundBounds(@NotNull ReadonlyRect bounds, boolean requiresSizeDividableByTwo) {
-        int left = (int) Math.floor(bounds.getLeft());
-        int right = (int) Math.ceil(bounds.getRight());
-        int top = (int) Math.floor(bounds.getTop());
-        int bottom = (int) Math.ceil(bounds.getBottom());
-
-        int width = right - left;
-        if (requiresSizeDividableByTwo && width % 2 != 0) {
-            right++;
-        }
-
-        int height = bottom - top;
-        if (requiresSizeDividableByTwo && height % 2 != 0) {
-            bottom++;
-        }
-
-        if (width != bounds.getWidth() || height != bounds.getHeight()) {
-            return new Rect(left, top, right, bottom);
-        }
-
-        return bounds;
     }
 
     private static String getClipFilename(MovieClip movieClip, MovieClipState state, int startFrame, int loopFrame, float pixelSize) {
@@ -598,4 +414,5 @@ public class DisplayObjectContextMenu extends ContextMenu {
 
         return filename;
     }
+
 }

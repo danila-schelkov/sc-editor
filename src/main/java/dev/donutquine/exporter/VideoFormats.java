@@ -2,7 +2,6 @@ package dev.donutquine.exporter;
 
 import java.lang.reflect.Field;
 
-@SuppressWarnings("unused")
 public final class VideoFormats {
     /**
     * The only one format supporting the alpha channel.
@@ -21,8 +20,19 @@ public final class VideoFormats {
     */
     public static final VideoFormat MP4 = new VideoFormat("mp4", "libx264", "yuv420p", true);
 
-    // Maybe collect automatically
-    private static final VideoFormat[] allFormats = new VideoFormat[] {WEBM, AV1, HEVC, MP4};
+    public static enum Format {
+        WEBM(VideoFormats.WEBM),
+        AV1(VideoFormats.AV1),
+        HEVC(VideoFormats.HEVC),
+        MP4(VideoFormats.MP4)
+        ;
+
+        public final VideoFormat format;
+
+        Format(VideoFormat format) {
+            this.format = format;
+        }
+    }
 
     public static VideoFormat getVideoFormatByName(String name) {
         Field[] declaredFields = VideoFormats.class.getDeclaredFields();

@@ -41,6 +41,10 @@ build-macos:
 run: build
 	${JAVA_EXECUTABLE} ${JVM_FLAGS} -jar target/sc-editor-${VERSION}.jar
 
+.PHONY: run-cli
+run-cli: build
+	${JAVA_EXECUTABLE} ${JVM_FLAGS} -cp target/sc-editor-${VERSION}.jar dev.donutquine.editor.cli.Main ${ARGS}
+
 .PHONY: build
 build:
 	${MAVEN_EXECUTABLE} -DreleaseVersion=${VERSION} package
