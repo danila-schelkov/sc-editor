@@ -9,7 +9,7 @@ import dev.donutquine.editor.assets.SupercellSWFAssetFileLoader;
 import dev.donutquine.editor.assets.exceptions.AssetLoadingException;
 
 public abstract class SwfCliCommand implements CliCommand {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Cli.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SwfCliCommand.class);
 
     @Option(name = "--input", aliases = {"-i"}, required = true)
     protected Path inputPath;
