@@ -93,7 +93,10 @@ public final class RendererHelper {
 
         stage.renderToFramebuffer(framebuffer);
 
-        BufferedImage screenshot = ImageUtils.createBufferedImageFromPixels(framebuffer.getWidth(), framebuffer.getHeight(), framebuffer.getPixelArray(true), false);
+        int[] pixelArray = framebuffer.getPixelArray(true);
+        unPremultiplyAlpha(pixelArray);
+
+        BufferedImage screenshot = ImageUtils.createBufferedImageFromPixels(framebuffer.getWidth(), framebuffer.getHeight(), pixelArray, false);
         ImageUtils.saveImage(filepath, screenshot);
 
         framebuffer.delete();
@@ -146,7 +149,10 @@ public final class RendererHelper {
                 movieClip.render(matrix, colorTransform, 0, 0);
                 stage.renderToFramebuffer(framebuffer);
 
-                BufferedImage image = ImageUtils.createBufferedImageFromPixels(framebuffer.getWidth(), framebuffer.getHeight(), framebuffer.getPixelArray(true), false);
+                int[] pixelArray = framebuffer.getPixelArray(true);
+                unPremultiplyAlpha(pixelArray);
+
+                BufferedImage image = ImageUtils.createBufferedImageFromPixels(framebuffer.getWidth(), framebuffer.getHeight(), pixelArray, false);
                 exporter.encodeFrame(image, frameIndex);
             });
         } finally {
@@ -207,6 +213,37 @@ public final class RendererHelper {
     private static void detachFromStage(DisplayObject movieClip, boolean parentSet) {
         if (parentSet) {
             movieClip.setParent(null);
+        }
+    }
+
+    // The objects.fragment.glsl shader writes premultiplied RGB: 
+    // fragColor = vec4(color.rgb * colorMul.a, color.a)
+    //
+    // PNG files expect straight (un-premultiplied) alpha.
+    // Without this step, semi-transparent edges show as dark/black fringing.
+    private static void unPremultiplyAlpha(int[] pixels) {
+        for (int i = 0; i < pixels.length; i++) {
+            int p = pixels[i];
+            int alpha = (p >> 24) & 0xFF;
+
+            if (alpha == 0) { 
+                pixels[i] = 0; 
+                continue;
+            }
+
+            if (alpha == 255) {
+                continue;
+            }
+
+            int r = (p) & 0xFF;
+            int g = (p >> 8) & 0xFF;
+            int b = (p >> 16) & 0xFF;
+
+            // Divide premultiplied components back by alpha
+            r = Math.min(255, (r * 255) / alpha);
+            g = Math.min(255, (g * 255) / alpha);
+            b = Math.min(255, (b * 255) / alpha);
+            pixels[i] = (alpha << 24) | (b << 16) | (g << 8) | r;
         }
     }
 }
