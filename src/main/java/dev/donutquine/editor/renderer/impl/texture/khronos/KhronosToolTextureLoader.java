@@ -7,6 +7,7 @@ import dev.donutquine.utilities.ImageUtils;
 import dev.donutquine.utilities.PathUtils;
 import dev.donutquine.utilities.SystemUtils;
 import dev.donutquine.utilities.process.ChainedExecutor;
+import net.openhft.hashing.LongHashFunction;
 import team.nulls.ntengine.assets.KhronosTexture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +19,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
-
 import static dev.donutquine.editor.renderer.gl.GLConstants.*;
 
 /// Wrapper over <a href="https://github.com/KhronosGroup/KTX-Software/tree/main/tools">KTX CLI tools</a>.
@@ -28,6 +29,8 @@ public class KhronosToolTextureLoader implements KhronosTextureLoader {
 
     public static final String KTX2KTX = "ktx2ktx2";
     public static final String KTX = "ktx";
+
+    public static final Path CACHE_DIR = Path.of(System.getProperty("java.io.tmpdir"), "sc-editor", "texture-cache");
 
     private static void loadPngToGl(GLTexture texture, Path pngPath) {
         BufferedImage image = loadPngAsBufferedImage(pngPath);
@@ -75,7 +78,8 @@ public class KhronosToolTextureLoader implements KhronosTextureLoader {
         try {
             File pngPathFile = pngPath.toFile();
             bufferedImage = ImageIO.read(pngPathFile);
-            pngPathFile.delete();
+            // NOTE: commented out due to using in caching later
+            // pngPathFile.delete();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -90,6 +94,18 @@ public class KhronosToolTextureLoader implements KhronosTextureLoader {
 
     @Override
     public void load(GLTexture texture, KhronosTexture ktx) throws Exception {
+        long hash = calculateHash(ktx);
+        String hashString = String.format("%08X", hash);
+
+        Path cachePath = CACHE_DIR.resolve(hashString + ".png");
+
+        if (Files.exists(cachePath)) {
+            LOGGER.info("Using cached texture for hash {}: {}", hashString, cachePath);
+
+            loadPngToGl(texture, cachePath);
+            return;
+        }
+
         ByteBuffer khronosTextureFileData = KhronosTextureDataSaver.encodeKtx(ktx);
 
         File ktx1File = File.createTempFile("texture", ".ktx1");
@@ -100,7 +116,6 @@ public class KhronosToolTextureLoader implements KhronosTextureLoader {
 
         Path ktx1Path = ktx1File.toPath();
         Path ktx2Path = PathUtils.replaceExtension(ktx1Path, "ktx2");
-        Path pngPath = PathUtils.replaceExtension(ktx1Path, "png");
 
         ChainedExecutor<Process> executor = ChainedExecutor.<Process>create().add(
             () -> SystemUtils.runProcess(KTX2KTX, ktx1Path),
@@ -110,16 +125,18 @@ public class KhronosToolTextureLoader implements KhronosTextureLoader {
                 ktx1File.delete();
             }
         ).add(
-            () -> SystemUtils.runProcess(KTX, "extract", ktx2Path, pngPath),
+            () -> SystemUtils.runProcess(KTX, "extract", ktx2Path, cachePath),
             (process) -> logProcessStarted(KTX),
             (process) -> {
                 logProcessDone(KTX, process);
                 ktx2Path.toFile().delete();
 
                 // TODO: interrupt if exit code is not equal to 0, and throw an exception
-                if (process.exitValue() == 0) {
-                    loadPngToGl(texture, pngPath);
-                }
+                if (process.exitValue() != 0) return;
+
+                LOGGER.info("Cached decoded texture to {}", cachePath);
+
+                loadPngToGl(texture, cachePath);
             }
         );
 
@@ -145,5 +162,16 @@ public class KhronosToolTextureLoader implements KhronosTextureLoader {
         }
 
         return rgba;
+    }
+
+    private static long calculateHash(KhronosTexture ktx) {
+        long hash = LongHashFunction.xx3().hashInt(ktx.glInternalFormat());
+        hash = LongHashFunction.xx3(hash).hashInt(ktx.glBaseInternalFormat());
+        hash = LongHashFunction.xx3(hash).hashInt(ktx.width());
+        hash = LongHashFunction.xx3(hash).hashInt(ktx.height());
+        for (byte[] level : ktx.levels()) {
+            hash = LongHashFunction.xx3(hash).hashBytes(level);
+        }
+        return hash;
     }
 }

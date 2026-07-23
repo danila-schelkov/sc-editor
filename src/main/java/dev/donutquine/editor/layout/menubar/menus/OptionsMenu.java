@@ -2,12 +2,20 @@ package dev.donutquine.editor.layout.menubar.menus;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.stream.Stream;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import dev.donutquine.editor.layout.windows.EditorWindow;
 import dev.donutquine.editor.renderer.impl.EditorStage;
+import dev.donutquine.editor.renderer.impl.texture.khronos.KhronosToolTextureLoader;
 import dev.donutquine.editor.settings.EditorPreferences;
 
 public class OptionsMenu extends JMenu {
@@ -51,6 +59,24 @@ public class OptionsMenu extends JMenu {
         this.add(exportPreserveCenterCheckBox);
 
         this.exportPreserveCenterCheckBox = exportPreserveCenterCheckBox;
+
+        this.addSeparator();
+        JMenuItem clearCacheMenuItem = new JMenuItem("Clear Texture Cache");
+        clearCacheMenuItem.setMnemonic(KeyEvent.VK_C);
+        clearCacheMenuItem.addActionListener(this::clearCache);
+        this.add(clearCacheMenuItem);
+    }
+
+    private void clearCache(ActionEvent event) {
+        try {
+            try (Stream<Path> walk = Files.walk(KhronosToolTextureLoader.CACHE_DIR)) {
+                walk.sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+            }
+        } catch (IOException e) {
+            // Ignore errors
+        }
     }
 
     private void toggleWireframeMode(ActionEvent event) {
