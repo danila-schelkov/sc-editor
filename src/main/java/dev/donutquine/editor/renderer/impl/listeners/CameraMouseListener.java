@@ -1,6 +1,6 @@
 package dev.donutquine.editor.renderer.impl.listeners;
 
-import dev.donutquine.editor.layout.ScalingUtils;
+import dev.donutquine.editor.gui.layout.ScalingUtils;
 import dev.donutquine.editor.renderer.Camera;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 

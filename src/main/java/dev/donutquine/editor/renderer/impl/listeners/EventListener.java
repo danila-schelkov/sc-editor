@@ -3,7 +3,7 @@ package dev.donutquine.editor.renderer.impl.listeners;
 import com.jogamp.opengl.GL3;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
-import dev.donutquine.editor.layout.ScalingUtils;
+import dev.donutquine.editor.gui.layout.ScalingUtils;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.editor.renderer.impl.gl.GLShaderLoader;
 import dev.donutquine.editor.renderer.impl.gl.JoglContext;
