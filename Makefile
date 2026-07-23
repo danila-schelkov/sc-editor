@@ -1,7 +1,7 @@
 DISABLE_AUTOPROFILE = -Dskip.auto.profiles=true
 
 JAVA_EXECUTABLE = java
-JVM_FLAGS=--add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.java2d=ALL-UNNAMED -ea -Dorg.slf4j.simpleLogger.defaultLogLevel=DEBUG
+JVM_FLAGS=--enable-native-access=ALL-UNNAMED --add-exports java.base/java.lang=ALL-UNNAMED --add-exports java.desktop/sun.awt=ALL-UNNAMED --add-exports java.desktop/sun.java2d=ALL-UNNAMED -ea -Dorg.slf4j.simpleLogger.defaultLogLevel=DEBUG
 
 ifeq ($(OS),Windows_NT)
 	MAVEN_EXECUTABLE = mvnw.cmd
@@ -43,7 +43,7 @@ run: build
 
 .PHONY: run-cli
 run-cli: build
-	${JAVA_EXECUTABLE} ${JVM_FLAGS} -cp target/sc-editor-${VERSION}.jar dev.donutquine.editor.cli.Main ${ARGS}
+	${JAVA_EXECUTABLE} ${JVM_FLAGS} -Dorg.slf4j.simpleLogger.defaultLogLevel=OFF -cp target/sc-editor-${VERSION}.jar dev.donutquine.editor.cli.Main ${ARGS}
 
 .PHONY: build
 build:
