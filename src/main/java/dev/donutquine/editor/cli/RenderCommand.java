@@ -6,6 +6,9 @@ import org.kohsuke.args4j.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.jogamp.opengl.GLOffscreenAutoDrawable;
+import dev.donutquine.editor.assets.SupercellSWFAssetFile;
+import dev.donutquine.editor.assets.SupercellSWFAssetFileLoader;
+import dev.donutquine.editor.assets.exceptions.AssetLoadingException;
 import dev.donutquine.editor.renderer.Framebuffer;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.editor.renderer.impl.RendererHelper;
@@ -29,12 +32,14 @@ import dev.donutquine.swf.exceptions.UnableToFindObjectException;
  * uniformly scales both the framebuffer and the rendered geometry,
  * matching the GUI's "pixel size" zoom.
  */
-public class RenderCommand extends SwfCliCommand {
+public class RenderCommand implements CliCommand {
     private static final Logger LOGGER = LoggerFactory.getLogger(RenderCommand.class);
 
     @Option(name = "--exports", required = true)
     private List<String> exports;
 
+    @Option(name = "--input", aliases = {"-i"}, required = true)
+    protected Path inputPath;
     @Option(name = "--output", aliases = {"-o"}, required = true)
     private Path outputDirectory;
     @Option(name = "--format", aliases = {"-f"})
@@ -63,13 +68,16 @@ public class RenderCommand extends SwfCliCommand {
     @Option(name = "--end-frame")
     private int endFrame = -1;
 
+    private SupercellSWFAssetFile assetFile;
 	private GLOffscreenAutoDrawable drawable;
 
     @Override
     public int execute() {
-        int exitCode = super.execute();
-        if (exitCode != 0) {
-            return exitCode;
+        try {
+            this.assetFile = (SupercellSWFAssetFile) new SupercellSWFAssetFileLoader(inputPath).load();
+        } catch (AssetLoadingException e) {
+            LOGGER.error("Failed to load file: {}", inputPath, e);
+            return 1;
         }
 
         // Second display() drains the texture creation tasks queued by the asset file's constructor.

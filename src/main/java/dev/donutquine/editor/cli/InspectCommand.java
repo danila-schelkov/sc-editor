@@ -1,23 +1,31 @@
 package dev.donutquine.editor.cli;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.kohsuke.args4j.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.jogamp.opengl.GLOffscreenAutoDrawable;
+import dev.donutquine.editor.assets.exceptions.AssetLoadingException;
 import dev.donutquine.swf.DisplayObjectOriginal;
 import dev.donutquine.swf.Export;
 import dev.donutquine.swf.SupercellSWF;
+import dev.donutquine.swf.exceptions.LoadingFaultException;
+import dev.donutquine.swf.exceptions.TextureFileNotFound;
 import dev.donutquine.swf.exceptions.UnableToFindObjectException;
+import dev.donutquine.swf.exceptions.UnsupportedCustomPropertyException;
 import dev.donutquine.swf.movieclips.MovieClipChild;
 import dev.donutquine.swf.movieclips.MovieClipFrame;
 import dev.donutquine.swf.movieclips.MovieClipOriginal;
 import dev.donutquine.swf.shapes.ShapeOriginal;
 import dev.donutquine.swf.textfields.TextFieldOriginal;
 
-public class InspectCommand extends SwfCliCommand {
+public class InspectCommand implements CliCommand {
     private static final Logger LOGGER = LoggerFactory.getLogger(InspectCommand.class);
+
+    @Option(name = "--input", aliases = {"-i"}, required = true)
+    private List<Path> inputPaths;
 
     @Option(name = "--print-exports", depends = {"--input"})
     private boolean shouldPrintExports;
@@ -30,29 +38,35 @@ public class InspectCommand extends SwfCliCommand {
 
     @Override
     public int execute() {
-        int exitCode = super.execute();
-        if (exitCode != 0) {
-            return exitCode;
+        try {
+            for (Path inputPath : inputPaths) {
+                SupercellSWF swf = loadInternal(inputPath);
+                inspectSingle(swf);
+            }
+        } catch (AssetLoadingException e) {
+            return 1;
         }
 
-        SupercellSWF swf = assetFile.asset;
+        return 0;
+    }
 
+    public int inspectSingle(SupercellSWF swf) {
         if (useJson) {
             // Used for building arrays and dictionaries
             boolean first;
 
             StringBuilder jsonBuilder = new StringBuilder();
             jsonBuilder.append('{');
-            // jsonBuilder.append("\"exports\":{"); 
-            // first = true;
-            // for (Export export : swf.getExports()) {
-            //     if (!first) jsonBuilder.append(',');
-            //     jsonBuilder.append('"').append(export.name()).append('"').append(':').append(export.id());
-            //     first = false;
-            // }
-            // jsonBuilder.append('}');
+            jsonBuilder.append("\"exports\":{"); 
+            first = true;
+            for (Export export : swf.getExports()) {
+                if (!first) jsonBuilder.append(',');
+                jsonBuilder.append('"').append(export.name()).append('"').append(':').append(export.id());
+                first = false;
+            }
+            jsonBuilder.append('}');
 
-            jsonBuilder/* .append(',') */.append("\"clips\":["); 
+            jsonBuilder.append(',').append("\"clips\":["); 
             first = true;
             for (MovieClipOriginal movieClip : swf.getMovieClips()) {
                 if (!first) jsonBuilder.append(',');
@@ -139,7 +153,7 @@ public class InspectCommand extends SwfCliCommand {
 
         for (int id : ids) {
             try {
-				DisplayObjectOriginal original = swf.getOriginalDisplayObject(id, null);
+                DisplayObjectOriginal original = swf.getOriginalDisplayObject(id, null);
 
                 System.out.println("*".repeat(30));
                 System.out.println();
@@ -208,14 +222,29 @@ public class InspectCommand extends SwfCliCommand {
 
                     System.out.println();
                 }
-			} catch (UnableToFindObjectException e) {
+            } catch (UnableToFindObjectException e) {
                 LOGGER.error("Could not get display object by id {}", id);
-			}
+            }
         }
 
         return 0;
     }
 
-	@Override
-	public void setDrawable(GLOffscreenAutoDrawable drawable) { /* IGNORED */}
+    @Override
+    public void setDrawable(GLOffscreenAutoDrawable drawable) { /* IGNORED */}
+
+    private static SupercellSWF loadInternal(Path path) throws AssetLoadingException {
+        SupercellSWF swf = new SupercellSWF();
+
+        try {
+            swf.load(path.toString(), path.getFileName().toString(), false);
+        } catch (LoadingFaultException | UnableToFindObjectException | UnsupportedCustomPropertyException e) {
+            throw new AssetLoadingException(e);
+        } catch (TextureFileNotFound e) {
+            LOGGER.warn("Texture not found", e);
+        }
+
+        return swf;
+    }
+
 }
