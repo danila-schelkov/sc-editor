@@ -9,6 +9,8 @@ public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
+        System.setProperty("java.awt.headless", "true");
+
         Cli cli = new Cli();
         CmdLineParser parser = new CmdLineParser(cli);
 
