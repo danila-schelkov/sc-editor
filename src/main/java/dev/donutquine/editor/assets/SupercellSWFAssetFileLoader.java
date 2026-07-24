@@ -28,6 +28,7 @@ public class SupercellSWFAssetFileLoader implements AssetFileLoader<SupercellSWF
         } catch (LoadingFaultException | UnableToFindObjectException | UnsupportedCustomPropertyException | TextureFileNotFound e) {
             throw new AssetLoadingException(e);
         }
+
         return swf;
     }
 }
