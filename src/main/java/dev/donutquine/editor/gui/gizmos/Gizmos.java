@@ -1,4 +1,4 @@
-package dev.donutquine.editor.gizmos;
+package dev.donutquine.editor.gui.gizmos;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import dev.donutquine.editor.commands.CommandManager;
 import dev.donutquine.editor.commands.UndoRedoManager;
 import dev.donutquine.editor.displayObjects.SpriteSheet;
-import dev.donutquine.editor.gizmos.drawables.WireframeGizmo;
+import dev.donutquine.editor.gui.gizmos.drawables.WireframeGizmo;
 import dev.donutquine.editor.gui.layout.cursor.CursorStateListener;
 import dev.donutquine.editor.gui.layout.cursor.CursorType;
 import dev.donutquine.editor.renderer.DrawApi;

@@ -1,4 +1,4 @@
-package dev.donutquine.editor.gizmos;
+package dev.donutquine.editor.gui.gizmos;
 
 import org.jetbrains.annotations.NotNull;
 import dev.donutquine.math.Point;

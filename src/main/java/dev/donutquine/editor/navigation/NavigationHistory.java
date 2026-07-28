@@ -1,4 +1,4 @@
-package dev.donutquine.editor.gui.navigation;
+package dev.donutquine.editor.navigation;
 
 import java.util.ArrayList;
 import java.util.List;

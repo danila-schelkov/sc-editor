@@ -1,4 +1,4 @@
-package dev.donutquine.editor.gui.navigation;
+package dev.donutquine.editor.navigation;
 
 public interface NavigableAsset<K, V> {
     NavigationHistory<K> getNavigationHistory();

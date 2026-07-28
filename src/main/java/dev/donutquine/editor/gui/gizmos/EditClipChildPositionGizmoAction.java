@@ -1,8 +1,8 @@
-package dev.donutquine.editor.gizmos;
+package dev.donutquine.editor.gui.gizmos;
 
 import org.jetbrains.annotations.NotNull;
 import dev.donutquine.editor.commands.CommandManager;
-import dev.donutquine.editor.gizmos.commands.SetDisplayObjectMatrixCommand;
+import dev.donutquine.editor.gui.gizmos.commands.SetDisplayObjectMatrixCommand;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.swf.Matrix2x3;
 

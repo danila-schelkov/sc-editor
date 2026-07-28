@@ -1,4 +1,4 @@
-package dev.donutquine.editor.gizmos;
+package dev.donutquine.editor.gui.gizmos;
 
 public interface GizmoAction {
     void begin(float mouseX, float mouseY);

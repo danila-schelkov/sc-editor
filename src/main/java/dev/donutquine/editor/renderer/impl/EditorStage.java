@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.jogamp.opengl.util.PMVMatrix;
-import dev.donutquine.editor.gizmos.Gizmos;
+import dev.donutquine.editor.gui.gizmos.Gizmos;
 import dev.donutquine.editor.renderer.BasicDrawApi;
 import dev.donutquine.editor.renderer.Batch;
 import dev.donutquine.editor.renderer.BatchedRenderer;
