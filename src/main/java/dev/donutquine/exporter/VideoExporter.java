@@ -1,10 +1,10 @@
 package dev.donutquine.exporter;
 
-import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 public interface VideoExporter extends AutoCloseable {
-    void encodeFrame(BufferedImage image, int frameIndex);
+    void encodeFrame(int[] pixelArray, int frameIndex) throws IOException;
 
     @Override
-    void close();
+    void close() throws IOException;
 }
