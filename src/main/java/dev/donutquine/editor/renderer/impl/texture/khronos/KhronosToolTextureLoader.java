@@ -2,13 +2,13 @@ package dev.donutquine.editor.renderer.impl.texture.khronos;
 
 import dev.donutquine.editor.renderer.gl.texture.GLTexture;
 import dev.donutquine.editor.renderer.impl.texture.GLImage;
+import dev.donutquine.ktx.KhronosTexture;
 import dev.donutquine.utilities.BufferUtils;
 import dev.donutquine.utilities.ImageUtils;
 import dev.donutquine.utilities.PathUtils;
 import dev.donutquine.utilities.SystemUtils;
 import dev.donutquine.utilities.process.ChainedExecutor;
 import net.openhft.hashing.LongHashFunction;
-import team.nulls.ntengine.assets.KhronosTexture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

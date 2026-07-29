@@ -5,9 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import dev.donutquine.editor.assets.exceptions.AssetLoadingException;
+import dev.donutquine.ktx.KhronosTexture;
 import dev.donutquine.swf.exceptions.TextureFileNotFound;
 import dev.donutquine.swf.file.compression.Zstandard;
-import team.nulls.ntengine.assets.KhronosTexture;
 
 public class CompressedKhronosTextureAssetFileLoader implements AssetFileLoader<KhronosTexture> {
     private final Path path;

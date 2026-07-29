@@ -1,7 +1,7 @@
 package dev.donutquine.editor.renderer.impl.texture.khronos;
 
 import dev.donutquine.editor.renderer.gl.texture.GLTexture;
-import team.nulls.ntengine.assets.KhronosTexture;
+import dev.donutquine.ktx.KhronosTexture;
 
 public interface KhronosTextureLoader {
     boolean isAvailable();

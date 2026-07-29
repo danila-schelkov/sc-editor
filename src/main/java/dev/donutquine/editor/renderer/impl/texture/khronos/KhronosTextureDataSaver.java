@@ -1,8 +1,9 @@
 package dev.donutquine.editor.renderer.impl.texture.khronos;
 
+import dev.donutquine.ktx.KhronosTexture;
+import dev.donutquine.ktx.KhronosTexture1DataLoader;
 import dev.donutquine.streams.ByteStream;
 import dev.donutquine.utilities.BufferUtils;
-import team.nulls.ntengine.assets.KhronosTexture;
 
 import java.nio.ByteBuffer;
 
@@ -10,7 +11,7 @@ import java.nio.ByteBuffer;
  * Loads <a href="https://www.khronos.org/ktx/">ktx</a> file from {@link KhronosTexture} object to {@link ByteBuffer} object.
  */
 public class KhronosTextureDataSaver {
-    private static final byte[] HEADER = new byte[]{(byte) 0xAB, 0x4B, 0x54, 0x58, 0x20, 0x31, 0x31, (byte) 0xBB, 0x0D, 0x0A, 0x1A, 0x0A};
+    private static final byte[] HEADER = KhronosTexture1DataLoader.HEADER;
 
     public static ByteBuffer encodeKtx(KhronosTexture ktx) {
         ByteStream stream = new ByteStream();
@@ -34,13 +35,13 @@ public class KhronosTextureDataSaver {
         for (byte[] level : ktx.levels()) {
             stream.writeInt(level.length);
             stream.write(level);
-            stream.write(new byte[getPadding4(level.length)]);
+            stream.write(new byte[getPadding(level.length, 4)]);
         }
 
         return BufferUtils.wrapDirect(stream.getData());
     }
 
-    private static int getPadding4(int offset) {
-        return 3 - ((offset + 3) % 4);
+    private static int getPadding(int offset, int padding) {
+        return padding - 1 - ((offset + padding - 1) % padding);
     }
 }

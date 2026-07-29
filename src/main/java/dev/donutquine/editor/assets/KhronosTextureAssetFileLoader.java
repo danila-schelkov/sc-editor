@@ -3,13 +3,17 @@ package dev.donutquine.editor.assets;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
+import java.util.Arrays;
 import dev.donutquine.editor.assets.exceptions.AssetLoadingException;
+import dev.donutquine.ktx.KhronosTexture;
+import dev.donutquine.ktx.KhronosTextureDataLoader;
+import dev.donutquine.ktx.KhronosTexture1DataLoader;
+import dev.donutquine.ktx.KhronosTexture2DataLoader;
+import dev.donutquine.ktx.KhronosTextureLoadingException;
 import dev.donutquine.swf.exceptions.TextureFileNotFound;
 import dev.donutquine.utilities.BufferUtils;
-import team.nulls.ntengine.assets.KhronosTexture;
-import team.nulls.ntengine.assets.KhronosTextureDataLoader;
-import team.nulls.ntengine.assets.KhronosTextureLoadingException;
 
 public class KhronosTextureAssetFileLoader implements AssetFileLoader<KhronosTexture> {
     private final Path path;
@@ -37,8 +41,22 @@ public class KhronosTextureAssetFileLoader implements AssetFileLoader<KhronosTex
     }
 
     public static KhronosTexture loadInternal(byte[] ktxData) throws AssetLoadingException {
+        ByteBuffer buffer = BufferUtils.wrapDirect(ktxData);
+
+        KhronosTextureDataLoader loader = null;
+        byte[] header = new byte[12];
+        buffer.get(header);
+        if (Arrays.equals(header, KhronosTexture1DataLoader.HEADER)) {
+            loader = KhronosTexture1DataLoader.INSTANCE;
+        } else if (Arrays.equals(header, KhronosTexture2DataLoader.HEADER)) {
+            loader = KhronosTexture2DataLoader.INSTANCE;
+        } else {
+            throw new AssetLoadingException("Unknown khronos texture header: " + Arrays.toString(header));
+        }
+
         try {
-            return KhronosTextureDataLoader.decodeKtx(BufferUtils.wrapDirect(ktxData));
+            buffer.position(0);
+            return loader.decodeKtx(buffer);
         } catch (KhronosTextureLoadingException e) {
             throw new AssetLoadingException(e);
         }
