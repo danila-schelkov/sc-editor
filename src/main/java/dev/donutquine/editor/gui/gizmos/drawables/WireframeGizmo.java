@@ -1,8 +1,8 @@
-package dev.donutquine.editor.gizmos.drawables;
+package dev.donutquine.editor.gui.gizmos.drawables;
 
 import java.awt.Color;
 import java.util.List;
-import dev.donutquine.editor.gizmos.GizmoDrawable;
+import dev.donutquine.editor.gui.gizmos.GizmoDrawable;
 import dev.donutquine.editor.renderer.DrawApi;
 import dev.donutquine.math.Point;
 

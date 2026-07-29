@@ -7,12 +7,12 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import dev.donutquine.editor.assets.AssetFile;
-import dev.donutquine.editor.gizmos.Gizmos;
+import dev.donutquine.editor.gui.gizmos.Gizmos;
 import dev.donutquine.editor.gui.layout.SearchableLayoutController;
 import dev.donutquine.editor.gui.layout.shortcut.KeyboardUtils;
 import dev.donutquine.editor.gui.layout.windows.EditorWindow;
-import dev.donutquine.editor.gui.navigation.NavigableAsset;
-import dev.donutquine.editor.gui.navigation.NavigationHistory;
+import dev.donutquine.editor.navigation.NavigableAsset;
+import dev.donutquine.editor.navigation.NavigationHistory;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 
 public class EditMenu extends JMenu {

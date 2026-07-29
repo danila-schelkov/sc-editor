@@ -1,4 +1,4 @@
-package dev.donutquine.editor.gizmos.commands;
+package dev.donutquine.editor.gui.gizmos.commands;
 
 import dev.donutquine.editor.commands.UndoableCommand;
 import dev.donutquine.math.Point;

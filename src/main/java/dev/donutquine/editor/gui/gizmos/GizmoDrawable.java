@@ -1,4 +1,4 @@
-package dev.donutquine.editor.gizmos;
+package dev.donutquine.editor.gui.gizmos;
 
 import dev.donutquine.editor.renderer.DrawApi;
 

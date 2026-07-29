@@ -12,7 +12,7 @@ import javax.swing.JPopupMenu;
 import org.jetbrains.annotations.Nullable;
 import dev.donutquine.editor.assets.SupercellSWFAssetFile;
 import dev.donutquine.editor.displayObjects.SpriteSheet;
-import dev.donutquine.editor.gizmos.Gizmos;
+import dev.donutquine.editor.gui.gizmos.Gizmos;
 import dev.donutquine.editor.gui.layout.LayoutController;
 import dev.donutquine.editor.gui.layout.ScalingUtils;
 import dev.donutquine.editor.gui.layout.SupercellSWFLayoutController;

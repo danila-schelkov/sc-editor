@@ -25,6 +25,12 @@ import dev.donutquine.editor.gui.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.gui.layout.components.tables.Table;
 import dev.donutquine.editor.gui.layout.components.listeners.DisplayObjectListMouseListener;
 import dev.donutquine.editor.gui.layout.contextmenus.DisplayObjectContextMenu;
+import dev.donutquine.swf.DisplayObjectOriginal;
+import dev.donutquine.swf.SupercellSWF;
+import dev.donutquine.swf.exceptions.UnableToFindObjectException;
+import dev.donutquine.swf.movieclips.MovieClipChild;
+import dev.donutquine.swf.movieclips.MovieClipFrame;
+import dev.donutquine.swf.movieclips.MovieClipOriginal;
 
 public class DisplayObjectListPanel extends JPanel {
     private static final Object[] COLUMN_NAMES = {"Id", "Name", "Type"};
@@ -111,14 +117,165 @@ public class DisplayObjectListPanel extends JPanel {
         this.searchField.requestFocus();
     }
 
+    // TODO: make ui for filters
     private void find(String text) {
-        if (text.trim().isEmpty()) {
+        // TODO: grouping and priority for & (and) and | (or) filters
+        List<RowFilter<TableModel, Integer>> orFilters = new ArrayList<>();
+        for (String orFilter : text.split("\\|")) { 
+            List<RowFilter<TableModel, Integer>> andFilters = new ArrayList<>();
+            for (String filter : orFilter.split("&")) { 
+                andFilters.add(createFilterFromString(controller.assetFile.asset, filter.trim()));
+            }
+            orFilters.add(RowFilter.andFilter(andFilters));
+        }
+
+        if (orFilters.isEmpty()) {
             this.resetFilter();
             return;
         }
 
+        this.sorter.setRowFilter(RowFilter.orFilter(orFilters));
+    }
+
+    private static RowFilter<TableModel, Integer> createFilterFromString(SupercellSWF swf, String filter) {
+        if (filter.startsWith("!")) {
+            return RowFilter.notFilter(createFilterFromString(swf, filter.substring(1).trim()));
+        }
+
+        String[] substring = filter.split("=");
+        if (substring.length == 2) {
+            String filterName = substring[0].trim();
+            String filterValue = substring[1].trim();
+
+            // TODO: add childCount and frameCount filters
+            if (filterName.equals("id") && !filterValue.isEmpty()) {
+                int id;
+                try {
+                    id = Integer.parseUnsignedInt(filterValue);
+                } catch (NumberFormatException e) {
+                    // TODO: log
+                    id = -1;
+                }
+
+                final int finalId = id;
+
+                return new RowFilter<TableModel, Integer>() {
+                    @Override
+                    public boolean include(RowFilter.Entry<? extends TableModel, ? extends Integer> entry) {
+                        return (int) entry.getValue(0) == finalId;
+                    }
+                };
+            } else if (filterName.equals("id~") && !filterValue.isEmpty()) {
+                try {
+                    Integer.parseUnsignedInt(filterValue);
+                } catch (NumberFormatException e) {
+                    // TODO: log
+                }
+
+                return new RowFilter<TableModel, Integer>() {
+                    @Override
+                    public boolean include(RowFilter.Entry<? extends TableModel, ? extends Integer> entry) {
+                        return String.valueOf(entry.getValue(0)).contains(filterValue);
+                    }
+                };
+            } else if (filterName.equals("exportName")) {
+                return new RowFilter<TableModel, Integer>() {
+                    @Override
+                    public boolean include(RowFilter.Entry<? extends TableModel, ? extends Integer> entry) {
+                        String exportName = (String) entry.getValue(1);
+                        return filterValue.equals(exportName);
+                    }
+                };
+            } else if (filterName.equals("exportName~")) {
+                return new RowFilter<TableModel, Integer>() {
+                    @Override
+                    public boolean include(RowFilter.Entry<? extends TableModel, ? extends Integer> entry) {
+                        String exportName = (String) entry.getValue(1);
+                        return exportName != null && exportName.contains(filterValue);
+                    }
+                };
+            } else if (filterName.equals("type")) {
+                // MovieClip, Shape, TextField — are the only supported types here
+                return new RowFilter<TableModel, Integer>() {
+                    @Override
+                    public boolean include(RowFilter.Entry<? extends TableModel, ? extends Integer> entry) {
+                        String type = (String) entry.getValue(2);
+                        return type.equals(filterValue);
+                    }
+                };
+            } else if (filterName.equals("childId") && !filterValue.isEmpty()) {
+                int childId;
+                try {
+                    childId = Integer.parseUnsignedInt(filterValue);
+                } catch (NumberFormatException e) {
+                    // TODO: log
+                    childId = -1;
+                }
+
+                final int finalChildId = childId;
+
+                return new MovieClipChildRowFilter(swf) {
+                    @Override
+                    protected boolean include(MovieClipChild child) {
+                        return child.id() == finalChildId;
+                    }
+                };
+            } else if (filterName.equals("childId~") && !filterValue.isEmpty()) {
+                try {
+                    Integer.parseUnsignedInt(filterValue);
+                } catch (NumberFormatException e) {
+                    // TODO: log
+                }
+
+                return new MovieClipChildRowFilter(swf) {
+                    @Override
+                    protected boolean include(MovieClipChild child) {
+                        return String.valueOf(child.id()).contains(filterValue);
+                    }
+                };
+            } else if (filterName.equals("childName")) {
+                String childName = filterValue;
+
+                return new MovieClipChildRowFilter(swf) {
+                    @Override
+                    protected boolean include(MovieClipChild child) {
+                        return childName.equals(child.name());
+                    }
+                };
+            } else if (filterName.equals("childName~")) {
+                String childName = filterValue;
+
+                return new MovieClipChildRowFilter(swf) {
+                    @Override
+                    protected boolean include(MovieClipChild child) {
+                        return child.name() != null && child.name().contains(childName);
+                    }
+                };
+            } else if (filterName.equals("frameLabel")) {
+                String frameLabel = filterValue;
+
+                return new MovieClipFrameRowFilter(swf) {
+                    @Override
+                    protected boolean include(MovieClipFrame frame) {
+                        return frameLabel.equals(frame.getLabel());
+                    }
+                };
+            } else if (filterName.equals("frameLabel~")) {
+                String frameLabel = filterValue;
+
+                return new MovieClipFrameRowFilter(swf) {
+                    @Override
+                    protected boolean include(MovieClipFrame frame) {
+                        return frame.getLabel() != null && frame.getLabel().contains(frameLabel);
+                    }
+                };
+            } else {
+                // TODO: log unknown filter
+            }
+        }
+
         // Sets case-insensitive filter
-        this.sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(text)));
+        return RowFilter.regexFilter("(?i)" + Pattern.quote(filter));
     }
 
     private void handleRowSelected() {
@@ -131,5 +288,89 @@ public class DisplayObjectListPanel extends JPanel {
         String name = (String) table.getValueAt(selectedRow, 1);
 
         controller.selectObject(id, name);
+    }
+    
+    // ANY
+    private static abstract class MovieClipFrameRowFilter extends MovieClipRowFilter {
+		public MovieClipFrameRowFilter(SupercellSWF swf) {
+			super(swf);
+		}
+
+        @Override
+		protected boolean include(MovieClipOriginal movieClipOriginal) {
+            for (MovieClipFrame frame : movieClipOriginal.getFrames()) {
+                if (include(frame)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected abstract boolean include(MovieClipFrame frame);
+    }
+    
+    // ANY
+    private static abstract class MovieClipChildRowFilter extends MovieClipRowFilter {
+		public MovieClipChildRowFilter(SupercellSWF swf) {
+			super(swf);
+		}
+
+        @Override
+		protected boolean include(MovieClipOriginal movieClipOriginal) {
+            for (MovieClipChild child : movieClipOriginal.getChildren()) {
+                if (include(child)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        protected abstract boolean include(MovieClipChild child);
+    }
+    
+    private static abstract class MovieClipRowFilter extends DisplayObjectRowFilter {
+        public MovieClipRowFilter(SupercellSWF swf) {
+			super(swf);
+		}
+
+        @Override
+        protected boolean include(DisplayObjectOriginal original) {
+            if (original instanceof MovieClipOriginal movieClipOriginal) {
+                return include(movieClipOriginal);
+            }
+
+            return false;
+        }
+
+		protected abstract boolean include(MovieClipOriginal movieClipOriginal);
+    }
+
+    private static abstract class DisplayObjectRowFilter extends RowFilter<TableModel, Integer> {
+        private final SupercellSWF swf;
+
+		public DisplayObjectRowFilter(SupercellSWF swf) {
+            this.swf = swf;
+        }
+
+        @Override
+        public boolean include(Entry<? extends TableModel, ? extends Integer> entry) {
+            assert entry.getValueCount() == COLUMN_NAMES.length;
+            int value = (int) entry.getValue(0);
+
+            DisplayObjectOriginal original;
+
+            try {
+                original = swf.getOriginalDisplayObject(value, null);
+            } catch (UnableToFindObjectException e) {
+                // NOTE: must not happen as we know the object exists
+                throw new RuntimeException(e);
+            }
+
+            return include(original);
+        }
+
+        protected abstract boolean include(DisplayObjectOriginal original);
     }
 }

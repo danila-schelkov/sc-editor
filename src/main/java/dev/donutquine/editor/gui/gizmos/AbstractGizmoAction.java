@@ -1,4 +1,4 @@
-package dev.donutquine.editor.gizmos;
+package dev.donutquine.editor.gui.gizmos;
 
 public abstract class AbstractGizmoAction implements GizmoAction {
     protected float mouseStartX, mouseStartY;
