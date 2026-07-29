@@ -8,8 +8,11 @@ import dev.donutquine.utilities.ImageUtils;
 public class FrameVideoExporter implements VideoExporter {
     protected final Path filepath;
     protected final Path framesDirectory;
+    protected final int width, height;
 
-    public FrameVideoExporter(Path filepath) {
+    public FrameVideoExporter(int width, int height, Path filepath) {
+        this.width = width;
+        this.height = height;
         this.filepath = filepath;
 
         String framesDirectoryName = String.join("_", filepath.getFileName().toString(), "frames");
@@ -19,7 +22,8 @@ public class FrameVideoExporter implements VideoExporter {
     }
 
     @Override
-    public void encodeFrame(BufferedImage image, int frameIndex) {
+    public void encodeFrame(int[] pixelArray, int frameIndex) {
+        BufferedImage image = ImageUtils.createBufferedImageFromPixels(this.width, this.height, pixelArray, false);
         Path framePath = this.framesDirectory.resolve(String.join(".", String.valueOf(frameIndex), "png"));
         ImageUtils.saveImage(framePath, image);
     }

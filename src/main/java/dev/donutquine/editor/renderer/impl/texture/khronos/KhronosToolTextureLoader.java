@@ -62,7 +62,7 @@ public class KhronosToolTextureLoader implements KhronosTextureLoader {
         } else {
             int[] argb = image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth());
 
-            pixelBuffer = intARGBtoByteRGBA(argb);
+            pixelBuffer = ImageUtils.intARGBtoByteRGBA(argb);
             format = GL_RGBA;
             pixelType = GL_UNSIGNED_BYTE;
         }
@@ -149,19 +149,6 @@ public class KhronosToolTextureLoader implements KhronosTextureLoader {
 
     private static void logProcessDone(String name, Process process) {
         LOGGER.info("{} done its work with code: {}", name, process.exitValue());
-    }
-
-    private static ByteBuffer intARGBtoByteRGBA(int[] argb) {
-        ByteBuffer rgba = BufferUtils.allocateDirect(argb.length * 4);
-
-        for (int i = 0; i < argb.length; i++) {
-            rgba.put(4 * i, (byte) ((argb[i] >> 16) & 0xff)); // R
-            rgba.put(4 * i + 1, (byte) ((argb[i] >> 8) & 0xff)); // G
-            rgba.put(4 * i + 2, (byte) ((argb[i]) & 0xff)); // B
-            rgba.put(4 * i + 3, (byte) ((argb[i] >> 24) & 0xff)); // A
-        }
-
-        return rgba;
     }
 
     private static long calculateHash(KhronosTexture ktx) {

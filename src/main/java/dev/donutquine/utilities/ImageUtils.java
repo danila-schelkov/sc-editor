@@ -93,4 +93,43 @@ public final class ImageUtils {
     public static ByteBuffer getPixelBuffer(BufferedImage image) {
         return BufferUtils.wrapDirect(((DataBufferByte) image.getRaster().getDataBuffer()).getData());
     }
+
+    public static byte[] intArrayToByteArray(int[] argb) {
+        byte[] rgba = new byte[argb.length * 4];
+
+        for (int i = 0; i < argb.length; i++) {
+            rgba[4 * i + 0] = (byte) ((argb[i] >>  0) & 0xff); // R
+            rgba[4 * i + 1] = (byte) ((argb[i] >>  8) & 0xff); // G
+            rgba[4 * i + 2] = (byte) ((argb[i] >> 16) & 0xff); // B
+            rgba[4 * i + 3] = (byte) ((argb[i] >> 24) & 0xff); // A
+        }
+
+        return rgba;
+    }
+
+    public static byte[] intARGBtoByteRGBAArray(int[] argb) {
+        byte[] rgba = new byte[argb.length * 4];
+
+        for (int i = 0; i < argb.length; i++) {
+            rgba[4 * i + 0] = (byte) ((argb[i] >> 16) & 0xff); // R
+            rgba[4 * i + 1] = (byte) ((argb[i] >>  8) & 0xff); // G
+            rgba[4 * i + 2] = (byte) ((argb[i] >>  0) & 0xff); // B
+            rgba[4 * i + 3] = (byte) ((argb[i] >> 24) & 0xff); // A
+        }
+
+        return rgba;
+    }
+
+    public static ByteBuffer intARGBtoByteRGBA(int[] argb) {
+        ByteBuffer rgba = BufferUtils.allocateDirect(argb.length * 4);
+
+        for (int i = 0; i < argb.length; i++) {
+            rgba.put(4 * i, (byte) ((argb[i] >> 16) & 0xff)); // R
+            rgba.put(4 * i + 1, (byte) ((argb[i] >> 8) & 0xff)); // G
+            rgba.put(4 * i + 2, (byte) ((argb[i]) & 0xff)); // B
+            rgba.put(4 * i + 3, (byte) ((argb[i] >> 24) & 0xff)); // A
+        }
+
+        return rgba;
+    }
 }

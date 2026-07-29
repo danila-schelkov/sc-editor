@@ -19,6 +19,7 @@ public final class VideoFormats {
     * Doesn't support alpha channel at all.
     */
     public static final VideoFormat MP4 = new VideoFormat("mp4", "libx264", "yuv420p", true);
+    public static final VideoFormat GIF = new VideoFormat("gif", null, null, false);
 
     public static enum Format {
         WEBM(VideoFormats.WEBM),

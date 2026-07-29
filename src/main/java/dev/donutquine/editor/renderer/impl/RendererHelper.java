@@ -1,9 +1,8 @@
 package dev.donutquine.editor.renderer.impl;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.nio.file.Path;
-import java.text.DecimalFormat;
-import java.util.Objects;
 import org.jetbrains.annotations.NotNull;
 import dev.donutquine.editor.renderer.Camera;
 import dev.donutquine.editor.renderer.Framebuffer;
@@ -105,15 +104,17 @@ public final class RendererHelper {
     public static void exportAsVideo(MovieClip movieClip, VideoExporter videoExporter, VideoFormat format, float pixelSize, boolean shouldPreserveStageCenter) {
         EditorStage stage = EditorStage.getInstance();
 
-        Rect bounds = getRenderBounds(stage.calculateBoundsForAllFrames(movieClip), shouldPreserveStageCenter);
+        Rect bounds = RendererHelper.getRenderBounds(stage.calculateBoundsForAllFrames(movieClip), shouldPreserveStageCenter);
         bounds.scale(pixelSize);
 
-        ReadonlyRect ceilBounds = roundBounds(bounds, format.requiresSizeDividableByTwo());
+        ReadonlyRect ceilBounds = RendererHelper.roundBounds(bounds, format.requiresSizeDividableByTwo());
 
         Matrix2x3 matrix = new Matrix2x3();
         matrix.scaleMultiply(pixelSize, pixelSize);
 
-        exportAsVideo(movieClip, matrix, new ColorTransform(), ceilBounds, videoExporter);
+        ColorTransform colorTransform = new ColorTransform();
+
+        RendererHelper.exportAsVideo(movieClip, matrix, colorTransform, ceilBounds, videoExporter);
     }
 
     /// NOTE: Must be called within Stage rendering content
@@ -121,7 +122,7 @@ public final class RendererHelper {
         EditorStage stage = EditorStage.getInstance();
 
         Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, bounds);
-        exportAsVideo(movieClip, matrix, colorTransform, framebuffer, videoExporter);
+        RendererHelper.exportAsVideo(movieClip, matrix, colorTransform, framebuffer, videoExporter);
     }
 
     /// NOTE: Must be called within Stage rendering content
@@ -152,10 +153,17 @@ public final class RendererHelper {
                 int[] pixelArray = framebuffer.getPixelArray(true);
                 unPremultiplyAlpha(pixelArray);
 
-                BufferedImage image = ImageUtils.createBufferedImageFromPixels(framebuffer.getWidth(), framebuffer.getHeight(), pixelArray, false);
-                exporter.encodeFrame(image, frameIndex);
+                try {
+					exporter.encodeFrame(pixelArray, frameIndex);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
             });
-        } finally {
+        } catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
             detachFromStage(movieClip, parentSet);
             framebuffer.delete();
         }

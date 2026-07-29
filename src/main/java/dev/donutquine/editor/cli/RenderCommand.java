@@ -1,5 +1,6 @@
 package dev.donutquine.editor.cli;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import org.kohsuke.args4j.Option;
@@ -109,12 +110,22 @@ public class RenderCommand implements CliCommand {
                 Matrix2x3 matrix = new Matrix2x3();
                 matrix.scaleMultiply(pixelSize * scaleX, pixelSize * scaleY);
 
+                ColorTransform colorTransform = new ColorTransform();
+
                 if (displayObject instanceof MovieClip movieClip && getFrameCount(movieClip) > 1 && (startFrame == -1 || endFrame == -1 || (endFrame - startFrame + 1) > 1)) {
                     Path outputPath = outputDirectory.resolve(exportName + "." + videoFormat.name());
 
+                    SynchronousFfmpegVideoExporter videoExporter;
+                    try {
+                        videoExporter = new SynchronousFfmpegVideoExporter(finalFramebufferWidth, finalFramebufferHeight, movieClip.getFps(), videoFormat, null, outputPath);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        return 2;
+                    }
+
                     stage.doInRenderThread(() -> {
                         Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, finalFramebufferWidth, finalFramebufferHeight, translateX != 0 || translateY != 0 ? null : bounds, translateX, translateY);
-                        RendererHelper.exportAsVideo(movieClip, matrix, new ColorTransform(), framebuffer, new SynchronousFfmpegVideoExporter(videoFormat, outputPath, movieClip.getFps()));
+                        RendererHelper.exportAsVideo(movieClip, matrix, colorTransform, framebuffer, videoExporter);
                         LOGGER.info("Saved video to {}", outputPath);
                     });
                 } else {
@@ -127,7 +138,7 @@ public class RenderCommand implements CliCommand {
 
                     stage.doInRenderThread(() -> {
                         Framebuffer framebuffer = RendererHelper.prepareStageForRendering(stage, finalFramebufferWidth, finalFramebufferHeight, translateX != 0 || translateY != 0 ? null : bounds, translateX, translateY);
-                        RendererHelper.exportAsImage(displayObject, matrix, new ColorTransform(), outputPath, framebuffer);
+                        RendererHelper.exportAsImage(displayObject, matrix, colorTransform, outputPath, framebuffer);
                         LOGGER.info("Saved image to {}", outputPath);
                     });
                 }

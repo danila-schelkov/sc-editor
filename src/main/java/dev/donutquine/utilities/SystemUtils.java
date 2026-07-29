@@ -27,15 +27,15 @@ public class SystemUtils {
         return true;
     }
 
-    public static Process runProcess(Object... commandArgs) throws IOException {
-        String[] stringArgs = new String[commandArgs.length];
-        for (int i = 0; i < commandArgs.length; i++) {
-            stringArgs[i] = commandArgs[i].toString();
+    public static Process runProcess(Object... command) throws IOException {
+        String[] commandStrings = new String[command.length];
+        for (int i = 0; i < command.length; i++) {
+            commandStrings[i] = command[i].toString();
         }
 
-        LOGGER.info(String.join(" ", stringArgs));
+        LOGGER.info(String.join(" ", commandStrings));
 
-        return Runtime.getRuntime().exec(stringArgs);
+        return Runtime.getRuntime().exec(commandStrings);
     }
 
     public static void waitProcessInSwing(Callable<Process> createProcess, Consumer<Process> startAction, Consumer<Process> exitAction) {
