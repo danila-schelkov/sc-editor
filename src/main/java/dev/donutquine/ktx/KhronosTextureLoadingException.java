@@ -1,4 +1,4 @@
-package team.nulls.ntengine.assets;
+package dev.donutquine.ktx;
 
 public class KhronosTextureLoadingException extends RuntimeException {
     public KhronosTextureLoadingException(String message) {

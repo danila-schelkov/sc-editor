@@ -3,8 +3,8 @@ package dev.donutquine.editor.renderer.impl.texture.khronos;
 import java.nio.ByteBuffer;
 import dev.donutquine.editor.renderer.gl.GLContext;
 import dev.donutquine.editor.renderer.gl.texture.GLTexture;
+import dev.donutquine.ktx.KhronosTexture;
 import dev.donutquine.utilities.BufferUtils;
-import team.nulls.ntengine.assets.KhronosTexture;
 
 public class ExtensionKhronosTextureLoader implements KhronosTextureLoader {
     private final GLContext gl;

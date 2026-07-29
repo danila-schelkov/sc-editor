@@ -16,7 +16,7 @@ public class Editor {
     static {
         assetFileLoaderFactory.register(SupercellSWFAssetFileLoader::new, "sc", "sc1", "sc2");
         assetFileLoaderFactory.register("sctx", SupercellTextureAssetFileLoader::new);
-        assetFileLoaderFactory.register(KhronosTextureAssetFileLoader::new, "ktx", "ktx1");
+        assetFileLoaderFactory.register(KhronosTextureAssetFileLoader::new, "ktx", "ktx1", "ktx2");
         assetFileLoaderFactory.register("zktx", CompressedKhronosTextureAssetFileLoader::new);
     }
 

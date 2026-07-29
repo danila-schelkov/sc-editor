@@ -7,7 +7,7 @@ import dev.donutquine.editor.displayObjects.SpriteSheet;
 import dev.donutquine.editor.renderer.gl.texture.GLTexture;
 import dev.donutquine.editor.renderer.impl.texture.GLImage;
 import dev.donutquine.editor.renderer.impl.texture.ImageFilter;
-import team.nulls.ntengine.assets.KhronosTexture;
+import dev.donutquine.ktx.KhronosTexture;
 
 public class KhronosTextureAssetFile extends TextureAssetFile<KhronosTexture> {
     private final Path path;

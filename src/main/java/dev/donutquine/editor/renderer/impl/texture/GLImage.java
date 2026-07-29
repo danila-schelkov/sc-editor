@@ -9,11 +9,11 @@ import dev.donutquine.editor.renderer.gl.texture.GLTexture;
 import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.editor.renderer.impl.texture.khronos.KhronosTextureLoader;
 import dev.donutquine.editor.renderer.impl.texture.sctx.SctxPixelType;
+import dev.donutquine.ktx.KhronosTexture;
 import dev.donutquine.sctx.MipMapData;
 import dev.donutquine.sctx.PixelType;
 import dev.donutquine.sctx.SctxTexture;
 import dev.donutquine.utilities.BufferUtils;
-import team.nulls.ntengine.assets.KhronosTexture;
 
 public final class GLImage {
     public static KhronosTextureLoader khronosTextureLoader;
@@ -65,6 +65,8 @@ public final class GLImage {
             stage.getGlContext().glPixelStorei(GLConstants.GL_UNPACK_ALIGNMENT, texture.getAlignment());
 
             if (ktx != null) {
+                // https://github.khronos.org/KTX-Specification/ktxspec.v2.html#_packing
+                // GL_UNPACK_ROW_LENGTH = 0 and GL_UNPACK_ALIGNMENT = 1 for uncompressed textures
                 loadKhronosTexture(texture, ktx);
             } else if (sctxTexture != null) {
                 loadTexture(texture, sctxTexture);

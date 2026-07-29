@@ -14,6 +14,7 @@ import dev.donutquine.editor.renderer.impl.EditorStage;
 import dev.donutquine.editor.renderer.impl.texture.GLImage;
 import dev.donutquine.editor.renderer.impl.texture.ImageFilter;
 import dev.donutquine.editor.renderer.texture.Texture;
+import dev.donutquine.ktx.KhronosTexture;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObjectFactory;
 import dev.donutquine.sctx.SctxTexture;
@@ -23,7 +24,6 @@ import dev.donutquine.swf.exceptions.UnableToFindObjectException;
 import dev.donutquine.swf.shapes.ShapeDrawBitmapCommand;
 import dev.donutquine.swf.shapes.ShapeOriginal;
 import dev.donutquine.swf.textures.SWFTexture;
-import team.nulls.ntengine.assets.KhronosTexture;
 
 public class SupercellSWFAssetFile extends TextureAssetFile<SupercellSWF> implements NavigableAsset<Integer, DisplayObject>, SavableAsset {
     private final Map<Integer, DisplayObject> clonedObjects = new HashMap<>();
