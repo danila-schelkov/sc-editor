@@ -50,10 +50,6 @@ public class Main {
             System.setProperty("apple.awt.application.appearance", "system");
         }
 
-        UIManager.put("TabbedPane.closeArc", 999);
-        UIManager.put("TabbedPane.closeCrossFilledSize", 5.5f);
-        UIManager.put("TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon());
-
         SystemFileChooser.setStateStore(new SystemFileChooser.StateStore() {
             private static final String KEY_PREFIX = "fileChooser.";
 
