@@ -5,6 +5,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 import java.util.prefs.Preferences;
+import javax.swing.Icon;
+import dev.donutquine.editor.gui.theme.ThemeMode;
 
 public class EditorPreferences {
     // TODO: load from settings
@@ -13,6 +15,9 @@ public class EditorPreferences {
     private static final Preferences PREFERENCES = Preferences.userRoot().node("sc-editor");
     private static final String SHOULD_DISPLAY_POLYGONS = "shouldDisplayPolygons";
     private static final String PIXEL_SIZE = "pixelSize";
+
+    private static final String THEME_MODE = "theme-mode";
+    private static final ThemeMode THEME_MODE_DEFAULT = ThemeMode.LIGHT;
 
     private static final String PRESERVE_STAGE_CENTER_KEY = "preserve-stage-center";
     private static final boolean PRESERVE_STAGE_CENTER_BY_DEFAULT = true;
@@ -77,5 +82,15 @@ public class EditorPreferences {
 
     public void setShouldPreserveStageCenter(boolean state) {
         PREFERENCES.putBoolean(PRESERVE_STAGE_CENTER_KEY, state);
+    }
+
+    public ThemeMode getTheme() {
+        // TODO: System theme
+        String theme = PREFERENCES.get(THEME_MODE, THEME_MODE_DEFAULT.name());
+        return ThemeMode.valueOf(theme);
+    }
+
+    public void setTheme(ThemeMode theme) {
+        PREFERENCES.put(THEME_MODE, theme.name());
     }
 }

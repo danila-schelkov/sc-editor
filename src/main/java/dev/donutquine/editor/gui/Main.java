@@ -16,7 +16,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
 import com.formdev.flatlaf.util.SystemFileChooser;
 import dev.donutquine.editor.SystemInfo;
@@ -25,6 +24,8 @@ import dev.donutquine.editor.gui.layout.dialogs.AboutDialog;
 import dev.donutquine.editor.gui.layout.dialogs.ExceptionDialog;
 import dev.donutquine.editor.gui.layout.windows.EditorWindow;
 import dev.donutquine.editor.gui.settings.EditorPreferences;
+import dev.donutquine.editor.gui.theme.ThemeManager;
+import dev.donutquine.editor.gui.theme.ThemeMode;
 
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
@@ -49,8 +50,6 @@ public class Main {
             System.setProperty("apple.awt.application.appearance", "system");
         }
 
-        FlatLightLaf.setup();
-        
         UIManager.put("TabbedPane.closeArc", 999);
         UIManager.put("TabbedPane.closeCrossFilledSize", 5.5f);
         UIManager.put("TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon());
@@ -74,18 +73,21 @@ public class Main {
 
         ExceptionDialog.registerUncaughtExceptionHandler();
 
-        SwingUtilities.invokeLater(() -> initializeEditor(args));
-    }
-
-    private static void initializeEditor(String[] args) {
-        EditorPreferences settings;
+        EditorPreferences preferences;
         try {
-            settings = EditorPreferences.load(Path.of(".", "editor.properties"));
+            preferences = EditorPreferences.load(Path.of(".", "editor.properties"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        Editor editor = new Editor(settings);
+        Editor editor = new Editor(preferences);
+ 
+        SwingUtilities.invokeLater(() -> initializeEditorWindow(editor, args));
+    }
+
+    private static void initializeEditorWindow(Editor editor, String[] args) {
+        ThemeManager.setTheme(editor.getPreferences().getTheme() == ThemeMode.DARK);
+
         EditorWindow window = new EditorWindow(editor);
         window.initialize();
         window.show();

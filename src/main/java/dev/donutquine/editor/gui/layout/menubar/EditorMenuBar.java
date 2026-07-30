@@ -7,6 +7,7 @@ import dev.donutquine.editor.gui.layout.menubar.menus.FileMenu;
 import dev.donutquine.editor.gui.layout.menubar.menus.HelpMenu;
 import dev.donutquine.editor.gui.layout.menubar.menus.OptionsMenu;
 import dev.donutquine.editor.gui.layout.menubar.menus.ViewMenu;
+import dev.donutquine.editor.gui.layout.menubar.menus.AppearanceMenu;
 import dev.donutquine.editor.gui.layout.windows.EditorWindow;
 
 public class EditorMenuBar extends JMenuBar {
@@ -15,6 +16,7 @@ public class EditorMenuBar extends JMenuBar {
     public final ViewMenu viewMenu;
     public final OptionsMenu optionsMenu;
     public final HelpMenu helpMenu;
+	public final AppearanceMenu appearanceMenu;
 
     public EditorMenuBar(EditorWindow window) {
         this.fileMenu = new FileMenu(window);
@@ -22,12 +24,14 @@ public class EditorMenuBar extends JMenuBar {
         this.viewMenu = new ViewMenu(window);
         this.optionsMenu = new OptionsMenu(window);
         this.helpMenu = new HelpMenu(window.getFrame());
+        this.appearanceMenu = new AppearanceMenu(window);
 
         this.add(this.fileMenu);
         this.add(this.editMenu);
         this.add(this.viewMenu);
         this.add(this.optionsMenu);
         this.add(this.helpMenu);
+        this.add(this.appearanceMenu);
 
         if (SystemInfo.IS_MAC) {
             // TODO: hide future preferences open dialog button and replace it with

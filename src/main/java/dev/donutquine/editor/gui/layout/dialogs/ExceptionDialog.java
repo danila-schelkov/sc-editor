@@ -1,14 +1,14 @@
 package dev.donutquine.editor.gui.layout.dialogs;
 
-import com.formdev.flatlaf.FlatLightLaf;
-import dev.donutquine.editor.gui.Editor;
-import dev.donutquine.editor.Version;
-import dev.donutquine.editor.gui.layout.components.LinkLabel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.KeyEvent;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -18,6 +18,20 @@ import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import dev.donutquine.editor.Version;
+import dev.donutquine.editor.gui.Editor;
+import dev.donutquine.editor.gui.layout.components.LinkLabel;
 
 public class ExceptionDialog extends JDialog {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExceptionDialog.class);
@@ -145,22 +159,5 @@ public class ExceptionDialog extends JDialog {
         }
 
         return String.format("%s/issues/new?labels=bug&title=%s&body=%s", Editor.REPO_URL, issueTitle, issueBody);
-    }
-
-    private static void throwTestException() {
-        throw new RuntimeException("Inner exception message");
-    }
-
-    private static void showTestExceptionDialog() {
-        try {
-            throwTestException();
-        } catch (Throwable e) {
-            showExceptionDialog(Thread.currentThread(), e);
-        }
-    }
-
-    public static void main(String[] args) {
-        FlatLightLaf.setup();
-        showTestExceptionDialog();
     }
 }

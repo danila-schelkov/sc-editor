@@ -1,15 +1,14 @@
 package dev.donutquine.editor.gui.layout.dialogs;
 
+import java.awt.Component;
+import java.time.Year;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import com.formdev.flatlaf.FlatClientProperties;
-import com.formdev.flatlaf.FlatLightLaf;
-import dev.donutquine.editor.gui.Editor;
 import dev.donutquine.editor.Version;
+import dev.donutquine.editor.gui.Editor;
 import dev.donutquine.editor.gui.layout.components.LinkLabel;
 import dev.donutquine.editor.gui.layout.windows.EditorWindow;
-
-import javax.swing.*;
-import java.awt.*;
-import java.time.Year;
 
 public class AboutDialog {
     public static void showAboutDialog(Component parent) {
@@ -26,10 +25,5 @@ public class AboutDialog {
             "About",
             JOptionPane.PLAIN_MESSAGE
         );
-    }
-
-    public static void main(String[] args) {
-        FlatLightLaf.setup();
-        showAboutDialog(null);
     }
 }
