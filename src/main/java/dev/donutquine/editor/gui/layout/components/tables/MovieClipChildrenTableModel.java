@@ -67,7 +67,7 @@ public class MovieClipChildrenTableModel extends AbstractTableModel {
             case COLUMN_INDEX -> false;
             case COLUMN_ID_INDEX -> false;
             case COLUMN_TYPE_INDEX -> false;
-            case COLUMN_NAME_INDEX -> false;
+            case COLUMN_NAME_INDEX -> true;
             case COLUMN_BLEND_MODE_INDEX -> true;
             case COLUMN_VISIBILITY_INDEX -> true;
             default -> throw new IllegalArgumentException("Unknown column: " + column);
@@ -96,6 +96,24 @@ public class MovieClipChildrenTableModel extends AbstractTableModel {
 
         try {
             switch (column) {
+                case COLUMN_NAME_INDEX -> {
+                    String name = ((String) value).trim();
+                    if (name.isBlank()) {
+                        name = null;
+                    }
+
+                    int indexOfSameName = this.timelineChildrenNames.indexOf(name);
+                    if (name != null && indexOfSameName != -1) {
+                        // NOTE: do not update cell as the name is already the same value
+                        if (indexOfSameName == row) {
+                            return;
+                        }
+
+                        throw new Exception("A movie clip child name must be unique");
+                    }
+
+                    this.timelineChildrenNames.set(row, name);
+                }
                 // NOTE: is not used because no enum cell editor is present
                 case COLUMN_BLEND_MODE_INDEX -> {
                     BlendMode blendMode = (BlendMode) value;
@@ -139,10 +157,12 @@ public class MovieClipChildrenTableModel extends AbstractTableModel {
         
         for (int childIndex : childIndices) {
             DisplayObject displayObject = this.timelineChildren.get(childIndex);
-            String childName = !this.timelineChildrenNames.isEmpty() ? this.timelineChildrenNames.get(childIndex) : null;
+            // String childName = !this.timelineChildrenNames.isEmpty() ? this.timelineChildrenNames.get(childIndex) : null;
 
             duplicates.add(DisplayObjectFactory.clone(displayObject));
-            duplicatesNames.add(childName);
+            // NOTE: name must be unique, so we set duplicate name to null. 
+            //  Or maybe we should add some index to the original child name and set it?
+            duplicatesNames.add(null);
         }
 
         int firstNewRowIndex = this.timelineChildren.size();
