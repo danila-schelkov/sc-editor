@@ -16,14 +16,16 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.icons.FlatTabbedPaneCloseIcon;
 import com.formdev.flatlaf.util.SystemFileChooser;
+import dev.donutquine.editor.SystemInfo;
 import dev.donutquine.editor.gui.layout.GestureUtilities;
 import dev.donutquine.editor.gui.layout.dialogs.AboutDialog;
 import dev.donutquine.editor.gui.layout.dialogs.ExceptionDialog;
 import dev.donutquine.editor.gui.layout.windows.EditorWindow;
 import dev.donutquine.editor.gui.settings.EditorPreferences;
+import dev.donutquine.editor.gui.theme.ThemeManager;
+import dev.donutquine.editor.gui.theme.ThemeMode;
 
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
@@ -40,10 +42,14 @@ public class Main {
             LOGGER.error("failed to get program arguments", t);
         }
 
-        System.setProperty("apple.laf.useScreenMenuBar", "true");
+        if (SystemInfo.IS_MAC) {
+            System.setProperty("apple.laf.useScreenMenuBar", "true");
+            System.setProperty("apple.awt.application.name", EditorWindow.TITLE);
 
-        FlatLightLaf.setup();
-        
+            // https://www.formdev.com/flatlaf/macos/#application_appearance
+            System.setProperty("apple.awt.application.appearance", "system");
+        }
+
         UIManager.put("TabbedPane.closeArc", 999);
         UIManager.put("TabbedPane.closeCrossFilledSize", 5.5f);
         UIManager.put("TabbedPane.closeIcon", new FlatTabbedPaneCloseIcon());
@@ -67,18 +73,21 @@ public class Main {
 
         ExceptionDialog.registerUncaughtExceptionHandler();
 
-        SwingUtilities.invokeLater(() -> initializeEditor(args));
-    }
-
-    private static void initializeEditor(String[] args) {
-        EditorPreferences settings;
+        EditorPreferences preferences;
         try {
-            settings = EditorPreferences.load(Path.of(".", "editor.properties"));
+            preferences = EditorPreferences.load(Path.of(".", "editor.properties"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        Editor editor = new Editor(settings);
+        Editor editor = new Editor(preferences);
+ 
+        SwingUtilities.invokeLater(() -> initializeEditorWindow(editor, args));
+    }
+
+    private static void initializeEditorWindow(Editor editor, String[] args) {
+        ThemeManager.setTheme(editor.getPreferences().getTheme() == ThemeMode.DARK);
+
         EditorWindow window = new EditorWindow(editor);
         window.initialize();
         window.show();
@@ -91,37 +100,67 @@ public class Main {
         }
 
         registerAboutHandler(window);
+        registerQuitHandler(window);
         registerOpenFileHandler(window);
     }
 
     private static void registerOpenFileHandler(EditorWindow window) {
-        try {
-            if (Desktop.isDesktopSupported()) {
-                Desktop desktop = Desktop.getDesktop();
-                if (desktop.isSupported(Desktop.Action.APP_OPEN_FILE)) {
-                    desktop.setOpenFileHandler(e -> {
-                        List<Path> paths = e.getFiles().stream().map(File::toPath).toList();
-                        if (paths.size() > 1) {
-                            LOGGER.warn("Loading multiple files is not supported!");
-                        }
+        if (!Desktop.isDesktopSupported()) return;
 
-                        window.openFile(paths.get(0));
-                    });
-                }
+        try {
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.APP_OPEN_FILE)) {
+                desktop.setOpenFileHandler(e -> {
+                    List<Path> paths = e.getFiles().stream().map(File::toPath).toList();
+                    if (paths.size() > 1) {
+                        LOGGER.warn("Loading multiple files is not supported!");
+                    }
+
+                    window.openFile(paths.get(0));
+                });
             }
         } catch (Throwable e) {
             LOGGER.error("Failed to register open file handler", e);
         }
     }
 
-    private static void registerAboutHandler(EditorWindow window) {
+    private static void registerQuitHandler(EditorWindow window) {
+        if (!Desktop.isDesktopSupported()) return;
+
         try {
-            if (Desktop.isDesktopSupported()) {
-                Desktop desktop = Desktop.getDesktop();
-                if (desktop.isSupported(Desktop.Action.APP_ABOUT)) {
-                    desktop.setAboutHandler(e -> {
-                        AboutDialog.showAboutDialog(window.getFrame());
-                    });
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.APP_QUIT_HANDLER)) {
+                desktop.setQuitHandler((e, response) -> {
+                    if (window.askToQuitIfAnyUnsavedChanges()) {
+                        response.performQuit();
+                    } else {
+                        response.cancelQuit();
+                    }
+                });
+
+                if (SystemInfo.IS_MAC) {
+                    // NOTE: Disabled as quit handler is set now
+                    window.getMenubar().fileMenu.exitMenuItem.setVisible(false);
+                }
+            }
+        } catch (Throwable e) {
+            LOGGER.error("Failed to register about handler", e);
+        }
+    }
+
+    private static void registerAboutHandler(EditorWindow window) {
+        if (!Desktop.isDesktopSupported()) return;
+
+        try {
+            Desktop desktop = Desktop.getDesktop();
+            if (desktop.isSupported(Desktop.Action.APP_ABOUT)) {
+                desktop.setAboutHandler(e -> {
+                    AboutDialog.showAboutDialog(window.getFrame());
+                });
+
+                if (SystemInfo.IS_MAC) {
+                    // NOTE: Disabled as about handler is set
+                    window.getMenubar().helpMenu.aboutMenuItem.setVisible(false);
                 }
             }
         } catch (Throwable e) {

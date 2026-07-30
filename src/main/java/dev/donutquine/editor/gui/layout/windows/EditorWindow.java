@@ -14,6 +14,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.WindowConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.formdev.flatlaf.util.SystemInfo;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
@@ -69,6 +70,10 @@ public class EditorWindow extends Window {
 
     public void initialize() {
         this.frame = new JFrame(EditorWindow.TITLE);
+        if (SystemInfo.isMacFullWindowContentSupported) {
+            this.frame.getRootPane().putClientProperty( "apple.awt.transparentTitleBar", true );
+            this.frame.getRootPane().putClientProperty( "apple.awt.windowTitleVisible", false );
+        }
 
         this.menubar = new EditorMenuBar(this);
 
@@ -252,4 +257,11 @@ public class EditorWindow extends Window {
         return this.editor;
     }
 
+    /**
+     * @return {@code true} if user agreed to quit, otherwise {@code false}.
+     */
+    public boolean askToQuitIfAnyUnsavedChanges() {
+        // TODO: ask if any unsaved changes
+        return true;
+    }
 }
