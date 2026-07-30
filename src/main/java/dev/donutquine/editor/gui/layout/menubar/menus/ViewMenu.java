@@ -63,7 +63,7 @@ public class ViewMenu extends JMenu {
     private static void zoomToFit(ActionEvent actionEvent) {
         updateCamera((stage, camera) -> {
             StageSprite stageSprite = stage.getStageSprite();
-            if (stageSprite.getChildrenCount() == 0)
+            if (stageSprite.getChildCount() == 0)
                 return;
 
             Rect bounds = stage.calculateBoundsForAllFrames(stageSprite.getChild(0));

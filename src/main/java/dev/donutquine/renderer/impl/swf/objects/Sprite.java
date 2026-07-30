@@ -9,16 +9,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Sprite extends DisplayObject {
-    protected List<DisplayObject> children;
-    protected boolean isInteractive;
+    protected List<DisplayObject> children = new ArrayList<>();
+    protected boolean isInteractive = false;
     protected int frameSkippingType;
-    protected MovieClipState state;
+    protected MovieClipState state = MovieClipState.PLAYING;
+
     private Rect hitArea;
 
-    public Sprite() {
-        this.children = new ArrayList<>();
-        this.state = MovieClipState.PLAYING;
-        this.isInteractive = false;
+    public Sprite() {}
+
+    // Cloning constructor
+    public Sprite(Sprite other) {
+        super(other);
+
+        this.isInteractive = other.isInteractive;
+        this.frameSkippingType = other.frameSkippingType;
+        this.state = other.state;
+        this.hitArea = other.hitArea;
     }
 
     @Override
@@ -137,7 +144,7 @@ public abstract class Sprite extends DisplayObject {
         return -1;
     }
 
-    public int getChildrenCount() {
+    public int getChildCount() {
         return this.children.size();
     }
 

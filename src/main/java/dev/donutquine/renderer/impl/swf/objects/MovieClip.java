@@ -5,17 +5,18 @@ import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.swf.*;
 import dev.donutquine.swf.exceptions.UnableToFindObjectException;
 import dev.donutquine.swf.movieclips.*;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class MovieClip extends Sprite {
     private String exportName;
     private float frameTime;
     private int fps;
     private float msPerFrame;
-    private DisplayObject[] timelineChildren;
-    private String[] timelineChildrenNames;
+    private List<DisplayObject> timelineChildren;
+    private List<String> timelineChildrenNames;
     private List<MovieClipFrame> frames;
     private ScMatrixBank matrixBank;
     private int currentFrame;
@@ -24,6 +25,23 @@ public class MovieClip extends Sprite {
     public MovieClip() {
         this.currentFrame = -1;
         this.loopFrame = -1;
+    }
+
+    // Cloning constructor
+    public MovieClip(MovieClip other) {
+        super(other);
+
+        this.exportName = other.exportName;
+        this.frameTime = other.frameTime;
+        this.fps = other.fps;
+        this.msPerFrame = other.msPerFrame;
+        this.timelineChildren = other.timelineChildren.stream().map(DisplayObjectFactory::clone).collect(Collectors.toList());
+        this.timelineChildrenNames = new ArrayList<>(other.timelineChildrenNames);
+        this.frames = other.frames;
+        this.matrixBank = other.matrixBank;
+        this.loopFrame = other.loopFrame;
+
+        this.forceSetFrame(this.currentFrame);
     }
 
     private static final Map<Integer, BlendMode> BLEND_MODE_MAP = Map.ofEntries(
@@ -54,8 +72,8 @@ public class MovieClip extends Sprite {
 
         List<MovieClipChild> clipChildren = original.getChildren();
         DisplayObjectOriginal[] timelineChildrenOriginal = original.getTimelineChildren();
-        DisplayObject[] timelineChildren = new DisplayObject[clipChildren.size()];
-        for (int i = 0; i < timelineChildren.length; i++) {
+        List<DisplayObject> timelineChildren = new ArrayList<>(clipChildren.size());
+        for (int i = 0; i < clipChildren.size(); i++) {
             DisplayObjectOriginal child = timelineChildrenOriginal[i];
             DisplayObject displayObject = DisplayObjectFactory.createFromOriginal(child, swf, original.getScalingGrid(), textureAsset);
             int blend = clipChildren.get(i).blend();
@@ -63,11 +81,11 @@ public class MovieClip extends Sprite {
             displayObject.setBlendMode(BLEND_MODE_MAP.get(blend & 63));
             displayObject.setInteractiveRecursive(true);
 
-            timelineChildren[i] = displayObject;
+            timelineChildren.add(i, displayObject);
         }
 
         movieClip.timelineChildren = timelineChildren;
-        movieClip.timelineChildrenNames = clipChildren.stream().map(MovieClipChild::name).toArray(String[]::new);
+        movieClip.timelineChildrenNames = clipChildren.stream().map(MovieClipChild::name).collect(Collectors.toList());
         movieClip.frames = original.getFrames();
         movieClip.setFps(original.getFps());
         movieClip.exportName = original.getExportName();
@@ -161,7 +179,7 @@ public class MovieClip extends Sprite {
         int childIndex = 0;
 
         for (MovieClipFrameElement element : frame.getElements()) {
-            DisplayObject child = this.timelineChildren[element.childIndex()];
+            DisplayObject child = this.timelineChildren.get(element.childIndex());
             if (child == null) continue;
 
             int matrixIndex = element.matrixIndex();
@@ -185,9 +203,9 @@ public class MovieClip extends Sprite {
             this.addChildAt(child, childIndex++);
         }
 
-        int childrenCount = this.getChildrenCount();
-        while (childrenCount > childIndex) {
-            this.removeChildAt(--childrenCount);
+        int childCount = this.getChildCount();
+        while (childCount > childIndex) {
+            this.removeChildAt(--childCount);
         }
     }
 
@@ -293,16 +311,16 @@ public class MovieClip extends Sprite {
         return exportName;
     }
 
-    public DisplayObject[] getTimelineChildren() {
+    public List<DisplayObject> getTimelineChildren() {
         return timelineChildren;
     }
 
-    public String[] getTimelineChildrenNames() {
+    public List<String> getTimelineChildrenNames() {
         return timelineChildrenNames;
     }
 
     public int getTimelineChildCount() {
-        return timelineChildren.length;
+        return timelineChildren.size();
     }
 
     public int getFps() {

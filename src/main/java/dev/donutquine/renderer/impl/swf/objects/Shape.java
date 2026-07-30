@@ -20,6 +20,17 @@ public class Shape extends DisplayObject {
     // may be changed to BitSet
     private final Set<Integer> disabledCommands = new HashSet<>();
 
+    protected Shape() { }
+
+    public Shape(Shape other) {
+        super(other);
+
+        this.commands = other.commands;
+        this.textureAsset = other.textureAsset;
+
+        this.disabledCommands.addAll(other.disabledCommands);
+    }
+
     public static Shape createShape(ShapeOriginal original, TextureAsset textureAsset) {
         Shape shape = new Shape();
 

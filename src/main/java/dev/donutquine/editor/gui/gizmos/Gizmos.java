@@ -126,8 +126,8 @@ public class Gizmos implements UndoRedoManager {
             if (rootObject.isSprite()) {
                 Sprite sprite = (Sprite) rootObject;
 
-                int childrenCount = sprite.getChildrenCount();
-                for (int i = childrenCount - 1; i >= 0; i--) {
+                int childCount = sprite.getChildCount();
+                for (int i = childCount - 1; i >= 0; i--) {
                     DisplayObject child = sprite.getChild(i);
 
                     LOGGER.debug("{}", child);
@@ -232,7 +232,7 @@ public class Gizmos implements UndoRedoManager {
         if (rootObject.isSprite()) {
             Sprite sprite = (Sprite) rootObject;
 
-            int childrenCount = sprite.getChildrenCount();
+            int childrenCount = sprite.getChildCount();
             for (int i = childrenCount - 1; i >= 0; i--) {
                 DisplayObject child = sprite.getChild(i);
                 if (child.getStage() == null) continue;
@@ -254,7 +254,7 @@ public class Gizmos implements UndoRedoManager {
 
         // TODO: move somewhere else
         float thickness = 4;
-        for (int i = 0; i < this.stageSprite.getChildrenCount(); i++) {
+        for (int i = 0; i < this.stageSprite.getChildCount(); i++) {
             DisplayObject child = this.stageSprite.getChild(i);
             if (child instanceof SpriteSheet spriteSheet) {
                 List<ShapeDrawBitmapCommand> hoveroverCommands = SpriteSheetHelper.getHoveroverCommands(spriteSheet, this.mouseX, this.mouseY);

@@ -13,8 +13,16 @@ import dev.donutquine.utilities.RenderConfig;
 public class Shape9Slice extends Shape {
     private final Rect scalingGrid;
 
-    public Shape9Slice(ReadonlyRect scalingGrid) {
+    protected Shape9Slice(ReadonlyRect scalingGrid) {
+        super();
+
         this.scalingGrid = new Rect(scalingGrid);
+    }
+
+    public Shape9Slice(Shape9Slice other) {
+        super(other);
+
+        this.scalingGrid = new Rect(other.scalingGrid);
     }
 
     public static Shape9Slice createShape(ShapeOriginal original, TextureAsset textureAsset, ReadonlyRect scalingGrid) {

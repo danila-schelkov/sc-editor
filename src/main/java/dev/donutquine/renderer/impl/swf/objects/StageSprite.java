@@ -6,6 +6,8 @@ public class StageSprite extends Sprite {
     private final Stage stage;
 
     public StageSprite(Stage stage) {
+        super();
+
         this.stage = stage;
     }
 

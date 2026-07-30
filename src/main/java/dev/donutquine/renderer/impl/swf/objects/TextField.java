@@ -18,6 +18,16 @@ public class TextField extends DisplayObject {
     private float cursorBlinkTime;
     private Rect bounds;
 
+    protected TextField() {}
+
+    public TextField(TextField other) {
+        super(other);
+
+        this.isInteractive = other.isInteractive;
+        this.cursorBlinkTime = other.cursorBlinkTime;
+        this.bounds = other.bounds;
+    }
+
     public static DisplayObject createTextField(TextFieldOriginal original) {
         TextField textField = new TextField();
         textField.id = original.getId();

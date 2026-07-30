@@ -207,10 +207,35 @@ public class MovieClipPropertyPanel extends JPanel {
 
     private static Table createTimelineChildrenTable(MovieClipChildrenTableModel tableModel, SupercellSWFLayoutController swfLayoutController) {
         Table table = new Table(tableModel);
-        table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         table.addMouseListener(new ChildrenListMouseListener(table, swfLayoutController));
 
-        new ChildrenTableContextMenu(table);
+        AbstractAction duplicateAction = new AbstractAction("Duplicate") {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int[] selectedRows = table.getSelectedRows();
+                if (selectedRows.length < 1) return;
+
+                try {
+                    tableModel.duplicate(selectedRows);
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn(e.getLocalizedMessage());
+                }
+
+                // NOTE: Should we actually reset selection?
+                table.clearSelection();
+            }
+        };
+
+        InputMap inputMap = table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        ActionMap actionMap = table.getActionMap();
+
+        KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyboardUtils.ctrlButton());
+        duplicateAction.putValue(Action.ACCELERATOR_KEY, keyStroke);
+        actionMap.put(DUPLICATE_ACTION_KEY, duplicateAction);
+        inputMap.put(keyStroke, DUPLICATE_ACTION_KEY);
+
+        new ChildrenTableContextMenu(table, duplicateAction);
 
         return table;
     }

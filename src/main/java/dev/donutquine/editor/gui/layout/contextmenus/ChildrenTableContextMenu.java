@@ -1,6 +1,7 @@
 package dev.donutquine.editor.gui.layout.contextmenus;
 
 import java.util.function.Function;
+import javax.swing.Action;
 import javax.swing.JTable;
 import dev.donutquine.editor.gui.layout.components.tables.JTablePopupMenuListener;
 import dev.donutquine.editor.gui.layout.components.tables.MovieClipChildrenTableModel;
@@ -10,7 +11,7 @@ import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 public class ChildrenTableContextMenu extends ContextMenu {
     private final JTable table;
 
-    public ChildrenTableContextMenu(JTable table) {
+    public ChildrenTableContextMenu(JTable table, Action duplicateAction) {
         super(table, null);
 
         this.table = table;
@@ -26,6 +27,8 @@ public class ChildrenTableContextMenu extends ContextMenu {
         this.add("Toggle visibility", event -> this.changeVisibility(child -> !child.isVisible()));
         this.add("Enable", event -> this.changeVisibility(child -> true));
         this.add("Disable", event -> this.changeVisibility(child -> false));
+        this.addSeparator();
+        this.add(duplicateAction);
 
         this.popupMenu.addPopupMenuListener(new JTablePopupMenuListener(this.popupMenu, table, rowIndex -> setMainComponentsEnabled(rowIndex != -1)));
     }

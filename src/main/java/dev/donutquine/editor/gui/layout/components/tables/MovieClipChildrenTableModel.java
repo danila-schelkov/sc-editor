@@ -1,11 +1,14 @@
 package dev.donutquine.editor.gui.layout.components.tables;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 import javax.swing.table.AbstractTableModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
+import dev.donutquine.renderer.impl.swf.objects.DisplayObjectFactory;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 
 public class MovieClipChildrenTableModel extends AbstractTableModel {
@@ -21,15 +24,15 @@ public class MovieClipChildrenTableModel extends AbstractTableModel {
     public static final int COLUMN_BLEND_MODE_INDEX = 4;
     public static final int COLUMN_VISIBILITY_INDEX = 5;
 
-	private final DisplayObject[] timelineChildren;
-	private final String[] timelineChildrenNames;
+	private final List<DisplayObject> timelineChildren;
+	private final List<String> timelineChildrenNames;
 
     public MovieClipChildrenTableModel(MovieClip movieClip) {
         super();
 
-        DisplayObject[] timelineChildren = movieClip.getTimelineChildren();
-        String[] timelineChildrenNames = movieClip.getTimelineChildrenNames();
-        assert timelineChildrenNames == null || timelineChildrenNames.length == 0 || timelineChildren.length == timelineChildrenNames.length;
+        List<DisplayObject> timelineChildren = movieClip.getTimelineChildren();
+        List<String> timelineChildrenNames = movieClip.getTimelineChildrenNames();
+        assert timelineChildren.size() == timelineChildrenNames.size();
 
         this.timelineChildren = timelineChildren;
         this.timelineChildrenNames = timelineChildrenNames;
@@ -37,7 +40,7 @@ public class MovieClipChildrenTableModel extends AbstractTableModel {
 
     @Override
     public int getRowCount() {
-        return this.timelineChildren.length;
+        return this.timelineChildren.size();
     }
 
     @Override
@@ -73,8 +76,8 @@ public class MovieClipChildrenTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int row, int column) {
-        DisplayObject timelineChild = this.timelineChildren[row];
-        String childName = this.timelineChildrenNames != null && this.timelineChildrenNames.length > 0 ? this.timelineChildrenNames[row] : null;
+        DisplayObject timelineChild = this.timelineChildren.get(row);
+        String childName = !this.timelineChildrenNames.isEmpty() ? this.timelineChildrenNames.get(row) : null;
 
         return switch (column) {
             case COLUMN_INDEX -> row;
@@ -89,7 +92,7 @@ public class MovieClipChildrenTableModel extends AbstractTableModel {
 
     @Override
     public void setValueAt(Object value, int row, int column) {
-        DisplayObject timelineChild = this.timelineChildren[row];
+        DisplayObject timelineChild = this.timelineChildren.get(row);
 
         try {
             switch (column) {
@@ -115,18 +118,38 @@ public class MovieClipChildrenTableModel extends AbstractTableModel {
     }
 
     public void changeVisibility(int childIndex, Function<DisplayObject, Boolean> visibilityFunction) {
-        DisplayObject displayObject = this.timelineChildren[childIndex];
+        DisplayObject displayObject = this.timelineChildren.get(childIndex);
         displayObject.setVisibleRecursive(visibilityFunction.apply(displayObject));
         this.fireTableCellUpdated(childIndex, COLUMN_VISIBILITY_INDEX);
     }
 
     public void setBlendMode(int childIndex, BlendMode blendMode) {
-        DisplayObject displayObject = this.timelineChildren[childIndex];
+        DisplayObject displayObject = this.timelineChildren.get(childIndex);
         displayObject.setBlendMode(blendMode);
         this.fireTableCellUpdated(childIndex, COLUMN_BLEND_MODE_INDEX);
     }
 
     private void updateChildren() {
         // TODO: sync modification with MovieClip original
+    }
+
+    public void duplicate(int[] childIndices) {
+        List<DisplayObject> duplicates = new ArrayList<>(childIndices.length);
+        List<String> duplicatesNames = new ArrayList<>(childIndices.length);
+        
+        for (int childIndex : childIndices) {
+            DisplayObject displayObject = this.timelineChildren.get(childIndex);
+            String childName = !this.timelineChildrenNames.isEmpty() ? this.timelineChildrenNames.get(childIndex) : null;
+
+            duplicates.add(DisplayObjectFactory.clone(displayObject));
+            duplicatesNames.add(childName);
+        }
+
+        int firstNewRowIndex = this.timelineChildren.size();
+        this.timelineChildren.addAll(duplicates);
+        this.timelineChildrenNames.addAll(duplicatesNames);
+        this.fireTableRowsInserted(firstNewRowIndex, firstNewRowIndex + duplicates.size());
+
+        this.updateChildren();
     }
 }
