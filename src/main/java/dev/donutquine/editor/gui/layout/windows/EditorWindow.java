@@ -252,4 +252,11 @@ public class EditorWindow extends Window {
         return this.editor;
     }
 
+    /**
+     * @return {@code true} if user agreed to quit, otherwise {@code false}.
+     */
+    public boolean askToQuitIfAnyUnsavedChanges() {
+        // TODO: ask if any unsaved changes
+        return true;
+    }
 }

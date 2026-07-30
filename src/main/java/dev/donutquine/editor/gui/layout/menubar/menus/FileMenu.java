@@ -24,8 +24,9 @@ import dev.donutquine.editor.gui.layout.windows.EditorWindow;
 public class FileMenu extends JMenu {
     private final EditorWindow window;
 
-    private final JMenuItem saveButton;
-    private final JMenuItem saveAsButton;
+    public final JMenuItem saveMenuItem;
+    public final JMenuItem saveAsMenuItem;
+    public final JMenuItem exitMenuItem;
 
     public FileMenu(EditorWindow window) {
         super("File");
@@ -37,21 +38,21 @@ public class FileMenu extends JMenu {
         JMenuItem open = new JMenuItem("Open", KeyEvent.VK_O);
         open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, KeyboardUtils.ctrlButton()));
 
-        this.saveButton = new JMenuItem("Save", KeyEvent.VK_O);
-        this.saveButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyboardUtils.ctrlButton()));
+        this.saveMenuItem = new JMenuItem("Save", KeyEvent.VK_O);
+        this.saveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyboardUtils.ctrlButton()));
 
         JMenuItem openScreenshotsFolderButton = new JMenuItem("Open screenshots folder");
 
-        this.saveAsButton = new JMenuItem("Save as...", KeyEvent.VK_O);
-        this.saveAsButton.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyboardUtils.ctrlButton() | InputEvent.SHIFT_DOWN_MASK));
+        this.saveAsMenuItem = new JMenuItem("Save as...", KeyEvent.VK_O);
+        this.saveAsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyboardUtils.ctrlButton() | InputEvent.SHIFT_DOWN_MASK));
         JMenuItem close = new JMenuItem("Close", KeyEvent.VK_C);
         close.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyboardUtils.ctrlButton()));
         JMenuItem closeAll = new JMenuItem("Close All", KeyEvent.VK_C);
         closeAll.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, KeyboardUtils.ctrlButton() | InputEvent.SHIFT_DOWN_MASK));
-        JMenuItem exit = new JMenuItem("Exit");
+        this.exitMenuItem = new JMenuItem("Exit");
 
         open.addActionListener(this::open);
-        this.saveButton.addActionListener(this::save);
+        this.saveMenuItem.addActionListener(this::save);
         openScreenshotsFolderButton.addActionListener(e -> {
             try {
                 Path screenshots = Path.of("screenshots").toAbsolutePath();
@@ -64,11 +65,11 @@ public class FileMenu extends JMenu {
         });
         close.addActionListener(this::close);
         closeAll.addActionListener(this::closeAll);
-        exit.addActionListener(FileMenu::exit);
+        this.exitMenuItem.addActionListener(FileMenu::exit);
 
         this.add(open);
-        this.add(this.saveButton);
-        this.add(this.saveAsButton);
+        this.add(this.saveMenuItem);
+        this.add(this.saveAsMenuItem);
         this.add(close);
         this.add(closeAll);
 
@@ -76,7 +77,7 @@ public class FileMenu extends JMenu {
         this.add(openScreenshotsFolderButton);
 
         this.addSeparator();
-        this.add(exit);
+        this.add(this.exitMenuItem);
 
         this.checkCanSave();
     }
@@ -104,8 +105,8 @@ public class FileMenu extends JMenu {
     public void checkCanSave() {
         boolean canSave = window.getEditor().getAssetFileManager().getActiveFile() instanceof SavableAsset;
 
-        this.saveButton.setEnabled(canSave);
-        this.saveAsButton.setEnabled(canSave);
+        this.saveMenuItem.setEnabled(canSave);
+        this.saveAsMenuItem.setEnabled(canSave);
     }
 
     private void open(ActionEvent e) {

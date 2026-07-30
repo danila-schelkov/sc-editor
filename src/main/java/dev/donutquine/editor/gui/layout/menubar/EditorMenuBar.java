@@ -1,6 +1,7 @@
 package dev.donutquine.editor.gui.layout.menubar;
 
 import javax.swing.JMenuBar;
+import dev.donutquine.editor.SystemInfo;
 import dev.donutquine.editor.gui.layout.menubar.menus.EditMenu;
 import dev.donutquine.editor.gui.layout.menubar.menus.FileMenu;
 import dev.donutquine.editor.gui.layout.menubar.menus.HelpMenu;
@@ -9,11 +10,11 @@ import dev.donutquine.editor.gui.layout.menubar.menus.ViewMenu;
 import dev.donutquine.editor.gui.layout.windows.EditorWindow;
 
 public class EditorMenuBar extends JMenuBar {
-    private final FileMenu fileMenu;
-    private final EditMenu editMenu;
-    private final ViewMenu viewMenu;
-    private final OptionsMenu optionsMenu;
-    private final HelpMenu helpMenu;
+    public final FileMenu fileMenu;
+    public final EditMenu editMenu;
+    public final ViewMenu viewMenu;
+    public final OptionsMenu optionsMenu;
+    public final HelpMenu helpMenu;
 
     public EditorMenuBar(EditorWindow window) {
         this.fileMenu = new FileMenu(window);
@@ -27,6 +28,16 @@ public class EditorMenuBar extends JMenuBar {
         this.add(this.viewMenu);
         this.add(this.optionsMenu);
         this.add(this.helpMenu);
+
+        if (SystemInfo.IS_MAC) {
+            // TODO: hide future preferences open dialog button and replace it with
+            // if( desktop.isSupported( Desktop.Action.APP_PREFERENCES ) ) {
+            //     desktop.setPreferencesHandler( e -> {
+            //         // show preferences dialog
+            //     } );
+            // }
+            //
+        }
     }
 
     public FileMenu getFileMenu() {
