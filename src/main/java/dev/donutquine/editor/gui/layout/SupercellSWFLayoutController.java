@@ -250,12 +250,6 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
         return child.getBlendMode();
     }
 
-    public void setBlendMode(int childIndex, BlendMode blendMode) {
-        MovieClip movieClip = getMovieClip();
-        DisplayObject child = movieClip.getTimelineChildren()[childIndex];
-        child.setBlendMode(blendMode);
-    }
-
     public boolean[] changeVisibility(int[] childIndices, Function<DisplayObject, Boolean> visibilityFunction) {
         boolean[] results = new boolean[childIndices.length];
 
