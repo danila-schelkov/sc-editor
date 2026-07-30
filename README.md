@@ -1,6 +1,10 @@
 # SC Editor
 
-![Demo](https://github.com/user-attachments/assets/3ebf4ee0-62b4-4aa9-9ad4-e66a56478712)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/fbea16e6-16a2-4fd8-9570-af474b178567">
+  <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/749f2bb9-8c93-49af-bbef-2f2de112393b">
+  <img alt="Demo" src="https://github.com/user-attachments/assets/749f2bb9-8c93-49af-bbef-2f2de112393b">
+</picture>
 
 [Technical Requirements (ru)](./docs/technical_requirements.md)
 [Video Demo](https://github.com/user-attachments/assets/ed6b563c-e0f6-42d0-86a7-e12b9045cf54)
