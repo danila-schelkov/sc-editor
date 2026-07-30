@@ -25,6 +25,21 @@ public abstract class DisplayObject {
         this.matrix = new Matrix2x3();
         this.renderConfigBits = 0;
         this.isVisible = true;
+
+        this.parent = null;
+        this.indexInParent = -1;
+    }
+
+    // Cloning constructor
+    public DisplayObject(DisplayObject other) {
+        this();
+
+        this.id = other.id;
+
+        this.isVisible = other.isVisible;
+        this.colorTransform = other.colorTransform;
+        this.matrix = other.matrix;
+        this.renderConfigBits = other.renderConfigBits;
     }
 
     public abstract boolean render(Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, float deltaTime);

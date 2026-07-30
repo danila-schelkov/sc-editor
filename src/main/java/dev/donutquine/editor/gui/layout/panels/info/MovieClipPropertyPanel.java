@@ -12,8 +12,8 @@ import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DropMode;
-import javax.swing.JCheckBox;
 import javax.swing.InputMap;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import dev.donutquine.editor.gui.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.gui.layout.components.listeners.ChildrenListMouseListener;
 import dev.donutquine.editor.gui.layout.components.listeners.FrameSelectionListener;
+import dev.donutquine.editor.gui.layout.components.tables.MovieClipChildrenTableModel;
 import dev.donutquine.editor.gui.layout.components.tables.MovieClipFrameElementsTableModel;
 import dev.donutquine.editor.gui.layout.components.tables.MovieClipFramesTableModel;
 import dev.donutquine.editor.gui.layout.components.tables.RowReorderTransferHandler;
@@ -34,8 +35,6 @@ import dev.donutquine.editor.gui.layout.contextmenus.ChildrenTableContextMenu;
 import dev.donutquine.editor.gui.layout.contextmenus.FrameElementTableContextMenu;
 import dev.donutquine.editor.gui.layout.contextmenus.FrameTableContextMenu;
 import dev.donutquine.editor.gui.layout.shortcut.KeyboardUtils;
-import dev.donutquine.editor.renderer.BlendMode;
-import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 import dev.donutquine.renderer.impl.swf.objects.TextField;
 import dev.donutquine.swf.ScMatrixBank;
@@ -44,7 +43,7 @@ import dev.donutquine.swf.movieclips.MovieClipFrame;
 public class MovieClipPropertyPanel extends JPanel {
     private static final Logger LOGGER = LoggerFactory.getLogger(MovieClipPropertyPanel.class);
 
-    private static final String DUPLICATE_FRAMES = "duplicateFrames";
+    private static final String DUPLICATE_ACTION_KEY = "duplicate";
     private static final String DELETE_ACTION_KEY = "delete";
 
     private final JTable timelineChildrenTable;
@@ -55,11 +54,8 @@ public class MovieClipPropertyPanel extends JPanel {
     public MovieClipPropertyPanel(SupercellSWFLayoutController swfLayoutController, MovieClip movieClip) {
         this.setLayout(new GridLayout(0, 1));
 
-        this.timelineChildrenTable = createTimelineChildrenTable(movieClip);
-
-        this.timelineChildrenTable.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-        this.timelineChildrenTable.addMouseListener(new ChildrenListMouseListener(this.timelineChildrenTable, swfLayoutController));
-        new ChildrenTableContextMenu(this.timelineChildrenTable, swfLayoutController);
+        MovieClipChildrenTableModel childrenTableModel = new MovieClipChildrenTableModel(movieClip);
+        this.timelineChildrenTable = createTimelineChildrenTable(childrenTableModel, swfLayoutController);
 
         List<MovieClipFrame> frames = movieClip.getFrames();
         // TODO: handle empty movie clips properly (is it even a valid state?)
@@ -184,7 +180,7 @@ public class MovieClipPropertyPanel extends JPanel {
                 }
 
                 // NOTE: Should we actually reset selection?
-                // table.clearSelection();
+                table.clearSelection();
             }
         };
 
@@ -193,8 +189,8 @@ public class MovieClipPropertyPanel extends JPanel {
 
         KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyboardUtils.ctrlButton());
         duplicateAction.putValue(Action.ACCELERATOR_KEY, keyStroke);
-        actionMap.put(DUPLICATE_FRAMES, duplicateAction);
-        inputMap.put(keyStroke, DUPLICATE_FRAMES);
+        actionMap.put(DUPLICATE_ACTION_KEY, duplicateAction);
+        inputMap.put(keyStroke, DUPLICATE_ACTION_KEY);
 
         // NOTE: is it okay to use different keystrokes on different systems? I guess so.
         keyStroke = KeyboardUtils.delete();
@@ -209,23 +205,39 @@ public class MovieClipPropertyPanel extends JPanel {
         return table;
     }
 
-    private static Table createTimelineChildrenTable(MovieClip movieClip) {
-        DisplayObject[] timelineChildren = movieClip.getTimelineChildren();
-        String[] timelineChildrenNames = movieClip.getTimelineChildrenNames();
-        assert timelineChildrenNames == null || timelineChildrenNames.length == 0 || timelineChildren.length == timelineChildrenNames.length;
+    private static Table createTimelineChildrenTable(MovieClipChildrenTableModel tableModel, SupercellSWFLayoutController swfLayoutController) {
+        Table table = new Table(tableModel);
+        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        table.addMouseListener(new ChildrenListMouseListener(table, swfLayoutController));
 
-        Object[][] timelineChildrenData = new Object[timelineChildren.length][];
-        for (int i = 0; i < timelineChildrenData.length; i++) {
-            Object childName = timelineChildrenNames != null && timelineChildrenNames.length > 0 ? timelineChildrenNames[i] : null;
-            DisplayObject timelineChild = timelineChildren[i];
-            timelineChildrenData[i] = new Object[] {i, timelineChild.getId(), timelineChild.getClass().getSimpleName(), childName, timelineChild.getBlendMode(), timelineChild.isVisible()};
-        }
+        AbstractAction duplicateAction = new AbstractAction("Duplicate") {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int[] selectedRows = table.getSelectedRows();
+                if (selectedRows.length < 1) return;
 
-        return new Table(
-            timelineChildrenData, 
-            new Object[] {"#", "Id", "Type", "Name", "Blend Mode", "Visible"}, 
-            new Class<?>[] {Integer.class, Integer.class, String.class, String.class, BlendMode.class, Boolean.class}
-        );
+                try {
+                    tableModel.duplicate(selectedRows);
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn(e.getLocalizedMessage());
+                }
+
+                // NOTE: Should we actually reset selection?
+                table.clearSelection();
+            }
+        };
+
+        InputMap inputMap = table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        ActionMap actionMap = table.getActionMap();
+
+        KeyStroke keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_D, KeyboardUtils.ctrlButton());
+        duplicateAction.putValue(Action.ACCELERATOR_KEY, keyStroke);
+        actionMap.put(DUPLICATE_ACTION_KEY, duplicateAction);
+        inputMap.put(keyStroke, DUPLICATE_ACTION_KEY);
+
+        new ChildrenTableContextMenu(table, duplicateAction);
+
+        return table;
     }
 
     public void setTextInfo(String... lines) {

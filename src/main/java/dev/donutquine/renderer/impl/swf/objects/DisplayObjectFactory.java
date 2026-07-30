@@ -38,4 +38,29 @@ public class DisplayObjectFactory {
 
         throw new IllegalStateException("Unexpected original object: " + original);
     }
+
+    // TODO: check if cloned properly
+    public static DisplayObject clone(DisplayObject displayObject) {
+        if (displayObject instanceof MovieClipModifier movieClipModifier) {
+            return movieClipModifier;
+        }
+
+        if (displayObject instanceof Shape9Slice shape9Slice) {
+            return new Shape9Slice(shape9Slice);
+        }
+
+        if (displayObject instanceof Shape shape) {
+            return new Shape(shape);
+        }
+
+        if (displayObject instanceof MovieClip movieClip) {
+            return new MovieClip(movieClip);
+        }
+
+        if (displayObject instanceof TextField textField) {
+            return new TextField(textField);
+        }
+
+        throw new IllegalStateException("Unexpected object: " + displayObject);
+    }
 }
