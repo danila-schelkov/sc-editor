@@ -223,6 +223,7 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
         assert !hasPendingRow() : "This implementation supports only one pending row";
 
         this.pendingRow = row;
+        this.fireTableRowsInserted(row, row);
         this.onPendingRowInserted.handlePendingRowInserted(row);
     }
 
@@ -230,6 +231,7 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
     public void removePendingRow(int row) {
         assert this.pendingRow == row;
         this.pendingRow = -1;
+        this.fireTableRowsDeleted(row, row);
     }
 
     @Override
