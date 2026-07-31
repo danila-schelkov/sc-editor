@@ -139,7 +139,9 @@ public class Table extends JTable {
             removeEditor();
         }
 
-        assert this.dataModel instanceof PendingRowTableModel pendingRowTableModel && !pendingRowTableModel.hasPendingRow() : "invalid state, no pending row is allowed after editor removed";
+        if (this.dataModel instanceof PendingRowTableModel pendingRowTableModel && pendingRowTableModel.hasPendingRow()) {
+            pendingRowTableModel.clearPendingRows();
+        }
 
         if (getRowCount() > 0 && getColumnCount() > 0) {
             int oldLead;
