@@ -78,14 +78,14 @@ public class ViewportMouseListener extends MouseAdapter {
                 SupercellSWFLayoutController swfLayoutController = (SupercellSWFLayoutController) layoutController;
                 SupercellSWFAssetFile assetFile = swfLayoutController.getAssetFile();
 
-                List<Integer> shapesUsedIn = new ArrayList<>();
+                List<ShapeOriginal> shapesUsedIn = new ArrayList<>();
 
                 int[] shapeIds = assetFile.asset.getShapeIds();
                 for (int shapeId : shapeIds) {
                     try {
                         ShapeOriginal shape = (ShapeOriginal) assetFile.asset.getOriginalDisplayObject(shapeId & 0xFFFF, null);
                         if (shape.getCommands().stream().anyMatch(command -> finalHoveroverCommands.stream().anyMatch(hc -> hc.equals(command)))) {
-                            shapesUsedIn.add(shapeId);
+                            shapesUsedIn.add(shape);
                         }
                     } catch (UnableToFindObjectException ex) {
                         continue;  // this is a very illegal state actually
@@ -97,7 +97,7 @@ public class ViewportMouseListener extends MouseAdapter {
                     goToUsage.setAction(new AbstractAction() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            swfLayoutController.selectObject(shapesUsedIn.get(0), null);
+                            swfLayoutController.selectObject(shapesUsedIn.get(0).getId(), null);
                         }
                     });
                     goToUsage.setText("Go to Usage");
@@ -107,13 +107,7 @@ public class ViewportMouseListener extends MouseAdapter {
                     showUsages.setAction(new AbstractAction() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
-                            List<Object[]> usagesRows = new ArrayList<>(shapesUsedIn.size());
-
-                            for (int shapeId : shapesUsedIn) {
-                                usagesRows.add(new Object[] {shapeId, null, "Shape"});
-                            }
-
-                            UsagesWindow usagesWindow = new UsagesWindow("Usages", usagesRows, swfLayoutController);
+                            UsagesWindow usagesWindow = new UsagesWindow("Usages", shapesUsedIn, swfLayoutController);
                             usagesWindow.show();
                         }
                     });

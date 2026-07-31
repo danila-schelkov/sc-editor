@@ -6,18 +6,19 @@ import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 import dev.donutquine.editor.gui.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.gui.layout.panels.DisplayObjectListPanel;
+import dev.donutquine.swf.DisplayObjectOriginal;
 
 public class UsagesWindow extends Window {
     private static final Dimension MINIMUM_SIZE = new Dimension(300, 0);
 
     private DisplayObjectListPanel displayObjectPanel;
 
-    public UsagesWindow(String title, List<Object[]> usagesRows, SupercellSWFLayoutController controller) {
+    public UsagesWindow(String title, List<? extends DisplayObjectOriginal> usingObjects, SupercellSWFLayoutController controller) {
         this.frame = new JFrame(title);
 
         this.frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-        this.displayObjectPanel = new DisplayObjectListPanel(controller, usagesRows.toArray(Object[][]::new));
+        this.displayObjectPanel = new DisplayObjectListPanel(controller, usingObjects);
         this.frame.getContentPane().add(this.displayObjectPanel);
         this.frame.setMinimumSize(MINIMUM_SIZE);
         this.frame.setSize(this.frame.getContentPane().getPreferredSize());

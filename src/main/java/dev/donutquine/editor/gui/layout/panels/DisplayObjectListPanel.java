@@ -22,6 +22,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import dev.donutquine.editor.gui.layout.SupercellSWFLayoutController;
+import dev.donutquine.editor.gui.layout.components.tables.DisplayObjectsTableModel;
 import dev.donutquine.editor.gui.layout.components.tables.Table;
 import dev.donutquine.editor.gui.layout.components.listeners.DisplayObjectListMouseListener;
 import dev.donutquine.editor.gui.layout.contextmenus.DisplayObjectContextMenu;
@@ -33,8 +34,6 @@ import dev.donutquine.swf.movieclips.MovieClipFrame;
 import dev.donutquine.swf.movieclips.MovieClipOriginal;
 
 public class DisplayObjectListPanel extends JPanel {
-    private static final Object[] COLUMN_NAMES = {"Id", "Name", "Type"};
-    private static final Class<?>[] COLUMN_CLASSES = {Integer.class, String.class, String.class};
     private static final String OPEN_SELECTED_ROW = "openSelectedRow";
 
     private final SupercellSWFLayoutController controller;
@@ -44,13 +43,14 @@ public class DisplayObjectListPanel extends JPanel {
 
     private final JTextField searchField;
 
-    public DisplayObjectListPanel(SupercellSWFLayoutController controller, Object[][] data) {
+    public DisplayObjectListPanel(SupercellSWFLayoutController controller, List<? extends DisplayObjectOriginal> objects) {
         this.controller = controller;
 
-        this.table = new Table(data, COLUMN_NAMES, COLUMN_CLASSES);
+        DisplayObjectsTableModel tableModel = new DisplayObjectsTableModel(objects);
+        this.table = new Table(tableModel);
         this.table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
-        this.sorter = new TableRowSorter<>(this.table.getModel());
+        this.sorter = new TableRowSorter<>(tableModel);
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
             .put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), OPEN_SELECTED_ROW);
 
@@ -356,7 +356,7 @@ public class DisplayObjectListPanel extends JPanel {
 
         @Override
         public boolean include(Entry<? extends TableModel, ? extends Integer> entry) {
-            assert entry.getValueCount() == COLUMN_NAMES.length;
+            assert entry.getValueCount() == DisplayObjectsTableModel.COLUMN_COUNT;
             int value = (int) entry.getValue(0);
 
             DisplayObjectOriginal original;

@@ -23,6 +23,7 @@ import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 import dev.donutquine.renderer.impl.swf.objects.Shape;
 import dev.donutquine.renderer.impl.swf.objects.TextField;
+import dev.donutquine.swf.DisplayObjectOriginal;
 import dev.donutquine.swf.SupercellSWF;
 import dev.donutquine.swf.exceptions.UnableToFindObjectException;
 import dev.donutquine.swf.movieclips.MovieClipOriginal;
@@ -44,7 +45,7 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
         this.window = window;
         this.assetFile = assetFile;
 
-        this.objectListPanel = new DisplayObjectListPanel(this, collectObjectTableRows(this.assetFile.asset).toArray(Object[][]::new));
+        this.objectListPanel = new DisplayObjectListPanel(this, collectObjectTableRows(this.assetFile.asset));
         this.currentObjectInfoPanel = new DisplayObjectInfoPanel();
         this.texturesPanel = new TexturesPanel(this);
         this.timelinePanel = new TimelinePanel();
@@ -57,20 +58,20 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
             title += " - " + name;
         }
 
-        List<Object[]> usagesRows = new ArrayList<>();
+        List<MovieClipOriginal> usages = new ArrayList<>();
 
         try {
             for (int movieClipId : this.assetFile.asset.getMovieClipIds()) {
                 MovieClipOriginal movieClipOriginal = this.assetFile.asset.getOriginalMovieClip(movieClipId & 0xFFFF, null);
                 if (movieClipOriginal.getChildren().stream().anyMatch(movieClipChild -> movieClipChild.id() == displayObjectId)) {
-                    usagesRows.add(new Object[] {movieClipId, movieClipOriginal.getExportName(), "MovieClip"});
+                    usages.add(movieClipOriginal);
                 }
             }
         } catch (UnableToFindObjectException e) {
             throw new RuntimeException(e);
         }
 
-        UsagesWindow usagesWindow = new UsagesWindow(title, usagesRows, this);
+        UsagesWindow usagesWindow = new UsagesWindow(title, usages, this);
         usagesWindow.show();
     }
 
@@ -218,27 +219,13 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
         return null;
     }
 
-    private static List<Object[]> collectObjectTableRows(SupercellSWF swf) {
-        List<Object[]> rowDataList = new ArrayList<>();
+    private static List<DisplayObjectOriginal> collectObjectTableRows(SupercellSWF swf) {
+        List<DisplayObjectOriginal> objects = new ArrayList<>();
 
-        for (int movieClipId : swf.getMovieClipIds()) {
-            try {
-                MovieClipOriginal movieClipOriginal = swf.getOriginalMovieClip(movieClipId & 0xFFFF, null);
-                rowDataList.add(new Object[] {movieClipId, movieClipOriginal.getExportName(), "MovieClip"});
-            } catch (UnableToFindObjectException e) {
-                LOGGER.error(e.getMessage(), e);
-            }
+        objects.addAll(swf.getMovieClips());
+        objects.addAll(swf.getShapes());
+        objects.addAll(swf.getTextFields());
 
-        }
-
-        for (int shapesId : swf.getShapeIds()) {
-            rowDataList.add(new Object[] {shapesId, null, "Shape"});
-        }
-
-        for (int textFieldId : swf.getTextFieldIds()) {
-            rowDataList.add(new Object[] {textFieldId, null, "TextField"});
-        }
-
-        return rowDataList;
+        return objects;
     }
 }
