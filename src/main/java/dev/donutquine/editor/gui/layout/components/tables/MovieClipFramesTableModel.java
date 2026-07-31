@@ -85,7 +85,6 @@ public class MovieClipFramesTableModel extends AbstractTableModel implements Row
             if (isAppendRow(row)) {
                 assert column == COLUMN_NAME_INDEX;
 
-                int newRowIndex = this.frames.size();
                 String label = ((String) value).trim();
                 if (label.isEmpty()) {
                     label = null;
@@ -97,7 +96,7 @@ public class MovieClipFramesTableModel extends AbstractTableModel implements Row
                 }
 
                 MovieClipFrame newFrame = MovieClipFrame.builder().withLabel(label).build();
-                this.insert(newRowIndex, newFrame);
+                this.insert(row, newFrame);
                 return;
             }
 

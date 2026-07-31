@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
@@ -98,7 +99,29 @@ public class Table extends JTable {
             return;
         }
 
+        if (this.dataModel instanceof PendingRowTableModel pendingRowTableModel && pendingRowTableModel.isPendingRow(rowIndex)) {
+            return;
+        }
+
         super.changeSelection(rowIndex, columnIndex, toggle, extend);
+    }
+
+    @Override
+    public void editingCanceled(ChangeEvent e) {
+        super.editingCanceled(e);
+        // NOTE: won't work for multiple pending rows
+        if (this.dataModel instanceof PendingRowTableModel pendingRowTableModel && pendingRowTableModel.hasPendingRow()) {
+            pendingRowTableModel.clearPendingRows();
+        }
+    }
+
+    @Override
+    public void editingStopped(ChangeEvent e) {
+        super.editingStopped(e);
+        // NOTE: won't work for multiple pending rows
+        if (this.dataModel instanceof PendingRowTableModel pendingRowTableModel && pendingRowTableModel.hasPendingRow()) {
+            pendingRowTableModel.clearPendingRows();
+        }
     }
 
     /**
@@ -115,6 +138,9 @@ public class Table extends JTable {
         if (isEditing()) {
             removeEditor();
         }
+
+        assert this.dataModel instanceof PendingRowTableModel pendingRowTableModel && !pendingRowTableModel.hasPendingRow() : "invalid state, no pending row is allowed after editor removed";
+
         if (getRowCount() > 0 && getColumnCount() > 0) {
             int oldLead;
             int oldAnchor;

@@ -70,7 +70,10 @@ public class MovieClipPropertyPanel extends JPanel {
             }, 
             movieClip::getTimelineChildCount, 
             matrixBank::getMatrixCount, 
-            matrixBank::getColorTransformCount
+            matrixBank::getColorTransformCount,
+            (row) -> {
+                System.out.println("Pending row inserted: " + row);
+            }
         );
 
         this.frameElementsTable = createFrameElementsTable(frameElementsTableModel);
