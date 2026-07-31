@@ -12,7 +12,7 @@ import dev.donutquine.swf.movieclips.MovieClipFrame;
 import dev.donutquine.swf.movieclips.MovieClipFrameElement;
 import dev.donutquine.swf.movieclips.MovieClipFrame.Builder;
 
-public class MovieClipFramesTableModel extends AbstractTableModel implements RowAppendableTableModel {
+public class MovieClipFramesTableModel extends AbstractTableModel implements RowReorderableTableModel, RowAppendableTableModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(MovieClipFramesTableModel.class);
 
     private static final String[] COLUMN_NAMES = {"#", "Name"};
@@ -143,6 +143,24 @@ public class MovieClipFramesTableModel extends AbstractTableModel implements Row
             // TODO: highlight cell with red border
             LOGGER.warn("New value rejected: {}", e.getLocalizedMessage());
         }
+    }
+
+    @Override
+    public void reorderRows(int firstRow, int rowCount, int targetRow) {
+        List<MovieClipFrame> rowRange = this.frames.subList(firstRow, firstRow + rowCount);
+        List<MovieClipFrame> movedFrames = new ArrayList<>(rowRange);
+
+        // TODO: make a command and add it to global UndoRedoManager
+        rowRange.clear();
+        if (targetRow > firstRow) {
+            targetRow -= rowCount;
+        }
+
+        this.fireTableRowsDeleted(firstRow, firstRow + rowCount);
+        this.frames.addAll(targetRow, movedFrames);
+        this.fireTableRowsInserted(targetRow, targetRow + rowCount);
+
+        this.updateFrames();
     }
 
     public void insert(int index, MovieClipFrame newFrame) {

@@ -189,15 +189,15 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
 
     @Override
     public void reorderRows(int firstRow, int rowCount, int targetRow) {
-        if (targetRow > firstRow) {
-            targetRow -= rowCount;
-        }
-
         List<MovieClipFrameElement> rowRange = this.frameElements.subList(firstRow, firstRow + rowCount);
         List<MovieClipFrameElement> movedElements = new ArrayList<>(rowRange);
 
         // TODO: make a command and add it to global UndoRedoManager
         rowRange.clear();
+        if (targetRow > firstRow) {
+            targetRow -= rowCount;
+        }
+
         this.fireTableRowsDeleted(firstRow, firstRow + rowCount);
         this.frameElements.addAll(targetRow, movedElements);
         this.fireTableRowsInserted(targetRow, targetRow + rowCount);
