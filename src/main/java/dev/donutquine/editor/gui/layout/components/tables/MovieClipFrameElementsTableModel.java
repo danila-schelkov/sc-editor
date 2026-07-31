@@ -198,7 +198,9 @@ public class MovieClipFrameElementsTableModel extends AbstractTableModel impleme
 
         // TODO: make a command and add it to global UndoRedoManager
         rowRange.clear();
+        this.fireTableRowsDeleted(firstRow, firstRow + rowCount);
         this.frameElements.addAll(targetRow, movedElements);
+        this.fireTableRowsInserted(targetRow, targetRow + rowCount);
 
         this.updateFrameElements();
     }
