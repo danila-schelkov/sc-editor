@@ -96,9 +96,8 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
                     throw new IllegalArgumentException("A movie clip frame label must be unique");
                 }
 
-                // TODO: make a command and add it to global UndoRedoManager
-                this.frames.add(MovieClipFrame.builder().withLabel(label).build());
-                this.fireTableRowsInserted(newRowIndex, newRowIndex);
+                MovieClipFrame newFrame = MovieClipFrame.builder().withLabel(label).build();
+                this.insert(newRowIndex, newFrame);
                 return;
             }
 
@@ -145,6 +144,14 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
             // TODO: highlight cell with red border
             LOGGER.warn("New value rejected: {}", e.getLocalizedMessage());
         }
+    }
+
+    public void insert(int index, MovieClipFrame newFrame) {
+        // TODO: make a command and add it to global UndoRedoManager
+        this.frames.add(index, newFrame);
+        this.fireTableRowsInserted(index, index);
+
+        this.updateFrames();
     }
 
     public void delete(int firstRow, int rowCount) {

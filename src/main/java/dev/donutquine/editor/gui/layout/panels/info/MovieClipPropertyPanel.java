@@ -184,6 +184,54 @@ public class MovieClipPropertyPanel extends JPanel {
             }
         };
 
+        AbstractAction insertBeforeAction = new AbstractAction("Insert new frame before") {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int elementCount = table.getSelectedRowCount();
+                if (elementCount < 1) return;
+
+                int firstIndex = table.getSelectedRows()[0];
+                // NOTE: trim append row from selection
+                if (tableModel.isAppendRow(firstIndex)) {
+                    firstIndex -= 1;
+                }
+
+                // NOTE: Maybe we should ask a label for frame? I guess no, it's easier to add label later.
+                try {
+                    tableModel.insert(firstIndex, MovieClipFrame.builder().build());
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn(e.getLocalizedMessage());
+                }
+
+                // NOTE: Should we actually reset selection?
+                table.clearSelection();
+            }
+        };
+
+        AbstractAction insertAfterAction = new AbstractAction("Insert new frame after") {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int elementCount = table.getSelectedRowCount();
+                if (elementCount < 1) return;
+
+                int lastIndex = table.getSelectedRows()[elementCount - 1];
+                // NOTE: trim append row from selection
+                if (tableModel.isAppendRow(lastIndex)) {
+                    lastIndex -= 1;
+                }
+
+                // NOTE: Maybe we should ask a label for frame? I guess no, it's easier to add label later.
+                try {
+                    tableModel.insert(lastIndex + 1, MovieClipFrame.builder().build());
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn(e.getLocalizedMessage());
+                }
+
+                // NOTE: Should we actually reset selection?
+                table.clearSelection();
+            }
+        };
+
         InputMap inputMap = table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap actionMap = table.getActionMap();
 
@@ -200,7 +248,7 @@ public class MovieClipPropertyPanel extends JPanel {
 
         table.addSelectionListener(new FrameSelectionListener(table, elementsCurrentFrameSetter));
 
-        new FrameTableContextMenu(table, swfLayoutController, duplicateAction, deleteAction);
+        new FrameTableContextMenu(table, swfLayoutController, duplicateAction, insertBeforeAction, insertAfterAction, deleteAction);
 
         return table;
     }

@@ -14,7 +14,7 @@ public class FrameTableContextMenu extends ContextMenu {
 	private final MovieClipFramesTableModel tableModel;
     private final SupercellSWFLayoutController swfLayoutController;
 
-    public FrameTableContextMenu(JTable table, SupercellSWFLayoutController swfLayoutController, Action duplicateAction, Action deleteAction) {
+    public FrameTableContextMenu(JTable table, SupercellSWFLayoutController swfLayoutController, Action duplicateAction, Action insertBeforeAction, Action insertAfterAction, Action deleteAction) {
         super(table, null);
 
         this.table = table;
@@ -25,6 +25,8 @@ public class FrameTableContextMenu extends ContextMenu {
         this.add("Goto and stop", this::gotoAndStop);
         this.addSeparator();
         this.add(duplicateAction);
+        this.add(insertBeforeAction);
+        this.add(insertAfterAction);
         this.addSeparator();
         this.add(deleteAction);
 
