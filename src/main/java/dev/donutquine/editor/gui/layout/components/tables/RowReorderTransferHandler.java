@@ -42,10 +42,19 @@ public final class RowReorderTransferHandler extends TransferHandler {
 
     @Override
     public boolean canImport(TransferSupport support) {
-        return support.isDrop()
-                && support.getComponent() == table
-                && firstDraggedRow >= 0
-                && draggedRowCount > 0;
+        boolean canImport = support.isDrop() && support.getComponent() == table && firstDraggedRow >= 0 && draggedRowCount > 0;
+        if (!canImport) {
+            return false;
+        }
+
+        JTable.DropLocation dropLocation = (JTable.DropLocation) support.getDropLocation();
+
+        int targetRow = dropLocation.getRow();
+        if (tableModel instanceof RowAppendableTableModel rowAppendableTableModel && rowAppendableTableModel.isAppendRow(targetRow - 1)) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override
