@@ -21,6 +21,14 @@ public class JTablePopupMenuListener implements PopupMenuListener {
     @Override
     public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
         SwingUtilities.invokeLater(() -> {
+            if (table.isEditing()) {
+                table.removeEditor();
+
+                if (table.getModel() instanceof PendingRowTableModel pendingRowTableModel && pendingRowTableModel.hasPendingRow()) {
+                    pendingRowTableModel.clearPendingRows();
+                }
+            }
+
             int rowAtPoint = table.rowAtPoint(SwingUtilities.convertPoint(popupMenu, new Point(0, 0), table));
             if (rowAtPoint > -1) {
                 boolean shouldUpdateValue = shouldUpdateValue(rowAtPoint);
@@ -51,6 +59,8 @@ public class JTablePopupMenuListener implements PopupMenuListener {
         if (table.getModel() instanceof RowAppendableTableModel rowAppendableTableModel && rowAppendableTableModel.isAppendRow(rowAtPoint)) {
             return false;
         }
+
+        assert table.getModel() instanceof PendingRowTableModel pendingRowTableModel && !pendingRowTableModel.hasPendingRow() : "invalid state, no pending row is allowed after editor removed";
 
         return !ArrayUtils.contains(table.getSelectedRows(), rowAtPoint);
     }
