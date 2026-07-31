@@ -60,7 +60,7 @@ public class JTablePopupMenuListener implements PopupMenuListener {
             return false;
         }
 
-        assert table.getModel() instanceof PendingRowTableModel pendingRowTableModel && !pendingRowTableModel.hasPendingRow() : "invalid state, no pending row is allowed after editor removed";
+        assert !(table.getModel() instanceof PendingRowTableModel pendingRowTableModel) || !pendingRowTableModel.hasPendingRow() : "invalid state, no pending row is allowed after editor removed";
 
         return !ArrayUtils.contains(table.getSelectedRows(), rowAtPoint);
     }
