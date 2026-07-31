@@ -3,8 +3,8 @@ package dev.donutquine.editor.renderer.impl.texture;
 import dev.donutquine.editor.renderer.gl.GLConstants;
 
 public enum ImageFilter {
-    NEAREST(GLConstants.GL_NEAREST, GLConstants.GL_NEAREST),
     LINEAR(GLConstants.GL_LINEAR, GLConstants.GL_LINEAR),
+    NEAREST(GLConstants.GL_NEAREST, GLConstants.GL_NEAREST),
     LINEAR_NEAREST(GLConstants.GL_LINEAR_MIPMAP_NEAREST, GLConstants.GL_LINEAR),
     LINEAR_LINEAR(GLConstants.GL_LINEAR_MIPMAP_LINEAR, GLConstants.GL_LINEAR),
     ;
