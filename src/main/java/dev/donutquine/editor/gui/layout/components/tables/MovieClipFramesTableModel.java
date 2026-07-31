@@ -12,7 +12,7 @@ import dev.donutquine.swf.movieclips.MovieClipFrame;
 import dev.donutquine.swf.movieclips.MovieClipFrameElement;
 import dev.donutquine.swf.movieclips.MovieClipFrame.Builder;
 
-public class MovieClipFramesTableModel extends AbstractTableModel {
+public class MovieClipFramesTableModel extends AbstractTableModel implements RowAppendableTableModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(MovieClipFramesTableModel.class);
 
     private static final String[] COLUMN_NAMES = {"#", "Name"};
@@ -211,6 +211,7 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
         // TODO: sync modification with MovieClip original
     }
 
+    @Override
     public boolean isAppendRow(int row) {
         return row == this.frames.size();
     }

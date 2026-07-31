@@ -33,12 +33,7 @@ public class FrameTableContextMenu extends ContextMenu {
         this.popupMenu.addPopupMenuListener(new JTablePopupMenuListener(this.popupMenu, table, rowIndex -> {
             // NOTE: setting enabled to items as we have to revert the state for actions when leave, but not for items
             setMainComponentsEnabled(rowIndex != -1 && !this.tableModel.isAppendRow(rowIndex));
-        }) {
-            @Override
-            protected boolean shouldUpdateValue(int rowAtPoint) {
-                return !tableModel.isAppendRow(rowAtPoint) && super.shouldUpdateValue(rowAtPoint);
-            }
-        });
+        }));
     }
 
     private void gotoAndPlay(ActionEvent event) {

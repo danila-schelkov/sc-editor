@@ -91,4 +91,89 @@ public class Table extends JTable {
 
         return c;
     }
+
+    @Override
+    public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
+        if (this.dataModel instanceof RowAppendableTableModel rowAppendableTableModel && rowAppendableTableModel.isAppendRow(rowIndex)) {
+            return;
+        }
+
+        super.changeSelection(rowIndex, columnIndex, toggle, extend);
+    }
+
+    /**
+     * @see JTable#selectAll()
+     */
+    @Override
+    public void selectAll() {
+        if (!(this.dataModel instanceof RowAppendableTableModel)) {
+            super.selectAll();
+            return;
+        }
+
+        // If I'm currently editing, then I should stop editing
+        if (isEditing()) {
+            removeEditor();
+        }
+        if (getRowCount() > 0 && getColumnCount() > 0) {
+            int oldLead;
+            int oldAnchor;
+            ListSelectionModel selModel;
+
+            selModel = selectionModel;
+            selModel.setValueIsAdjusting(true);
+            oldLead = getAdjustedIndex(selModel.getLeadSelectionIndex(), true);
+            oldAnchor = getAdjustedIndex(selModel.getAnchorSelectionIndex(), true);
+
+            // NOTE: the only difference from super method is this -2 to exclude append row from selection
+            setRowSelectionInterval(0, getRowCount()-2);
+
+            // this is done to restore the anchor and lead
+            setLeadAnchorWithoutSelection(selModel, oldLead, oldAnchor);
+
+            selModel.setValueIsAdjusting(false);
+
+            selModel = columnModel.getSelectionModel();
+            selModel.setValueIsAdjusting(true);
+            oldLead = getAdjustedIndex(selModel.getLeadSelectionIndex(), false);
+            oldAnchor = getAdjustedIndex(selModel.getAnchorSelectionIndex(), false);
+
+            setColumnSelectionInterval(0, getColumnCount()-1);
+
+            // this is done to restore the anchor and lead
+            setLeadAnchorWithoutSelection(selModel, oldLead, oldAnchor);
+
+            selModel.setValueIsAdjusting(false);
+        }
+    }
+
+    /**
+     * @see JTable#getAdjustedIndex(int, boolean)
+     */
+    private int getAdjustedIndex(int index, boolean row) {
+        int compare = row ? getRowCount() : getColumnCount();
+        return index < compare ? index : -1;
+    }
+
+    /**
+     * Set the lead and anchor without affecting selection.
+     *
+     * @see sun.swing.SwingUtilities2#setLeadAnchorWithoutSelection(javax.swing.ListSelectionModel, int, int)
+     */
+    private static void setLeadAnchorWithoutSelection(ListSelectionModel model, int lead, int anchor) {
+        if (anchor == -1) {
+            anchor = lead;
+        }
+        if (lead == -1) {
+            model.setAnchorSelectionIndex(-1);
+            model.setLeadSelectionIndex(-1);
+        } else {
+            if (model.isSelectedIndex(lead)) {
+                model.addSelectionInterval(lead, lead);
+            } else {
+                model.removeSelectionInterval(lead, lead);
+            }
+            model.setAnchorSelectionIndex(anchor);
+        }
+    }
 }
