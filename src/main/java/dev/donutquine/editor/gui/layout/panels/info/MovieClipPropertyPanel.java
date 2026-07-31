@@ -29,7 +29,6 @@ import dev.donutquine.editor.gui.layout.components.listeners.FrameSelectionListe
 import dev.donutquine.editor.gui.layout.components.tables.MovieClipChildrenTableModel;
 import dev.donutquine.editor.gui.layout.components.tables.MovieClipFrameElementsTableModel;
 import dev.donutquine.editor.gui.layout.components.tables.MovieClipFramesTableModel;
-import dev.donutquine.editor.gui.layout.components.tables.RowAppendableTableModel;
 import dev.donutquine.editor.gui.layout.components.tables.RowReorderTransferHandler;
 import dev.donutquine.editor.gui.layout.components.tables.Table;
 import dev.donutquine.editor.gui.layout.contextmenus.ChildrenTableContextMenu;
@@ -110,12 +109,12 @@ public class MovieClipPropertyPanel extends JPanel {
         this.add(this.textInfoPanel, "Info");
     }
 
-    private Table createFrameElementsTable(MovieClipFrameElementsTableModel tableModel) {
+    private static Table createFrameElementsTable(MovieClipFrameElementsTableModel tableModel) {
         Table table = new Table(tableModel);
         table.setDragEnabled(true);
         table.setDropMode(DropMode.INSERT_ROWS);
-        table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
         table.setTransferHandler(new RowReorderTransferHandler(table, tableModel));
+        table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
         AbstractAction deleteAction = new AbstractAction("Delete") {
             @Override
@@ -191,7 +190,9 @@ public class MovieClipPropertyPanel extends JPanel {
 
     private static Table createFramesTable(MovieClipFramesTableModel tableModel, SupercellSWFLayoutController swfLayoutController, IntConsumer elementsCurrentFrameSetter) {
         Table table = new Table(tableModel);
-
+        table.setDragEnabled(true);
+        table.setDropMode(DropMode.INSERT_ROWS);
+        table.setTransferHandler(new RowReorderTransferHandler(table, tableModel));
         table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
         AbstractAction duplicateAction = new AbstractAction("Duplicate") {
