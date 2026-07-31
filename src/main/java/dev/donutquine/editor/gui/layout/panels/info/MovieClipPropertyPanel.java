@@ -144,7 +144,87 @@ public class MovieClipPropertyPanel extends JPanel {
     }
 
     private static Table createFramesTable(MovieClipFramesTableModel tableModel, SupercellSWFLayoutController swfLayoutController, IntConsumer elementsCurrentFrameSetter) {
-        Table table = new Table(tableModel);
+        Table table = new Table(tableModel) {
+            @Override
+            public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
+                if (tableModel.isAppendRow(rowIndex)) {
+                    return;
+                }
+
+                super.changeSelection(rowIndex, columnIndex, toggle, extend);
+            }
+
+            /**
+             * @see JTable#selectAll()
+             */
+            @Override
+            public void selectAll() {
+                // If I'm currently editing, then I should stop editing
+                if (isEditing()) {
+                    removeEditor();
+                }
+                if (getRowCount() > 0 && getColumnCount() > 0) {
+                    int oldLead;
+                    int oldAnchor;
+                    ListSelectionModel selModel;
+
+                    selModel = selectionModel;
+                    selModel.setValueIsAdjusting(true);
+                    oldLead = getAdjustedIndex(selModel.getLeadSelectionIndex(), true);
+                    oldAnchor = getAdjustedIndex(selModel.getAnchorSelectionIndex(), true);
+
+                    // NOTE: the only difference from super method is this -2 to exclude append row from selection
+                    setRowSelectionInterval(0, getRowCount()-2);
+
+                    // this is done to restore the anchor and lead
+                    setLeadAnchorWithoutSelection(selModel, oldLead, oldAnchor);
+
+                    selModel.setValueIsAdjusting(false);
+
+                    selModel = columnModel.getSelectionModel();
+                    selModel.setValueIsAdjusting(true);
+                    oldLead = getAdjustedIndex(selModel.getLeadSelectionIndex(), false);
+                    oldAnchor = getAdjustedIndex(selModel.getAnchorSelectionIndex(), false);
+
+                    setColumnSelectionInterval(0, getColumnCount()-1);
+
+                    // this is done to restore the anchor and lead
+                    setLeadAnchorWithoutSelection(selModel, oldLead, oldAnchor);
+
+                    selModel.setValueIsAdjusting(false);
+                }
+            }
+
+            /**
+             * @see JTable#getAdjustedIndex(int, boolean)
+             */
+            private int getAdjustedIndex(int index, boolean row) {
+                int compare = row ? getRowCount() : getColumnCount();
+                return index < compare ? index : -1;
+            }
+            
+            /**
+             * Set the lead and anchor without affecting selection.
+             *
+             * @see sun.swing.SwingUtilities2#setLeadAnchorWithoutSelection(javax.swing.ListSelectionModel, int, int)
+             */
+            private static void setLeadAnchorWithoutSelection(ListSelectionModel model, int lead, int anchor) {
+                if (anchor == -1) {
+                    anchor = lead;
+                }
+                if (lead == -1) {
+                    model.setAnchorSelectionIndex(-1);
+                    model.setLeadSelectionIndex(-1);
+                } else {
+                    if (model.isSelectedIndex(lead)) {
+                        model.addSelectionInterval(lead, lead);
+                    } else {
+                        model.removeSelectionInterval(lead, lead);
+                    }
+                    model.setAnchorSelectionIndex(anchor);
+                }
+            }
+        };
 
         table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
@@ -184,6 +264,46 @@ public class MovieClipPropertyPanel extends JPanel {
             }
         };
 
+        AbstractAction insertBeforeAction = new AbstractAction("Insert new frame before") {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int elementCount = table.getSelectedRowCount();
+                if (elementCount < 1) return;
+
+                int firstIndex = table.getSelectedRows()[0];
+
+                // NOTE: Maybe we should ask a label for frame? I guess no, it's easier to add label later.
+                try {
+                    tableModel.insert(firstIndex, MovieClipFrame.builder().build());
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn(e.getLocalizedMessage());
+                }
+
+                // NOTE: Should we actually reset selection?
+                table.clearSelection();
+            }
+        };
+
+        AbstractAction insertAfterAction = new AbstractAction("Insert new frame after") {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int elementCount = table.getSelectedRowCount();
+                if (elementCount < 1) return;
+
+                int lastIndex = table.getSelectedRows()[elementCount - 1];
+
+                // NOTE: Maybe we should ask a label for frame? I guess no, it's easier to add label later.
+                try {
+                    tableModel.insert(lastIndex + 1, MovieClipFrame.builder().build());
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn(e.getLocalizedMessage());
+                }
+
+                // NOTE: Should we actually reset selection?
+                table.clearSelection();
+            }
+        };
+
         InputMap inputMap = table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap actionMap = table.getActionMap();
 
@@ -200,7 +320,7 @@ public class MovieClipPropertyPanel extends JPanel {
 
         table.addSelectionListener(new FrameSelectionListener(table, elementsCurrentFrameSetter));
 
-        new FrameTableContextMenu(table, swfLayoutController, duplicateAction, deleteAction);
+        new FrameTableContextMenu(table, swfLayoutController, duplicateAction, insertBeforeAction, insertAfterAction, deleteAction);
 
         return table;
     }

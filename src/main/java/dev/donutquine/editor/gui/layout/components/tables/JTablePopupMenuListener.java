@@ -46,7 +46,7 @@ public class JTablePopupMenuListener implements PopupMenuListener {
 
     }
 
-    private boolean shouldUpdateValue(int rowAtPoint) {
+    protected boolean shouldUpdateValue(int rowAtPoint) {
         return !ArrayUtils.contains(table.getSelectedRows(), rowAtPoint);
     }
 
