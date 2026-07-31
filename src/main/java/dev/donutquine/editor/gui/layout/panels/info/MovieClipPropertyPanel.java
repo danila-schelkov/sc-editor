@@ -72,7 +72,9 @@ public class MovieClipPropertyPanel extends JPanel {
             matrixBank::getMatrixCount, 
             matrixBank::getColorTransformCount,
             (row) -> {
-                System.out.println("Pending row inserted: " + row);
+                // NOTE: cannot inline to use field as its not initialized at the variable capture moment, so using getter
+                JTable frameElementsTable = this.getFrameElementsTable();
+                frameElementsTable.editCellAt(row, MovieClipFrameElementsTableModel.COLUMN_CHILD_INDEX);
             }
         );
 
@@ -133,6 +135,46 @@ public class MovieClipPropertyPanel extends JPanel {
             }
         };
 
+        AbstractAction insertBeforeAction = new AbstractAction("Insert new element before") {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int elementCount = table.getSelectedRowCount();
+                if (elementCount < 1) return;
+
+                int firstIndex = table.getSelectedRows()[0];
+
+                // NOTE: Maybe we should ask a label for frame? I guess no, it's easier to add label later.
+                try {
+                    tableModel.insertPendingRow(firstIndex);
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn(e.getLocalizedMessage());
+                }
+
+                // NOTE: Should we actually reset selection?
+                table.clearSelection();
+            }
+        };
+
+        AbstractAction insertAfterAction = new AbstractAction("Insert new element after") {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int elementCount = table.getSelectedRowCount();
+                if (elementCount < 1) return;
+
+                int lastIndex = table.getSelectedRows()[elementCount - 1];
+
+                // NOTE: Maybe we should ask a label for frame? I guess no, it's easier to add label later.
+                try {
+                    tableModel.insertPendingRow(lastIndex + 1);
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn(e.getLocalizedMessage());
+                }
+
+                // NOTE: Should we actually reset selection?
+                table.clearSelection();
+            }
+        };
+
         InputMap inputMap = table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap actionMap = table.getActionMap();
 
@@ -142,7 +184,7 @@ public class MovieClipPropertyPanel extends JPanel {
         actionMap.put(DELETE_ACTION_KEY, deleteAction);
         inputMap.put(keyStroke, DELETE_ACTION_KEY);
 
-        new FrameElementTableContextMenu(table, deleteAction);
+        new FrameElementTableContextMenu(table, deleteAction, insertBeforeAction, insertAfterAction);
 
         return table;
     }
@@ -298,5 +340,9 @@ public class MovieClipPropertyPanel extends JPanel {
     public Component add(JComponent comp, String title) {
         comp.setBorder(BorderFactory.createTitledBorder(title));
         return super.add(comp);
+    }
+
+    private JTable getFrameElementsTable() {
+        return this.frameElementsTable;
     }
 }
