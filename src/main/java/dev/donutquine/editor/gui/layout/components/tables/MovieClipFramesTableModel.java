@@ -156,11 +156,6 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
 
     public void delete(int firstRow, int rowCount) {
         int lastIndex = firstRow + rowCount;
-        // NOTE: trim append row from selection
-        if (isAppendRow(lastIndex - 1)) {
-            lastIndex = this.frames.size();
-            rowCount -= 1;
-        }
 
         if (firstRow == 0 && lastIndex == this.frames.size()) {
             throw new IllegalArgumentException("At least one frame must remain");
@@ -175,11 +170,6 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
 
     public void duplicate(int firstRow, int rowCount) {
         int lastIndex = firstRow + rowCount;
-        // NOTE: trim append row from selection
-        if (isAppendRow(lastIndex - 1)) {
-            lastIndex = this.frames.size();
-            rowCount -= 1;
-        }
 
         // NOTE: current strategy is to put all duplicated frames after selection (e.g. `|1 2 3| 4` -> `1 2 3 (1 2 3) 4`), 
         //  but there is also an idea of putting duplicate frame after original frame (e.g. `|1 2 3| 4` -> `1 (1) 2 (2) 3 (3) 4`).
