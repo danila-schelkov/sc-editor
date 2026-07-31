@@ -12,7 +12,7 @@ import dev.donutquine.swf.movieclips.MovieClipFrame;
 import dev.donutquine.swf.movieclips.MovieClipFrameElement;
 import dev.donutquine.swf.movieclips.MovieClipFrame.Builder;
 
-public class MovieClipFramesTableModel extends AbstractTableModel {
+public class MovieClipFramesTableModel extends AbstractTableModel implements RowAppendableTableModel {
     private static final Logger LOGGER = LoggerFactory.getLogger(MovieClipFramesTableModel.class);
 
     private static final String[] COLUMN_NAMES = {"#", "Name"};
@@ -85,7 +85,6 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
             if (isAppendRow(row)) {
                 assert column == COLUMN_NAME_INDEX;
 
-                int newRowIndex = this.frames.size();
                 String label = ((String) value).trim();
                 if (label.isEmpty()) {
                     label = null;
@@ -97,7 +96,7 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
                 }
 
                 MovieClipFrame newFrame = MovieClipFrame.builder().withLabel(label).build();
-                this.insert(newRowIndex, newFrame);
+                this.insert(row, newFrame);
                 return;
             }
 
@@ -211,6 +210,7 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
         // TODO: sync modification with MovieClip original
     }
 
+    @Override
     public boolean isAppendRow(int row) {
         return row == this.frames.size();
     }

@@ -29,6 +29,7 @@ import dev.donutquine.editor.gui.layout.components.listeners.FrameSelectionListe
 import dev.donutquine.editor.gui.layout.components.tables.MovieClipChildrenTableModel;
 import dev.donutquine.editor.gui.layout.components.tables.MovieClipFrameElementsTableModel;
 import dev.donutquine.editor.gui.layout.components.tables.MovieClipFramesTableModel;
+import dev.donutquine.editor.gui.layout.components.tables.RowAppendableTableModel;
 import dev.donutquine.editor.gui.layout.components.tables.RowReorderTransferHandler;
 import dev.donutquine.editor.gui.layout.components.tables.Table;
 import dev.donutquine.editor.gui.layout.contextmenus.ChildrenTableContextMenu;
@@ -69,7 +70,12 @@ public class MovieClipPropertyPanel extends JPanel {
             }, 
             movieClip::getTimelineChildCount, 
             matrixBank::getMatrixCount, 
-            matrixBank::getColorTransformCount
+            matrixBank::getColorTransformCount,
+            (row) -> {
+                // NOTE: cannot inline to use field as its not initialized at the variable capture moment, so using getter
+                JTable frameElementsTable = this.getFrameElementsTable();
+                frameElementsTable.editCellAt(row, MovieClipFrameElementsTableModel.COLUMN_CHILD_INDEX);
+            }
         );
 
         this.frameElementsTable = createFrameElementsTable(frameElementsTableModel);
@@ -129,6 +135,46 @@ public class MovieClipPropertyPanel extends JPanel {
             }
         };
 
+        AbstractAction insertBeforeAction = new AbstractAction("Insert new element before") {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int elementCount = table.getSelectedRowCount();
+                if (elementCount < 1) return;
+
+                int firstIndex = table.getSelectedRows()[0];
+
+                // NOTE: Maybe we should ask a label for frame? I guess no, it's easier to add label later.
+                try {
+                    tableModel.insertPendingRow(firstIndex);
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn(e.getLocalizedMessage());
+                }
+
+                // NOTE: Should we actually reset selection?
+                table.clearSelection();
+            }
+        };
+
+        AbstractAction insertAfterAction = new AbstractAction("Insert new element after") {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                int elementCount = table.getSelectedRowCount();
+                if (elementCount < 1) return;
+
+                int lastIndex = table.getSelectedRows()[elementCount - 1];
+
+                // NOTE: Maybe we should ask a label for frame? I guess no, it's easier to add label later.
+                try {
+                    tableModel.insertPendingRow(lastIndex + 1);
+                } catch (IllegalArgumentException e) {
+                    LOGGER.warn(e.getLocalizedMessage());
+                }
+
+                // NOTE: Should we actually reset selection?
+                table.clearSelection();
+            }
+        };
+
         InputMap inputMap = table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         ActionMap actionMap = table.getActionMap();
 
@@ -138,93 +184,13 @@ public class MovieClipPropertyPanel extends JPanel {
         actionMap.put(DELETE_ACTION_KEY, deleteAction);
         inputMap.put(keyStroke, DELETE_ACTION_KEY);
 
-        new FrameElementTableContextMenu(table, deleteAction);
+        new FrameElementTableContextMenu(table, deleteAction, insertBeforeAction, insertAfterAction);
 
         return table;
     }
 
     private static Table createFramesTable(MovieClipFramesTableModel tableModel, SupercellSWFLayoutController swfLayoutController, IntConsumer elementsCurrentFrameSetter) {
-        Table table = new Table(tableModel) {
-            @Override
-            public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
-                if (tableModel.isAppendRow(rowIndex)) {
-                    return;
-                }
-
-                super.changeSelection(rowIndex, columnIndex, toggle, extend);
-            }
-
-            /**
-             * @see JTable#selectAll()
-             */
-            @Override
-            public void selectAll() {
-                // If I'm currently editing, then I should stop editing
-                if (isEditing()) {
-                    removeEditor();
-                }
-                if (getRowCount() > 0 && getColumnCount() > 0) {
-                    int oldLead;
-                    int oldAnchor;
-                    ListSelectionModel selModel;
-
-                    selModel = selectionModel;
-                    selModel.setValueIsAdjusting(true);
-                    oldLead = getAdjustedIndex(selModel.getLeadSelectionIndex(), true);
-                    oldAnchor = getAdjustedIndex(selModel.getAnchorSelectionIndex(), true);
-
-                    // NOTE: the only difference from super method is this -2 to exclude append row from selection
-                    setRowSelectionInterval(0, getRowCount()-2);
-
-                    // this is done to restore the anchor and lead
-                    setLeadAnchorWithoutSelection(selModel, oldLead, oldAnchor);
-
-                    selModel.setValueIsAdjusting(false);
-
-                    selModel = columnModel.getSelectionModel();
-                    selModel.setValueIsAdjusting(true);
-                    oldLead = getAdjustedIndex(selModel.getLeadSelectionIndex(), false);
-                    oldAnchor = getAdjustedIndex(selModel.getAnchorSelectionIndex(), false);
-
-                    setColumnSelectionInterval(0, getColumnCount()-1);
-
-                    // this is done to restore the anchor and lead
-                    setLeadAnchorWithoutSelection(selModel, oldLead, oldAnchor);
-
-                    selModel.setValueIsAdjusting(false);
-                }
-            }
-
-            /**
-             * @see JTable#getAdjustedIndex(int, boolean)
-             */
-            private int getAdjustedIndex(int index, boolean row) {
-                int compare = row ? getRowCount() : getColumnCount();
-                return index < compare ? index : -1;
-            }
-            
-            /**
-             * Set the lead and anchor without affecting selection.
-             *
-             * @see sun.swing.SwingUtilities2#setLeadAnchorWithoutSelection(javax.swing.ListSelectionModel, int, int)
-             */
-            private static void setLeadAnchorWithoutSelection(ListSelectionModel model, int lead, int anchor) {
-                if (anchor == -1) {
-                    anchor = lead;
-                }
-                if (lead == -1) {
-                    model.setAnchorSelectionIndex(-1);
-                    model.setLeadSelectionIndex(-1);
-                } else {
-                    if (model.isSelectedIndex(lead)) {
-                        model.addSelectionInterval(lead, lead);
-                    } else {
-                        model.removeSelectionInterval(lead, lead);
-                    }
-                    model.setAnchorSelectionIndex(anchor);
-                }
-            }
-        };
+        Table table = new Table(tableModel);
 
         table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
@@ -374,5 +340,9 @@ public class MovieClipPropertyPanel extends JPanel {
     public Component add(JComponent comp, String title) {
         comp.setBorder(BorderFactory.createTitledBorder(title));
         return super.add(comp);
+    }
+
+    private JTable getFrameElementsTable() {
+        return this.frameElementsTable;
     }
 }

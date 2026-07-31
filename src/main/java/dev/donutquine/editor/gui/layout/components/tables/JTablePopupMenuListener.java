@@ -47,6 +47,11 @@ public class JTablePopupMenuListener implements PopupMenuListener {
     }
 
     protected boolean shouldUpdateValue(int rowAtPoint) {
+        // NOTE: append row must not be selectable
+        if (table.getModel() instanceof RowAppendableTableModel rowAppendableTableModel && rowAppendableTableModel.isAppendRow(rowAtPoint)) {
+            return false;
+        }
+
         return !ArrayUtils.contains(table.getSelectedRows(), rowAtPoint);
     }
 
