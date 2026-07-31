@@ -5,17 +5,20 @@ import javax.swing.Action;
 import javax.swing.JTable;
 import dev.donutquine.editor.gui.layout.SupercellSWFLayoutController;
 import dev.donutquine.editor.gui.layout.components.tables.JTablePopupMenuListener;
+import dev.donutquine.editor.gui.layout.components.tables.MovieClipFramesTableModel;
 import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 
 public class FrameTableContextMenu extends ContextMenu {
     private final JTable table;
+	private final MovieClipFramesTableModel tableModel;
     private final SupercellSWFLayoutController swfLayoutController;
 
     public FrameTableContextMenu(JTable table, SupercellSWFLayoutController swfLayoutController, Action duplicateAction, Action deleteAction) {
         super(table, null);
 
         this.table = table;
+        this.tableModel = (MovieClipFramesTableModel) this.table.getModel();
         this.swfLayoutController = swfLayoutController;
 
         this.add("Goto and play", this::gotoAndPlay);
@@ -25,7 +28,10 @@ public class FrameTableContextMenu extends ContextMenu {
         this.addSeparator();
         this.add(deleteAction);
 
-        this.popupMenu.addPopupMenuListener(new JTablePopupMenuListener(this.popupMenu, table, rowIndex -> setMainComponentsEnabled(rowIndex != -1)));
+        this.popupMenu.addPopupMenuListener(new JTablePopupMenuListener(this.popupMenu, table, rowIndex -> {
+            // NOTE: setting enabled to items as we have to revert the state for actions when leave, but not for items
+            setMainComponentsEnabled(rowIndex != -1 && !this.tableModel.isAppendRow(rowIndex));
+        }));
     }
 
     private void gotoAndPlay(ActionEvent event) {

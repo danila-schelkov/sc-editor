@@ -109,7 +109,7 @@ public class MovieClipChildrenTableModel extends AbstractTableModel {
                             return;
                         }
 
-                        throw new Exception("A movie clip child name must be unique");
+                        throw new IllegalArgumentException("A movie clip child name must be unique");
                     }
 
                     this.timelineChildrenNames.set(row, name);

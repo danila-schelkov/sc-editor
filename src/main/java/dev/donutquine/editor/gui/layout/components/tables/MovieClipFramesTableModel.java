@@ -2,6 +2,7 @@ package dev.donutquine.editor.gui.layout.components.tables;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.IntConsumer;
 import javax.swing.table.AbstractTableModel;
 import org.slf4j.Logger;
@@ -17,8 +18,8 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
     private static final String[] COLUMN_NAMES = {"#", "Name"};
     private static final Class<?>[] COLUMN_CLASSES = {Integer.class, String.class};
 
-    private static final int COLUMN_INDEX = 0;
-    private static final int COLUMN_NAME_INDEX = 1;
+    public static final int COLUMN_INDEX = 0;
+    public static final int COLUMN_NAME_INDEX = 1;
 
     private final List<MovieClipFrame> frames;
     private final IntConsumer currentFrameSetter;
@@ -32,7 +33,8 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
 
     @Override
     public int getRowCount() {
-        return this.frames.size();
+        // NOTE: empty "append" row
+        return this.frames.size() + 1;
     }
 
     @Override
@@ -64,6 +66,10 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
 
     @Override
     public Object getValueAt(int row, int column) {
+        if (isAppendRow(row)) {
+            return null;
+        }
+
         MovieClipFrame frame = this.frames.get(row);
 
         return switch (column) {
@@ -75,17 +81,49 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
 
     @Override
     public void setValueAt(Object value, int row, int column) {
-        MovieClipFrame frame = this.frames.get(row);
-
         try {
+            if (isAppendRow(row)) {
+                assert column == COLUMN_NAME_INDEX;
+
+                int newRowIndex = this.frames.size();
+                String label = ((String) value).trim();
+                if (label.isEmpty()) {
+                    label = null;
+                }
+
+                int indexOfFrameWithSameLabel = indexOfFrameWithLabel(label);
+                if (label != null && indexOfFrameWithSameLabel != -1) {
+                    throw new IllegalArgumentException("A movie clip frame label must be unique");
+                }
+
+                // TODO: make a command and add it to global UndoRedoManager
+                this.frames.add(MovieClipFrame.builder().withLabel(label).build());
+                this.fireTableRowsInserted(newRowIndex, newRowIndex);
+                return;
+            }
+
+            MovieClipFrame frame = this.frames.get(row);
             switch (column) {
                 case COLUMN_NAME_INDEX -> {
-                    String newLabel = (String) value;
+                    String label = ((String) value).trim();
+                    if (label.isEmpty()) {
+                        label = null;
+                    }
+
+                    int indexOfFrameWithSameLabel = indexOfFrameWithLabel(label);
+                    if (label != null && indexOfFrameWithSameLabel != -1) {
+                        // NOTE: do not update cell as the label is already the same value
+                        if (indexOfFrameWithSameLabel == row) {
+                            return;
+                        }
+
+                        throw new IllegalArgumentException("A movie clip frame label must be unique");
+                    }
 
                     // TODO: make a command and add it to global UndoRedoManager
                     Builder builder = MovieClipFrame.builder();
-                    // TODO: optmize by adding MovieClipFrame.setLabel
-                    builder.withLabel(newLabel);
+                    // TODO: optimize by adding MovieClipFrame.setLabel
+                    builder.withLabel(label);
                     builder.setIncludeElements(frame.getTag() == Tag.MOVIE_CLIP_FRAME);
 
                     // TODO: optimize by adding setElements or/and addAllElements methods to builder. 
@@ -110,11 +148,17 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
     }
 
     public void delete(int firstRow, int rowCount) {
-        if (rowCount == this.frames.size()) {
+        int lastIndex = firstRow + rowCount;
+        // NOTE: trim append row from selection
+        if (isAppendRow(lastIndex - 1)) {
+            lastIndex = this.frames.size();
+            rowCount -= 1;
+        }
+
+        if (firstRow == 0 && lastIndex == this.frames.size()) {
             throw new IllegalArgumentException("At least one frame must remain");
         }
 
-        int lastIndex = firstRow + rowCount;
         // TODO: make a command and add it to global UndoRedoManager
         this.frames.subList(firstRow, lastIndex).clear();
         this.fireTableRowsDeleted(firstRow, lastIndex);
@@ -123,8 +167,12 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
     }
 
     public void duplicate(int firstRow, int rowCount) {
-        // TODO: make a command and add it to global UndoRedoManager
         int lastIndex = firstRow + rowCount;
+        // NOTE: trim append row from selection
+        if (isAppendRow(lastIndex - 1)) {
+            lastIndex = this.frames.size();
+            rowCount -= 1;
+        }
 
         // NOTE: current strategy is to put all duplicated frames after selection (e.g. `|1 2 3| 4` -> `1 2 3 (1 2 3) 4`), 
         //  but there is also an idea of putting duplicate frame after original frame (e.g. `|1 2 3| 4` -> `1 (1) 2 (2) 3 (3) 4`).
@@ -139,7 +187,9 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
         List<MovieClipFrame> duplicates = new ArrayList<>(rowCount);
         for (MovieClipFrame frameToDuplicate : rangeToDuplicate) {
             Builder builder = MovieClipFrame.builder();
-            builder.withLabel(frameToDuplicate.getLabel());
+            // NOTE: label must be unique, so we set duplicate label to null. 
+            //  Or maybe we should add some index to the original child name and set it?
+            // builder.withLabel(null);  // Does nothing as null as already a default value in builder
             builder.setIncludeElements(frameToDuplicate.getTag() == Tag.MOVIE_CLIP_FRAME);
 
             // TODO: optimize by adding setElements or/and addAllElements methods to builder. 
@@ -151,8 +201,8 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
             duplicates.add(builder.build());
         }
 
+        // TODO: make a command and add it to global UndoRedoManager
         this.frames.addAll(lastIndex, duplicates);
-
         this.fireTableRowsInserted(lastIndex, lastIndex + rowCount);
 
         this.updateFrames();
@@ -162,5 +212,20 @@ public class MovieClipFramesTableModel extends AbstractTableModel {
         // TODO: decide what frame should become next after changing frame count. Before the selection of after?
         this.currentFrameSetter.accept(0);
         // TODO: sync modification with MovieClip original
+    }
+
+    public boolean isAppendRow(int row) {
+        return row == this.frames.size();
+    }
+
+    private int indexOfFrameWithLabel(String label) {
+        for (int i = 0; i < this.frames.size(); i++) {
+            MovieClipFrame frame = this.frames.get(i);
+            if (Objects.equals(frame.getLabel(), label)) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 }
