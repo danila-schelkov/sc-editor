@@ -171,7 +171,7 @@ public class Batch {
             this.init();
         }
 
-        for (int i = 0; i < triangles.length; i++) {
+        for (int i = 0; i < count * 3; i++) {
             this.indices.put(this.triangleCount * 3 + i, triangles[i] + this.pointCount);
         }
 
