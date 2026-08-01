@@ -251,13 +251,20 @@ public class EditorStage implements Stage {
             }
 
             if (this.bounds != null) {
+                float left = rect.getLeft(), top = rect.getTop(), right = rect.getRight(), bottom = rect.getBottom();
+
                 if (this.isApplyingMaskBounds) {
-                    Rect copy = new Rect(rect);
-                    copy.clamp(this.maskBounds);
-                    rect = copy;
+                    if (left < this.maskBounds.getLeft())
+                        left = this.maskBounds.getLeft();
+                    if (right > this.maskBounds.getRight())
+                        right = this.maskBounds.getRight();
+                    if (top < this.maskBounds.getTop())
+                        top = this.maskBounds.getTop();
+                    if (bottom > this.maskBounds.getBottom())
+                        bottom = this.maskBounds.getBottom();
                 }
 
-                this.bounds.mergeBounds(rect);
+                this.bounds.mergeBounds(left, top, right, bottom);
             }
 
             return false;
@@ -273,8 +280,7 @@ public class EditorStage implements Stage {
 
     @Override
     public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float alpha, float redAdd, float greenAdd, float blueAdd) {
-        this.renderer.addVertex(x, y, u, v, redMul, greenMul, blueMul, alpha, redAdd, greenAdd,
-                blueAdd);
+        this.renderer.addVertex(x, y, u, v, redMul, greenMul, blueMul, alpha, redAdd, greenAdd, blueAdd);
     }
 
     @Override
