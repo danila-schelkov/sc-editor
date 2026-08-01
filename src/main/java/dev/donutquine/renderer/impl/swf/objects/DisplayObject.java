@@ -69,13 +69,13 @@ public abstract class DisplayObject {
     }
 
     public void setBlendMode(BlendMode blendMode) {
-        assert BlendMode.values().length < 0b1000;
+        assert BlendMode.ALL.length < 0b1000;
         this.setBlendMode(blendMode.ordinal() << 7);
     }
 
     public BlendMode getBlendMode() {
-        assert BlendMode.values().length < 0b1000;
-        return BlendMode.values()[(this.renderConfigBits & 0x380) >> 7];
+        assert BlendMode.ALL.length < 0b1000;
+        return BlendMode.ALL[(this.renderConfigBits & 0x380) >> 7];
     }
 
     public void setGrayOut(boolean grayOut) {

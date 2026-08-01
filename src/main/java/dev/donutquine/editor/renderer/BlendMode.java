@@ -16,5 +16,7 @@ public enum BlendMode {
     /**
     * The blending is disabled in the graphics library at all.
     */
-    DISABLED
+    DISABLED;
+
+    public static final BlendMode[] ALL = BlendMode.values();
 }
