@@ -151,7 +151,7 @@ public class Batch {
         this.isDirty = true;
     }
 
-    public void addTriangles(int count, int[] triangles) {
+    public void addTriangles(int count, Triangulator triangulator) {
         if (!this.hasSpaceFor(count)) {
             this.capacity += SIZE;
 
@@ -171,9 +171,7 @@ public class Batch {
             this.init();
         }
 
-        for (int i = 0; i < count * 3; i++) {
-            this.indices.put(this.triangleCount * 3 + i, triangles[i] + this.pointCount);
-        }
+        triangulator.initIndices(this.indices, this.triangleCount * 3, this.pointCount, count);
 
         this.triangleCount += count;
         this.pointCount += count + 2;

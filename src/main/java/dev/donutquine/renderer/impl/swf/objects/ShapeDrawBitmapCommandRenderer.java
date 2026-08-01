@@ -2,7 +2,7 @@ package dev.donutquine.renderer.impl.swf.objects;
 
 import dev.donutquine.editor.assets.TextureAsset;
 import dev.donutquine.editor.renderer.Stage;
-import dev.donutquine.editor.renderer.impl.Triangulator;
+import dev.donutquine.editor.renderer.Triangulator;
 import dev.donutquine.editor.renderer.texture.RenderableTexture;
 import dev.donutquine.editor.renderer.texture.Texture;
 import dev.donutquine.math.ReadonlyRect;
@@ -66,7 +66,8 @@ public final class ShapeDrawBitmapCommandRenderer {
         }
 
         if (stage.startShape(BOUNDS, texture, renderConfigBits)) {
-            stage.addTriangles(command.getTriangleCount(), getIndices(command, renderConfigBits));
+            Triangulator triangulator = (renderConfigBits & 0x8000) == 0 ? Triangulator.TRIANGLE_FAN : Triangulator.TRIANGLE_STRIP;
+            stage.addTriangles(command.getTriangleCount(), triangulator);
 
             renderCommandVertices(stage, command, colorTransform, transformedPoints);
 
@@ -74,12 +75,6 @@ public final class ShapeDrawBitmapCommandRenderer {
         }
 
         return false;
-    }
-
-    private static int[] getIndices(ShapeDrawBitmapCommand command, int renderConfigBits) {
-        Triangulator triangulator = (renderConfigBits & 0x8000) == 0 ? Triangulator.TRIANGLE_FAN : Triangulator.TRIANGLE_STRIP;
-
-        return triangulator.getIndices(command.getTriangleCount());
     }
 
     private static void renderCommandVertices(Stage stage, ShapeDrawBitmapCommand command, ColorTransform colorTransform, float[] transformedPoints) {

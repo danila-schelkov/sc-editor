@@ -13,7 +13,7 @@ public interface Stage {
 
     boolean startShape(ReadonlyRect rect, RenderableTexture texture, int renderConfigBits);
 
-    void addTriangles(int count, int[] indices);
+    void addTriangles(int count, Triangulator triangulator);
 
     void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float alpha, float redAdd, float greenAdd, float blueAdd);
 

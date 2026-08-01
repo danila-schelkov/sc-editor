@@ -14,8 +14,6 @@ import java.nio.FloatBuffer;
 import java.util.Iterator;
 
 public class BasicDrawApi implements DrawApi {
-    private static final int[] RECT_INDICES = {0, 1, 2, 1, 2, 3};  // FAN order
-
     private final Renderer renderer;
     private final Shader textureShader;
     private final Shader colorShader;
@@ -41,7 +39,7 @@ public class BasicDrawApi implements DrawApi {
     @Override
     public void drawTexture(RenderableTexture texture, ReadonlyRect rect) {
         if (this.renderer.startShape(textureShader, rect, texture, 0, null)) {
-            this.renderer.addTriangles(2, RECT_INDICES);
+            this.renderer.addTriangles(2, Triangulator.TRIANGLE_STRIP);
 
             this.renderer.addVertex(rect.getLeft(), rect.getTop(), 0, 0);
             this.renderer.addVertex(rect.getLeft(), rect.getBottom(), 0, 1);
@@ -53,7 +51,7 @@ public class BasicDrawApi implements DrawApi {
     @Override
     public void drawTextureFlipped(RenderableTexture texture, ReadonlyRect rect) {
         if (this.renderer.startShape(textureShader, rect, texture, 0, null)) {
-            this.renderer.addTriangles(2, RECT_INDICES);
+            this.renderer.addTriangles(2, Triangulator.TRIANGLE_STRIP);
 
             this.renderer.addVertex(rect.getLeft(), rect.getTop(), 0, 1);
             this.renderer.addVertex(rect.getLeft(), rect.getBottom(), 0, 0);
@@ -65,7 +63,7 @@ public class BasicDrawApi implements DrawApi {
     @Override
     public void drawRectangle(ReadonlyRect rect, Color color) {
         if (this.renderer.startShape(colorShader, rect, null, 0, null)) {
-            this.renderer.addTriangles(2, RECT_INDICES);
+            this.renderer.addTriangles(2, Triangulator.TRIANGLE_STRIP);
 
             float[] rgba = new float[4];
             rgba[3] = 1;
@@ -94,7 +92,7 @@ public class BasicDrawApi implements DrawApi {
     @Override
     public void drawLine(float x1, float y1, float x2, float y2, float thickness, Color color) {
         if (this.renderer.startShape(colorShader, x1, y1, x2, y2, null, 0, null)) {
-            this.renderer.addTriangles(2, RECT_INDICES);
+            this.renderer.addTriangles(2, Triangulator.TRIANGLE_STRIP);
 
             float[] rgba = new float[4];
             rgba[3] = 1;

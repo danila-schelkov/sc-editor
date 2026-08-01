@@ -13,15 +13,14 @@ import com.jogamp.opengl.util.PMVMatrix;
 import dev.donutquine.editor.gui.gizmos.Gizmos;
 import dev.donutquine.editor.renderer.BasicDrawApi;
 import dev.donutquine.editor.renderer.Batch;
-import dev.donutquine.editor.renderer.BatchedRenderer;
 import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.editor.renderer.Camera;
 import dev.donutquine.editor.renderer.DrawApi;
 import dev.donutquine.editor.renderer.Framebuffer;
 import dev.donutquine.editor.renderer.RenderStencilState;
-import dev.donutquine.editor.renderer.Renderer;
 import dev.donutquine.editor.renderer.RendererContext;
 import dev.donutquine.editor.renderer.Stage;
+import dev.donutquine.editor.renderer.Triangulator;
 import dev.donutquine.editor.renderer.VertexBuffer;
 import dev.donutquine.editor.renderer.gl.GLConstants;
 import dev.donutquine.editor.renderer.gl.GLContext;
@@ -274,8 +273,8 @@ public class EditorStage implements Stage {
     }
 
     @Override
-    public void addTriangles(int count, int[] indices) {
-        this.renderer.addTriangles(count, indices);
+    public void addTriangles(int count, Triangulator triangulator) {
+        this.renderer.addTriangles(count, triangulator);
     }
 
     @Override

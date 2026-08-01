@@ -67,10 +67,10 @@ public abstract class BatchedRenderer implements Renderer {
     }
 
     @Override
-    public void addTriangles(int count, int[] indices) {
+    public void addTriangles(int count, Triangulator triangulator) {
         if (this.currentBatch == null) return;
 
-        this.currentBatch.addTriangles(count, indices);
+        this.currentBatch.addTriangles(count, triangulator);
     }
 
     @Override

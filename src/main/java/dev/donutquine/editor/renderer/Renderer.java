@@ -16,8 +16,9 @@ public interface Renderer {
 
     boolean startShape(Shader shader, float left, float top, float right, float bottom, RenderableTexture texture, int renderConfigBits, ReadonlyRect clipArea);
 
-    void addTriangles(int count, int[] indices);
+    void addTriangles(int count, Triangulator triangulator);
 
+    // NOTE: too slow
     void addVertex(float... vertexData);
 
     void setStencilRenderingState(Shader shader, RenderStencilState stencilRenderingState);
