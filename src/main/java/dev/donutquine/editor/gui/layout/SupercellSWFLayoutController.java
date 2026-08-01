@@ -23,6 +23,7 @@ import dev.donutquine.renderer.impl.swf.objects.DisplayObject;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 import dev.donutquine.renderer.impl.swf.objects.Shape;
 import dev.donutquine.renderer.impl.swf.objects.TextField;
+import dev.donutquine.swf.DisplayObjectOriginal;
 import dev.donutquine.swf.SupercellSWF;
 import dev.donutquine.swf.exceptions.UnableToFindObjectException;
 import dev.donutquine.swf.movieclips.MovieClipOriginal;
@@ -33,7 +34,7 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
     public final EditorWindow window;
     public final SupercellSWFAssetFile assetFile;
 
-    private final DisplayObjectListPanel objectListPanel;
+    private final DisplayObjectListPanel exportsPanel, objectsPanel;
     private final DisplayObjectInfoPanel currentObjectInfoPanel;
     private final TexturesPanel texturesPanel;
     private final TimelinePanel timelinePanel;
@@ -44,7 +45,9 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
         this.window = window;
         this.assetFile = assetFile;
 
-        this.objectListPanel = new DisplayObjectListPanel(this, collectObjectTableRows(this.assetFile.asset).toArray(Object[][]::new));
+        // TODO: unmodifiable, be careful
+        this.exportsPanel = new DisplayObjectListPanel(this, this.assetFile.asset.getMovieClips().stream().filter(mc -> mc.getExportName() != null).toList());
+        this.objectsPanel = new DisplayObjectListPanel(this, collectObjectTableRows(this.assetFile.asset));
         this.currentObjectInfoPanel = new DisplayObjectInfoPanel();
         this.texturesPanel = new TexturesPanel(this);
         this.timelinePanel = new TimelinePanel();
@@ -57,20 +60,20 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
             title += " - " + name;
         }
 
-        List<Object[]> usagesRows = new ArrayList<>();
+        List<MovieClipOriginal> usages = new ArrayList<>();
 
         try {
             for (int movieClipId : this.assetFile.asset.getMovieClipIds()) {
                 MovieClipOriginal movieClipOriginal = this.assetFile.asset.getOriginalMovieClip(movieClipId & 0xFFFF, null);
                 if (movieClipOriginal.getChildren().stream().anyMatch(movieClipChild -> movieClipChild.id() == displayObjectId)) {
-                    usagesRows.add(new Object[] {movieClipId, movieClipOriginal.getExportName(), "MovieClip"});
+                    usages.add(movieClipOriginal);
                 }
             }
         } catch (UnableToFindObjectException e) {
             throw new RuntimeException(e);
         }
 
-        UsagesWindow usagesWindow = new UsagesWindow(title, usagesRows, this);
+        UsagesWindow usagesWindow = new UsagesWindow(title, usages, this);
         usagesWindow.show();
     }
 
@@ -112,7 +115,8 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
     public void start() {
         JTabbedPane tabbedPane = this.window.getTabbedPane();
         tabbedPane.setVisible(true);
-        tabbedPane.add("Objects", this.objectListPanel);
+        tabbedPane.add("Exports", this.exportsPanel);
+        tabbedPane.add("Objects", this.objectsPanel);
         tabbedPane.add("Info", this.currentObjectInfoPanel);
         tabbedPane.add("Textures", this.texturesPanel);
 
@@ -138,7 +142,8 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
     public void finish() {
         JTabbedPane tabbedPane = this.window.getTabbedPane();
         tabbedPane.setVisible(false);
-        tabbedPane.remove(this.objectListPanel);
+        tabbedPane.remove(this.exportsPanel);
+        tabbedPane.remove(this.objectsPanel);
         tabbedPane.remove(this.currentObjectInfoPanel);
         tabbedPane.remove(this.texturesPanel);
 
@@ -164,8 +169,8 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
 
     @Override
     public void focusOnSearchField() {
-        this.window.getTabbedPane().setSelectedComponent(this.objectListPanel);
-        this.objectListPanel.setFocusOnTextField();
+        this.window.getTabbedPane().setSelectedComponent(this.objectsPanel);
+        this.objectsPanel.setFocusOnTextField();
     }
 
     public void setTimelineVisible(boolean visible) {
@@ -186,7 +191,7 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
     * @param displayObject display object to be selected
     */
     private void selectObject(DisplayObject displayObject) {
-        this.objectListPanel.selectObjectById(displayObject.getId());
+        this.objectsPanel.selectObjectById(displayObject.getId());
 
         if (displayObject.isMovieClip()) {
             MovieClip movieClip = (MovieClip) displayObject;
@@ -218,27 +223,13 @@ public class SupercellSWFLayoutController implements TextureLayoutController<Sup
         return null;
     }
 
-    private static List<Object[]> collectObjectTableRows(SupercellSWF swf) {
-        List<Object[]> rowDataList = new ArrayList<>();
+    private static List<DisplayObjectOriginal> collectObjectTableRows(SupercellSWF swf) {
+        List<DisplayObjectOriginal> objects = new ArrayList<>();
 
-        for (int movieClipId : swf.getMovieClipIds()) {
-            try {
-                MovieClipOriginal movieClipOriginal = swf.getOriginalMovieClip(movieClipId & 0xFFFF, null);
-                rowDataList.add(new Object[] {movieClipId, movieClipOriginal.getExportName(), "MovieClip"});
-            } catch (UnableToFindObjectException e) {
-                LOGGER.error(e.getMessage(), e);
-            }
+        objects.addAll(swf.getMovieClips());
+        objects.addAll(swf.getShapes());
+        objects.addAll(swf.getTextFields());
 
-        }
-
-        for (int shapesId : swf.getShapeIds()) {
-            rowDataList.add(new Object[] {shapesId, null, "Shape"});
-        }
-
-        for (int textFieldId : swf.getTextFieldIds()) {
-            rowDataList.add(new Object[] {textFieldId, null, "TextField"});
-        }
-
-        return rowDataList;
+        return objects;
     }
 }

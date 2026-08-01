@@ -12,7 +12,7 @@ import dev.donutquine.renderer.impl.swf.objects.DisplayObjectFactory;
 import dev.donutquine.renderer.impl.swf.objects.MovieClip;
 
 public class MovieClipChildrenTableModel extends AbstractTableModel {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MovieClipFramesTableModel.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MovieClipChildrenTableModel.class);
 
     private static final String[] COLUMN_NAMES = {"#", "Id", "Type", "Name", "Blend Mode", "Visible"};
     private static final Class<?>[] COLUMN_CLASSES = {Integer.class, Integer.class, String.class, String.class, BlendMode.class, Boolean.class};
