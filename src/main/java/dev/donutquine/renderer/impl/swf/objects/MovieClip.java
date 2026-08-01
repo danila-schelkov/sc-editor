@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MovieClip extends Sprite {
+    private static final ColorTransform IDENTITY_COLOR_TRANSFORM = new ColorTransform();
+    private static final Matrix2x3 IDENTITY_MATRIX = new Matrix2x3();
+
     private String exportName;
     private float frameTime;
     private int fps;
@@ -186,18 +189,18 @@ public class MovieClip extends Sprite {
             // FIXME: will be a pitfall as soon as they will start use 0xFFFFth index in a new frame element format (-1 branch)
             if (matrixIndex != -1 && matrixIndex != 0xFFFF) {
                 Matrix2x3 matrix = this.matrixBank.getMatrix(matrixIndex);
-                child.setMatrix(new Matrix2x3(matrix));
+                child.getMatrix().set(matrix);
             } else {
-                child.setMatrix(new Matrix2x3());
+                child.getMatrix().set(IDENTITY_MATRIX);
             }
 
             int colorTransformIndex = element.colorTransformIndex();
             // FIXME: will be a pitfall as soon as they will start use 0xFFFFth index in a new frame element format (-1 branch)
             if (colorTransformIndex != -1 && colorTransformIndex != 0xFFFF) {
                 ColorTransform colorTransform = this.matrixBank.getColorTransform(colorTransformIndex);
-                child.setColorTransform(new ColorTransform(colorTransform));
+                child.getColorTransform().set(colorTransform);
             } else {
-                child.setColorTransform(new ColorTransform());
+                child.getColorTransform().set(IDENTITY_COLOR_TRANSFORM);
             }
 
             this.addChildAt(child, childIndex++);
