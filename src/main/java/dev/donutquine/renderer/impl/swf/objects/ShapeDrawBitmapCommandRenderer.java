@@ -12,17 +12,24 @@ import dev.donutquine.swf.Matrix2x3;
 import dev.donutquine.swf.shapes.ShapeDrawBitmapCommand;
 
 public final class ShapeDrawBitmapCommandRenderer {
+    private static final float[] POINTS = new float[ShapeDrawBitmapCommand.MAX_VERTEX_COUNT * 2];
+    private static final Rect BOUNDS = new Rect();
+
+    private static final NineSliceTransformer NINE_SLICE_TRANSFORMER = new NineSliceTransformer();
+    private static final UvTransformer UV_TRANSFORMER = new UvTransformer();
+    private static final Matrix2x3Transformer MATRIX_TRANSFORMER = new Matrix2x3Transformer();
+
     private ShapeDrawBitmapCommandRenderer() {
     }
 
     public static boolean render(ShapeDrawBitmapCommand command, TextureAsset textureAsset, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits) {
         RenderableTexture texture = textureAsset.getSpriteSheet(command.getTextureIndex()).getTexture();
-        return render0(stage, command, texture, new Matrix2x3Transformer(command, matrix), colorTransform, renderConfigBits);
+        return render0(stage, command, texture, MATRIX_TRANSFORMER.init(command, matrix), colorTransform, renderConfigBits);
     }
 
     public static boolean render9Slice(ShapeDrawBitmapCommand command, TextureAsset textureAsset, Stage stage, Matrix2x3 matrix, ColorTransform colorTransform, int renderConfigBits, ReadonlyRect safeArea, ReadonlyRect shapeBounds, float width, float height) {
         RenderableTexture texture = textureAsset.getSpriteSheet(command.getTextureIndex()).getTexture();
-        NineSliceTransformer vertexTransformer = new NineSliceTransformer(command, matrix, safeArea, shapeBounds, width, height);
+        NineSliceTransformer vertexTransformer = NINE_SLICE_TRANSFORMER.init(command, matrix, safeArea, shapeBounds, width, height);
 
         return render0(stage, command, texture, vertexTransformer, colorTransform, renderConfigBits);
     }
@@ -33,16 +40,32 @@ public final class ShapeDrawBitmapCommandRenderer {
 
     public static boolean renderUV(ShapeDrawBitmapCommand command, TextureAsset textureAsset, Stage stage, ColorTransform colorTransform, int renderConfigBits) {
         RenderableTexture texture = textureAsset.getSpriteSheet(command.getTextureIndex()).getTexture();
-        VertexTransformer vertexTransformer = new UvTransformer(command, texture);
+        VertexTransformer vertexTransformer = UV_TRANSFORMER.init(command, texture);
 
         return render0(stage, command, texture, vertexTransformer, colorTransform, renderConfigBits);
     }
 
     private static boolean render0(Stage stage, ShapeDrawBitmapCommand command, RenderableTexture texture, VertexTransformer vertexTransformer, ColorTransform colorTransform, int renderConfigBits) {
-        float[] transformedPoints = new float[command.getVertexCount() * 2];
-        Rect bounds = transformPoints(vertexTransformer, transformedPoints);
+        float[] transformedPoints = POINTS;
+        int vertexCount = command.getVertexCount();
+        for (int i = 0; i < vertexCount; i++) {
+            vertexTransformer.transform(i);
 
-        if (stage.startShape(bounds, texture, renderConfigBits)) {
+            float x = vertexTransformer.getX();
+            float y = vertexTransformer.getY();
+
+            transformedPoints[i * 2] = x;
+            transformedPoints[i * 2 + 1] = y;
+
+            if (i == 0) {
+                BOUNDS.set(x, y, x, y);
+                continue;
+            }
+
+            BOUNDS.addPoint(x, y);
+        }
+
+        if (stage.startShape(BOUNDS, texture, renderConfigBits)) {
             stage.addTriangles(command.getTriangleCount(), getIndices(command, renderConfigBits));
 
             renderCommandVertices(stage, command, colorTransform, transformedPoints);
@@ -73,28 +96,6 @@ public final class ShapeDrawBitmapCommandRenderer {
         }
     }
 
-    private static Rect transformPoints(VertexTransformer vertexTransformer, float[] transformedPoints) {
-        Rect bounds = null;
-        for (int i = 0; i < transformedPoints.length / 2; i++) {
-            vertexTransformer.transform(i);
-
-            float x = vertexTransformer.getX();
-            float y = vertexTransformer.getY();
-
-            transformedPoints[i * 2] = x;
-            transformedPoints[i * 2 + 1] = y;
-
-            if (i == 0) {
-                bounds = new Rect(x, y, x, y);
-                continue;
-            }
-
-            bounds.addPoint(x, y);
-        }
-
-        return bounds;
-    }
-
     private interface VertexTransformer {
         void transform(int vertexIndex);
 
@@ -104,14 +105,15 @@ public final class ShapeDrawBitmapCommandRenderer {
     }
 
     private static class UvTransformer implements VertexTransformer {
-        private final ShapeDrawBitmapCommand command;
-        private final Texture texture;
+        private ShapeDrawBitmapCommand command;
+        private Texture texture;
 
         private float x, y;
 
-        private UvTransformer(ShapeDrawBitmapCommand command, Texture texture) {
+        private UvTransformer init(ShapeDrawBitmapCommand command, Texture texture) {
             this.command = command;
             this.texture = texture;
+            return this;
         }
 
         @Override
@@ -132,20 +134,21 @@ public final class ShapeDrawBitmapCommandRenderer {
     }
 
     private static class NineSliceTransformer implements VertexTransformer {
-        private final ShapeDrawBitmapCommand command;
-        private final Matrix2x3 matrix;
-        private final ReadonlyRect safeArea, shapeBounds;
-        private final float width, height;
+        private ShapeDrawBitmapCommand command;
+        private Matrix2x3 matrix;
+        private ReadonlyRect safeArea, shapeBounds;
+        private float width, height;
 
         private float x, y;
 
-        public NineSliceTransformer(ShapeDrawBitmapCommand command, Matrix2x3 matrix, ReadonlyRect safeArea, ReadonlyRect shapeBounds, float width, float height) {
+        public NineSliceTransformer init(ShapeDrawBitmapCommand command, Matrix2x3 matrix, ReadonlyRect safeArea, ReadonlyRect shapeBounds, float width, float height) {
             this.command = command;
             this.matrix = matrix;
             this.safeArea = safeArea;
             this.shapeBounds = shapeBounds;
             this.width = width;
             this.height = height;
+            return this;
         }
 
         @Override
@@ -180,20 +183,24 @@ public final class ShapeDrawBitmapCommandRenderer {
     }
 
     private static class Matrix2x3Transformer implements VertexTransformer {
-        private final ShapeDrawBitmapCommand command;
-        private final Matrix2x3 matrix;
+        private ShapeDrawBitmapCommand command;
+        private Matrix2x3 matrix;
 
         private float x, y;
 
-        public Matrix2x3Transformer(ShapeDrawBitmapCommand command, Matrix2x3 matrix) {
+        public Matrix2x3Transformer init(ShapeDrawBitmapCommand command, Matrix2x3 matrix) {
             this.command = command;
             this.matrix = matrix;
+            return this;
         }
 
         @Override
         public void transform(int vertexIndex) {
-            this.x = matrix.applyX(command.getX(vertexIndex), command.getY(vertexIndex));
-            this.y = matrix.applyY(command.getX(vertexIndex), command.getY(vertexIndex));
+            float x = command.getX(vertexIndex);
+            float y = command.getY(vertexIndex);
+
+            this.x = matrix.applyX(x, y);
+            this.y = matrix.applyY(x, y);
         }
 
         @Override
