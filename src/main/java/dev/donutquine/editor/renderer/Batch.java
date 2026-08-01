@@ -38,6 +38,9 @@ public class Batch {
 
     private boolean isDirty;
 
+	private boolean isAddingVertex;
+	private int parametersAdded;
+
     public Batch(Shader shader, RenderableTexture texture, int renderConfigBits, RenderStencilState stencilRenderingState, VertexBufferProducer vertexBufferProducer, Consumer<RenderStencilState> renderStencilStateConsumer, Consumer<BlendMode> blendModeConsumer) {
         this.shader = shader;
         this.texture = texture;
@@ -109,14 +112,32 @@ public class Batch {
         return true;
     }
 
-    public void addVertex(float x, float y, float u, float v) {
-        addVertex(new float[]{x, y, u, v});
+    public void startAddingVertex(int parameterCount) {
+        if (this.isAddingVertex) throw new IllegalStateException();
+
+        if (parameterCount != vertexSize) {
+            throw new IllegalStateException("Parameter count doesn't match to vertex attributes");
+        }
+
+        this.isAddingVertex = true;
     }
 
-    public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float alpha, float redAdd, float greenAdd, float blueAdd) {
-        addVertex(new float[]{x, y, u, v, redMul, greenMul, blueMul, alpha, redAdd, greenAdd, blueAdd});
+    public void addVertexParameter(float parameter) {
+        if (!this.isAddingVertex) throw new IllegalStateException();
+
+        this.vertices.put(this.vertexIndex * vertexSize + parametersAdded, parameter);
+        this.parametersAdded++;
+
+        if (this.parametersAdded == this.vertexSize) {
+            this.parametersAdded = 0;
+            this.isAddingVertex = false;
+
+            this.vertexIndex++;
+            this.isDirty = true;
+        }
     }
 
+    @Deprecated(since = "1.7.0")
     public void addVertex(float... parameters) {
         if (parameters.length != vertexSize) {
             throw new IllegalStateException("Parameter count doesn't match to vertex attributes");

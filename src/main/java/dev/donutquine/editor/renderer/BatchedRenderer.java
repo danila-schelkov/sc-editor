@@ -7,11 +7,11 @@ import dev.donutquine.math.ReadonlyRect;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BatchedRenderer implements Renderer {
+public abstract class BatchedRenderer implements Renderer {
     private final List<Batch> batches = new ArrayList<>();
     private final BatchPool batchPool;
 
-    private Batch currentBatch;
+    protected Batch currentBatch;
 
     public BatchedRenderer(BatchPool.BatchConstructor constructBatch) {
         batchPool = new BatchPool(constructBatch);
@@ -68,6 +68,7 @@ public class BatchedRenderer implements Renderer {
     }
 
     @Override
+    @Deprecated(since = "1.7.0")
     public void addVertex(float... parameters) {
         if (this.currentBatch == null) return;
 

@@ -66,7 +66,7 @@ public class EditorStage implements Stage {
     private AssetManager assetManager;
     private GLContext gl;
     private RendererContext rendererContext;
-    private Renderer renderer;
+    private StageSpecificRenderer renderer;
     private DrawApi drawApi;
 
     private GLTexture gradientTexture;
@@ -272,8 +272,7 @@ public class EditorStage implements Stage {
     }
 
     @Override
-    public void addVertex(float x, float y, float u, float v, float redMul, float greenMul,
-            float blueMul, float alpha, float redAdd, float greenAdd, float blueAdd) {
+    public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float alpha, float redAdd, float greenAdd, float blueAdd) {
         this.renderer.addVertex(x, y, u, v, redMul, greenMul, blueMul, alpha, redAdd, greenAdd,
                 blueAdd);
     }
@@ -380,7 +379,7 @@ public class EditorStage implements Stage {
         this.rendererContext = new GLRendererContext(glContext);
         this.rendererContext.printInfo();
 
-        this.renderer = new BatchedRenderer(this::constructBatch);
+        this.renderer = new StageBatchedRenderer(this::constructBatch);
         BasicDrawApi basicDrawApi = new BasicDrawApi(this.renderer, this.assetManager);
         extraPMVMatrixConsumer = basicDrawApi::setPMVMatrix;
         this.drawApi = basicDrawApi;
