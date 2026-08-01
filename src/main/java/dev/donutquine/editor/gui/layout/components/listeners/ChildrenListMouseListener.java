@@ -39,7 +39,7 @@ public class ChildrenListMouseListener extends MouseAdapter {
             boolean isShiftDown = (e.getModifiersEx() & MouseEvent.SHIFT_DOWN_MASK) != 0;
 
             BlendMode blendMode = (BlendMode) this.table.getValueAt(selectedRow, column);
-            BlendMode newBlendMode = BlendMode.values()[(blendMode.ordinal() + (isShiftDown ? BlendMode.values().length - 1 : 1)) % BlendMode.values().length];
+            BlendMode newBlendMode = BlendMode.ALL[(blendMode.ordinal() + (isShiftDown ? BlendMode.ALL.length - 1 : 1)) % BlendMode.ALL.length];
 
             ((MovieClipChildrenTableModel)this.table.getModel()).setBlendMode(selectedRow, newBlendMode);
         }

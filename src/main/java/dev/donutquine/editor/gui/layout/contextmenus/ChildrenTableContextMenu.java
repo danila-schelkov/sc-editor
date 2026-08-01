@@ -18,7 +18,7 @@ public class ChildrenTableContextMenu extends ContextMenu {
 
         // TODO: hide blend modes that are not exportable to an SC file
         //  Maybe leave an option to unhide them back, but then decide how to map those modes when exporting.
-        for (BlendMode blendMode : BlendMode.values()) {
+        for (BlendMode blendMode : BlendMode.ALL) {
             this.add("Set " + blendMode.toString() + " blend mode", event -> this.setBlendMode(blendMode));
         }
 

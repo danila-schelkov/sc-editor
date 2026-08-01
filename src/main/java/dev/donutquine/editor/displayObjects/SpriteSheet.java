@@ -12,8 +12,6 @@ import dev.donutquine.swf.Matrix2x3;
 import dev.donutquine.swf.shapes.ShapeDrawBitmapCommand;
 
 public class SpriteSheet extends DisplayObject {
-    private static final int[] INDICES = {0, 1, 2, 0, 2, 3};
-
     private final int index;
     private final RenderableTexture texture;
     private final Rect bounds;
@@ -35,8 +33,6 @@ public class SpriteSheet extends DisplayObject {
         renderConfigBits |= this.getRenderConfigBits();
 
         Stage stage = this.getStage();
-        stage.addTriangles(2, INDICES);
-
         DrawApi drawApi = stage.getDrawApi();
         drawApi.drawTexture(this.texture, this.bounds);
 

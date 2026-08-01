@@ -13,15 +13,14 @@ import com.jogamp.opengl.util.PMVMatrix;
 import dev.donutquine.editor.gui.gizmos.Gizmos;
 import dev.donutquine.editor.renderer.BasicDrawApi;
 import dev.donutquine.editor.renderer.Batch;
-import dev.donutquine.editor.renderer.BatchedRenderer;
 import dev.donutquine.editor.renderer.BlendMode;
 import dev.donutquine.editor.renderer.Camera;
 import dev.donutquine.editor.renderer.DrawApi;
 import dev.donutquine.editor.renderer.Framebuffer;
 import dev.donutquine.editor.renderer.RenderStencilState;
-import dev.donutquine.editor.renderer.Renderer;
 import dev.donutquine.editor.renderer.RendererContext;
 import dev.donutquine.editor.renderer.Stage;
+import dev.donutquine.editor.renderer.Triangulator;
 import dev.donutquine.editor.renderer.VertexBuffer;
 import dev.donutquine.editor.renderer.gl.GLConstants;
 import dev.donutquine.editor.renderer.gl.GLContext;
@@ -66,7 +65,7 @@ public class EditorStage implements Stage {
     private AssetManager assetManager;
     private GLContext gl;
     private RendererContext rendererContext;
-    private Renderer renderer;
+    private StageSpecificRenderer renderer;
     private DrawApi drawApi;
 
     private GLTexture gradientTexture;
@@ -251,13 +250,20 @@ public class EditorStage implements Stage {
             }
 
             if (this.bounds != null) {
+                float left = rect.getLeft(), top = rect.getTop(), right = rect.getRight(), bottom = rect.getBottom();
+
                 if (this.isApplyingMaskBounds) {
-                    Rect copy = new Rect(rect);
-                    copy.clamp(this.maskBounds);
-                    rect = copy;
+                    if (left < this.maskBounds.getLeft())
+                        left = this.maskBounds.getLeft();
+                    if (right > this.maskBounds.getRight())
+                        right = this.maskBounds.getRight();
+                    if (top < this.maskBounds.getTop())
+                        top = this.maskBounds.getTop();
+                    if (bottom > this.maskBounds.getBottom())
+                        bottom = this.maskBounds.getBottom();
                 }
 
-                this.bounds.mergeBounds(rect);
+                this.bounds.mergeBounds(left, top, right, bottom);
             }
 
             return false;
@@ -267,15 +273,13 @@ public class EditorStage implements Stage {
     }
 
     @Override
-    public void addTriangles(int count, int[] indices) {
-        this.renderer.addTriangles(count, indices);
+    public void addTriangles(int count, Triangulator triangulator) {
+        this.renderer.addTriangles(count, triangulator);
     }
 
     @Override
-    public void addVertex(float x, float y, float u, float v, float redMul, float greenMul,
-            float blueMul, float alpha, float redAdd, float greenAdd, float blueAdd) {
-        this.renderer.addVertex(x, y, u, v, redMul, greenMul, blueMul, alpha, redAdd, greenAdd,
-                blueAdd);
+    public void addVertex(float x, float y, float u, float v, float redMul, float greenMul, float blueMul, float alpha, float redAdd, float greenAdd, float blueAdd) {
+        this.renderer.addVertex(x, y, u, v, redMul, greenMul, blueMul, alpha, redAdd, greenAdd, blueAdd);
     }
 
     @Override
@@ -380,7 +384,7 @@ public class EditorStage implements Stage {
         this.rendererContext = new GLRendererContext(glContext);
         this.rendererContext.printInfo();
 
-        this.renderer = new BatchedRenderer(this::constructBatch);
+        this.renderer = new StageBatchedRenderer(this::constructBatch);
         BasicDrawApi basicDrawApi = new BasicDrawApi(this.renderer, this.assetManager);
         extraPMVMatrixConsumer = basicDrawApi::setPMVMatrix;
         this.drawApi = basicDrawApi;
