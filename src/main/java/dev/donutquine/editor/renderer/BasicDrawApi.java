@@ -93,8 +93,7 @@ public class BasicDrawApi implements DrawApi {
 
     @Override
     public void drawLine(float x1, float y1, float x2, float y2, float thickness, Color color) {
-        Rect bounds = new Rect(x1, y1, x2, y2);
-        if (this.renderer.startShape(colorShader, bounds, null, 0, null)) {
+        if (this.renderer.startShape(colorShader, x1, y1, x2, y2, null, 0, null)) {
             this.renderer.addTriangles(2, RECT_INDICES);
 
             float[] rgba = new float[4];

@@ -14,6 +14,8 @@ public interface Renderer {
     /// Returns whether to render the given object or not
     boolean startShape(Shader shader, ReadonlyRect rect, RenderableTexture texture, int renderConfigBits, ReadonlyRect clipArea);
 
+    boolean startShape(Shader shader, float left, float top, float right, float bottom, RenderableTexture texture, int renderConfigBits, ReadonlyRect clipArea);
+
     void addTriangles(int count, int[] indices);
 
     void addVertex(float... vertexData);

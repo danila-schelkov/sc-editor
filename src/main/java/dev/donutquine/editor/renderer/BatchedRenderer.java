@@ -1,11 +1,10 @@
 package dev.donutquine.editor.renderer;
 
+import java.util.ArrayList;
+import java.util.List;
 import dev.donutquine.editor.renderer.shader.Shader;
 import dev.donutquine.editor.renderer.texture.RenderableTexture;
 import dev.donutquine.math.ReadonlyRect;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public abstract class BatchedRenderer implements Renderer {
     private final List<Batch> batches = new ArrayList<>();
@@ -36,10 +35,17 @@ public abstract class BatchedRenderer implements Renderer {
 
         this.batches.clear();
     }
-
     @Override
     public boolean startShape(Shader shader, ReadonlyRect rect, RenderableTexture texture, int renderConfigBits, ReadonlyRect clipArea) {
-        if (clipArea != null && !clipArea.overlaps(rect)) {
+        return startShape(shader, rect.getLeft(), rect.getTop(), rect.getRight(), rect.getBottom(), texture, renderConfigBits, clipArea);
+    }
+
+    @Override
+    public boolean startShape(Shader shader, float left, float top, float right, float bottom, RenderableTexture texture, int renderConfigBits, ReadonlyRect clipArea) {
+        // PERF: inlined Rect.overlaps
+        boolean overlaps = clipArea != null && clipArea.overlaps(left, top, right, bottom);
+
+        if (clipArea != null && !overlaps) {
             return false;
         }
 
