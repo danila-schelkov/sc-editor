@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import dev.donutquine.utilities.ArrayUtils;
+import dev.donutquine.utilities.ArrayUtilsExtensions;
 import dev.donutquine.utilities.ImageUtils;
 import dev.donutquine.utilities.SystemUtils;
 
@@ -20,7 +20,7 @@ public class FfmpegVideoExporter implements VideoExporter {
 	protected final OutputStream stdin;
 
     public FfmpegVideoExporter(int width, int height, int fps, @NotNull VideoFormat format, @Nullable String filterComplex, @NotNull Path filepath) throws IOException {
-        Object[] command = ArrayUtils.concat(
+        Object[] command = ArrayUtilsExtensions.concat(
             new Object[] {
                 "ffmpeg",
 
