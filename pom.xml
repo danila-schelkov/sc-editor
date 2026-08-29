@@ -124,7 +124,7 @@
         <dependency>
             <groupId>dev.donutquine</groupId>
             <artifactId>sc-file</artifactId>
-            <version>1.0.3</version>
+            <version>1.0.4</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.github.luben</groupId>
