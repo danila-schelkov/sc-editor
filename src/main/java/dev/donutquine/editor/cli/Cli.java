@@ -14,7 +14,7 @@ import com.jogamp.opengl.GLProfile;
 public class Cli {
     private static final Logger LOGGER = LoggerFactory.getLogger(Cli.class);
 
-    @Argument(handler = SubCommandHandler.class)
+    @Argument(handler = SubCommandHandler.class, metaVar = "COMMAND", required = true)
     @SubCommands({
         @SubCommand(name = "inspect", impl = InspectCommand.class),
         @SubCommand(name = "render", impl = RenderCommand.class),
