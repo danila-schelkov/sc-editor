@@ -45,7 +45,7 @@ public class Gizmos implements UndoRedoManager {
     private Renderer renderer;
     private DrawApi drawApi;
     // Mouse position in a world (on stage)
-    private float mouseX, mouseY;
+    private Point mousePosition;
     private GizmoHandle hoveredHandle;
 
     private boolean dragging;
@@ -72,17 +72,22 @@ public class Gizmos implements UndoRedoManager {
     }
 
     public void setMousePosition(float x, float y) {
-        this.mouseX = x;
-        this.mouseY = y;
+        if (this.mousePosition == null) {
+            this.mousePosition = new Point(x, y);
+        } else {
+            this.mousePosition.set(x, y);
+        }
     }
 
     public void setMousePressed(boolean mousePressed) {
+        assert this.mousePosition != null : "This method better be called after the first setMousePosition";
+
         CursorType cursor = CursorType.DEFAULT_CURSOR;
         if (this.touchedObject != null) {
             if (mousePressed && this.hoveredHandle != null && !this.dragging) {
                 this.dragging = true;
 
-                this.hoveredHandle.action().begin(this.mouseX, this.mouseY);
+                this.hoveredHandle.action().begin(this.mousePosition.getX(), this.mousePosition.getY());
 
                 cursor = CursorType.MOVE_CURSOR;
             } else if (!mousePressed) {
@@ -211,38 +216,40 @@ public class Gizmos implements UndoRedoManager {
             drawable.draw(this.drawApi);
         }
 
-        this.renderHandles();
+        if (this.mousePosition != null) {
+            this.renderHandles();
 
-        CursorType cursor = CursorType.DEFAULT_CURSOR;
-        if (this.hoveredHandle != null) {
-            cursor = CursorType.HAND_CURSOR;
+            CursorType cursor = CursorType.DEFAULT_CURSOR;
+            if (this.hoveredHandle != null) {
+                cursor = CursorType.HAND_CURSOR;
 
-            if (dragging) {
-                cursor = CursorType.MOVE_CURSOR;
+                if (dragging) {
+                    cursor = CursorType.MOVE_CURSOR;
 
-                this.hoveredHandle.action().update(this.mouseX, this.mouseY);
+                    this.hoveredHandle.action().update(this.mousePosition.getX(), this.mousePosition.getY());
+                }
             }
-        }
 
-        if (cursorStateListener != null) {
-            cursorStateListener.setCursor(cursor);
-        }
+            if (cursorStateListener != null) {
+                cursorStateListener.setCursor(cursor);
+            }
 
-        DisplayObject rootObject = this.touchedObject == null ? this.stageSprite : this.touchedObject;
-        if (rootObject.isSprite()) {
-            Sprite sprite = (Sprite) rootObject;
+            DisplayObject rootObject = this.touchedObject == null ? this.stageSprite : this.touchedObject;
+            if (rootObject.isSprite()) {
+                Sprite sprite = (Sprite) rootObject;
 
-            int childrenCount = sprite.getChildCount();
-            for (int i = childrenCount - 1; i >= 0; i--) {
-                DisplayObject child = sprite.getChild(i);
-                if (child.getStage() == null) continue;
+                int childrenCount = sprite.getChildCount();
+                for (int i = childrenCount - 1; i >= 0; i--) {
+                    DisplayObject child = sprite.getChild(i);
+                    if (child.getStage() == null) continue;
 
-                // FIXME: Shape9Slice gives wrong bounds because parent's matrix is not included in calculation
-                Rect bounds = this.stage.getDisplayObjectBounds(child);
+                    // FIXME: Shape9Slice gives wrong bounds because parent's matrix is not included in calculation
+                    Rect bounds = this.stage.getDisplayObjectBounds(child);
 
-                if (bounds.containsPoint(this.mouseX, this.mouseY)) {
-                    this.drawApi.drawRectangleLines(bounds, Color.WHITE, 1);
-                    break;
+                    if (bounds.containsPoint(this.mousePosition.getX(), this.mousePosition.getY())) {
+                        this.drawApi.drawRectangleLines(bounds, Color.WHITE, 1);
+                        break;
+                    }
                 }
             }
         }
@@ -257,7 +264,7 @@ public class Gizmos implements UndoRedoManager {
         for (int i = 0; i < this.stageSprite.getChildCount(); i++) {
             DisplayObject child = this.stageSprite.getChild(i);
             if (child instanceof SpriteSheet spriteSheet) {
-                List<ShapeDrawBitmapCommand> hoveroverCommands = SpriteSheetHelper.getHoveroverCommands(spriteSheet, this.mouseX, this.mouseY);
+                List<ShapeDrawBitmapCommand> hoveroverCommands = SpriteSheetHelper.getHoveroverCommands(spriteSheet, this.mousePosition.getX(), this.mousePosition.getY());
                 if (hoveroverCommands.size() > 0) {
                     // Note: these commands are exact same, but used in a different Shapes, so should be deduplicated.
                     // assert hoveroverCommands.size() == 1 : "Oh no...";
@@ -278,6 +285,8 @@ public class Gizmos implements UndoRedoManager {
     }
 
     private void renderHandles() {
+        assert this.mousePosition != null : "This method better be called after the first setMousePosition";
+
         float size = HANDLE_SIZE / stage.getPixelSize();
 
         GizmoHandle hoveredHandle = null;
@@ -292,7 +301,7 @@ public class Gizmos implements UndoRedoManager {
             Rect innerRect = new Rect(left, top, left + size, top + size);
 
             // Note: hit-test
-            if (bounds.containsPoint(mouseX, mouseY) && hoveredHandle == null && !dragging) {
+            if (bounds.containsPoint(this.mousePosition.getX(), this.mousePosition.getY()) && hoveredHandle == null && !dragging) {
                 hoveredHandle = handle;
             }
 
