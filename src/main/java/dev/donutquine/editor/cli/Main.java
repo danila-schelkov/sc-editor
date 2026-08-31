@@ -1,9 +1,9 @@
 package dev.donutquine.editor.cli;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
